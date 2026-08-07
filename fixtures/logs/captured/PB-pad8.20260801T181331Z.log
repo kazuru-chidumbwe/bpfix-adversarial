@@ -1,0 +1,36 @@
+libbpf: loading object from /tmp/bpfix-adv-objs/PB-pad8.o
+libbpf: elf: section(3) xdp, size 64, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'pb_pad8' at insn offset 0 (0 bytes), code size 8 insns (64 bytes)
+libbpf: elf: section(4) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-adv-objs/PB-pad8.o is MIT
+libbpf: elf: section(14) .BTF, size 690, link 0, flags 0, type=1
+libbpf: elf: section(16) .BTF.ext, size 176, link 0, flags 0, type=1
+libbpf: elf: section(24) .symtab, size 312, link 1, flags 0, type=2
+libbpf: looking for externs among 13 symbols...
+libbpf: collected 0 externs total
+libbpf: object 'PB-pad8': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: prog 'pb_pad8': BPF program load failed: Permission denied
+libbpf: prog 'pb_pad8': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int pb_pad8(struct xdp_md *ctx) @ PB-pad8.c:7
+0: (b7) r0 = 1                        ; R0_w=1
+; void *data_end = (void *)(long)ctx->data_end; @ PB-pad8.c:10
+1: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data; @ PB-pad8.c:9
+2: (61) r1 = *(u32 *)(r1 +0)          ; R1_w=pkt(r=0)
+; if (data + 1 > data_end) @ PB-pad8.c:12
+3: (bf) r3 = r1                       ; R1_w=pkt(r=0) R3_w=pkt(r=0)
+4: (07) r3 += 1                       ; R3_w=pkt(off=1,r=0)
+5: (2d) if r3 > r2 goto pc+1          ; R2_w=pkt_end() R3_w=pkt(off=1,r=1)
+; return *(__u64 *)data; @ PB-pad8.c:26
+6: (79) r0 = *(u64 *)(r1 +0)
+invalid access to packet, off=0 size=8, R1(id=0,off=0,r=1)
+R1 offset is outside of the packet
+verification time 24 usec
+stack depth 0
+processed 7 insns (limit 1000000) max_states_per_insn 0 total_states 0 peak_states 0 mark_read 0
+-- END PROG LOAD LOG --
+libbpf: prog 'pb_pad8': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-adv-objs/PB-pad8.o'
+Error: failed to load object file

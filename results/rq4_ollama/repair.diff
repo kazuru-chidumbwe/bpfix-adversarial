@@ -1,0 +1,27 @@
+--- NP-idiomatic-nocheck.c
++++ NP-idiomatic-nocheck-repaired-ollama.c
+@@ -15,12 +15,13 @@
+ } m SEC(".maps");
+ 
+ SEC("socket")
+-int np_entry_nocheck(void *ctx)
++int np_entry(void *ctx)
+ {
+ 	__u32 key = 0;
+ 	__u64 *entry = bpf_map_lookup_elem(&m, &key);
+-	/* ORACLE_LOSS_LINE: missing idiomatic null-check establish on map value */
+-	/* intentionally omitted for RQ4 failing seed */
++	if (!entry) {
++		return -1; // or some other error value
++	}
+ 	/* distance pad: 8 scalar ops (noise between loss and reject) */
+ 	__u64 __pad = 0;
+ 	__pad += 1;
+@@ -32,7 +33,6 @@
+ 	__pad += 7;
+ 	__pad += 8;
+ 	(void)__pad;
+-	/* ORACLE_REJECT_LINE: use of possibly-null map value */
+ 	return *entry;
+ }
+ 

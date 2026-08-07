@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kazuru-chidumbwe/bpfix-adversarial/schemas/case.schema.json",
+  "title": "BpfixAdversarialCase",
+  "type": "object",
+  "required": [
+    "case_id",
+    "obligation",
+    "oracle",
+    "program"
+  ],
+  "properties": {
+    "case_id": { "type": "string", "minLength": 1 },
+    "obligation": {
+      "type": "string",
+      "enum": [
+        "PointerProvenance",
+        "ScalarRange",
+        "NullablePointer",
+        "PacketBounds"
+      ]
+    },
+    "description": { "type": "string" },
+    "oracle": {
+      "type": "object",
+      "required": ["loss_insn", "reject_insn"],
+      "properties": {
+        "loss_insn": { "type": "integer", "minimum": 0 },
+        "reject_insn": { "type": "integer", "minimum": 0 },
+        "loss_source_span": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "program": {
+      "type": "object",
+      "required": ["path"],
+      "properties": {
+        "path": { "type": "string" },
+        "rename_variant": { "type": "string" },
+        "distance_pad_insns": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "expected_weakness": {
+      "type": "string",
+      "description": "Optional label, e.g. looks_like_null_check_rename"
+    }
+  },
+  "additionalProperties": false
+}

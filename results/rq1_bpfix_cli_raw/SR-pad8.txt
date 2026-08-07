@@ -1,0 +1,16 @@
+error[BPFIX-E005]: scalar range at the rejected use is still verifier-unsafe
+  = class: source_bug
+  = confidence: medium
+  = diagnostic: supported, help: repair_hint, span: exact_pc
+  = next action: bounds
+  --> SR-pad8.c:24
+   |
+24 | return stack[idx];
+   | ^^^^^^^^^^^^^^^^^^ rejected here: verifier still sees R1 as scalar(smin=0,smax=34359738360,umax=34359738360)
+   |
+   = verifier[20]: R1 unbounded memory access, make sure to bounds check any such access
+   = note: nearest BPF instruction pc 7
+   = note: parsed 7 verifier state snapshots
+   = note[verifier-state]: verifier state shows the rejected scalar or pointer-offset register still has an unsafe range at the use
+   = required proof: prove R1 has a bounded non-negative scalar range before this pointer arithmetic or helper memory access; verifier sees scalar(smin=0,smax=34359738360,umax=34359738360)
+help: Clamp or branch-check the exact scalar used by this helper, pointer arithmetic, stack access, or map-value access immediately before the rejected operation.

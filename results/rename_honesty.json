@@ -1,0 +1,941 @@
+{
+  "summary": {
+    "n_cases": 32,
+    "n_honesty_breaks": 32,
+    "break_rate": 1.0,
+    "brittle_names": [
+      "tmp",
+      "val",
+      "ptr",
+      "value"
+    ],
+    "safe_renames": [
+      "entry",
+      "rec",
+      "slot",
+      "item",
+      "elem",
+      "obj",
+      "node",
+      "sk_ref"
+    ],
+    "note": "looks_like_null_check flips under idiomatic rename of !tmp/!val/!ptr/!value; looks_like_nullable_return stays helper-anchored"
+  },
+  "cases": [
+    {
+      "case_id": "rename-null-tmp-to-entry-0000",
+      "original_line": "if (!tmp)",
+      "renamed_line": "if (!entry)",
+      "original_var": "tmp",
+      "renamed_var": "entry",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!tmp)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!tmp"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!entry)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-tmp-to-rec-0001",
+      "original_line": "if (!tmp)",
+      "renamed_line": "if (!rec)",
+      "original_var": "tmp",
+      "renamed_var": "rec",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!tmp)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!tmp"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!rec)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-tmp-to-slot-0002",
+      "original_line": "if (!tmp)",
+      "renamed_line": "if (!slot)",
+      "original_var": "tmp",
+      "renamed_var": "slot",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!tmp)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!tmp"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!slot)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-tmp-to-item-0003",
+      "original_line": "if (!tmp)",
+      "renamed_line": "if (!item)",
+      "original_var": "tmp",
+      "renamed_var": "item",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!tmp)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!tmp"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!item)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-tmp-to-elem-0004",
+      "original_line": "if (!tmp)",
+      "renamed_line": "if (!elem)",
+      "original_var": "tmp",
+      "renamed_var": "elem",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!tmp)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!tmp"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!elem)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-tmp-to-obj-0005",
+      "original_line": "if (!tmp)",
+      "renamed_line": "if (!obj)",
+      "original_var": "tmp",
+      "renamed_var": "obj",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!tmp)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!tmp"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!obj)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-tmp-to-node-0006",
+      "original_line": "if (!tmp)",
+      "renamed_line": "if (!node)",
+      "original_var": "tmp",
+      "renamed_var": "node",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!tmp)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!tmp"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!node)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-tmp-to-sk_ref-0007",
+      "original_line": "if (!tmp)",
+      "renamed_line": "if (!sk_ref)",
+      "original_var": "tmp",
+      "renamed_var": "sk_ref",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!tmp)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!tmp"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!sk_ref)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-val-to-entry-0100",
+      "original_line": "if (!val)",
+      "renamed_line": "if (!entry)",
+      "original_var": "val",
+      "renamed_var": "entry",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!val)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!val"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!entry)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-val-to-rec-0101",
+      "original_line": "if (!val)",
+      "renamed_line": "if (!rec)",
+      "original_var": "val",
+      "renamed_var": "rec",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!val)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!val"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!rec)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-val-to-slot-0102",
+      "original_line": "if (!val)",
+      "renamed_line": "if (!slot)",
+      "original_var": "val",
+      "renamed_var": "slot",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!val)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!val"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!slot)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-val-to-item-0103",
+      "original_line": "if (!val)",
+      "renamed_line": "if (!item)",
+      "original_var": "val",
+      "renamed_var": "item",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!val)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!val"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!item)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-val-to-elem-0104",
+      "original_line": "if (!val)",
+      "renamed_line": "if (!elem)",
+      "original_var": "val",
+      "renamed_var": "elem",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!val)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!val"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!elem)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-val-to-obj-0105",
+      "original_line": "if (!val)",
+      "renamed_line": "if (!obj)",
+      "original_var": "val",
+      "renamed_var": "obj",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!val)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!val"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!obj)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-val-to-node-0106",
+      "original_line": "if (!val)",
+      "renamed_line": "if (!node)",
+      "original_var": "val",
+      "renamed_var": "node",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!val)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!val"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!node)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-val-to-sk_ref-0107",
+      "original_line": "if (!val)",
+      "renamed_line": "if (!sk_ref)",
+      "original_var": "val",
+      "renamed_var": "sk_ref",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!val)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!val"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!sk_ref)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-ptr-to-entry-0200",
+      "original_line": "if (!ptr)",
+      "renamed_line": "if (!entry)",
+      "original_var": "ptr",
+      "renamed_var": "entry",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!ptr)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!ptr"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!entry)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-ptr-to-rec-0201",
+      "original_line": "if (!ptr)",
+      "renamed_line": "if (!rec)",
+      "original_var": "ptr",
+      "renamed_var": "rec",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!ptr)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!ptr"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!rec)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-ptr-to-slot-0202",
+      "original_line": "if (!ptr)",
+      "renamed_line": "if (!slot)",
+      "original_var": "ptr",
+      "renamed_var": "slot",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!ptr)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!ptr"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!slot)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-ptr-to-item-0203",
+      "original_line": "if (!ptr)",
+      "renamed_line": "if (!item)",
+      "original_var": "ptr",
+      "renamed_var": "item",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!ptr)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!ptr"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!item)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-ptr-to-elem-0204",
+      "original_line": "if (!ptr)",
+      "renamed_line": "if (!elem)",
+      "original_var": "ptr",
+      "renamed_var": "elem",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!ptr)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!ptr"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!elem)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-ptr-to-obj-0205",
+      "original_line": "if (!ptr)",
+      "renamed_line": "if (!obj)",
+      "original_var": "ptr",
+      "renamed_var": "obj",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!ptr)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!ptr"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!obj)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-ptr-to-node-0206",
+      "original_line": "if (!ptr)",
+      "renamed_line": "if (!node)",
+      "original_var": "ptr",
+      "renamed_var": "node",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!ptr)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!ptr"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!node)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-ptr-to-sk_ref-0207",
+      "original_line": "if (!ptr)",
+      "renamed_line": "if (!sk_ref)",
+      "original_var": "ptr",
+      "renamed_var": "sk_ref",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!ptr)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!ptr"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!sk_ref)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-value-to-entry-0300",
+      "original_line": "if (!value)",
+      "renamed_line": "if (!entry)",
+      "original_var": "value",
+      "renamed_var": "entry",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!value)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!val",
+          "!value"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!entry)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-value-to-rec-0301",
+      "original_line": "if (!value)",
+      "renamed_line": "if (!rec)",
+      "original_var": "value",
+      "renamed_var": "rec",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!value)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!val",
+          "!value"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!rec)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-value-to-slot-0302",
+      "original_line": "if (!value)",
+      "renamed_line": "if (!slot)",
+      "original_var": "value",
+      "renamed_var": "slot",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!value)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!val",
+          "!value"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!slot)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-value-to-item-0303",
+      "original_line": "if (!value)",
+      "renamed_line": "if (!item)",
+      "original_var": "value",
+      "renamed_var": "item",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!value)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!val",
+          "!value"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!item)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-value-to-elem-0304",
+      "original_line": "if (!value)",
+      "renamed_line": "if (!elem)",
+      "original_var": "value",
+      "renamed_var": "elem",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!value)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!val",
+          "!value"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!elem)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-value-to-obj-0305",
+      "original_line": "if (!value)",
+      "renamed_line": "if (!obj)",
+      "original_var": "value",
+      "renamed_var": "obj",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!value)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!val",
+          "!value"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!obj)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-value-to-node-0306",
+      "original_line": "if (!value)",
+      "renamed_line": "if (!node)",
+      "original_var": "value",
+      "renamed_var": "node",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!value)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!val",
+          "!value"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!node)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    },
+    {
+      "case_id": "rename-null-value-to-sk_ref-0307",
+      "original_line": "if (!value)",
+      "renamed_line": "if (!sk_ref)",
+      "original_var": "value",
+      "renamed_var": "sk_ref",
+      "original_null_check": true,
+      "renamed_null_check": false,
+      "helper_line": "entry = bpf_map_lookup_elem(&m, &key);",
+      "helper_anchored_stable": true,
+      "honesty_break": true,
+      "original_detail": {
+        "name": "looks_like_null_check",
+        "matched": true,
+        "text": "if (!value)",
+        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "matched_patterns": [
+          "!val",
+          "!value"
+        ]
+      },
+      "renamed_detail": {
+        "name": "looks_like_null_check",
+        "matched": false,
+        "text": "if (!sk_ref)",
+        "notes": "idiomatic null-ish check not recognized by bpfix heuristic",
+        "matched_patterns": []
+      }
+    }
+  ],
+  "upstream": {
+    "repo": "https://github.com/eunomia-bpf/bpfix",
+    "commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+    "predicate": "looks_like_null_check",
+    "name_shaped": [
+      "!tmp",
+      "!val",
+      "!ptr",
+      "!value"
+    ]
+  }
+}

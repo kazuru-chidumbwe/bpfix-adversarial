@@ -1,0 +1,285 @@
+{
+  "stamp_filter": "20260801T181331Z",
+  "seed": 42,
+  "n_rejecting_cases": 10,
+  "summary": {
+    "terminal_site": {
+      "hits": 3,
+      "n": 10,
+      "top1_rate": 0.3
+    },
+    "random_line": {
+      "hits": 1,
+      "n": 10,
+      "top1_rate": 0.1
+    },
+    "oracle_upper": {
+      "hits": 10,
+      "n": 10,
+      "top1_rate": 1.0
+    }
+  },
+  "rows": [
+    {
+      "case_id": "NP-idiomatic-nocheck",
+      "obligation": "NullablePointer",
+      "oracle_loss_code": 23,
+      "oracle_reject_code": 36,
+      "baselines": [
+        {
+          "baseline": "terminal_site",
+          "reported_line": 36,
+          "top1_vs_loss": false,
+          "distance_error": 13
+        },
+        {
+          "baseline": "random_line",
+          "reported_line": 8,
+          "top1_vs_loss": false,
+          "distance_error": 15
+        },
+        {
+          "baseline": "oracle_upper",
+          "reported_line": 23,
+          "top1_vs_loss": true,
+          "distance_error": 0
+        }
+      ]
+    },
+    {
+      "case_id": "PB-pad0",
+      "obligation": "PacketBounds",
+      "oracle_loss_code": 12,
+      "oracle_reject_code": 15,
+      "baselines": [
+        {
+          "baseline": "terminal_site",
+          "reported_line": 15,
+          "top1_vs_loss": false,
+          "distance_error": 3
+        },
+        {
+          "baseline": "random_line",
+          "reported_line": 1,
+          "top1_vs_loss": false,
+          "distance_error": 11
+        },
+        {
+          "baseline": "oracle_upper",
+          "reported_line": 12,
+          "top1_vs_loss": true,
+          "distance_error": 0
+        }
+      ]
+    },
+    {
+      "case_id": "PB-pad32",
+      "obligation": "PacketBounds",
+      "oracle_loss_code": 12,
+      "oracle_reject_code": 50,
+      "baselines": [
+        {
+          "baseline": "terminal_site",
+          "reported_line": 50,
+          "top1_vs_loss": false,
+          "distance_error": 38
+        },
+        {
+          "baseline": "random_line",
+          "reported_line": 48,
+          "top1_vs_loss": false,
+          "distance_error": 36
+        },
+        {
+          "baseline": "oracle_upper",
+          "reported_line": 12,
+          "top1_vs_loss": true,
+          "distance_error": 0
+        }
+      ]
+    },
+    {
+      "case_id": "PB-pad8",
+      "obligation": "PacketBounds",
+      "oracle_loss_code": 12,
+      "oracle_reject_code": 26,
+      "baselines": [
+        {
+          "baseline": "terminal_site",
+          "reported_line": 26,
+          "top1_vs_loss": false,
+          "distance_error": 14
+        },
+        {
+          "baseline": "random_line",
+          "reported_line": 9,
+          "top1_vs_loss": false,
+          "distance_error": 3
+        },
+        {
+          "baseline": "oracle_upper",
+          "reported_line": 12,
+          "top1_vs_loss": true,
+          "distance_error": 0
+        }
+      ]
+    },
+    {
+      "case_id": "PP-pad0",
+      "obligation": "PointerProvenance",
+      "oracle_loss_code": 14,
+      "oracle_reject_code": 17,
+      "baselines": [
+        {
+          "baseline": "terminal_site",
+          "reported_line": 15,
+          "top1_vs_loss": true,
+          "distance_error": 0
+        },
+        {
+          "baseline": "random_line",
+          "reported_line": 8,
+          "top1_vs_loss": false,
+          "distance_error": 6
+        },
+        {
+          "baseline": "oracle_upper",
+          "reported_line": 14,
+          "top1_vs_loss": true,
+          "distance_error": 0
+        }
+      ]
+    },
+    {
+      "case_id": "PP-pad32",
+      "obligation": "PointerProvenance",
+      "oracle_loss_code": 14,
+      "oracle_reject_code": 52,
+      "baselines": [
+        {
+          "baseline": "terminal_site",
+          "reported_line": 15,
+          "top1_vs_loss": true,
+          "distance_error": 0
+        },
+        {
+          "baseline": "random_line",
+          "reported_line": 15,
+          "top1_vs_loss": true,
+          "distance_error": 0
+        },
+        {
+          "baseline": "oracle_upper",
+          "reported_line": 14,
+          "top1_vs_loss": true,
+          "distance_error": 0
+        }
+      ]
+    },
+    {
+      "case_id": "PP-pad8",
+      "obligation": "PointerProvenance",
+      "oracle_loss_code": 14,
+      "oracle_reject_code": 28,
+      "baselines": [
+        {
+          "baseline": "terminal_site",
+          "reported_line": 15,
+          "top1_vs_loss": true,
+          "distance_error": 0
+        },
+        {
+          "baseline": "random_line",
+          "reported_line": 5,
+          "top1_vs_loss": false,
+          "distance_error": 9
+        },
+        {
+          "baseline": "oracle_upper",
+          "reported_line": 14,
+          "top1_vs_loss": true,
+          "distance_error": 0
+        }
+      ]
+    },
+    {
+      "case_id": "SR-pad0",
+      "obligation": "ScalarRange",
+      "oracle_loss_code": 11,
+      "oracle_reject_code": 13,
+      "baselines": [
+        {
+          "baseline": "terminal_site",
+          "reported_line": 13,
+          "top1_vs_loss": false,
+          "distance_error": 2
+        },
+        {
+          "baseline": "random_line",
+          "reported_line": 12,
+          "top1_vs_loss": false,
+          "distance_error": 1
+        },
+        {
+          "baseline": "oracle_upper",
+          "reported_line": 11,
+          "top1_vs_loss": true,
+          "distance_error": 0
+        }
+      ]
+    },
+    {
+      "case_id": "SR-pad32",
+      "obligation": "ScalarRange",
+      "oracle_loss_code": 11,
+      "oracle_reject_code": 48,
+      "baselines": [
+        {
+          "baseline": "terminal_site",
+          "reported_line": 48,
+          "top1_vs_loss": false,
+          "distance_error": 37
+        },
+        {
+          "baseline": "random_line",
+          "reported_line": 7,
+          "top1_vs_loss": false,
+          "distance_error": 4
+        },
+        {
+          "baseline": "oracle_upper",
+          "reported_line": 11,
+          "top1_vs_loss": true,
+          "distance_error": 0
+        }
+      ]
+    },
+    {
+      "case_id": "SR-pad8",
+      "obligation": "ScalarRange",
+      "oracle_loss_code": 11,
+      "oracle_reject_code": 24,
+      "baselines": [
+        {
+          "baseline": "terminal_site",
+          "reported_line": 24,
+          "top1_vs_loss": false,
+          "distance_error": 13
+        },
+        {
+          "baseline": "random_line",
+          "reported_line": 22,
+          "top1_vs_loss": false,
+          "distance_error": 11
+        },
+        {
+          "baseline": "oracle_upper",
+          "reported_line": 11,
+          "top1_vs_loss": true,
+          "distance_error": 0
+        }
+      ]
+    }
+  ],
+  "note": "Offline scoring only. terminal_site = VS stop-site from sc_vs_honesty; random_line = Uniform{1..reject_code} seed 42; oracle_upper = injection code."
+}

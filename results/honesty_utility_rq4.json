@@ -1,0 +1,79 @@
+{
+  "utc": "2026-08-07T11:09:11.579372+00:00",
+  "status": "llm_ollama_pinned",
+  "backend": "ollama",
+  "backend_cli": "ollama",
+  "model": "llama3.2:3b",
+  "model_digest": "a80c4f17acd55265feec403c7aef86be0c25983ab279d83f3bcd3abbcb5b8b72",
+  "temperature": 0.0,
+  "seed": 42,
+  "openai_package": null,
+  "determinism_caveat": "Local Ollama runs are best-effort reproducible: we pin model *digest*, temperature=0, and seed, and freeze prompts/response dumps. GPU/driver/Ollama-version drift can still change tokens. Treat the committed inset + lab ACCEPT as the SoftwareX evidence; re-runs should match digest and structural checks even if token text differs slightly.",
+  "mutant": "mutants/NullablePointer/NP-idiomatic-nocheck.c",
+  "mutant_sha256": "1fc06b34775446e33218c918529c5ad66f5f09a282e32df26014a7c58302c9bb",
+  "system_prompt_sha256": "aabd2365834760d832efe21e7bf10aaac5749bba5665dbee81b3a3b0c9fed3f6",
+  "prompt_sha256": "e56cb2b25bd0fce1e69b234b3a146b84d86ba541d25f7a118a2b5c68d74d0f70",
+  "repaired_sha256": "7b528c94a7cae89d046ccbb763615e178e00b2985f06fb523ca3c761b5cd9349",
+  "repaired_path": "mutants/NullablePointer/NP-idiomatic-nocheck-repaired-ollama.c",
+  "api": {
+    "model_tag": "llama3.2:3b",
+    "digest": "a80c4f17acd55265feec403c7aef86be0c25983ab279d83f3bcd3abbcb5b8b72",
+    "size_bytes": 2019393189,
+    "details": {
+      "parent_model": "",
+      "format": "gguf",
+      "family": "llama",
+      "families": [
+        "llama"
+      ],
+      "parameter_size": "3.2B",
+      "quantization_level": "Q4_K_M"
+    },
+    "modelfile_sha256": "ab6c8219231a4219952656518af44345089f145e077fce628b6da73e67568e40",
+    "parameters": "stop                           \"<|start_header_id|>\"\nstop                           \"<|end_header_id|>\"\nstop                           \"<|eot_id|>\"",
+    "ollama_host": "http://127.0.0.1:11434",
+    "seed": 42,
+    "temperature": 0.0,
+    "total_duration": 59120477300,
+    "load_duration": 6632301600,
+    "prompt_eval_count": 497,
+    "eval_count": 342,
+    "done_reason": "stop",
+    "determinism_caveat": "Local Ollama runs are best-effort reproducible: we pin model *digest*, temperature=0, and seed, and freeze prompts/response dumps. GPU/driver/Ollama-version drift can still change tokens. Treat the committed inset + lab ACCEPT as the SoftwareX evidence; re-runs should match digest and structural checks even if token text differs slightly."
+  },
+  "oracle": {
+    "loss_line_approx": 22,
+    "reject_line_approx": 36,
+    "wrong_tip_line": 36
+  },
+  "checks": {
+    "repair_has_idiomatic_null_check": true,
+    "repair_retains_use": true,
+    "structural_pass": true,
+    "fed_localization_matches_oracle_loss": false,
+    "separator_class": "A_wrong_localization_repair_succeeds"
+  },
+  "artifacts": {
+    "system_prompt": "results/rq4_ollama/system_prompt.txt",
+    "user_prompt": "results/rq4_ollama/user_prompt.txt",
+    "response": "results/rq4_ollama/response_raw.txt",
+    "diff": "results/rq4_ollama/repair.diff",
+    "api_meta": "results/rq4_ollama/api_meta.json",
+    "model_pin": "results/rq4_ollama/model_pin.json"
+  },
+  "paper_takeaway": "Despite wrong localization tip, pinned Ollama llama3.2:3b (digest a80c4f17acd5\u2026, temp=0.0, seed=42) inserted if (!entry) \u2014 honesty\u2260utility class A. Local determinism is best-effort; see inset caveat.",
+  "lab": {
+    "repaired_verdict": "ACCEPT",
+    "seed_verdict": "REJECT",
+    "prog_type": "socket",
+    "repaired_log": "fixtures/logs/captured/NP-idiomatic-nocheck-repaired-ollama.20260807T112057Z.log",
+    "seed_log": "fixtures/logs/captured/NP-idiomatic-nocheck.20260807T112100Z.log",
+    "env_pin": "results/env_pins/app-test-server.20260807T112233Z.env.txt",
+    "host": "app-test-server",
+    "kernel": "6.8.0-136-generic",
+    "os": "Ubuntu 24.04.3 LTS",
+    "clang": "Ubuntu clang version 18.1.3 (1ubuntu1)",
+    "bpftool": "bpftool v7.4.0",
+    "note": "RQ4 load verified 2026-08-07 on reachable alternate host app-test-server (Ubuntu 24.04 / clang 18.1.3 / bpftool v7.4.0). SoftwareX primary template-oracle pin remains lab-server Debian 13 / 6.12.86+deb13-amd64 / clang 19.1.7 / bpftool v7.5.0 (results/env_pins/lab-test.*)."
+  }
+}

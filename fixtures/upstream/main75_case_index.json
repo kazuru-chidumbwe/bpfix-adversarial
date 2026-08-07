@@ -1,0 +1,308 @@
+{
+  "upstream_repo": "https://github.com/eunomia-bpf/bpfix",
+  "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+  "split": "bpfix-bench/splits/main.txt",
+  "n_cases": 75,
+  "cases": [
+    {
+      "upstream_case_id": "alu32_pointer_cookie_001",
+      "upstream_proof_obligation": "ScalarRange"
+    },
+    {
+      "upstream_case_id": "dynptr_slice_missing_null_check_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "dynptr_slice_short_mem_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "dynptr_slice_stack_buffer_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "dynptr_stack_copy_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "dynptr_uninitialized_slice_arg_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "helper_csum_diff_stack_len_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "helper_map_arg_stack_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "map_value_branch_merge_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "map_value_index_guard_oob_001",
+      "upstream_proof_obligation": "ScalarRange"
+    },
+    {
+      "upstream_case_id": "map_value_inline_cookie_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "map_value_pointer_cookie_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "map_value_signed_index_001",
+      "upstream_proof_obligation": "ScalarRange"
+    },
+    {
+      "upstream_case_id": "map_value_spill_cookie_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "packet_checked_wrong_base_001",
+      "upstream_proof_obligation": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "packet_eth_off_by_one_001",
+      "upstream_proof_obligation": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "packet_ihl_udp_undercheck_001",
+      "upstream_proof_obligation": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "packet_inline_return_cookie_001",
+      "upstream_proof_obligation": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "packet_l4_branch_cookie_001",
+      "upstream_proof_obligation": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "packet_macro_cookie_001",
+      "upstream_proof_obligation": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "packet_macro_payload_undercheck_001",
+      "upstream_proof_obligation": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "packet_vlan_cookie_001",
+      "upstream_proof_obligation": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "perf_event_packet_payload_001",
+      "upstream_proof_obligation": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "ringbuf_branch_cookie_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_double_submit_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_missing_null_check_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_nested_missing_null_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_nested_reserve_leak_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_pointer_cookie_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_ref_leak_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_stack_discard_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_stack_submit_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_submit_after_discard_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_two_record_cookie_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "rs_actplane_cap_dynptr_payload_null_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "rs_actplane_lsm_bpf_ringbuf_merge_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "rs_actplane_mmap_pending_merge_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_actplane_policy_map_merge_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_actplane_taint_loop_count_bound_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_agentsight_fs_overflow_counter_merge_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_agentsight_process_ringbuf_null_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "rs_agentsight_stdiocap_user_copy_len_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_agentsight_write_ctx_merge_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_bpftime_opensnoop_ringbuf_filter_ref_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "rs_bpftime_opensnoop_stack_wrong_prog_type_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_bpftime_sslsniff_perf_copy_len_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_cilium_change_proto_stale_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_cilium_fib_lookup_param_len_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_cilium_ip_options_traceid_payload_bound_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_cilium_ipv6_exthdr_l4_offset_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_cilium_mcast_igmpv3_grec_bound_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_cilium_proxy_skc_assign_ref_leak_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_cilium_srv6_segment_bound_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_datrail_browsertrace_start_ns_merge_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_datrail_cgroup_filter_key_width_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_eunomia_energy_runtime_merge_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_eunomia_http_doff_copy_bound_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_eunomia_wq_container_map_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_nccl_cpu_observer_slot_merge_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_tetragon_data_event_size_guard_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_tutorial_dynptr_tc_ref_leak_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_tutorial_memleak_free_info_merge_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_tutorial_pidhide_tailcall_map_type_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_tutorial_user_ringbuf_dynptr_merge_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "rs_xdp_tools_ihl_macro_wrong_base_001",
+      "upstream_proof_obligation": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "rs_xdp_tools_load_bytes_stack_len_001",
+      "upstream_proof_obligation": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "rs_xdp_tools_xdpdump_perf_map_type_001",
+      "upstream_proof_obligation": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "rs_xdp_tools_xdpfilt_udp_macro_bound_001",
+      "upstream_proof_obligation": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "rs_xdp_tools_xdpsock_redirect_map_type_001",
+      "upstream_proof_obligation": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "subprog_adjust_tail_stale_001",
+      "upstream_proof_obligation": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "subprog_map_value_null_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "xdp_adjust_head_map_value_001",
+      "upstream_proof_obligation": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "xdp_adjust_head_ringbuf_001",
+      "upstream_proof_obligation": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "xdp_adjust_head_stale_001",
+      "upstream_proof_obligation": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "xdp_adjust_tail_stale_001",
+      "upstream_proof_obligation": "PacketBounds"
+    }
+  ]
+}

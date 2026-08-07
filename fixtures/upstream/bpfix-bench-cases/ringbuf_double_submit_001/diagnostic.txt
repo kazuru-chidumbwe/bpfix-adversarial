@@ -1,0 +1,19 @@
+error[BPFIX-E006]: pointer type proof is missing
+  = class: source_bug
+  = confidence: medium
+  = diagnostic: supported, help: repair_hint, span: exact_pc
+  = next action: provenance
+  --> buggy.bpf.c:53
+   |
+39 | if ((void *)(eth + 1) > data_end)
+   | --------------------------------- nearby source context for pointer provenance
+51 | if (is_ip) {
+   | ------------ nearby source context for pointer provenance
+53 | audit->mark = 99;
+   | ^^^^^^^^^^^^^^^^^ rejected here: verifier sees a scalar where a pointer is required
+   |
+   = verifier[74]: R7 invalid mem access 'scalar'
+   = note: nearest BPF instruction pc 24
+   = note: parsed 20 verifier state snapshots
+   = required proof: preserve a verifier-recognized pointer type at the operation that requires a pointer
+help: Keep the final access on a verifier-tracked pointer; rederive it from a checked base after scalar work.

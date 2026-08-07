@@ -1,0 +1,353 @@
+{
+  "rows": [
+    {
+      "obligation": "NullablePointer",
+      "case_id": "NP-brittle-pad0",
+      "pad": 0,
+      "oracle_loss_line": 18,
+      "oracle_reject_line": 21,
+      "src_sha256": "f44ed93df54d7d2271305021aec67cbbdd87ab4477213246ab7ca297d3be3381",
+      "note": "SC name-list hit expected (!ptr)",
+      "log_tier": "captured",
+      "rejected_or_error": true,
+      "log_bytes": 2659,
+      "log_sha256": "6ef5414b7ceca3a4ba4f41454bb9522d478d83e7b6804a44ce3e50c6d075faf2",
+      "log_path": "fixtures/logs/captured/NP-brittle-pad0.20260801T181331Z.log",
+      "log_head": [
+        "libbpf: loading object from /tmp/bpfix-adv-objs/NP-brittle-pad0.o",
+        "libbpf: elf: section(3) socket, size 88, link 0, flags 6, type=1",
+        "libbpf: sec 'socket': found program 'np_ptr_pad0' at insn offset 0 (0 bytes), code size 11 insns (88 bytes)"
+      ]
+    },
+    {
+      "obligation": "NullablePointer",
+      "case_id": "NP-brittle-pad32",
+      "pad": 32,
+      "oracle_loss_line": 18,
+      "oracle_reject_line": 56,
+      "src_sha256": "7e8cd5b497b007f3e097a0de92d35d16d9aea657c0fe8e6068274e7260d883ee",
+      "note": "SC name-list hit expected (!ptr)",
+      "log_tier": "captured",
+      "rejected_or_error": true,
+      "log_bytes": 2671,
+      "log_sha256": "7b81929baf37e80ba0c1d76aa46e2321cb103f5d87e97aa5325861d845ae13d0",
+      "log_path": "fixtures/logs/captured/NP-brittle-pad32.20260801T181331Z.log",
+      "log_head": [
+        "libbpf: loading object from /tmp/bpfix-adv-objs/NP-brittle-pad32.o",
+        "libbpf: elf: section(3) socket, size 88, link 0, flags 6, type=1",
+        "libbpf: sec 'socket': found program 'np_ptr_pad32' at insn offset 0 (0 bytes), code size 11 insns (88 bytes)"
+      ]
+    },
+    {
+      "obligation": "NullablePointer",
+      "case_id": "NP-brittle-pad8",
+      "pad": 8,
+      "oracle_loss_line": 18,
+      "oracle_reject_line": 32,
+      "src_sha256": "e143834d349dd6d85b5aa81a76d3b3d8b23f939072ed41744d2dc535fcfbd7ae",
+      "note": "SC name-list hit expected (!ptr)",
+      "log_tier": "captured",
+      "rejected_or_error": true,
+      "log_bytes": 2659,
+      "log_sha256": "ecc7c7d84085cb4363b2b55dcaa7ed1a377b5092ea2b439ab520f5230b8af36a",
+      "log_path": "fixtures/logs/captured/NP-brittle-pad8.20260801T181331Z.log",
+      "log_head": [
+        "libbpf: loading object from /tmp/bpfix-adv-objs/NP-brittle-pad8.o",
+        "libbpf: elf: section(3) socket, size 88, link 0, flags 6, type=1",
+        "libbpf: sec 'socket': found program 'np_ptr_pad8' at insn offset 0 (0 bytes), code size 11 insns (88 bytes)"
+      ]
+    },
+    {
+      "obligation": "NullablePointer",
+      "case_id": "NP-idiomatic-nocheck-repaired-llm",
+      "pad": null,
+      "oracle_loss_line": 24,
+      "oracle_reject_line": 37,
+      "src_sha256": "05bbf97135709dff5e37e8d7c3fb9025199f04190a336b20efb562fe8448eb16",
+      "note": "RQ4 repaired program (wrong-tip protocol)",
+      "log_tier": "missing",
+      "rejected_or_error": null,
+      "log_sha256": null,
+      "log_path": null
+    },
+    {
+      "obligation": "NullablePointer",
+      "case_id": "NP-idiomatic-nocheck-repaired-ollama",
+      "pad": null,
+      "oracle_loss_line": null,
+      "oracle_reject_line": null,
+      "src_sha256": "7b528c94a7cae89d046ccbb763615e178e00b2985f06fb523ca3c761b5cd9349",
+      "note": "RQ4 repaired program (wrong-tip protocol)",
+      "log_tier": "captured",
+      "rejected_or_error": true,
+      "log_bytes": 1825,
+      "log_sha256": "7f2d340b18eb93eb94aa6522083a450dadc686e23c7f33d46c49ca587e737911",
+      "log_path": "fixtures/logs/captured/NP-idiomatic-nocheck-repaired-ollama.20260807T112057Z.log",
+      "log_head": [
+        "ACCEPT",
+        "",
+        "EXIT:0"
+      ]
+    },
+    {
+      "obligation": "NullablePointer",
+      "case_id": "NP-idiomatic-nocheck-repaired",
+      "pad": null,
+      "oracle_loss_line": 24,
+      "oracle_reject_line": 37,
+      "src_sha256": "05bbf97135709dff5e37e8d7c3fb9025199f04190a336b20efb562fe8448eb16",
+      "note": "RQ4 repaired program (wrong-tip protocol)",
+      "log_tier": "missing",
+      "rejected_or_error": null,
+      "log_sha256": null,
+      "log_path": null
+    },
+    {
+      "obligation": "NullablePointer",
+      "case_id": "NP-idiomatic-nocheck",
+      "pad": null,
+      "oracle_loss_line": 22,
+      "oracle_reject_line": 35,
+      "src_sha256": "1fc06b34775446e33218c918529c5ad66f5f09a282e32df26014a7c58302c9bb",
+      "note": "RQ4 failing seed (missing check)",
+      "log_tier": "captured",
+      "rejected_or_error": true,
+      "log_bytes": 2697,
+      "log_sha256": "84584b7274c99380d58509e35accd323125edc9f10c4b42485123b90f47d845b",
+      "log_path": "fixtures/logs/captured/NP-idiomatic-nocheck.20260801T181331Z.log",
+      "log_head": [
+        "libbpf: loading object from /tmp/bpfix-adv-objs/NP-idiomatic-nocheck.o",
+        "libbpf: elf: section(3) socket, size 72, link 0, flags 6, type=1",
+        "libbpf: sec 'socket': found program 'np_entry_nocheck' at insn offset 0 (0 bytes), code size 9 insns (72 bytes)"
+      ]
+    },
+    {
+      "obligation": "NullablePointer",
+      "case_id": "NP-idiomatic-pad0",
+      "pad": 0,
+      "oracle_loss_line": 18,
+      "oracle_reject_line": 21,
+      "src_sha256": "cc181551296d981d44cbf5da80a111e304b9e6857b680bae526e19230dbdc011",
+      "note": "SC name-list miss expected (!entry)",
+      "log_tier": "captured",
+      "rejected_or_error": true,
+      "log_bytes": 2689,
+      "log_sha256": "a579a464e6ee7aaaff66a1b0034491a18892a86f075c2c2c784930efa7e09a21",
+      "log_path": "fixtures/logs/captured/NP-idiomatic-pad0.20260801T181331Z.log",
+      "log_head": [
+        "libbpf: loading object from /tmp/bpfix-adv-objs/NP-idiomatic-pad0.o",
+        "libbpf: elf: section(3) socket, size 88, link 0, flags 6, type=1",
+        "libbpf: sec 'socket': found program 'np_entry_pad0' at insn offset 0 (0 bytes), code size 11 insns (88 bytes)"
+      ]
+    },
+    {
+      "obligation": "NullablePointer",
+      "case_id": "NP-idiomatic-pad32",
+      "pad": 32,
+      "oracle_loss_line": 18,
+      "oracle_reject_line": 56,
+      "src_sha256": "9f2d780f86bed10629a5e4739a47ad95e3cb2bca9f796b0ee1d27560192a5dea",
+      "note": "SC name-list miss expected (!entry)",
+      "log_tier": "captured",
+      "rejected_or_error": true,
+      "log_bytes": 2701,
+      "log_sha256": "d25136325d9a3631e6edd92ef585cbf1b726dd5d5d8e6f3cbe4d8d8cf4802d54",
+      "log_path": "fixtures/logs/captured/NP-idiomatic-pad32.20260801T181331Z.log",
+      "log_head": [
+        "libbpf: loading object from /tmp/bpfix-adv-objs/NP-idiomatic-pad32.o",
+        "libbpf: elf: section(3) socket, size 88, link 0, flags 6, type=1",
+        "libbpf: sec 'socket': found program 'np_entry_pad32' at insn offset 0 (0 bytes), code size 11 insns (88 bytes)"
+      ]
+    },
+    {
+      "obligation": "NullablePointer",
+      "case_id": "NP-idiomatic-pad8",
+      "pad": 8,
+      "oracle_loss_line": 18,
+      "oracle_reject_line": 32,
+      "src_sha256": "ba75972cc6aff049498aecf5c9cd56ecc5f7c4b2cc2bb18bcc7202899241029e",
+      "note": "SC name-list miss expected (!entry)",
+      "log_tier": "captured",
+      "rejected_or_error": true,
+      "log_bytes": 2689,
+      "log_sha256": "c7a70e2eb136c6ff2bc8285110ac4641694ff07e071d0f54a9ea76684927b04a",
+      "log_path": "fixtures/logs/captured/NP-idiomatic-pad8.20260801T181331Z.log",
+      "log_head": [
+        "libbpf: loading object from /tmp/bpfix-adv-objs/NP-idiomatic-pad8.o",
+        "libbpf: elf: section(3) socket, size 88, link 0, flags 6, type=1",
+        "libbpf: sec 'socket': found program 'np_entry_pad8' at insn offset 0 (0 bytes), code size 11 insns (88 bytes)"
+      ]
+    },
+    {
+      "obligation": "PacketBounds",
+      "case_id": "PB-pad0",
+      "pad": 0,
+      "oracle_loss_line": 11,
+      "oracle_reject_line": 14,
+      "src_sha256": "ced0f63a1ba045096b757e9fa5fc597f691d395a8f3ab7a60aee0640c8150c05",
+      "note": "packet under-check template",
+      "log_tier": "captured",
+      "rejected_or_error": true,
+      "log_bytes": 1916,
+      "log_sha256": "f9c932fac4d1b9e760d06c1f788efe93d976cdcca3ca48a7af9d373080b1a133",
+      "log_path": "fixtures/logs/captured/PB-pad0.20260801T181331Z.log",
+      "log_head": [
+        "libbpf: loading object from /tmp/bpfix-adv-objs/PB-pad0.o",
+        "libbpf: elf: section(3) xdp, size 64, link 0, flags 6, type=1",
+        "libbpf: sec 'xdp': found program 'pb_pad0' at insn offset 0 (0 bytes), code size 8 insns (64 bytes)"
+      ]
+    },
+    {
+      "obligation": "PacketBounds",
+      "case_id": "PB-pad32",
+      "pad": 32,
+      "oracle_loss_line": 11,
+      "oracle_reject_line": 49,
+      "src_sha256": "2b19fa9631ac697e6ea082b65928bd03c026c771e6abd6b3741226d1cc176722",
+      "note": "packet under-check template",
+      "log_tier": "captured",
+      "rejected_or_error": true,
+      "log_bytes": 1930,
+      "log_sha256": "da86563fc0ff4e6ca56e69fc6ab0398852dffedc4f3d7a07db3cf2e138a8a0f8",
+      "log_path": "fixtures/logs/captured/PB-pad32.20260801T181331Z.log",
+      "log_head": [
+        "libbpf: loading object from /tmp/bpfix-adv-objs/PB-pad32.o",
+        "libbpf: elf: section(3) xdp, size 64, link 0, flags 6, type=1",
+        "libbpf: sec 'xdp': found program 'pb_pad32' at insn offset 0 (0 bytes), code size 8 insns (64 bytes)"
+      ]
+    },
+    {
+      "obligation": "PacketBounds",
+      "case_id": "PB-pad8",
+      "pad": 8,
+      "oracle_loss_line": 11,
+      "oracle_reject_line": 25,
+      "src_sha256": "c274c866d8d09fc5bd39eeca6776f5f9d4b56f8a1c3708664db505bc8bfefb1a",
+      "note": "packet under-check template",
+      "log_tier": "captured",
+      "rejected_or_error": true,
+      "log_bytes": 1916,
+      "log_sha256": "04566b403ec9fdc08a77874216b7a843d7747a503b8ad38ddeacdbcf9fc2112d",
+      "log_path": "fixtures/logs/captured/PB-pad8.20260801T181331Z.log",
+      "log_head": [
+        "libbpf: loading object from /tmp/bpfix-adv-objs/PB-pad8.o",
+        "libbpf: elf: section(3) xdp, size 64, link 0, flags 6, type=1",
+        "libbpf: sec 'xdp': found program 'pb_pad8' at insn offset 0 (0 bytes), code size 8 insns (64 bytes)"
+      ]
+    },
+    {
+      "obligation": "PointerProvenance",
+      "case_id": "PP-pad0",
+      "pad": 0,
+      "oracle_loss_line": 13,
+      "oracle_reject_line": 16,
+      "src_sha256": "dfbd614d27d712ce94c3c8246c54f5df95a7feec2666a5e6b222e5e56ac37fc5",
+      "note": "pkt\u2295prandom wash (reject: unbounded pkt math)",
+      "log_tier": "captured",
+      "rejected_or_error": true,
+      "log_bytes": 2248,
+      "log_sha256": "671448ef6c90c0f75d57b8ece2220fa4294c6c0a48d1064c0f22a354e423f154",
+      "log_path": "fixtures/logs/captured/PP-pad0.20260801T181331Z.log",
+      "log_head": [
+        "libbpf: loading object from /tmp/bpfix-adv-objs/PP-pad0.o",
+        "libbpf: elf: section(3) xdp, size 96, link 0, flags 6, type=1",
+        "libbpf: sec 'xdp': found program 'pp_pad0' at insn offset 0 (0 bytes), code size 12 insns (96 bytes)"
+      ]
+    },
+    {
+      "obligation": "PointerProvenance",
+      "case_id": "PP-pad32",
+      "pad": 32,
+      "oracle_loss_line": 13,
+      "oracle_reject_line": 51,
+      "src_sha256": "c713d4bd59f53c7c3d3005c362aca0d50137e3c4e57c7d1c157fd7b304f7e4d2",
+      "note": "pkt\u2295prandom wash (reject: unbounded pkt math)",
+      "log_tier": "captured",
+      "rejected_or_error": true,
+      "log_bytes": 2262,
+      "log_sha256": "4782eda2d95ca9e0d3a635d636d6167d98e8b97da21e5d03ef690e5f9f956be1",
+      "log_path": "fixtures/logs/captured/PP-pad32.20260801T181331Z.log",
+      "log_head": [
+        "libbpf: loading object from /tmp/bpfix-adv-objs/PP-pad32.o",
+        "libbpf: elf: section(3) xdp, size 96, link 0, flags 6, type=1",
+        "libbpf: sec 'xdp': found program 'pp_pad32' at insn offset 0 (0 bytes), code size 12 insns (96 bytes)"
+      ]
+    },
+    {
+      "obligation": "PointerProvenance",
+      "case_id": "PP-pad8",
+      "pad": 8,
+      "oracle_loss_line": 13,
+      "oracle_reject_line": 27,
+      "src_sha256": "e2e3139cee6e25293e1f8114856c8fd700096327680f795c246114fc355ba82a",
+      "note": "pkt\u2295prandom wash (reject: unbounded pkt math)",
+      "log_tier": "captured",
+      "rejected_or_error": true,
+      "log_bytes": 2248,
+      "log_sha256": "0517861591a1a0dfdad959ceb49be412628437871d936076533d38f609d47b97",
+      "log_path": "fixtures/logs/captured/PP-pad8.20260801T181331Z.log",
+      "log_head": [
+        "libbpf: loading object from /tmp/bpfix-adv-objs/PP-pad8.o",
+        "libbpf: elf: section(3) xdp, size 96, link 0, flags 6, type=1",
+        "libbpf: sec 'xdp': found program 'pp_pad8' at insn offset 0 (0 bytes), code size 12 insns (96 bytes)"
+      ]
+    },
+    {
+      "obligation": "ScalarRange",
+      "case_id": "SR-pad0",
+      "pad": 0,
+      "oracle_loss_line": 10,
+      "oracle_reject_line": 12,
+      "src_sha256": "468bcc6fef07e2fbebc66750e92193e42aae25e1e34f3355e8be8d4c7d92fbdc",
+      "note": "unbound stack[prandom] (reject: unbounded mem)",
+      "log_tier": "captured",
+      "rejected_or_error": true,
+      "log_bytes": 3179,
+      "log_sha256": "da0ce735831d92d06ff213aff75014c725b1c37e289078ea9148c0aa429bda6c",
+      "log_path": "fixtures/logs/captured/SR-pad0.20260801T181331Z.log",
+      "log_head": [
+        "libbpf: loading object from /tmp/bpfix-adv-objs/SR-pad0.o",
+        "libbpf: elf: section(3) socket, size 72, link 0, flags 6, type=1",
+        "libbpf: sec 'socket': found program 'sr_pad0' at insn offset 0 (0 bytes), code size 9 insns (72 bytes)"
+      ]
+    },
+    {
+      "obligation": "ScalarRange",
+      "case_id": "SR-pad32",
+      "pad": 32,
+      "oracle_loss_line": 10,
+      "oracle_reject_line": 47,
+      "src_sha256": "73d67753955ca6bd112d9ebf7aab4da8e8f54c1addbbff34cc0831b63a55a7e0",
+      "note": "unbound stack[prandom] (reject: unbounded mem)",
+      "log_tier": "captured",
+      "rejected_or_error": true,
+      "log_bytes": 3190,
+      "log_sha256": "fa42f2ab68e9536297d8f20e023c84a15b151b4ab55f55ab7bf791463788a0b4",
+      "log_path": "fixtures/logs/captured/SR-pad32.20260801T181331Z.log",
+      "log_head": [
+        "libbpf: loading object from /tmp/bpfix-adv-objs/SR-pad32.o",
+        "libbpf: elf: section(3) socket, size 72, link 0, flags 6, type=1",
+        "libbpf: sec 'socket': found program 'sr_pad32' at insn offset 0 (0 bytes), code size 9 insns (72 bytes)"
+      ]
+    },
+    {
+      "obligation": "ScalarRange",
+      "case_id": "SR-pad8",
+      "pad": 8,
+      "oracle_loss_line": 10,
+      "oracle_reject_line": 23,
+      "src_sha256": "44e5bc74486c59aac12d9d36b548a886ea9541642e13a0723e4a2538636760c6",
+      "note": "unbound stack[prandom] (reject: unbounded mem)",
+      "log_tier": "captured",
+      "rejected_or_error": true,
+      "log_bytes": 3179,
+      "log_sha256": "29f92d41180e07b78e8fbf6942767436cdeac39a85596f94c2fb44140d823419",
+      "log_path": "fixtures/logs/captured/SR-pad8.20260801T181331Z.log",
+      "log_head": [
+        "libbpf: loading object from /tmp/bpfix-adv-objs/SR-pad8.o",
+        "libbpf: elf: section(3) socket, size 72, link 0, flags 6, type=1",
+        "libbpf: sec 'socket': found program 'sr_pad8' at insn offset 0 (0 bytes), code size 9 insns (72 bytes)"
+      ]
+    }
+  ]
+}

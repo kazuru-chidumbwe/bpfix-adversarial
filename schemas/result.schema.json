@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kazuru-chidumbwe/bpfix-adversarial/schemas/result.schema.json",
+  "title": "BpfixAdversarialResult",
+  "type": "object",
+  "required": [
+    "case_id",
+    "tool",
+    "reported",
+    "scores"
+  ],
+  "properties": {
+    "case_id": { "type": "string" },
+    "tool": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "commit": { "type": "string" }
+      }
+    },
+    "lab": {
+      "type": "object",
+      "properties": {
+        "uname_r": { "type": "string" },
+        "clang": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "reported": {
+      "type": "object",
+      "properties": {
+        "loss_insn": { "type": ["integer", "null"] },
+        "reject_insn": { "type": ["integer", "null"] },
+        "obligation": { "type": ["string", "null"] },
+        "evidence_tier": {
+          "type": ["string", "null"],
+          "enum": ["SourceComment", "VerifierState", null]
+        },
+        "raw_diagnostic": { "type": "string" }
+      }
+    },
+    "scores": {
+      "type": "object",
+      "required": ["top1_loss_match"],
+      "properties": {
+        "top1_loss_match": { "type": "boolean" },
+        "distance_true": { "type": ["integer", "null"] },
+        "distance_reported": { "type": ["integer", "null"] },
+        "distance_error": { "type": ["integer", "null"] },
+        "obligation_match": { "type": ["boolean", "null"] }
+      }
+    }
+  },
+  "additionalProperties": false
+}

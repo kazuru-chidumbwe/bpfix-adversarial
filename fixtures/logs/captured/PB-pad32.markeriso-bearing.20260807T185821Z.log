@@ -1,0 +1,84 @@
+OBJSHA:14d55ecf36d87c072135d1f97da94f3f504a294f2ba6a2d16ea9940e8d9ff664
+
+DISASMSHA:e602c5b3f705571860a008998a13091d57c65072ddbc1ba85770a9226dba010b
+
+BTFSHA:063173decc817134b791f1dc173a03ab4bbd4e04d12fb80b86d967cef70177d8
+
+BTFEXTSHA:615794bb90e526b95f09c1c3c8d1e3928c57a75d634a98ba05ddcae40b997de0
+
+REJECT
+
+EXIT:255
+
+libbpf: loading object from /tmp/bpfix-iso-20260807T185821Z-PB-pad32-bearing.o
+
+libbpf: elf: section(3) xdp, size 64, link 0, flags 6, type=1
+
+libbpf: sec 'xdp': found program 'pb_pad32' at insn offset 0 (0 bytes), code size 8 insns (64 bytes)
+
+libbpf: elf: section(4) license, size 4, link 0, flags 3, type=1
+
+libbpf: license of /tmp/bpfix-iso-20260807T185821Z-PB-pad32-bearing.o is MIT
+
+libbpf: elf: section(14) .BTF, size 674, link 0, flags 0, type=1
+
+libbpf: elf: section(16) .BTF.ext, size 176, link 0, flags 0, type=1
+
+libbpf: elf: section(24) .symtab, size 336, link 1, flags 0, type=2
+
+libbpf: looking for externs among 14 symbols...
+
+libbpf: collected 0 externs total
+
+libbpf: prog 'pb_pad32': BPF program load failed: Permission denied
+
+libbpf: prog 'pb_pad32': -- BEGIN PROG LOAD LOG --
+
+func#0 @0
+
+0: R1=ctx() R10=fp0
+
+; int pb_pad32(struct xdp_md *ctx)
+
+0: (b7) r0 = 1                        ; R0_w=1
+
+; void *data_end = (void *)(long)ctx->data_end;
+
+1: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+
+; void *data = (void *)(long)ctx->data;
+
+2: (61) r1 = *(u32 *)(r1 +0)          ; R1_w=pkt(r=0)
+
+; if (data + 1 > data_end)
+
+3: (bf) r3 = r1                       ; R1_w=pkt(r=0) R3_w=pkt(r=0)
+
+4: (07) r3 += 1                       ; R3_w=pkt(off=1,r=0)
+
+; if (data + 1 > data_end)
+
+5: (2d) if r3 > r2 goto pc+1          ; R2_w=pkt_end() R3_w=pkt(off=1,r=1)
+
+; return *(__u64 *)data;
+
+6: (79) r0 = *(u64 *)(r1 +0)
+
+invalid access to packet, off=0 size=8, R1(id=0,off=0,r=1)
+
+R1 offset is outside of the packet
+
+verification time 109 usec
+
+stack depth 0
+
+processed 7 insns (limit 1000000) max_states_per_insn 0 total_states 0 peak_states 0 mark_read 0
+
+-- END PROG LOAD LOG --
+
+libbpf: prog 'pb_pad32': failed to load: -13
+
+libbpf: failed to load object '/tmp/bpfix-iso-20260807T185821Z-PB-pad32-bearing.o'
+
+Error: failed to load object file
+

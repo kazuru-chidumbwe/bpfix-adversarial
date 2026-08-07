@@ -1,0 +1,11 @@
+# Files not needed for offline inset replay / smoke tests inside the image.
+.git
+.github
+.venv
+__pycache__
+*.pyc
+.env
+lab/.env
+*.egg-info
+.pytest_cache
+CURRENT-WORK
