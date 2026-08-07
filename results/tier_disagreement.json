@@ -1,0 +1,46 @@
+{
+  "cases": [
+    {
+      "case_id": "NP-idiomatic-pad8",
+      "log": "fixtures/logs/synthetic/NP-idiomatic-pad8.log",
+      "oracle_loss_line": 14,
+      "verifier_state_loss_line": 14,
+      "notes": "Rename breaks SourceComment establish; VerifierState still sees null branch",
+      "sourcecomment_null_check_recognized": false,
+      "sourcecomment_reported_line": 12,
+      "verifier_state_reported_line": 14,
+      "tiers_agree": false,
+      "sourcecomment_correct_vs_oracle": false,
+      "verifier_state_correct_vs_oracle": true,
+      "disagreement": true
+    },
+    {
+      "case_id": "NP-brittle-pad8",
+      "log": "fixtures/logs/synthetic/NP-brittle-pad8.log",
+      "oracle_loss_line": 14,
+      "verifier_state_loss_line": 14,
+      "notes": "Tiers agree: SourceComment recognizes !ptr",
+      "sourcecomment_null_check_recognized": true,
+      "sourcecomment_reported_line": 14,
+      "verifier_state_reported_line": 14,
+      "tiers_agree": true,
+      "sourcecomment_correct_vs_oracle": true,
+      "verifier_state_correct_vs_oracle": true,
+      "disagreement": false
+    },
+    {
+      "case_id": "PB-pad0",
+      "log": "fixtures/logs/synthetic/PB-pad0.log",
+      "oracle_loss_line": 10,
+      "verifier_state_loss_line": 10,
+      "notes": "Packet under-check: SourceComment sees data_end; VerifierState sees r=1<8",
+      "sourcecomment_null_check_recognized": false,
+      "sourcecomment_reported_line": 10,
+      "verifier_state_reported_line": 10,
+      "tiers_agree": true,
+      "sourcecomment_correct_vs_oracle": true,
+      "verifier_state_correct_vs_oracle": true,
+      "disagreement": false
+    }
+  ]
+}

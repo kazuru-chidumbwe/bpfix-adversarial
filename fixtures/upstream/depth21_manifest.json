@@ -1,0 +1,322 @@
+{
+  "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+  "campaign_label": "20260728",
+  "n": 21,
+  "cases": [
+    {
+      "upstream_case_id": "dynptr_slice_short_mem_001",
+      "upstream_proof_obligation": "PointerProvenance",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/dynptr_slice_short_mem_001"
+    },
+    {
+      "upstream_case_id": "dynptr_slice_stack_buffer_001",
+      "upstream_proof_obligation": "PointerProvenance",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/dynptr_slice_stack_buffer_001"
+    },
+    {
+      "upstream_case_id": "dynptr_stack_copy_001",
+      "upstream_proof_obligation": "PointerProvenance",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/dynptr_stack_copy_001"
+    },
+    {
+      "upstream_case_id": "dynptr_uninitialized_slice_arg_001",
+      "upstream_proof_obligation": "PointerProvenance",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/dynptr_uninitialized_slice_arg_001"
+    },
+    {
+      "upstream_case_id": "helper_csum_diff_stack_len_001",
+      "upstream_proof_obligation": "PointerProvenance",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/helper_csum_diff_stack_len_001"
+    },
+    {
+      "upstream_case_id": "helper_map_arg_stack_001",
+      "upstream_proof_obligation": "PointerProvenance",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/helper_map_arg_stack_001"
+    },
+    {
+      "upstream_case_id": "alu32_pointer_cookie_001",
+      "upstream_proof_obligation": "ScalarRange",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/alu32_pointer_cookie_001"
+    },
+    {
+      "upstream_case_id": "map_value_index_guard_oob_001",
+      "upstream_proof_obligation": "ScalarRange",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/map_value_index_guard_oob_001"
+    },
+    {
+      "upstream_case_id": "map_value_signed_index_001",
+      "upstream_proof_obligation": "ScalarRange",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/map_value_signed_index_001"
+    },
+    {
+      "upstream_case_id": "dynptr_slice_missing_null_check_001",
+      "upstream_proof_obligation": "NullablePointer",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/dynptr_slice_missing_null_check_001"
+    },
+    {
+      "upstream_case_id": "ringbuf_branch_cookie_001",
+      "upstream_proof_obligation": "NullablePointer",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/ringbuf_branch_cookie_001"
+    },
+    {
+      "upstream_case_id": "ringbuf_double_submit_001",
+      "upstream_proof_obligation": "NullablePointer",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/ringbuf_double_submit_001"
+    },
+    {
+      "upstream_case_id": "ringbuf_missing_null_check_001",
+      "upstream_proof_obligation": "NullablePointer",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/ringbuf_missing_null_check_001"
+    },
+    {
+      "upstream_case_id": "ringbuf_nested_missing_null_001",
+      "upstream_proof_obligation": "NullablePointer",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/ringbuf_nested_missing_null_001"
+    },
+    {
+      "upstream_case_id": "ringbuf_nested_reserve_leak_001",
+      "upstream_proof_obligation": "NullablePointer",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/ringbuf_nested_reserve_leak_001"
+    },
+    {
+      "upstream_case_id": "packet_checked_wrong_base_001",
+      "upstream_proof_obligation": "PacketBounds",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/packet_checked_wrong_base_001"
+    },
+    {
+      "upstream_case_id": "packet_eth_off_by_one_001",
+      "upstream_proof_obligation": "PacketBounds",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/packet_eth_off_by_one_001"
+    },
+    {
+      "upstream_case_id": "packet_ihl_udp_undercheck_001",
+      "upstream_proof_obligation": "PacketBounds",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/packet_ihl_udp_undercheck_001"
+    },
+    {
+      "upstream_case_id": "packet_inline_return_cookie_001",
+      "upstream_proof_obligation": "PacketBounds",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/packet_inline_return_cookie_001"
+    },
+    {
+      "upstream_case_id": "packet_l4_branch_cookie_001",
+      "upstream_proof_obligation": "PacketBounds",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/packet_l4_branch_cookie_001"
+    },
+    {
+      "upstream_case_id": "packet_macro_cookie_001",
+      "upstream_proof_obligation": "PacketBounds",
+      "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+      "campaign_label": "20260728",
+      "selection_method": "balanced obligation guess",
+      "files": [
+        "buggy.bpf.c",
+        "fixed.bpf.c",
+        "README.md",
+        "diagnostic.txt",
+        "verifier.log"
+      ],
+      "local_path": "fixtures/upstream/bpfix-bench-cases/packet_macro_cookie_001"
+    }
+  ]
+}

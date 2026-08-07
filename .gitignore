@@ -1,0 +1,11 @@
+artifacts/*
+!artifacts/.gitkeep
+__pycache__/
+*.py[cod]
+*.o
+*.bpf.o
+.venv/
+*.egg-info/
+.DS_Store
+.env
+lab/.env

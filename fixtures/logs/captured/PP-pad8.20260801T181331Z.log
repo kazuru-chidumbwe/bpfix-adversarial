@@ -1,0 +1,40 @@
+libbpf: loading object from /tmp/bpfix-adv-objs/PP-pad8.o
+libbpf: elf: section(3) xdp, size 96, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'pp_pad8' at insn offset 0 (0 bytes), code size 12 insns (96 bytes)
+libbpf: elf: section(4) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-adv-objs/PP-pad8.o is MIT
+libbpf: elf: section(14) .BTF, size 739, link 0, flags 0, type=1
+libbpf: elf: section(16) .BTF.ext, size 208, link 0, flags 0, type=1
+libbpf: elf: section(24) .symtab, size 312, link 1, flags 0, type=2
+libbpf: looking for externs among 13 symbols...
+libbpf: collected 0 externs total
+libbpf: object 'PP-pad8': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: prog 'pp_pad8': BPF program load failed: Invalid argument
+libbpf: prog 'pp_pad8': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int pp_pad8(struct xdp_md *ctx) @ PP-pad8.c:7
+0: (b7) r0 = 1                        ; R0_w=1
+; void *data_end = (void *)(long)ctx->data_end; @ PP-pad8.c:10
+1: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data; @ PP-pad8.c:9
+2: (61) r6 = *(u32 *)(r1 +0)          ; R1=ctx() R6_w=pkt(r=0)
+; if (data + 8 > data_end) @ PP-pad8.c:11
+3: (bf) r1 = r6                       ; R1_w=pkt(r=0) R6_w=pkt(r=0)
+4: (07) r1 += 8                       ; R1_w=pkt(off=8,r=0)
+5: (2d) if r1 > r2 goto pc+5          ; R1_w=pkt(off=8,r=8) R2_w=pkt_end()
+; cookie ^= bpf_get_prandom_u32(); @ PP-pad8.c:15
+6: (85) call bpf_get_prandom_u32#7    ; R0=scalar()
+7: (af) r0 ^= r6
+mark_precise: frame0: last_idx 7 first_idx 7 subseq_idx -1 
+mark_precise: frame0: parent state regs=r0 stack=:  R0_rw=Pscalar() R6_rw=pkt(r=8) R10=fp0
+mark_precise: frame0: last_idx 6 first_idx 0 subseq_idx 7 
+mark_precise: frame0: regs=r0 stack= before 6: (85) call bpf_get_prandom_u32#7
+math between pkt pointer and register with unbounded min value is not allowed
+verification time 28 usec
+stack depth 0
+processed 8 insns (limit 1000000) max_states_per_insn 0 total_states 1 peak_states 1 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'pp_pad8': failed to load: -22
+libbpf: failed to load object '/tmp/bpfix-adv-objs/PP-pad8.o'
+Error: failed to load object file

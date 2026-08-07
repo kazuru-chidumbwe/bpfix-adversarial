@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bpfix-adversarial"
+version = "1.0.0"
+description = "Adversarial harness for eBPF verifier diagnostic honesty"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Seke Kazuru" }]
+dependencies = ["openai==1.97.1", "paramiko==3.5.1"]
+
+[project.scripts]
+bpfix-adversarial = "bpfix_adversarial.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["bpfix_adversarial*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

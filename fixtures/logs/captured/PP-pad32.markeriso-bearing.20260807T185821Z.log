@@ -1,0 +1,94 @@
+OBJSHA:1e8508bef6667e991456746e71770fea23e296d8a6816585c629a8631cf5b559
+
+DISASMSHA:bbe03ca531e5f0c2c6a08364368031396f2d9f955a61cc80058803a31376bea6
+
+BTFSHA:29387278ca14d180f4ac41aef1ad80e797939a52683f75ab97db50c1b133b783
+
+BTFEXTSHA:1f8e54633e0298134ac694465901e3f94bb1f76e4fe61c0ce5715cc2d343c0f7
+
+REJECT
+
+EXIT:255
+
+libbpf: loading object from /tmp/bpfix-iso-20260807T185821Z-PP-pad32-bearing.o
+
+libbpf: elf: section(3) xdp, size 96, link 0, flags 6, type=1
+
+libbpf: sec 'xdp': found program 'pp_pad32' at insn offset 0 (0 bytes), code size 12 insns (96 bytes)
+
+libbpf: elf: section(4) license, size 4, link 0, flags 3, type=1
+
+libbpf: license of /tmp/bpfix-iso-20260807T185821Z-PP-pad32-bearing.o is MIT
+
+libbpf: elf: section(14) .BTF, size 718, link 0, flags 0, type=1
+
+libbpf: elf: section(16) .BTF.ext, size 208, link 0, flags 0, type=1
+
+libbpf: elf: section(24) .symtab, size 336, link 1, flags 0, type=2
+
+libbpf: looking for externs among 14 symbols...
+
+libbpf: collected 0 externs total
+
+libbpf: prog 'pp_pad32': BPF program load failed: Invalid argument
+
+libbpf: prog 'pp_pad32': -- BEGIN PROG LOAD LOG --
+
+func#0 @0
+
+0: R1=ctx() R10=fp0
+
+; int pp_pad32(struct xdp_md *ctx)
+
+0: (b7) r0 = 1                        ; R0_w=1
+
+; void *data_end = (void *)(long)ctx->data_end;
+
+1: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+
+; void *data = (void *)(long)ctx->data;
+
+2: (61) r6 = *(u32 *)(r1 +0)          ; R1=ctx() R6_w=pkt(r=0)
+
+; if (data + 8 > data_end)
+
+3: (bf) r1 = r6                       ; R1_w=pkt(r=0) R6_w=pkt(r=0)
+
+4: (07) r1 += 8                       ; R1_w=pkt(off=8,r=0)
+
+; if (data + 8 > data_end)
+
+5: (2d) if r1 > r2 goto pc+5          ; R1_w=pkt(off=8,r=8) R2_w=pkt_end()
+
+; cookie ^= bpf_get_prandom_u32();
+
+6: (85) call bpf_get_prandom_u32#7    ; R0=scalar()
+
+; cookie ^= bpf_get_prandom_u32();
+
+7: (af) r0 ^= r6
+
+mark_precise: frame0: last_idx 7 first_idx 7 subseq_idx -1 
+
+mark_precise: frame0: parent state regs=r0 stack=:  R0_rw=Pscalar() R6_rw=pkt(r=8) R10=fp0
+
+mark_precise: frame0: last_idx 6 first_idx 0 subseq_idx 7 
+
+mark_precise: frame0: regs=r0 stack= before 6: (85) call bpf_get_prandom_u32#7
+
+math between pkt pointer and register with unbounded min value is not allowed
+
+verification time 82 usec
+
+stack depth 0
+
+processed 8 insns (limit 1000000) max_states_per_insn 0 total_states 1 peak_states 1 mark_read 1
+
+-- END PROG LOAD LOG --
+
+libbpf: prog 'pp_pad32': failed to load: -22
+
+libbpf: failed to load object '/tmp/bpfix-iso-20260807T185821Z-PP-pad32-bearing.o'
+
+Error: failed to load object file
+

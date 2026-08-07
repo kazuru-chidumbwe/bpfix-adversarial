@@ -1,0 +1,47 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "name": "bpfix-adversarial",
+  "description": "Adversarial evaluation harness for eBPF verifier diagnostic honesty (bpfix).",
+  "version": "1.0.0",
+  "dateModified": "2026-08-07",
+  "license": "https://spdx.org/licenses/MIT.html",
+  "codeRepository": "https://github.com/kazuru-chidumbwe/bpfix-adversarial",
+  "url": "https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.0",
+  "programmingLanguage": [
+    "Python",
+    "C"
+  ],
+  "runtimePlatform": "Python 3.10+",
+  "operatingSystem": [
+    "Linux"
+  ],
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Seke",
+      "familyName": "Kazuru",
+      "email": "kazuruuni@gmail.com",
+      "identifier": "https://orcid.org/0009-0002-4099-1059",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "Independent Researcher, Malawi"
+      }
+    }
+  ],
+  "maintainer": [
+    {
+      "@type": "Person",
+      "givenName": "Seke",
+      "familyName": "Kazuru",
+      "email": "kazuruuni@gmail.com"
+    }
+  ],
+  "keywords": [
+    "eBPF",
+    "verifier",
+    "diagnostic honesty",
+    "adversarial testing",
+    "bpfix"
+  ]
+}

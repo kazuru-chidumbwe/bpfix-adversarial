@@ -1,0 +1,17 @@
+; fixture verifier log — NullablePointer idiomatic rename (entry)
+; Same structure as brittle; SourceComment should MISS looks_like_null_check.
+
+; __u64 *entry = bpf_map_lookup_elem(&m, &key); @ mutants/NullablePointer/NP-idiomatic-pad8.c:12
+0: (85) call bpf_map_lookup_elem#1
+ R0=map_value_or_null
+; if (!entry) @ mutants/NullablePointer/NP-idiomatic-pad8.c:14
+1: (15) if r0 == 0 goto pc+10
+ R0=map_value
+; return *entry; @ mutants/NullablePointer/NP-idiomatic-pad8.c:24
+20: (79) r0 = *(u64 *)(r0 +0)
+processed 21 insns
+
+; VERIFIER_STATE: still tracks null-check at insn 1 (rename-insensitive)
+; SOURCE_COMMENT: looks_like_null_check FAILS on "if (!entry)"
+; ORACLE_LOSS_LINE=14 ORACLE_REJECT_LINE=24
+; TIER_DISAGREE: SourceComment may omit ProofEstablished; VerifierState still sees check

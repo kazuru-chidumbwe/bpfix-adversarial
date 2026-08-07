@@ -1,0 +1,18 @@
+error[BPFIX-E005]: scalar range at the rejected use is still verifier-unsafe
+  = class: source_bug
+  = confidence: medium
+  = diagnostic: supported, help: repair_hint, span: exact_pc
+  = next action: bounds
+  --> PP-pad32.c:15
+   |
+11 | if (data + 8 > data_end)
+   | ------------------------ nearby source context for scalar range
+15 | cookie ^= bpf_get_prandom_u32();
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ rejected here: verifier still sees R0 as scalar with unknown bounds
+   |
+   = verifier[20]: math between pkt pointer and register with unbounded min value is not allowed
+   = note: nearest BPF instruction pc 7
+   = note: parsed 7 verifier state snapshots
+   = note[verifier-state]: verifier state shows the rejected scalar or pointer-offset register still has an unsafe range at the use
+   = required proof: prove R0 has a bounded non-negative scalar range before this pointer arithmetic or helper memory access; verifier sees scalar with unknown bounds
+help: Clamp or branch-check the exact scalar used by this helper, pointer arithmetic, stack access, or map-value access immediately before the rejected operation.

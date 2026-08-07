@@ -1,0 +1,315 @@
+{
+  "stamp_filter": "20260801T181331Z",
+  "generator": "tools/emit_oracle_controls.py",
+  "summary": {
+    "negative_control": {
+      "hits": 6,
+      "n": 6,
+      "pass_rate": 1.0
+    },
+    "positive_control_pb_stop_vs_injection": {
+      "hits": 3,
+      "n": 3,
+      "pass_rate": 1.0
+    },
+    "compiler_preservation_source_map": {
+      "hits": 10,
+      "n": 10,
+      "pass_rate": 1.0
+    }
+  },
+  "negative_control": [
+    {
+      "case_id": "NP-brittle-pad0",
+      "obligation": "NullablePointer",
+      "oracle_loss_code": 19,
+      "lab_rejected": false,
+      "pass": true,
+      "note": "markers present; lab ACCEPT \u2014 injection did not induce reject"
+    },
+    {
+      "case_id": "NP-brittle-pad32",
+      "obligation": "NullablePointer",
+      "oracle_loss_code": 19,
+      "lab_rejected": false,
+      "pass": true,
+      "note": "markers present; lab ACCEPT \u2014 injection did not induce reject"
+    },
+    {
+      "case_id": "NP-brittle-pad8",
+      "obligation": "NullablePointer",
+      "oracle_loss_code": 19,
+      "lab_rejected": false,
+      "pass": true,
+      "note": "markers present; lab ACCEPT \u2014 injection did not induce reject"
+    },
+    {
+      "case_id": "NP-idiomatic-pad0",
+      "obligation": "NullablePointer",
+      "oracle_loss_code": 19,
+      "lab_rejected": false,
+      "pass": true,
+      "note": "markers present; lab ACCEPT \u2014 injection did not induce reject"
+    },
+    {
+      "case_id": "NP-idiomatic-pad32",
+      "obligation": "NullablePointer",
+      "oracle_loss_code": 19,
+      "lab_rejected": false,
+      "pass": true,
+      "note": "markers present; lab ACCEPT \u2014 injection did not induce reject"
+    },
+    {
+      "case_id": "NP-idiomatic-pad8",
+      "obligation": "NullablePointer",
+      "oracle_loss_code": 19,
+      "lab_rejected": false,
+      "pass": true,
+      "note": "markers present; lab ACCEPT \u2014 injection did not induce reject"
+    }
+  ],
+  "positive_control_pb_stop_vs_injection": [
+    {
+      "case_id": "PB-pad0",
+      "obligation": "PacketBounds",
+      "oracle_loss_code": 12,
+      "oracle_loss_span": [
+        12,
+        13
+      ],
+      "vs_reported_line": 15,
+      "sc_top1_vs_loss": true,
+      "vs_top1_vs_loss": false,
+      "stop_diverges_from_injection": true,
+      "pass": true,
+      "note": "VS stop outside injection span; SC may still hit injection (threshold / tier disagreement)"
+    },
+    {
+      "case_id": "PB-pad32",
+      "obligation": "PacketBounds",
+      "oracle_loss_code": 12,
+      "oracle_loss_span": [
+        12,
+        13
+      ],
+      "vs_reported_line": 50,
+      "sc_top1_vs_loss": true,
+      "vs_top1_vs_loss": false,
+      "stop_diverges_from_injection": true,
+      "pass": true,
+      "note": "VS stop outside injection span; SC may still hit injection (threshold / tier disagreement)"
+    },
+    {
+      "case_id": "PB-pad8",
+      "obligation": "PacketBounds",
+      "oracle_loss_code": 12,
+      "oracle_loss_span": [
+        12,
+        13
+      ],
+      "vs_reported_line": 26,
+      "sc_top1_vs_loss": true,
+      "vs_top1_vs_loss": false,
+      "stop_diverges_from_injection": true,
+      "pass": true,
+      "note": "VS stop outside injection span; SC may still hit injection (threshold / tier disagreement)"
+    }
+  ],
+  "compiler_preservation_source_map": [
+    {
+      "case_id": "NP-idiomatic-nocheck",
+      "obligation": "NullablePointer",
+      "oracle_loss_code": 23,
+      "oracle_loss_span": [],
+      "oracle_reject_code": 36,
+      "mapped_source_lines": [
+        18,
+        20,
+        21,
+        36
+      ],
+      "injection_line_in_map": false,
+      "reject_line_in_map": true,
+      "pass": true,
+      "note": "injection span absent from map; reject/use line present (pad DCE / wash may collapse)"
+    },
+    {
+      "case_id": "PB-pad0",
+      "obligation": "PacketBounds",
+      "oracle_loss_code": 12,
+      "oracle_loss_span": [
+        12,
+        13
+      ],
+      "oracle_reject_code": 15,
+      "mapped_source_lines": [
+        7,
+        9,
+        10,
+        12,
+        15
+      ],
+      "injection_line_in_map": true,
+      "reject_line_in_map": true,
+      "pass": true,
+      "note": "verifier ; @path:LINE map covers injection span"
+    },
+    {
+      "case_id": "PB-pad32",
+      "obligation": "PacketBounds",
+      "oracle_loss_code": 12,
+      "oracle_loss_span": [
+        12,
+        13
+      ],
+      "oracle_reject_code": 50,
+      "mapped_source_lines": [
+        7,
+        9,
+        10,
+        12,
+        50
+      ],
+      "injection_line_in_map": true,
+      "reject_line_in_map": true,
+      "pass": true,
+      "note": "verifier ; @path:LINE map covers injection span"
+    },
+    {
+      "case_id": "PB-pad8",
+      "obligation": "PacketBounds",
+      "oracle_loss_code": 12,
+      "oracle_loss_span": [
+        12,
+        13
+      ],
+      "oracle_reject_code": 26,
+      "mapped_source_lines": [
+        7,
+        9,
+        10,
+        12,
+        26
+      ],
+      "injection_line_in_map": true,
+      "reject_line_in_map": true,
+      "pass": true,
+      "note": "verifier ; @path:LINE map covers injection span"
+    },
+    {
+      "case_id": "PP-pad0",
+      "obligation": "PointerProvenance",
+      "oracle_loss_code": 14,
+      "oracle_loss_span": [
+        14,
+        15
+      ],
+      "oracle_reject_code": 17,
+      "mapped_source_lines": [
+        7,
+        9,
+        10,
+        11,
+        15
+      ],
+      "injection_line_in_map": true,
+      "reject_line_in_map": false,
+      "pass": true,
+      "note": "verifier ; @path:LINE map covers injection span"
+    },
+    {
+      "case_id": "PP-pad32",
+      "obligation": "PointerProvenance",
+      "oracle_loss_code": 14,
+      "oracle_loss_span": [
+        14,
+        15
+      ],
+      "oracle_reject_code": 52,
+      "mapped_source_lines": [
+        7,
+        9,
+        10,
+        11,
+        15
+      ],
+      "injection_line_in_map": true,
+      "reject_line_in_map": false,
+      "pass": true,
+      "note": "verifier ; @path:LINE map covers injection span"
+    },
+    {
+      "case_id": "PP-pad8",
+      "obligation": "PointerProvenance",
+      "oracle_loss_code": 14,
+      "oracle_loss_span": [
+        14,
+        15
+      ],
+      "oracle_reject_code": 28,
+      "mapped_source_lines": [
+        7,
+        9,
+        10,
+        11,
+        15
+      ],
+      "injection_line_in_map": true,
+      "reject_line_in_map": false,
+      "pass": true,
+      "note": "verifier ; @path:LINE map covers injection span"
+    },
+    {
+      "case_id": "SR-pad0",
+      "obligation": "ScalarRange",
+      "oracle_loss_code": 11,
+      "oracle_loss_span": [
+        11
+      ],
+      "oracle_reject_code": 13,
+      "mapped_source_lines": [
+        11,
+        13
+      ],
+      "injection_line_in_map": true,
+      "reject_line_in_map": true,
+      "pass": true,
+      "note": "verifier ; @path:LINE map covers injection span"
+    },
+    {
+      "case_id": "SR-pad32",
+      "obligation": "ScalarRange",
+      "oracle_loss_code": 11,
+      "oracle_loss_span": [
+        11
+      ],
+      "oracle_reject_code": 48,
+      "mapped_source_lines": [
+        11,
+        48
+      ],
+      "injection_line_in_map": true,
+      "reject_line_in_map": true,
+      "pass": true,
+      "note": "verifier ; @path:LINE map covers injection span"
+    },
+    {
+      "case_id": "SR-pad8",
+      "obligation": "ScalarRange",
+      "oracle_loss_code": 11,
+      "oracle_loss_span": [
+        11
+      ],
+      "oracle_reject_code": 24,
+      "mapped_source_lines": [
+        11,
+        24
+      ],
+      "injection_line_in_map": true,
+      "reject_line_in_map": true,
+      "pass": true,
+      "note": "verifier ; @path:LINE map covers injection span"
+    }
+  ],
+  "note": "Minimal offline controls over SoftwareX-stamp captures. Not a verified semantic proof-loss oracle; not negative controls that mutate away the reject while keeping the same marker text."
+}

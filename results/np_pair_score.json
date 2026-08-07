@@ -1,0 +1,97 @@
+{
+  "figure": "NP rename pair end-to-end (fixture logs + SourceComment port)",
+  "results": [
+    {
+      "fixture": "fixtures/logs/synthetic/NP-brittle-pad8.log",
+      "check_recognized_sourcecomment": true,
+      "n_sourcecomment_events": 2,
+      "events": [
+        {
+          "role": "ProofLost",
+          "evidence": "SourceComment",
+          "obligation": "NullablePointer",
+          "detail": "nullable return without visible non-null proof",
+          "pc": null,
+          "source": {
+            "path": "mutants/NullablePointer/NP-brittle-pad8.c",
+            "line": 12,
+            "text": "__u64 *ptr = bpf_map_lookup_elem(&m, &key);"
+          },
+          "register": null
+        },
+        {
+          "role": "ProofEstablished",
+          "evidence": "SourceComment",
+          "obligation": "NullablePointer",
+          "detail": "non-null proof established (looks_like_null_check)",
+          "pc": null,
+          "source": {
+            "path": "mutants/NullablePointer/NP-brittle-pad8.c",
+            "line": 14,
+            "text": "if (!ptr)"
+          },
+          "register": null
+        }
+      ],
+      "scores": {
+        "top1_loss_match": true,
+        "top1_line": true,
+        "distance_true": 10,
+        "distance_reported": 10,
+        "distance_error": 0,
+        "signed_offset": 0,
+        "oracle_loss_line": 14,
+        "oracle_reject_line": 24,
+        "reported_loss_line": 14,
+        "reported_reject_line": null
+      },
+      "null_check_lines": [
+        {
+          "line": 14,
+          "text": "if (!ptr)",
+          "matched": true
+        }
+      ]
+    },
+    {
+      "fixture": "fixtures/logs/synthetic/NP-idiomatic-pad8.log",
+      "check_recognized_sourcecomment": false,
+      "n_sourcecomment_events": 1,
+      "events": [
+        {
+          "role": "ProofLost",
+          "evidence": "SourceComment",
+          "obligation": "NullablePointer",
+          "detail": "nullable return without visible non-null proof",
+          "pc": null,
+          "source": {
+            "path": "mutants/NullablePointer/NP-idiomatic-pad8.c",
+            "line": 12,
+            "text": "__u64 *entry = bpf_map_lookup_elem(&m, &key);"
+          },
+          "register": null
+        }
+      ],
+      "scores": {
+        "top1_loss_match": false,
+        "top1_line": false,
+        "distance_true": 10,
+        "distance_reported": 12,
+        "distance_error": 2,
+        "signed_offset": -2,
+        "oracle_loss_line": 14,
+        "oracle_reject_line": 24,
+        "reported_loss_line": 12,
+        "reported_reject_line": null
+      },
+      "null_check_lines": [
+        {
+          "line": 14,
+          "text": "if (!entry)",
+          "matched": false
+        }
+      ]
+    }
+  ],
+  "paper_takeaway": "Brittle `if (!ptr)` is recognized as ProofEstablished; idiomatic `if (!entry)` is not \u2014 SourceComment honesty break under rename."
+}

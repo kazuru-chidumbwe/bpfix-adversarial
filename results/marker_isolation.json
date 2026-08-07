@@ -1,0 +1,371 @@
+{
+  "generator": "tools/emit_marker_isolation.py",
+  "stamp_filter": "20260801T181331Z",
+  "summary": {
+    "log_input_no_oracle_tokens": {
+      "hits": 16,
+      "n": 16,
+      "pass_rate": 1.0
+    },
+    "sc_bearing_vs_neutral_identical": {
+      "hits": 16,
+      "n": 16,
+      "pass_rate": 1.0
+    },
+    "oracle_comments_not_heuristic_hits": {
+      "hits": 16,
+      "n": 16,
+      "pass_rate": 1.0
+    },
+    "lab_bearing_vs_neutral_load": {
+      "pass": 16,
+      "n": 16,
+      "pass_rate": 1.0,
+      "verdict_match": 16,
+      "vs_match": 16,
+      "source_map_match": 16,
+      "source_comment_match": 16,
+      "normalized_log_match": 16,
+      "nodbg_obj_match": 16,
+      "dbg_obj_match": 0
+    }
+  },
+  "log_input_no_oracle_tokens": [
+    {
+      "case_id": "NP-brittle-pad0",
+      "log": "fixtures/logs/captured/NP-brittle-pad0.20260801T181331Z.log",
+      "oracle_token_lines": 0,
+      "pass": true
+    },
+    {
+      "case_id": "NP-brittle-pad32",
+      "log": "fixtures/logs/captured/NP-brittle-pad32.20260801T181331Z.log",
+      "oracle_token_lines": 0,
+      "pass": true
+    },
+    {
+      "case_id": "NP-brittle-pad8",
+      "log": "fixtures/logs/captured/NP-brittle-pad8.20260801T181331Z.log",
+      "oracle_token_lines": 0,
+      "pass": true
+    },
+    {
+      "case_id": "NP-idiomatic-nocheck",
+      "log": "fixtures/logs/captured/NP-idiomatic-nocheck.20260801T181331Z.log",
+      "oracle_token_lines": 0,
+      "pass": true
+    },
+    {
+      "case_id": "NP-idiomatic-pad0",
+      "log": "fixtures/logs/captured/NP-idiomatic-pad0.20260801T181331Z.log",
+      "oracle_token_lines": 0,
+      "pass": true
+    },
+    {
+      "case_id": "NP-idiomatic-pad32",
+      "log": "fixtures/logs/captured/NP-idiomatic-pad32.20260801T181331Z.log",
+      "oracle_token_lines": 0,
+      "pass": true
+    },
+    {
+      "case_id": "NP-idiomatic-pad8",
+      "log": "fixtures/logs/captured/NP-idiomatic-pad8.20260801T181331Z.log",
+      "oracle_token_lines": 0,
+      "pass": true
+    },
+    {
+      "case_id": "PB-pad0",
+      "log": "fixtures/logs/captured/PB-pad0.20260801T181331Z.log",
+      "oracle_token_lines": 0,
+      "pass": true
+    },
+    {
+      "case_id": "PB-pad32",
+      "log": "fixtures/logs/captured/PB-pad32.20260801T181331Z.log",
+      "oracle_token_lines": 0,
+      "pass": true
+    },
+    {
+      "case_id": "PB-pad8",
+      "log": "fixtures/logs/captured/PB-pad8.20260801T181331Z.log",
+      "oracle_token_lines": 0,
+      "pass": true
+    },
+    {
+      "case_id": "PP-pad0",
+      "log": "fixtures/logs/captured/PP-pad0.20260801T181331Z.log",
+      "oracle_token_lines": 0,
+      "pass": true
+    },
+    {
+      "case_id": "PP-pad32",
+      "log": "fixtures/logs/captured/PP-pad32.20260801T181331Z.log",
+      "oracle_token_lines": 0,
+      "pass": true
+    },
+    {
+      "case_id": "PP-pad8",
+      "log": "fixtures/logs/captured/PP-pad8.20260801T181331Z.log",
+      "oracle_token_lines": 0,
+      "pass": true
+    },
+    {
+      "case_id": "SR-pad0",
+      "log": "fixtures/logs/captured/SR-pad0.20260801T181331Z.log",
+      "oracle_token_lines": 0,
+      "pass": true
+    },
+    {
+      "case_id": "SR-pad32",
+      "log": "fixtures/logs/captured/SR-pad32.20260801T181331Z.log",
+      "oracle_token_lines": 0,
+      "pass": true
+    },
+    {
+      "case_id": "SR-pad8",
+      "log": "fixtures/logs/captured/SR-pad8.20260801T181331Z.log",
+      "oracle_token_lines": 0,
+      "pass": true
+    }
+  ],
+  "sc_bearing_vs_neutral_identical": [
+    {
+      "case_id": "NP-brittle-pad0",
+      "obligation": "NullablePointer",
+      "sc_bearing": 19,
+      "sc_neutral": 19,
+      "sc_note_bearing": "SC: null-check establish",
+      "pass": true
+    },
+    {
+      "case_id": "NP-brittle-pad32",
+      "obligation": "NullablePointer",
+      "sc_bearing": 19,
+      "sc_neutral": 19,
+      "sc_note_bearing": "SC: null-check establish",
+      "pass": true
+    },
+    {
+      "case_id": "NP-brittle-pad8",
+      "obligation": "NullablePointer",
+      "sc_bearing": 19,
+      "sc_neutral": 19,
+      "sc_note_bearing": "SC: null-check establish",
+      "pass": true
+    },
+    {
+      "case_id": "NP-idiomatic-nocheck",
+      "obligation": "NullablePointer",
+      "sc_bearing": 21,
+      "sc_neutral": 21,
+      "sc_note_bearing": "SC: nullable-return (fallback / nocheck)",
+      "pass": true
+    },
+    {
+      "case_id": "NP-idiomatic-pad0",
+      "obligation": "NullablePointer",
+      "sc_bearing": 17,
+      "sc_neutral": 17,
+      "sc_note_bearing": "SC: nullable-return (fallback / nocheck)",
+      "pass": true
+    },
+    {
+      "case_id": "NP-idiomatic-pad32",
+      "obligation": "NullablePointer",
+      "sc_bearing": 17,
+      "sc_neutral": 17,
+      "sc_note_bearing": "SC: nullable-return (fallback / nocheck)",
+      "pass": true
+    },
+    {
+      "case_id": "NP-idiomatic-pad8",
+      "obligation": "NullablePointer",
+      "sc_bearing": 17,
+      "sc_neutral": 17,
+      "sc_note_bearing": "SC: nullable-return (fallback / nocheck)",
+      "pass": true
+    },
+    {
+      "case_id": "PB-pad0",
+      "obligation": "PacketBounds",
+      "sc_bearing": 12,
+      "sc_neutral": 12,
+      "sc_note_bearing": "SC: data_end establish",
+      "pass": true
+    },
+    {
+      "case_id": "PB-pad32",
+      "obligation": "PacketBounds",
+      "sc_bearing": 12,
+      "sc_neutral": 12,
+      "sc_note_bearing": "SC: data_end establish",
+      "pass": true
+    },
+    {
+      "case_id": "PB-pad8",
+      "obligation": "PacketBounds",
+      "sc_bearing": 12,
+      "sc_neutral": 12,
+      "sc_note_bearing": "SC: data_end establish",
+      "pass": true
+    },
+    {
+      "case_id": "PP-pad0",
+      "obligation": "PointerProvenance",
+      "sc_bearing": null,
+      "sc_neutral": null,
+      "sc_note_bearing": "SC: no PP-specific SourceComment heuristic (coverage gap)",
+      "pass": true
+    },
+    {
+      "case_id": "PP-pad32",
+      "obligation": "PointerProvenance",
+      "sc_bearing": null,
+      "sc_neutral": null,
+      "sc_note_bearing": "SC: no PP-specific SourceComment heuristic (coverage gap)",
+      "pass": true
+    },
+    {
+      "case_id": "PP-pad8",
+      "obligation": "PointerProvenance",
+      "sc_bearing": null,
+      "sc_neutral": null,
+      "sc_note_bearing": "SC: no PP-specific SourceComment heuristic (coverage gap)",
+      "pass": true
+    },
+    {
+      "case_id": "SR-pad0",
+      "obligation": "ScalarRange",
+      "sc_bearing": null,
+      "sc_neutral": null,
+      "sc_note_bearing": "SC: no scalar-guard heuristic hit (expected on unbound-index templates)",
+      "pass": true
+    },
+    {
+      "case_id": "SR-pad32",
+      "obligation": "ScalarRange",
+      "sc_bearing": null,
+      "sc_neutral": null,
+      "sc_note_bearing": "SC: no scalar-guard heuristic hit (expected on unbound-index templates)",
+      "pass": true
+    },
+    {
+      "case_id": "SR-pad8",
+      "obligation": "ScalarRange",
+      "sc_bearing": null,
+      "sc_neutral": null,
+      "sc_note_bearing": "SC: no scalar-guard heuristic hit (expected on unbound-index templates)",
+      "pass": true
+    }
+  ],
+  "oracle_comments_not_heuristic_hits": [
+    {
+      "case_id": "NP-brittle-pad0",
+      "oracle_lines_matching_heuristics": [],
+      "pass": true
+    },
+    {
+      "case_id": "NP-brittle-pad32",
+      "oracle_lines_matching_heuristics": [],
+      "pass": true
+    },
+    {
+      "case_id": "NP-brittle-pad8",
+      "oracle_lines_matching_heuristics": [],
+      "pass": true
+    },
+    {
+      "case_id": "NP-idiomatic-nocheck",
+      "oracle_lines_matching_heuristics": [],
+      "pass": true
+    },
+    {
+      "case_id": "NP-idiomatic-pad0",
+      "oracle_lines_matching_heuristics": [],
+      "pass": true
+    },
+    {
+      "case_id": "NP-idiomatic-pad32",
+      "oracle_lines_matching_heuristics": [],
+      "pass": true
+    },
+    {
+      "case_id": "NP-idiomatic-pad8",
+      "oracle_lines_matching_heuristics": [],
+      "pass": true
+    },
+    {
+      "case_id": "PB-pad0",
+      "oracle_lines_matching_heuristics": [],
+      "pass": true
+    },
+    {
+      "case_id": "PB-pad32",
+      "oracle_lines_matching_heuristics": [],
+      "pass": true
+    },
+    {
+      "case_id": "PB-pad8",
+      "oracle_lines_matching_heuristics": [],
+      "pass": true
+    },
+    {
+      "case_id": "PP-pad0",
+      "oracle_lines_matching_heuristics": [],
+      "pass": true
+    },
+    {
+      "case_id": "PP-pad32",
+      "oracle_lines_matching_heuristics": [],
+      "pass": true
+    },
+    {
+      "case_id": "PP-pad8",
+      "oracle_lines_matching_heuristics": [],
+      "pass": true
+    },
+    {
+      "case_id": "SR-pad0",
+      "oracle_lines_matching_heuristics": [],
+      "pass": true
+    },
+    {
+      "case_id": "SR-pad32",
+      "oracle_lines_matching_heuristics": [],
+      "pass": true
+    },
+    {
+      "case_id": "SR-pad8",
+      "oracle_lines_matching_heuristics": [],
+      "pass": true
+    }
+  ],
+  "lab_ab": {
+    "path": "results/marker_isolation_lab.json",
+    "present": true,
+    "summary": {
+      "pass": 16,
+      "n": 16,
+      "pass_rate": 1.0,
+      "verdict_match": 16,
+      "vs_match": 16,
+      "source_map_match": 16,
+      "source_comment_match": 16,
+      "normalized_log_match": 16,
+      "nodbg_obj_match": 16,
+      "dbg_obj_match": 0
+    },
+    "host_probe": "app-test-server\r\n6.8.0-136-generic\r\nUbuntu clang version 18.1.3 (1ubuntu1)\r\nbpftool v7.4.0"
+  },
+  "gates_mapping": {
+    "what_this_establishes": [
+      "Captured SoftwareX-stamp verifier logs contain no ORACLE_* tokens (VS / upstream bpfix CLI cannot read markers from log text).",
+      "SourceComment reported line is invariant under line-preserving marker neutralization on the same SoftwareX-stamp sources.",
+      "ORACLE comment lines themselves are not looks_like_* hits."
+    ],
+    "what_requires_lab_ab": [
+      "Compile+load identity: marker-bearing vs marker-neutral produce identical ACCEPT/REJECT, VS stop site, and source-map pairs (tools/lab_marker_isolation_ab.py on the SoftwareX pin host)."
+    ]
+  },
+  "note": "Scoring still reads ORACLE_* via oracle_sites for ground truth only. That path is not a diagnostic reporter input."
+}

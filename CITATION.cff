@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it using these metadata.
+title: "bpfix-adversarial: adversarial evaluation of eBPF diagnostic honesty"
+version: 1.0.0
+date-released: "2026-08-07"
+type: software
+authors:
+  - family-names: Kazuru
+    given-names: Seke
+    email: kazuruuni@gmail.com
+    orcid: "https://orcid.org/0009-0002-4099-1059"
+    affiliation: "Independent Researcher, Malawi"
+license: MIT
+repository-code: "https://github.com/kazuru-chidumbwe/bpfix-adversarial"
+url: "https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.0"
+abstract: >-
+  Open-source harness for adversarial test-case generation targeting eBPF
+  verifier diagnostic honesty (bpfix / Zheng et al.), with construction-time
+  injection oracles across PointerProvenance, ScalarRange, NullablePointer,
+  and PacketBounds.
+keywords:
+  - eBPF
+  - verifier
+  - diagnostic honesty
+  - adversarial testing
+  - bpfix
+  - software testing

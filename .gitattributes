@@ -1,0 +1,10 @@
+# Keep mutant / fixture text byte-stable across Windows and Linux checkouts.
+mutants/**/*.c text eol=lf
+fixtures/**/*.log text eol=lf
+fixtures/**/*.c text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sh text eol=lf

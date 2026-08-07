@@ -1,0 +1,112 @@
+OBJSHA:9e11e8947988653870972d2721ec852b1e89ac67a4e4daa77b78fb74b6654aa4
+
+DISASMSHA:6094f39c8ab85b649fe59f76f8a6602a70c825dcdc3b6da0ed1dcb4a7543e6dd
+
+BTFSHA:97ce4d7b9baab62c6e8bda9dfb5d7fe213b7c6c3ec9f30eb554a3130cb1f0573
+
+BTFEXTSHA:abcc2b4f4463611c98d3788572b179c390966284af46449b346ec73f6abb4386
+
+ACCEPT
+
+EXIT:0
+
+libbpf: loading object from /tmp/bpfix-iso-20260807T185821Z-NP-brittle-pad8-neutral.o
+
+libbpf: elf: section(3) socket, size 88, link 0, flags 6, type=1
+
+libbpf: sec 'socket': found program 'np_ptr_pad8' at insn offset 0 (0 bytes), code size 11 insns (88 bytes)
+
+libbpf: elf: section(4) .relsocket, size 16, link 26, flags 40, type=9
+
+libbpf: elf: section(5) .maps, size 32, link 0, flags 3, type=1
+
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+
+libbpf: license of /tmp/bpfix-iso-20260807T185821Z-NP-brittle-pad8-neutral.o is MIT
+
+libbpf: elf: section(16) .BTF, size 718, link 0, flags 0, type=1
+
+libbpf: elf: section(18) .BTF.ext, size 160, link 0, flags 0, type=1
+
+libbpf: elf: section(26) .symtab, size 360, link 1, flags 0, type=2
+
+libbpf: looking for externs among 15 symbols...
+
+libbpf: collected 0 externs total
+
+libbpf: map 'm': at sec_idx 5, offset 0.
+
+libbpf: map 'm': found type = 1.
+
+libbpf: map 'm': found key [6], sz = 4.
+
+libbpf: map 'm': found value [9], sz = 8.
+
+libbpf: map 'm': found max_entries = 1.
+
+libbpf: sec '.relsocket': collecting relocation for section(3) 'socket'
+
+libbpf: sec '.relsocket': relo #0: insn #4 against 'm'
+
+libbpf: prog 'np_ptr_pad8': found map 0 (m, sec 5, off 0) for insn #4
+
+libbpf: map 'm': created successfully, fd=4
+
+libbpf: prog 'np_ptr_pad8': -- BEGIN PROG LOAD LOG --
+
+func#0 @0
+
+arg#0 reference type('UNKNOWN ') size cannot be determined: -22
+
+0: R1=ctx() R10=fp0
+
+; int np_ptr_pad8(void *ctx)
+
+0: (b7) r6 = 0                        ; R6_w=0
+
+; __u32 key = 0;
+
+1: (63) *(u32 *)(r10 -4) = r6
+
+mark_precise: frame0: last_idx 1 first_idx 0 subseq_idx -1 
+
+mark_precise: frame0: regs=r6 stack= before 0: (b7) r6 = 0
+
+2: R6_w=0 R10=fp0 fp-8=0000????
+
+2: (bf) r2 = r10                      ; R2_w=fp0 R10=fp0
+
+3: (07) r2 += -4                      ; R2_w=fp-4
+
+; __u64 *ptr = bpf_map_lookup_elem(&m, &key);
+
+4: (18) r1 = 0xffff8b1f8cce1000       ; R1_w=map_ptr(map=m,ks=4,vs=8)
+
+6: (85) call bpf_map_lookup_elem#1    ; R0_w=map_value_or_null(id=1,map=m,ks=4,vs=8)
+
+; if (!ptr)
+
+7: (15) if r0 == 0x0 goto pc+1        ; R0_w=map_value(map=m,ks=4,vs=8)
+
+; return *ptr;
+
+8: (79) r6 = *(u64 *)(r0 +0)          ; R0=map_value(map=m,ks=4,vs=8) R6=scalar()
+
+; }
+
+9: (bf) r0 = r6                       ; R0_w=scalar(id=2) R6=scalar(id=2)
+
+10: (95) exit
+
+
+
+from 7 to 9: safe
+
+verification time 180 usec
+
+stack depth 8
+
+processed 11 insns (limit 1000000) max_states_per_insn 0 total_states 1 peak_states 1 mark_read 1
+
+-- END PROG LOAD LOG --
+

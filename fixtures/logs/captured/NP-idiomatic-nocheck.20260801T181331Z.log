@@ -1,0 +1,49 @@
+libbpf: loading object from /tmp/bpfix-adv-objs/NP-idiomatic-nocheck.o
+libbpf: elf: section(3) socket, size 72, link 0, flags 6, type=1
+libbpf: sec 'socket': found program 'np_entry_nocheck' at insn offset 0 (0 bytes), code size 9 insns (72 bytes)
+libbpf: elf: section(4) .relsocket, size 16, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 32, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-adv-objs/NP-idiomatic-nocheck.o is MIT
+libbpf: elf: section(16) .BTF, size 746, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 144, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 336, link 1, flags 0, type=2
+libbpf: looking for externs among 14 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'm': at sec_idx 5, offset 0.
+libbpf: map 'm': found type = 1.
+libbpf: map 'm': found key [6], sz = 4.
+libbpf: map 'm': found value [9], sz = 8.
+libbpf: map 'm': found max_entries = 1.
+libbpf: sec '.relsocket': collecting relocation for section(3) 'socket'
+libbpf: sec '.relsocket': relo #0: insn #4 against 'm'
+libbpf: prog 'np_entry_nocheck': found map 0 (m, sec 5, off 0) for insn #4
+libbpf: object 'NP-idiomatic-no': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: map 'm': created successfully, fd=4
+libbpf: prog 'np_entry_nocheck': BPF program load failed: Permission denied
+libbpf: prog 'np_entry_nocheck': -- BEGIN PROG LOAD LOG --
+func#0 @0
+arg#0 reference type('UNKNOWN ') size cannot be determined: -22
+0: R1=ctx() R10=fp0
+; int np_entry_nocheck(void *ctx) @ NP-idiomatic-nocheck.c:18
+0: (b7) r1 = 0                        ; R1_w=0
+; __u32 key = 0; @ NP-idiomatic-nocheck.c:20
+1: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 1 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 0: (b7) r1 = 0
+2: R1_w=0 R10=fp0 fp-8=0000????
+2: (bf) r2 = r10                      ; R2_w=fp0 R10=fp0
+3: (07) r2 += -4                      ; R2_w=fp-4
+; __u64 *entry = bpf_map_lookup_elem(&m, &key); @ NP-idiomatic-nocheck.c:21
+4: (18) r1 = 0xffff8cf7426a8000       ; R1_w=map_ptr(map=m,ks=4,vs=8)
+6: (85) call bpf_map_lookup_elem#1    ; R0_w=map_value_or_null(id=1,map=m,ks=4,vs=8)
+; return *entry; @ NP-idiomatic-nocheck.c:36
+7: (79) r0 = *(u64 *)(r0 +0)
+R0 invalid mem access 'map_value_or_null'
+verification time 23 usec
+stack depth 8
+processed 7 insns (limit 1000000) max_states_per_insn 0 total_states 0 peak_states 0 mark_read 0
+-- END PROG LOAD LOG --
+libbpf: prog 'np_entry_nocheck': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-adv-objs/NP-idiomatic-nocheck.o'
+Error: failed to load object file
