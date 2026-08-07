@@ -1,4 +1,4 @@
-"""bpfix-adversarial — diagnostic honesty harness for eBPF verifier diagnostics."""
+"""bpfix-adversarial — controlled stress testing of eBPF diagnostic localization."""
 
 __version__ = "1.0.0"
 
