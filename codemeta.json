@@ -2,7 +2,7 @@
   "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
   "@type": "SoftwareSourceCode",
   "name": "bpfix-adversarial",
-  "description": "Adversarial evaluation harness for eBPF verifier diagnostic honesty (bpfix).",
+  "description": "Pinned-environment harness for controlled stress testing of eBPF diagnostic localization (injection-site agreement under pad and rename).",
   "version": "1.0.0",
   "dateModified": "2026-08-07",
   "license": "https://spdx.org/licenses/MIT.html",
@@ -40,8 +40,9 @@
   "keywords": [
     "eBPF",
     "verifier",
-    "diagnostic honesty",
-    "adversarial testing",
-    "bpfix"
+    "diagnostic localization",
+    "metamorphic testing",
+    "bpfix",
+    "software testing"
   ]
 }

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "bpfix-adversarial"
 version = "1.0.0"
-description = "Adversarial harness for eBPF verifier diagnostic honesty"
+description = "Controlled stress testing of eBPF diagnostic localization (injection-site agreement)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
