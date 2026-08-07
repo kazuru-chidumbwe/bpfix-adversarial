@@ -90,8 +90,8 @@ def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="bpfix-adversarial",
         description=(
-            "Adversarial evaluation of eBPF verifier diagnostic honesty "
-            "(SourceComment heuristics from eunomia-bpf/bpfix)."
+            "Controlled stress testing of eBPF diagnostic localization "
+            "(injection-site agreement; SourceComment heuristics from eunomia-bpf/bpfix)."
         ),
     )
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -114,7 +114,10 @@ def build_parser() -> argparse.ArgumentParser:
     a.add_argument("--hits-only", action="store_true")
     a.set_defaults(func=cmd_analyze)
 
-    s = sub.add_parser("score-log", help="Parse verifier log fixture and score honesty")
+    s = sub.add_parser(
+        "score-log",
+        help="Parse verifier log fixture and score injection-site agreement",
+    )
     s.add_argument("log")
     s.add_argument("--oracle-loss", type=int, default=None)
     s.add_argument("--oracle-reject", type=int, default=None)
