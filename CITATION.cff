@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: If you use this software, please cite it using these metadata.
-title: "bpfix-adversarial: controlled stress testing of eBPF diagnostic localization"
+title: "bpfix-adversarial. Check eBPF diagnostic localization under pad and rename"
 version: 1.0.0
 date-released: "2026-08-07"
 type: software
@@ -14,11 +14,11 @@ license: MIT
 repository-code: "https://github.com/kazuru-chidumbwe/bpfix-adversarial"
 url: "https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.0"
 abstract: >-
-  Open-source harness for controlled stress testing of eBPF diagnostic
-  localization: construction-time injection markers, pinned-lab verifier
-  captures, and injection-site agreement scoring under pad and rename
-  (PointerProvenance, ScalarRange, NullablePointer, PacketBounds). Does not
-  claim a semantic proof-loss oracle.
+  Check whether eBPF reject diagnostics still name the injection line after
+  pad and rename stress. Markers are set at construction time. Scoring covers
+  SourceComment-style heuristics and related baselines on PointerProvenance,
+  ScalarRange, NullablePointer, and PacketBounds templates. This does not
+  claim a machine-verified semantic proof-loss oracle.
 keywords:
   - eBPF
   - verifier
