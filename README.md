@@ -177,23 +177,6 @@ target**, not independently scored results. Cite tag `v1.0.0` records the Ollama
 separation demonstration with n=1. The scored construct is injection-site
 agreement. It is not a verified semantic proof-loss oracle. See [`docs/METRICS.md`](docs/METRICS.md).
 
-## Citation
-
-Prefer [`CITATION.cff`](CITATION.cff).
-
-```bibtex
-@software{kazuru_bpfix_adversarial_2026,
-  author  = {Kazuru, Seke},
-  title   = {bpfix-adversarial. Check eBPF diagnostic localization under pad and rename},
-  version = {1.0.0},
-  year    = {2026},
-  url     = {https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.0},
-  license = {MIT}
-}
-```
-
-Add the journal citation and DOI after acceptance.
-
 ## License
 
 MIT. See [`LICENSE`](LICENSE).
