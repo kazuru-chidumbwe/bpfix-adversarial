@@ -9,5 +9,5 @@ localization (injection-site agreement under pad/rename). Includes scoring contr
 (top1_line / top1_span / set_recall_message), absolute distance, offline bpfix CLI
 replay, reporter/log invariance evidence, results-freshness CI, and committed insets.
 
-Prior private SoftwarX review iterations used `v1.1.x` tags; those tags are retired
+Prior private SoftwareX review iterations used `v1.1.x` tags; those tags are retired
 in favor of this single public root. Reviewers were informed of the retag.
