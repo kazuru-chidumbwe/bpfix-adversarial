@@ -1,4 +1,4 @@
-"""bpfix-adversarial — controlled stress testing of eBPF diagnostic localization."""
+"""Check whether eBPF reject diagnostics still name the injection line after pad and rename stress."""
 
 __version__ = "1.0.0"
 
