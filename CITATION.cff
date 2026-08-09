@@ -12,10 +12,10 @@ authors:
     affiliation: "Independent Researcher, Malawi"
 license: MIT
 repository-code: "https://github.com/kazuru-chidumbwe/bpfix-adversarial"
-url: "https://doi.org/10.5281/zenodo.21860256"
+url: "https://doi.org/10.5281/zenodo.21860453"
 identifiers:
   - type: doi
-    value: 10.5281/zenodo.21860256
+    value: 10.5281/zenodo.21860453
     description: "This version"
   - type: doi
     value: 10.5281/zenodo.21859726

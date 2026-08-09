@@ -72,7 +72,7 @@ Clone and capture (credentials in gitignored `lab/.env`):
 ```bash
 git clone https://github.com/kazuru-chidumbwe/bpfix-adversarial.git
 cd bpfix-adversarial
-git checkout v1.0.0   # or SoftwareX cite tag
+git checkout v1.0.1   # SoftwareX cite tag
 python3 -m venv .venv && . .venv/bin/activate
 pip install -U pip && pip install -e .
 # LAB_TEST_HOST / LAB_TEST_SSH_KEY or PASSWORD — see docs/TAGS.md

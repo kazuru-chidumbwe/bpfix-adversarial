@@ -1,6 +1,6 @@
 # Zenodo archive for SoftwareX cite pin `v1.0.1`
 
-**Version DOI (C2):** https://doi.org/10.5281/zenodo.21860256  
+**Version DOI (C2):** https://doi.org/10.5281/zenodo.21860453  
 
 **Concept DOI (all versions):** https://doi.org/10.5281/zenodo.21859726  
 
@@ -12,7 +12,7 @@ This Zenodo record is the DOI-backed permanent link for Code metadata **C2**.
 ## Cite
 
 ```
-Kazuru, S. (2026). bpfix-adversarial (v1.0.1). Zenodo. https://doi.org/10.5281/zenodo.21860256
+Kazuru, S. (2026). bpfix-adversarial (v1.0.1). Zenodo. https://doi.org/10.5281/zenodo.21860453
 ```
 
 Browsable GitHub tree (also C7): https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.1  
@@ -20,5 +20,8 @@ Browsable GitHub tree (also C7): https://github.com/kazuru-chidumbwe/bpfix-adver
 ## How this DOI was minted
 
 1. Zenodo ↔ GitHub connected; repo enabled.
-2. Published GitHub Release for tag `v1.0.1` (deposit `10.5281/zenodo.21860256`).
-3. Follow-up commit recorded that version DOI in C2 / CITATION / codemeta; tag retargeted. Do not republish the GitHub Release solely for the DOI-string commit.
+2. Reserved DOI `10.5281/zenodo.21860453` on a new Zenodo version draft of the concept record.
+3. Wrote that DOI into C2 / CITATION / codemeta **before** publishing the deposit (avoids chicken-egg lag).
+4. Published the deposit from the `v1.0.1` tree; GitHub Release `v1.0.1` matches the same tag.
+
+Prior version DOIs under the same concept (`21859727`, `21859746`, `21860256`) remain published; cite **`21860453`** for this SoftwareX pin.

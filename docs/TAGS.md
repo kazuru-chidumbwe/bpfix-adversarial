@@ -4,14 +4,15 @@ Annotated tags mark reproducible anchors. **`master` / `main` may advance** afte
 
 | Tag | Purpose |
 | --- | --- |
-| [`v1.0.0`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.0) | **SoftwareX cite pin** — first public release (retag when cite-tree fixes must stay on `v1.0.0`) |
+| [`v1.0.1`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.1) | **SoftwareX cite pin** (current) |
+| [`v1.0.0`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.0) | First public release (superseded for SoftwarX C1/C2) |
 
 Zenodo archive steps (C2 DOI): [`ZENODO.md`](ZENODO.md).
 
 ## Quick checkout
 
 ```bash
-git checkout v1.0.0
+git checkout v1.0.1
 ```
 
 ## Tag policy

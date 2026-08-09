@@ -6,7 +6,7 @@ Same table as the manuscript Code metadata section (OSP template v6, C1–C8).
 | Nr | Code metadata description | Metadata |
 | --- | --- | --- |
 | C1 | Current code version | `v1.0.1` |
-| C2 | Permanent link to code/repository used for this code version | https://doi.org/10.5281/zenodo.21860256 |
+| C2 | Permanent link to code/repository used for this code version | https://doi.org/10.5281/zenodo.21860453 |
 | C3 | Legal code license | MIT License (`LICENSE`) |
 | C4 | Code versioning system used | Git |
 | C5 | Software code languages, tools, and services used | Python 3.10+; Clang with BPF target; bpftool/libbpf; Linux kernel eBPF verifier; Python unittest; optional Rust-built upstream bpfix CLI for RQ1 replay; optional Ollama HTTP API for the localization–repair separation demonstration |
@@ -18,4 +18,4 @@ Exact host labels, kernel/clang/bpftool version strings, cite stamps, and the up
 
 Also see: `CITATION.cff`, `codemeta.json`, [`docs/ZENODO.md`](docs/ZENODO.md). GitHub tag URL remains in C7 for the browsable tree.
 
-**Note:** After GitHub Release `v1.0.1` mints a new Zenodo version DOI, update C2 / CITATION / codemeta to that version DOI (concept DOI `10.5281/zenodo.21859726` stays for “all versions”).
+**Note:** C2 is the Zenodo **version** DOI for this pin (`10.5281/zenodo.21860453`). Concept DOI `10.5281/zenodo.21859726` covers all versions.

@@ -17,7 +17,7 @@ This does **not** test verifier soundness, bypasses, or kernel CVEs.
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Cite pin [`v1.0.1`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.1).
-Permanent archive: [doi:10.5281/zenodo.21860256](https://doi.org/10.5281/zenodo.21860256).
+Permanent archive: [doi:10.5281/zenodo.21860453](https://doi.org/10.5281/zenodo.21860453).
 See [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff), and [codemeta.json](codemeta.json).
 Cite the release tag / Zenodo version, not floating `master`.
 Upstream bpfix pin is `81d97e4a528456e0082a77f4fb6edd13fa092b7b`.

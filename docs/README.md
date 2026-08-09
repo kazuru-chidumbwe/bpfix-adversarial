@@ -8,7 +8,7 @@ Lean set for reviewers and reproduce. Paper carries related-work / threat narrat
 | [`LAB-PIN.md`](LAB-PIN.md) | Debian template-oracle host + separation-demo pin |
 | [`DEPENDENCIES.md`](DEPENDENCIES.md) | Python pins vs offline path |
 | [`UPSTREAM.md`](UPSTREAM.md) | bpfix commit + SourceComment rename boundary |
-| [`TAGS.md`](TAGS.md) | Cite-tag policy (`v1.0.0`) |
-| [`ZENODO.md`](ZENODO.md) | DOI-backed C2 archive (`10.5281/zenodo.21860256`) |
+| [`TAGS.md`](TAGS.md) | Cite-tag policy (`v1.0.1`) |
+| [`ZENODO.md`](ZENODO.md) | DOI-backed C2 archive (`10.5281/zenodo.21860453`) |
 
 Start at the root [`README.md`](../README.md).
