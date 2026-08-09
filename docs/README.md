@@ -9,6 +9,6 @@ Lean set for reviewers and reproduce. Paper carries related-work / threat narrat
 | [`DEPENDENCIES.md`](DEPENDENCIES.md) | Python pins vs offline path |
 | [`UPSTREAM.md`](UPSTREAM.md) | bpfix commit + SourceComment rename boundary |
 | [`TAGS.md`](TAGS.md) | Cite-tag policy (`v1.0.0`) |
-| [`ZENODO.md`](ZENODO.md) | Steps for a DOI-backed C2 archive |
+| [`ZENODO.md`](ZENODO.md) | DOI-backed C2 archive (`10.5281/zenodo.21859727`) |
 
 Start at the root [`README.md`](../README.md).
