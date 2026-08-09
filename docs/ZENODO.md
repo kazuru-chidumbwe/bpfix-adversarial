@@ -1,6 +1,6 @@
 # Zenodo archive for SoftwareX cite pin `v1.0.1`
 
-**Version DOI (C2):** https://doi.org/10.5281/zenodo.21859746  
+**Version DOI (C2):** https://doi.org/10.5281/zenodo.21860256  
 
 **Concept DOI (all versions):** https://doi.org/10.5281/zenodo.21859726  
 
@@ -14,7 +14,7 @@ This Zenodo record is the DOI-backed permanent link for Code metadata **C2**.
 ## Cite
 
 ```
-Kazuru, S. (2026). bpfix-adversarial (v1.0.1). Zenodo. https://doi.org/10.5281/zenodo.21859746
+Kazuru, S. (2026). bpfix-adversarial (v1.0.1). Zenodo. https://doi.org/10.5281/zenodo.21860256
 ```
 
 Browsable GitHub tree (also C7): https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.1  

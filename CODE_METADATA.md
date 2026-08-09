@@ -6,7 +6,7 @@ Same table as the manuscript Code metadata section (OSP template v6, C1–C8).
 | Nr | Code metadata description | Metadata |
 | --- | --- | --- |
 | C1 | Current code version | `v1.0.1` |
-| C2 | Permanent link to code/repository used for this code version | https://doi.org/10.5281/zenodo.21859746 |
+| C2 | Permanent link to code/repository used for this code version | https://doi.org/10.5281/zenodo.21860256 |
 | C3 | Legal code license | MIT License (`LICENSE`) |
 | C4 | Code versioning system used | Git |
 | C5 | Software code languages, tools, and services used | Python 3.10+; Clang with BPF target; bpftool/libbpf; Linux kernel eBPF verifier; Python unittest; optional Rust-built upstream bpfix CLI for RQ1 replay; optional Ollama HTTP API for the localization–repair separation demonstration |
