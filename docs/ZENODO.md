@@ -4,8 +4,6 @@
 
 **Concept DOI (all versions):** https://doi.org/10.5281/zenodo.21859726  
 
-Update the version DOI above after GitHub Release `v1.0.1` deposits a new Zenodo version.
-
 SoftwareX will also copy the accepted code to the journal GitHub org after acceptance.
 This Zenodo record is the DOI-backed permanent link for Code metadata **C2**.
 
@@ -22,5 +20,5 @@ Browsable GitHub tree (also C7): https://github.com/kazuru-chidumbwe/bpfix-adver
 ## How this DOI was minted
 
 1. Zenodo ↔ GitHub connected; repo enabled.
-2. Published GitHub Release for the cite tag (re-publish after enabling Zenodo if needed so the webhook fires).
-3. Replace the version DOI in this file / C2 / CITATION.cff / codemeta.json with the new deposit.
+2. Published GitHub Release for tag `v1.0.1` (deposit `10.5281/zenodo.21860256`).
+3. Follow-up commit recorded that version DOI in C2 / CITATION / codemeta; tag retargeted. Do not republish the GitHub Release solely for the DOI-string commit.
