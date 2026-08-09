@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased (toward v1.0.2)
+
+- PP SC-vs-VS **span disagree** renders **n/a** when `sc_applicable=false` (same class as N5)
+- `docs/TAGS.md`: SoftwareX spelling; immutable-tag policy; authoritative `v1.0.0` is Zenodo `21859746`
+
 ## v1.0.1 — 2026-08-09
 
 SoftwareX Major/Minor revision patch (cite pin for resubmission).

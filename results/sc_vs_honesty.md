@@ -45,7 +45,7 @@ SC = bpfix SourceComment heuristic port on mutant source. VS = last source-mappe
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | NullablePointer | 1 | 0/1 | 0/1 | 0/1 | 0/1 | 0/1 |
 | PacketBounds | 3 | 3/3 | 3/3 | 0/3 | 0/3 | 3/3 |
-| PointerProvenance | 3 | n/a | n/a | 0/3 | 3/3 | 0/3 |
+| PointerProvenance | 3 | n/a | n/a | 0/3 | 3/3 | n/a |
 | ScalarRange | 3 | 0/3 | 0/3 | 0/3 | 0/3 | 0/3 |
 
 ## Takeaways

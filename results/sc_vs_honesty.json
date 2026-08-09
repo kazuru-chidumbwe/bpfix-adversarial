@@ -1,7 +1,7 @@
 {
   "generator": "tools/score_sc_vs_honesty.py",
   "oracle_module": "bpfix_adversarial.oracle",
-  "scoring_rule": "top1_line = predicted==oracle_loss_code; top1_span = predicted in oracle_loss_span; distance_error = |predicted-oracle_loss_code|; legacy top1_vs_loss aliases top1_span; SC PointerProvenance is N/A (sc_applicable=false; not scored as 0)",
+  "scoring_rule": "top1_line = predicted==oracle_loss_code; top1_span = predicted in oracle_loss_span; distance_error = |predicted-oracle_loss_code|; legacy top1_vs_loss aliases top1_span; SC PointerProvenance is N/A (sc_applicable=false; not scored as 0); SC-vs-VS span disagreement is N/A when SC is N/A",
   "n": 19,
   "rows": [
     {

@@ -304,7 +304,8 @@ def main() -> None:
             "top1_span = predicted in oracle_loss_span; "
             "distance_error = |predicted-oracle_loss_code|; "
             "legacy top1_vs_loss aliases top1_span; "
-            "SC PointerProvenance is N/A (sc_applicable=false; not scored as 0)"
+            "SC PointerProvenance is N/A (sc_applicable=false; not scored as 0); "
+            "SC-vs-VS span disagreement is N/A when SC is N/A"
         ),
         "n": len(rows),
         "rows": rows,
@@ -391,10 +392,15 @@ def main() -> None:
             sc_s_s = f"{sc_s}/{n}"
         vs_l = sum(1 for r in rej if r["vs_top1_line"] is True)
         vs_s = sum(1 for r in rej if r["vs_top1_span"] is True)
-        dis = sum(1 for r in rej if r["disagreement"] is True)
+        # SC-vs-VS span disagreement is undefined when SC is N/A (e.g. PP).
+        if ob == "PointerProvenance" or any(not r.get("sc_applicable", True) for r in rej):
+            dis_s = "n/a"
+        else:
+            dis = sum(1 for r in rej if r["disagreement"] is True)
+            dis_s = f"{dis}/{n}"
         lines.append(
             f"| {ob} | {n} | {sc_l_s} | {sc_s_s} | "
-            f"{vs_l}/{n} | {vs_s}/{n} | {dis}/{n} |"
+            f"{vs_l}/{n} | {vs_s}/{n} | {dis_s} |"
         )
 
     lines += [
