@@ -21,6 +21,6 @@ git checkout v1.0.0
 - Committed `results/*.json` must match offline emitters (CI: `tools/check_results_fresh.py`).
 - Record kernel (`uname -r`), clang/llvm, and bpfix commit (`81d97e4a528456e0082a77f4fb6edd13fa092b7b`) in each lab run manifest under `results/env_pins/`.
 
-## Lab host (optional)
+## Lab host
 
-See [LAB-PIN.md](LAB-PIN.md), [DEPENDENCIES.md](DEPENDENCIES.md), [ARCHITECTURE.md](ARCHITECTURE.md).
+See [`LAB-PIN.md`](LAB-PIN.md) and [`DEPENDENCIES.md`](DEPENDENCIES.md).

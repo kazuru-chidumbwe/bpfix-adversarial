@@ -1,9 +1,9 @@
-# Zenodo archive for SoftwarX cite pin `v1.0.0`
+# Zenodo archive for SoftwareX cite pin `v1.0.0`
 
 SoftwareX will also copy the accepted code to the journal GitHub org after acceptance.
 A Zenodo DOI still strengthens Code metadata **C2** (permanent link) at submission / revision time.
 
-**Version lock:** SoftwarX C1 and all package version fields stay **`v1.0.0` / `1.0.0`**. Do not invent a DOI here — paste the Zenodo version DOI into C2 after the steps below.
+**Version lock:** SoftwareX C1 and all package version fields stay **`v1.0.0` / `1.0.0`**. Do not invent a DOI here — paste the Zenodo version DOI into C2 after the steps below.
 
 ## Exact steps
 
@@ -14,9 +14,9 @@ A Zenodo DOI still strengthens Code metadata **C2** (permanent link) at submissi
 3. Enable **`bpfix-adversarial`** in the repo list.
 4. Optional check: GitHub repo **Settings → Webhooks** shows a Zenodo webhook.
 
-### B. Archive tag `v1.0.0` (after any SoftwarX cite retag)
+### B. Archive tag `v1.0.0` (after any SoftwareX cite retag)
 
-1. Confirm the annotated tag `v1.0.0` points at the SoftwarX cite tree:
+1. Confirm the annotated tag `v1.0.0` points at the SoftwareX cite tree:
    ```bash
    git fetch --tags
    git checkout v1.0.0
@@ -29,12 +29,7 @@ A Zenodo DOI still strengthens Code metadata **C2** (permanent link) at submissi
 
 ### C. After the DOI exists
 
-Tell the programme assistant the DOI so C2 can be updated in:
-
-- `CODE_METADATA.md` (C2)
-- `codemeta.json`
-- `CITATION.cff`
-- SoftwarX manuscript Code metadata + prose that currently says no archive DOI is assigned
+Update C2 in `CODE_METADATA.md`, `codemeta.json`, `CITATION.cff`, and the SoftwareX manuscript Code metadata (replace any “no archive DOI” prose).
 
 If metadata commits land after the first Zenodo snapshot: either leave C2 as the DOI of the code-complete `v1.0.0` tarball, or retag `v1.0.0` again and publish a new GitHub Release so Zenodo mints a new **version** (C1 remains `v1.0.0`).
 

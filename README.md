@@ -47,9 +47,7 @@ docker run --rm bpfix-adversarial:offline
 ```
 
 Committed paper tables live under [`results/`](results/).
-Metrics are in [`docs/METRICS.md`](docs/METRICS.md).
-Lab pin is [`docs/LAB-PIN.md`](docs/LAB-PIN.md).
-Python pins are [`docs/DEPENDENCIES.md`](docs/DEPENDENCIES.md).
+Docs index: [`docs/README.md`](docs/README.md) (metrics, lab pin, deps, upstream, tags, Zenodo).
 
 ## What it does
 
@@ -79,8 +77,8 @@ pip install -e .
 Optional. The OpenAI separation path needs `OPENAI_API_KEY`.
 The paper separation demonstration used **Ollama** with `--backend ollama`. No cloud key.
 Model digest and seed are pinned. See `tools/rq4_llm_repair.py` and `results/rq4_ollama/`.
-Lab SSH helpers need `paramiko` and a `lab/.env`. See [`docs/TAGS.md`](docs/TAGS.md).
-Architecture is in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+Lab SSH helpers need `paramiko` and a `lab/.env`. See [`docs/LAB-PIN.md`](docs/LAB-PIN.md) and [`docs/TAGS.md`](docs/TAGS.md).
+To add a reporter: map a log to a primary line, then call `bpfix_adversarial.score.score_honesty` (see `docs/METRICS.md`).
 
 ## Minimal demo
 
@@ -161,7 +159,7 @@ fixtures/upstream/    depth-21 sparse bpfix-bench cases (curated target)
 lab/                  Linux capture helpers
 tools/                emit tables, lab capture, generate mutants
 results/              committed paper insets (md/json)
-docs/                 ARCHITECTURE, threat model, metrics, tags
+docs/                 metrics, lab pin, deps, upstream, tags, Zenodo (see docs/README.md)
 schemas/              optional JSON Schema contracts
 tests/                unittest suite
 Makefile              smoke / insets (peer-harness shape)
