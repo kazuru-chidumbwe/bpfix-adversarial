@@ -18,8 +18,13 @@ emitters do **not** need it.
 | Capture | `bpftool prog load … -d` |
 
 Separation demonstration (not template-oracle scores): Ubuntu 24.04
-`app-test-server`, kernel `6.8.0-136-generic` — see
-`results/env_pins/app-test-server.20260807T112233Z.env.txt`.
+`app-test-server`, kernel `6.8.0-136-generic`, clang 18.1.3, bpftool v7.4.0 —
+see `results/env_pins/app-test-server.20260807T112233Z.env.txt`. The SoftwareX
+Ollama localization–repair separation capture on that host recorded ACCEPT on
+2026-08-07 (stdlib `urllib` HTTP client; no `ollama` PyPI package).
+
+Optional RQ1 offline CLI replay uses upstream bpfix at immutable commit
+`81d97e4a528456e0082a77f4fb6edd13fa092b7b` (see `docs/UPSTREAM.md`).
 
 ## What reviewers must match
 

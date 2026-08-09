@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Check whether eBPF reject diagnostics still name the injection line after pad and rename stress."""
 
 __version__ = "1.0.0"

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Generate all mutant C sources into mutants/."""
 
 from __future__ import annotations

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """SC vs VS honesty on lab-captured mutants (loss-anchored scoring).
 
 General rule (locked): top-1 and distance are measured against the construction-time

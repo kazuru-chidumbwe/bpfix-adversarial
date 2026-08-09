@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Marker isolation helpers — strip ORACLE_* comments without shifting code lines."""
 
 from __future__ import annotations

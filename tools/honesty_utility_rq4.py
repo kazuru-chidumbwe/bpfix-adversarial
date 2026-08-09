@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """RQ4 honesty ≠ utility — separator experiment (Phase 2).
 
 Lead arm: idiomatic `entry` naming + missing null check.

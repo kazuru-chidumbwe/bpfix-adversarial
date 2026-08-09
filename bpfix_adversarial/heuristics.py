@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Faithful Python port of bpfix SourceComment heuristics.
 
 Pinned to eunomia-bpf/bpfix commit 81d97e4a528456e0082a77f4fb6edd13fa092b7b

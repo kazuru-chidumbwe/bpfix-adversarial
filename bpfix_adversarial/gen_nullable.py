@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Generate NullablePointer adversarial mutants (ptr vs entry rename)."""
 
 from __future__ import annotations

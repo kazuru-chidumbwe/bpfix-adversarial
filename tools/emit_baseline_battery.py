@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Cheap SoftwareX baseline battery over already-captured rejecting logs.
 
 Baselines (no new lab work):
@@ -49,7 +50,14 @@ def main() -> None:
         rand_line = rng.randint(1, int(reject)) if reject else None
         upper = loss
 
-        def pack(name: str, reported: int | None) -> dict:
+        def pack(
+            name: str,
+            reported: int | None,
+            *,
+            loss: int | None = loss,
+            reject: int | None = reject,
+            span: list = span,
+        ) -> dict:
             if loss is None or reported is None:
                 return {
                     "baseline": name,

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Schemas must stay parseable JSON (optional interchange; not runtime-gated)."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Oracle templates for PointerProvenance, ScalarRange, PacketBounds."""
 
 from __future__ import annotations

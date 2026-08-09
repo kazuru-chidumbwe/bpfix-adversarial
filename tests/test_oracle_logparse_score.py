@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Unit tests: marker extraction, logparse, score, distance."""
 
 from __future__ import annotations

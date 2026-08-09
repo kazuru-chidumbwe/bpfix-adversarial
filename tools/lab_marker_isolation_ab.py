@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Lab A/B: marker-bearing vs marker-neutral mutants (Gates marker isolation).
 
 For each SoftwareX-stamp case in results/sc_vs_honesty.json, compile+load the

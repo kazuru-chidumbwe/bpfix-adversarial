@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Rename adversaries targeting looks_like_null_check name substrings."""
 
 from __future__ import annotations

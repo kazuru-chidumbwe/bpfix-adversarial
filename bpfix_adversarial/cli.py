@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """CLI for bpfix-adversarial."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Lab capture via LAB_TEST_* (.env). Prefer key; sudo password from LAB_TEST_PASSWORD."""
 
 from __future__ import annotations

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """RQ1 — full upstream bpfix CLI localizations on lab pad reject-oracles.
 
 Parses `results/rq1_bpfix_cli_raw/<case>.txt` produced by

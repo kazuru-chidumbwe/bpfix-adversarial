@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Emit depth-21 selection + join table (campaign label 20260728)."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Unit tests — stdlib unittest (no pytest required)."""
 
 from __future__ import annotations

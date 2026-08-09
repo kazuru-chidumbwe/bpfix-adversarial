@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Analyze source lines / files with bpfix SourceComment heuristics."""
 
 from __future__ import annotations

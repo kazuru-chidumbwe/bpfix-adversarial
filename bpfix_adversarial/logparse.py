@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Parse minimal verifier-log source comments and score SourceComment honesty."""
 
 from __future__ import annotations

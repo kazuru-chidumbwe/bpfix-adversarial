@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Fail unless package __version__ matches pyproject.toml [project].version."""
 
 from __future__ import annotations

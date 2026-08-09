@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """ProofSignal / ProofEvent model aligned with bpfix's evidence tiers."""
 
 from __future__ import annotations

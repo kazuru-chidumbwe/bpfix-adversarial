@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """RQ1 distance sweep using synthetic oracle + SourceComment diagnostic model.
 
 For each pad length, oracle distance grows; a diagnostic that always reports

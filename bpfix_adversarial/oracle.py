@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Construction-time injection markers (ORACLE_* comments).
 
 Historical names ORACLE_LOSS_LINE / ORACLE_REJECT_LINE are retained for fixture

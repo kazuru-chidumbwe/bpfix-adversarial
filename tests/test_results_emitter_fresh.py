@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Committed results/*.json must match a fresh offline emitter run.
 
 Extends the narrow src_sha256 guards: every results/*.json is either

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Score one adversarial case result against its oracle (stub)."""
 
 from __future__ import annotations

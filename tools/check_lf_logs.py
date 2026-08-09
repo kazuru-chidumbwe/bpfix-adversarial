@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Fail if any fixtures/**/*.log (or given paths) contain CRLF bytes.
 
 CI / pre-push hygiene: .gitattributes declares eol=lf, but Windows captures

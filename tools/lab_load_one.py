@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Lab-load a single BPF C file via LAB_TEST_* and report accept/reject."""
 
 from __future__ import annotations

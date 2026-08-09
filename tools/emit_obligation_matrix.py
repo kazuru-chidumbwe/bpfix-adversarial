@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Emit four-obligation stratified score table (Bomb #1).
 
 Scores SourceComment heuristics against construction-time oracle markers

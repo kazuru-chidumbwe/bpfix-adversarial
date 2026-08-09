@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Sparse-fetch bpfix-bench depth-21 subset @ pinned commit (no full vendor tree)."""
 
 from __future__ import annotations

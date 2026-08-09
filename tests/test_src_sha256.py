@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Committed results hashes must match live mutants and captured logs."""
 
 from __future__ import annotations

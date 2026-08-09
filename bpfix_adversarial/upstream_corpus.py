@@ -1,4 +1,5 @@
-﻿"""Upstream bpfix-bench indexing and subset selection utilities."""
+# SPDX-License-Identifier: MIT
+"""Upstream bpfix-bench indexing and subset selection utilities."""
 
 from __future__ import annotations
 

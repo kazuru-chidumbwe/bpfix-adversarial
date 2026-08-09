@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Score NullablePointer fixture pair (brittle vs idiomatic) for paper Figure 1."""
 
 from __future__ import annotations

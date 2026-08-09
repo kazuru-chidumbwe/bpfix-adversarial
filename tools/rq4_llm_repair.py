@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """RQ4 — pinned LLM repair (reproducible honesty≠utility separator).
 
 Backends (same frozen prompts + response/diff capture):

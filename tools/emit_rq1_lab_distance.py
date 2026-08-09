@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """RQ1 lab distance table from sc_vs_honesty (pad 0/8/32 reject-oracles).
 
 Uses loss-anchored scoring on lab-captured templates. This is SC-port + VerifierState

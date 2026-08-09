@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Fail if committed results/*.json drift from a fresh offline emitter run.
 
 Lab / network / Ollama-backed artifacts are listed as SKIP with a reason so every

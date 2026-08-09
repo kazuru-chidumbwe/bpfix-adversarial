@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Injection-site agreement scoring: construction markers vs reported line."""
 
 from __future__ import annotations

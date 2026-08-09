@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """RQ3 — SourceComment vs VerifierState disagreement table."""
 
 from __future__ import annotations

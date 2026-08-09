@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Emit §6.5 four-obligation stratified score table from mutants + available logs."""
 
 from __future__ import annotations

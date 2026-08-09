@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Minimal offline oracle-independence controls (SoftwareX punch-list).
 
 Uses already-captured SoftwareX-stamp rows in results/sc_vs_honesty.json —

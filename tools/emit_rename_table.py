@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Emit RQ2 rename-honesty table (JSON + Markdown) for the paper inset."""
 
 from __future__ import annotations
