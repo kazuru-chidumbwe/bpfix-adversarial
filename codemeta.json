@@ -3,7 +3,7 @@
   "@type": "SoftwareSourceCode",
   "name": "bpfix-adversarial: an evaluation harness for eBPF diagnostic localization under padding and renaming stress",
   "description": "Check whether eBPF reject diagnostics still name the line where a fault was injected after pad and rename stress.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "dateModified": "2026-08-07",
   "license": "https://spdx.org/licenses/MIT.html",
   "codeRepository": "https://github.com/kazuru-chidumbwe/bpfix-adversarial",

@@ -21,9 +21,9 @@ SC = bpfix SourceComment heuristic port on mutant source. VS = last source-mappe
 | PacketBounds | `PB-pad0` | 12,13 | 12 | yes | yes | 15 | no | no | yes | yes |
 | PacketBounds | `PB-pad32` | 12,13 | 12 | yes | yes | 50 | no | no | yes | yes |
 | PacketBounds | `PB-pad8` | 12,13 | 12 | yes | yes | 26 | no | no | yes | yes |
-| PointerProvenance | `PP-pad0` | 14,15 | — | no | no | 15 | no | yes | yes | yes |
-| PointerProvenance | `PP-pad32` | 14,15 | — | no | no | 15 | no | yes | yes | yes |
-| PointerProvenance | `PP-pad8` | 14,15 | — | no | no | 15 | no | yes | yes | yes |
+| PointerProvenance | `PP-pad0` | 14,15 | — | n/a | n/a | 15 | no | yes | yes | n/a |
+| PointerProvenance | `PP-pad32` | 14,15 | — | n/a | n/a | 15 | no | yes | yes | n/a |
+| PointerProvenance | `PP-pad8` | 14,15 | — | n/a | n/a | 15 | no | yes | yes | n/a |
 | ScalarRange | `SR-pad0` | 11 | — | no | no | 13 | no | no | yes | no |
 | ScalarRange | `SR-pad32` | 11 | — | no | no | 48 | no | no | yes | no |
 | ScalarRange | `SR-pad8` | 11 | — | no | no | 24 | no | no | yes | no |
@@ -32,9 +32,9 @@ SC = bpfix SourceComment heuristic port on mutant source. VS = last source-mappe
 
 | case_id | SC line/span | VS line/span | note |
 | --- | --- | --- | --- |
-| `PP-pad0` | no/no | no/yes | Terminal verifier report maps to XOR wash (coincides with author injection span), not the later marked use — not a semantic proof-loss claim |
-| `PP-pad32` | no/no | no/yes | Terminal verifier report maps to XOR wash (coincides with author injection span), not the later marked use — not a semantic proof-loss claim |
-| `PP-pad8` | no/no | no/yes | Terminal verifier report maps to XOR wash (coincides with author injection span), not the later marked use — not a semantic proof-loss claim |
+| `PP-pad0` | n/a | no/yes | SC N/A (no upstream PP predicate); VS terminal map hits XOR wash (coincides with author injection span; not a semantic proof-loss claim) |
+| `PP-pad32` | n/a | no/yes | SC N/A (no upstream PP predicate); VS terminal map hits XOR wash (coincides with author injection span; not a semantic proof-loss claim) |
+| `PP-pad8` | n/a | no/yes | SC N/A (no upstream PP predicate); VS terminal map hits XOR wash (coincides with author injection span; not a semantic proof-loss claim) |
 | `SR-pad0` | no/no | no/no | VS near-reject (stack load); no scalar-guard line present to match → both miss loss |
 | `SR-pad32` | no/no | no/no | VS near-reject (stack load); no scalar-guard line present to match → both miss loss |
 | `SR-pad8` | no/no | no/no | VS near-reject (stack load); no scalar-guard line present to match → both miss loss |
@@ -45,7 +45,7 @@ SC = bpfix SourceComment heuristic port on mutant source. VS = last source-mappe
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | NullablePointer | 1 | 0/1 | 0/1 | 0/1 | 0/1 | 0/1 |
 | PacketBounds | 3 | 3/3 | 3/3 | 0/3 | 0/3 | 3/3 |
-| PointerProvenance | 3 | 0/3 | 0/3 | 0/3 | 3/3 | 3/3 |
+| PointerProvenance | 3 | n/a | n/a | 0/3 | 3/3 | 0/3 |
 | ScalarRange | 3 | 0/3 | 0/3 | 0/3 | 0/3 | 0/3 |
 
 ## Takeaways

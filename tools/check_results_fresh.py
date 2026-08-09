@@ -90,6 +90,44 @@ def check_one(rel: str, script_argv: list[str]) -> None:
         )
 
 
+def check_figures() -> None:
+    """Regenerate SVGs and require byte-identical committed figures/."""
+    figure_outputs = (
+        "figures/fig2-sc-vs-honesty.svg",
+        "figures/fig3-lab-distance.svg",
+        "figures/fig4-scoring-modes-cli.svg",
+    )
+    backups: dict[Path, bytes] = {}
+    for rel in figure_outputs:
+        path = ROOT / rel
+        if not path.is_file():
+            raise SystemExit(f"missing committed figure: {rel}")
+        backups[path] = path.read_bytes()
+    try:
+        proc = subprocess.run(
+            [sys.executable, "tools/emit_figures.py"],
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if proc.returncode != 0:
+            raise SystemExit(
+                f"emit_figures failed\nstdout:\n{proc.stdout}\nstderr:\n{proc.stderr}"
+            )
+        for rel in figure_outputs:
+            path = ROOT / rel
+            if path.read_bytes() != backups[path]:
+                raise SystemExit(
+                    f"STALE: {rel} does not match fresh tools/emit_figures.py\n"
+                    f"Re-run: python tools/emit_figures.py && git add {rel}"
+                )
+            print(f"OK fresh: {rel}")
+    finally:
+        for path, data in backups.items():
+            path.write_bytes(data)
+
+
 def main() -> int:
     covered = {rel for rel, _ in OFFLINE_EMITTERS} | set(SKIP_RESULTS)
     on_disk = {
@@ -115,7 +153,9 @@ def main() -> int:
     for rel, reason in sorted(SKIP_RESULTS.items()):
         print(f"SKIP {rel}: {reason}")
 
-    print("All offline results/*.json match their emitters.")
+    check_figures()
+
+    print("All offline results/*.json and figures/*.svg match their emitters.")
     return 0
 
 

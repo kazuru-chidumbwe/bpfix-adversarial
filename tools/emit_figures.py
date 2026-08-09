@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Emit SoftwarX Figs 2–5 as SVG from committed results/*.json (stdlib only)."""
+"""Emit SoftwareX Figs 2–4 as SVG from committed results/*.json (stdlib only).
+
+Fig. 1 (architecture) is hand-authored outside this emitter.
+Rename boundary is prose-only (no rate figure).
+"""
 
 from __future__ import annotations
 
@@ -53,7 +57,7 @@ def bar_chart(
     )
     for i, lab in enumerate(labels):
         gx = left + i * group_w
-        for j, (name, vals, color) in enumerate(series):
+        for j, (_name, vals, color) in enumerate(series):
             if i >= len(vals):
                 continue
             v = vals[i]
@@ -68,7 +72,6 @@ def bar_chart(
             f'<text x="{gx + group_w/2:.1f}" y="{h-28}" text-anchor="middle" '
             f'font-family="Segoe UI, Arial, sans-serif" font-size="11">{lab}</text>'
         )
-    # legend
     lx = left
     for name, _, color in series:
         lines.append(f'<rect x="{lx}" y="{h-18}" width="12" height="12" fill="{color}"/>')
@@ -83,7 +86,6 @@ def bar_chart(
 
 def emit_fig2_sc_vs() -> None:
     data = json.loads((RESULTS / "sc_vs_honesty.json").read_text(encoding="utf-8"))
-    # rejecting templates: PB/PP/SR top1 rates
     fams = ["PacketBounds", "PointerProvenance", "ScalarRange"]
     sc_line, vs_span = [], []
     for fam in fams:
@@ -94,11 +96,10 @@ def emit_fig2_sc_vs() -> None:
         ]
         n = len(rows) or 1
         if fam == "PointerProvenance":
-            # SC is N/A — plot as 0 with note in title
-            sc_line.append(0.0)
+            sc_line.append(0.0)  # N/A — plotted as 0 with label PP*
         else:
-            sc_line.append(sum(1 for r in rows if r.get("sc_top1_line")) / n)
-        vs_span.append(sum(1 for r in rows if r.get("vs_top1_span")) / n)
+            sc_line.append(sum(1 for r in rows if r.get("sc_top1_line") is True) / n)
+        vs_span.append(sum(1 for r in rows if r.get("vs_top1_span") is True) / n)
     bar_chart(
         "Fig. 2 — SC top1_line vs VS top1_span (rejecting templates; PP SC = N/A)",
         ["PB", "PP*", "SR"],
@@ -111,23 +112,7 @@ def emit_fig2_sc_vs() -> None:
     )
 
 
-def emit_fig3_rename() -> None:
-    data = json.loads((RESULTS / "rename_honesty.json").read_text(encoding="utf-8"))
-    # qualitative: name-list flips vs helper stable (boolean)
-    flips = sum(1 for c in data["cases"] if c.get("honesty_break"))
-    helper = 1 if all(c.get("helper_anchored_stable") for c in data["cases"]) else 0
-    bar_chart(
-        "Fig. 3 — Rename boundary (name-list flip count vs helper stable by construction)",
-        ["name-list flips", "helper stable"],
-        [
-            ("count / boolean", [float(flips), float(helper)], "#3d5a80"),
-        ],
-        OUT / "fig3-rename-boundary.svg",
-        ymax=max(float(flips), 1.0),
-    )
-
-
-def emit_fig4_lab_distance() -> None:
+def emit_fig3_lab_distance() -> None:
     data = json.loads((RESULTS / "rq1_lab_distance.json").read_text(encoding="utf-8"))
     pb = sorted(
         (r for r in data["rows"] if r["obligation"] == "PacketBounds"),
@@ -137,55 +122,62 @@ def emit_fig4_lab_distance() -> None:
     sc_d = [float(r["sc_distance_error"] or 0) for r in pb]
     vs_d = [float(r["vs_distance_error"] or 0) for r in pb]
     bar_chart(
-        "Fig. 4 — PB lab distance vs pad (SC stays 0; VS grows with pad)",
+        "Fig. 3 — PB lab distance vs pad (SC stays 0; VS grows with pad)",
         labels,
         [
             ("SC d", sc_d, "#2a9d8f"),
             ("VS d", vs_d, "#e76f51"),
         ],
-        OUT / "fig4-lab-distance.svg",
+        OUT / "fig3-lab-distance.svg",
     )
 
 
-def emit_fig5_set_recall() -> None:
-    cli = RESULTS / "rq1_bpfix_cli.json"
-    data = json.loads(cli.read_text(encoding="utf-8"))
-    rows = [
-        r
-        for r in data["rows"]
-        if r.get("obligation") == "PacketBounds"
-    ]
-    rows = sorted(rows, key=lambda r: r.get("pad", 0))
+def emit_fig4_set_recall() -> None:
+    data = json.loads((RESULTS / "rq1_bpfix_cli.json").read_text(encoding="utf-8"))
+    rows = sorted(
+        (r for r in data["rows"] if r.get("obligation") == "PacketBounds"),
+        key=lambda r: r.get("pad", 0),
+    )
     labels = [r["case_id"] for r in rows]
-    # CLI primary top1_line vs injection (legacy field name top1_vs_loss on CLI inset)
     top1 = [
-        1.0
-        if (
-            r.get("bpfix_primary_src") == r.get("oracle_loss_code")
-            or r.get("bpfix_top1_line")
-        )
-        else 0.0
+        1.0 if r.get("bpfix_primary_src") == r.get("oracle_loss_code") else 0.0
         for r in rows
     ]
     recall = [1.0 if r.get("bpfix_loss_mentioned") else 0.0 for r in rows]
     bar_chart(
-        "Fig. 5 — PacketBounds CLI: top1_line vs set_recall_message",
+        "Fig. 4 — PacketBounds CLI: top1_line vs set_recall_message",
         labels,
         [
             ("top1_line", top1, "#264653"),
             ("set_recall_message", recall, "#f4a261"),
         ],
-        OUT / "fig5-scoring-modes-cli.svg",
+        OUT / "fig4-scoring-modes-cli.svg",
         ymax=1.0,
     )
+
+
+FIGURE_OUTPUTS = (
+    "figures/fig2-sc-vs-honesty.svg",
+    "figures/fig3-lab-distance.svg",
+    "figures/fig4-scoring-modes-cli.svg",
+)
 
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     emit_fig2_sc_vs()
-    emit_fig3_rename()
-    emit_fig4_lab_distance()
-    emit_fig5_set_recall()
+    emit_fig3_lab_distance()
+    emit_fig4_set_recall()
+    # Remove retired rename-rate figure if present
+    stale = OUT / "fig3-rename-boundary.svg"
+    if stale.is_file():
+        stale.unlink()
+    stale5 = OUT / "fig5-scoring-modes-cli.svg"
+    if stale5.is_file():
+        stale5.unlink()
+    stale4old = OUT / "fig4-lab-distance.svg"
+    if stale4old.is_file():
+        stale4old.unlink()
     print(f"Wrote SVGs under {OUT}")
 
 

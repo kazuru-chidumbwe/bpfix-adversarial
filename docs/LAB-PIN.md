@@ -25,7 +25,7 @@ Ollama localization–repair separation capture on that host recorded ACCEPT on
 
 | Role | Host | Notes |
 | --- | --- | --- |
-| Template-oracle scores | `lab-server` (Debian 13 / `6.12.86+deb13-amd64`) | SoftwarX cite pin |
+| Template-oracle scores | `lab-server` (Debian 13 / `6.12.86+deb13-amd64`) | SoftwareX cite pin |
 | Separation + marker A/B | `app-test-server` (Ubuntu 24.04 / `6.8.0-136-generic`) | Not portability claim |
 | Offline bpfix CLI replay | WSL/Linux developer host | Reads stamped logs only; does not re-verify |
 

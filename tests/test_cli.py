@@ -26,7 +26,7 @@ class TestCli(unittest.TestCase):
     def test_version(self) -> None:
         code, payload = self._run(["version"])
         self.assertEqual(code, 0)
-        self.assertEqual(payload["bpfix_adversarial"], "1.0.0")
+        self.assertEqual(payload["bpfix_adversarial"], "1.0.1")
         self.assertIn("commit", payload["upstream"])
 
     def test_heuristics(self) -> None:

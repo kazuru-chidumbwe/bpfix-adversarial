@@ -149,7 +149,12 @@ def in_loss_span(reported: int | None, sites: dict) -> bool:
     return reported == sites["oracle_loss_code"]
 
 
-def score_reported(reported: int | None, sites: dict) -> dict:
+def score_reported(
+    reported: int | None,
+    sites: dict,
+    *,
+    applicable: bool = True,
+) -> dict:
     """Score with separate top1_line / top1_span and absolute distance.
 
     - top1_line: predicted == oracle_loss_code (first executable injection line)
@@ -157,11 +162,24 @@ def score_reported(reported: int | None, sites: dict) -> dict:
     - set_recall_message: not computed here (message-text scan elsewhere)
     - distance_error: |predicted − oracle_loss_code| (never zeroed by span hit)
     - top1_vs_loss: legacy alias of top1_span (lab inset historical field)
+    - applicable=False: reporter has no predicate for this obligation (N/A, not 0)
     """
+    if not applicable:
+        return {
+            "applicable": False,
+            "top1_line": None,
+            "top1_span": None,
+            "top1_vs_loss": None,
+            "distance_true": None,
+            "distance_error": None,
+            "signed_offset": None,
+            "reported": reported,
+        }
     loss = sites["oracle_loss_code"]
     reject = sites["oracle_reject_code"] or sites["oracle_reject_marker"] or (loss or 0)
     if loss is None:
         return {
+            "applicable": True,
             "top1_line": None,
             "top1_span": None,
             "top1_vs_loss": None,
@@ -179,6 +197,7 @@ def score_reported(reported: int | None, sites: dict) -> dict:
     top1_span = in_loss_span(reported, sites)
     h["match_via"] = "exact_loss_code" if top1_line else ("loss_span" if top1_span else "miss")
     return {
+        "applicable": True,
         "top1_line": top1_line if reported is not None else False,
         "top1_span": top1_span,
         "top1_vs_loss": top1_span,  # legacy alias — lab inset used span membership
@@ -197,7 +216,8 @@ def main() -> None:
         case_id = src.stem
         sites = oracle_sites(src)
         sc_line, sc_note = sc_report(src, obligation, case_id)
-        sc_score = score_reported(sc_line, sites)
+        sc_applicable = obligation != "PointerProvenance"
+        sc_score = score_reported(sc_line, sites, applicable=sc_applicable)
 
         log = latest_captured_log(case_id)
         if log is None:
@@ -243,8 +263,9 @@ def main() -> None:
                 "lab_rejected": rejected,
                 "log": log_rel,
                 "log_sha256": log_sha,
-                "sc_reported_line": sc_line,
+                "sc_reported_line": sc_line if sc_applicable else None,
                 "sc_note": sc_note,
+                "sc_applicable": sc_applicable,
                 "sc_top1_line": sc_score["top1_line"],
                 "sc_top1_span": sc_score["top1_span"],
                 "sc_top1_vs_loss": sc_score["top1_vs_loss"],  # legacy = top1_span
@@ -282,7 +303,8 @@ def main() -> None:
             "top1_line = predicted==oracle_loss_code; "
             "top1_span = predicted in oracle_loss_span; "
             "distance_error = |predicted-oracle_loss_code|; "
-            "legacy top1_vs_loss aliases top1_span"
+            "legacy top1_vs_loss aliases top1_span; "
+            "SC PointerProvenance is N/A (sc_applicable=false; not scored as 0)"
         ),
         "n": len(rows),
         "rows": rows,
@@ -314,9 +336,10 @@ def main() -> None:
     for r in rows:
         span = r["oracle_loss_span"]
         span_s = ",".join(str(x) for x in span) if span else "—"
+        sc_line_s = "—" if not r.get("sc_applicable", True) else (r["sc_reported_line"] or "—")
         lines.append(
             f"| {r['obligation']} | `{r['case_id']}` | {span_s} | "
-            f"{r['sc_reported_line'] or '—'} | {yn(r['sc_top1_line'])} | {yn(r['sc_top1_span'])} | "
+            f"{sc_line_s} | {yn(r['sc_top1_line'])} | {yn(r['sc_top1_span'])} | "
             f"{r['vs_reported_line'] or '—'} | {yn(r['vs_top1_line'])} | {yn(r['vs_top1_span'])} | "
             f"{yn(r['lab_rejected'])} | {yn(r['disagreement'])} |"
         )
@@ -329,18 +352,21 @@ def main() -> None:
         if r["obligation"] not in ("PointerProvenance", "ScalarRange"):
             continue
         note = r["sc_note"] if r["sc_top1_span"] is False else r["vs_note"]
-        if r["obligation"] == "PointerProvenance" and r["vs_top1_span"]:
+        if r["obligation"] == "PointerProvenance":
             note = (
-                "Terminal verifier report maps to XOR wash (coincides with author "
-                "injection span), not the later marked use — not a semantic proof-loss claim"
+                "SC N/A (no upstream PP predicate); VS terminal map hits XOR wash "
+                "(coincides with author injection span; not a semantic proof-loss claim)"
             )
+            sc_cell = "n/a"
+        else:
+            sc_cell = f"{yn(r['sc_top1_line'])}/{yn(r['sc_top1_span'])}"
         if r["obligation"] == "ScalarRange" and r["vs_top1_span"] is False:
             note = (
                 "VS near-reject (stack load); no scalar-guard line present to match "
                 "→ both miss loss"
             )
         lines.append(
-            f"| `{r['case_id']}` | {yn(r['sc_top1_line'])}/{yn(r['sc_top1_span'])} | "
+            f"| `{r['case_id']}` | {sc_cell} | "
             f"{yn(r['vs_top1_line'])}/{yn(r['vs_top1_span'])} | {note} |"
         )
 
@@ -354,14 +380,21 @@ def main() -> None:
         by.setdefault(r["obligation"], []).append(r)
     for ob, rs in sorted(by.items()):
         rej = [r for r in rs if r["lab_rejected"]]
-        sc_l = sum(1 for r in rej if r["sc_top1_line"] is True)
-        sc_s = sum(1 for r in rej if r["sc_top1_span"] is True)
+        n = len(rej)
+        if ob == "PointerProvenance" or any(not r.get("sc_applicable", True) for r in rej):
+            sc_l_s = "n/a"
+            sc_s_s = "n/a"
+        else:
+            sc_l = sum(1 for r in rej if r["sc_top1_line"] is True)
+            sc_s = sum(1 for r in rej if r["sc_top1_span"] is True)
+            sc_l_s = f"{sc_l}/{n}"
+            sc_s_s = f"{sc_s}/{n}"
         vs_l = sum(1 for r in rej if r["vs_top1_line"] is True)
         vs_s = sum(1 for r in rej if r["vs_top1_span"] is True)
         dis = sum(1 for r in rej if r["disagreement"] is True)
         lines.append(
-            f"| {ob} | {len(rej)} | {sc_l}/{len(rej)} | {sc_s}/{len(rej)} | "
-            f"{vs_l}/{len(rej)} | {vs_s}/{len(rej)} | {dis}/{len(rej)} |"
+            f"| {ob} | {n} | {sc_l_s} | {sc_s_s} | "
+            f"{vs_l}/{n} | {vs_s}/{n} | {dis}/{n} |"
         )
 
     lines += [
