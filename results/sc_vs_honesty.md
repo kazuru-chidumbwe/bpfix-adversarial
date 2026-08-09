@@ -35,9 +35,9 @@ SC = bpfix SourceComment heuristic port on mutant source. VS = last source-mappe
 | `PP-pad0` | no/no | no/yes | Terminal verifier report maps to XOR wash (coincides with author injection span), not the later marked use — not a semantic proof-loss claim |
 | `PP-pad32` | no/no | no/yes | Terminal verifier report maps to XOR wash (coincides with author injection span), not the later marked use — not a semantic proof-loss claim |
 | `PP-pad8` | no/no | no/yes | Terminal verifier report maps to XOR wash (coincides with author injection span), not the later marked use — not a semantic proof-loss claim |
-| `SR-pad0` | no/no | no/no | VS near-reject (stack load); SC has no scalar-guard → both miss loss |
-| `SR-pad32` | no/no | no/no | VS near-reject (stack load); SC has no scalar-guard → both miss loss |
-| `SR-pad8` | no/no | no/no | VS near-reject (stack load); SC has no scalar-guard → both miss loss |
+| `SR-pad0` | no/no | no/no | VS near-reject (stack load); no scalar-guard line present to match → both miss loss |
+| `SR-pad32` | no/no | no/no | VS near-reject (stack load); no scalar-guard line present to match → both miss loss |
+| `SR-pad8` | no/no | no/no | VS near-reject (stack load); no scalar-guard line present to match → both miss loss |
 
 ## Summary by obligation (rejecting cases only)
 
@@ -50,10 +50,11 @@ SC = bpfix SourceComment heuristic port on mutant source. VS = last source-mappe
 
 ## Takeaways
 
-- **PP:** SC has no provenance heuristic (systematic miss). VS **top1_span** hits the XOR wash (coincides with author injection span; **top1_line** may miss if the map is not the first executable line) — not a semantic proof-loss claim.
-- **SR:** SC finds no scalar guard on unbound-index templates (miss). VS reports the stack load (reject/use), not the unbound `idx` assignment (loss).
+- **PP:** SC is N/A (no upstream provenance heuristic). VS **top1_span** hits the XOR wash (coincides with author injection span; **top1_line** may miss if the map is not the first executable line) — not a semantic proof-loss claim.
+- **SR:** No scalar-guard `if` line is present to match on unbound-index templates (SC miss by construction). VS reports the stack load (reject/use), not the unbound `idx` assignment (loss).
 - **PB:** SC **top1_line** hits the under-check; VS hits the wide load (reject).
 - **NP-nocheck:** SC reports lookup (before injection); VS reports reject deref — both miss line and span; still the RQ4 separation seed.
+- Of 10 rejecting rows, six have construction-determined SC outcomes (PP N/A×3 + SR absent-guard×3); informative SC sample is 4 rows (3 PB + 1 NP).
 - Accepting NP-with-check rows: VS score n/a (no reject); SC rename story unchanged.
 
 Artifacts: `results/sc_vs_honesty.json` · `results/sc_vs_honesty.md`

@@ -67,7 +67,7 @@ def main() -> None:
                 }
             hit = in_loss_span(int(reported), int(loss), span)
             h = score_honesty(
-                oracle_loss_line=int(loss),
+                oracle_loss_code=int(loss),
                 oracle_reject_line=int(reject),
                 reported_loss_line=int(loss) if hit else int(reported),
             )

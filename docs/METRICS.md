@@ -8,7 +8,7 @@ SoftwareX / cite-pin terminology. Historical script and filename strings may sti
 | --- | --- |
 | **top1_line** | Primary reported location equals `oracle_loss_code` (first executable line of the injection span; **one-based** source lines as in the mutant `.c` file, before preprocessing) |
 | **top1_span** | Primary reported location is any member of `oracle_loss_span` (multi-line wash). Lab SC/VS inset reports this separately from top1_line |
-| **set_recall_message** | Exact **decimal line number** of `oracle_loss_code` appears as a parsed source line in the rendered diagnostic (default). With span opt-in: any decimal line in `oracle_loss_span`. CLI implementation: primary `--> path:LINE` plus snippet lines matching `^\s*(\d+)\s+\|`. Path match is **not** required; matching source text alone does **not** count |
+| **set_recall_message** | **CLI-path only.** Exact **decimal line number** of `oracle_loss_code` appears as a parsed source line in the rendered bpfix CLI diagnostic (default). With span opt-in: any decimal line in `oracle_loss_span`. CLI implementation: primary `--> path:LINE` plus snippet lines matching `^\s*(\d+)\s+\|`. Path match is **not** required; matching source text alone does **not** count. Not a harness-wide SC/VS score. |
 | **distance_error** | `d = abs(predicted - oracle_loss_code)` (absolute source-line localization error) |
 | **signed_offset** | `predicted - oracle_loss_code` (direction; positive means predicted is after the injection primary line) |
 | Rename stability | Same injection-site agreement outcome after idiomatic renames (esp. null-check heuristics) |
@@ -46,6 +46,7 @@ Each template case declares `oracle.loss_*` and `oracle.reject_*` (source and/or
 | Line numbering | **One-based** lines in the mutant source file as stored (pre-preprocessor). `#` lines are preprocessor directives and are skipped when building the executable span; they can appear inside a marker span but do not count as executable. |
 | First executable line | Determined on the **pre-preprocessor** mutant text: first non-blank, non-comment, non-`#`, non-pad line strictly between markers (`oracle.py`). |
 | Effective injection span | Executable lines strictly between markers; skip blanks, `//` `/*` comments, `#` preprocessor, and distance pads (`__pad` / `distance pad`) |
+| Empty span fallback | If `oracle_loss_span` is empty after filtering, `top1_span` / `in_loss_span` degrades to **top1_line** equality (`reported == oracle_loss_code`). Documented for cases such as `NP-idiomatic-nocheck` with `oracle_loss_span: []`. |
 | top1_line target | Primary code line = first span line (`oracle_loss_code`); equality only on that line |
 | top1_span | Any line in `oracle_loss_span` |
 | set_recall_message | See Primary table (decimal line numbers in rendered diagnostic) |
@@ -58,9 +59,9 @@ Implemented in `bpfix_adversarial/oracle.py` (`oracle_sites`) and `bpfix_adversa
 
 | Reporter | Input | Notes |
 | --- | --- | --- |
-| SourceComment (SC port) | Mutant **source text** | Heuristic on C lines; does not read BTF |
+| SourceComment (SC port) | Mutant **source text** | Predicate port of upstream `looks_like_*`; reporter = first top-down match (not upstream log-comment + `latest_source_before`) |
 | VerifierState (VS) | **Captured verifier log** only | Parses `; text @ path:line` maps already present in the log; does **not** load object BTF |
-| Upstream bpfix CLI | Captured **log file** only (offline replay) | No mutant C; no object file |
+| Upstream bpfix CLI | Captured **log file** only (offline replay) | No mutant C; no object file; **set_recall_message** lives here |
 
 Lab captures use clang **`-O2 -g -target bpf`** so the verifier log carries BTF-backed source maps for VS; scalar pads still DCE under `-O2`, which is why distance is source-line based.
 
@@ -86,6 +87,6 @@ Implemented by `tools/lab_marker_isolation_ab.py::normalize_log_body`. Used only
 | --- | --- | --- | --- |
 | Headline line | **top1_line** | rustc-style `--> file:LINE` / stop-site map equals `oracle_loss_code` | Default `score_honesty`; CLI primary when compared to primary line |
 | Headline span | **top1_span** | Stop-site map ∈ injection span | Lab SC/VS inset (multi-line wash) |
-| Full message | **set_recall_message** | Decimal injection line (or span lines) appears among parsed source lines in the rendered diagnostic | `bpfix_loss_mentioned` in `rq1_bpfix_cli.*` |
+| Full message | **set_recall_message** | Decimal injection line (or span lines) appears among parsed source lines in the rendered CLI diagnostic | `bpfix_loss_mentioned` in `rq1_bpfix_cli.*` (CLI path only) |
 
 The harness records both line and span thresholds. PacketBounds can be a set-recall hit and a top1_line miss on the same log: that is a scoring-mode feature for choosing a threshold, not an inset inconsistency.

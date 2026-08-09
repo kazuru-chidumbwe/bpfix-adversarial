@@ -27,12 +27,12 @@ def sweep(pads: list[int] | None = None) -> dict:
     for pad in pads:
         reject_line = loss_line + 2 + pad  # check, pad block, use
         biased = score_honesty(
-            oracle_loss_line=loss_line,
+            oracle_loss_code=loss_line,
             oracle_reject_line=reject_line,
             reported_loss_line=reject_line - 1,  # near-reject bias
         )
         honest = score_honesty(
-            oracle_loss_line=loss_line,
+            oracle_loss_code=loss_line,
             oracle_reject_line=reject_line,
             reported_loss_line=loss_line,
         )

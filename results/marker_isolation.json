@@ -214,7 +214,7 @@
       "obligation": "PointerProvenance",
       "sc_bearing": null,
       "sc_neutral": null,
-      "sc_note_bearing": "SC: no PP-specific SourceComment heuristic (coverage gap)",
+      "sc_note_bearing": "SC: N/A \u2014 no PP-specific SourceComment heuristic (upstream coverage gap)",
       "pass": true
     },
     {
@@ -222,7 +222,7 @@
       "obligation": "PointerProvenance",
       "sc_bearing": null,
       "sc_neutral": null,
-      "sc_note_bearing": "SC: no PP-specific SourceComment heuristic (coverage gap)",
+      "sc_note_bearing": "SC: N/A \u2014 no PP-specific SourceComment heuristic (upstream coverage gap)",
       "pass": true
     },
     {
@@ -230,7 +230,7 @@
       "obligation": "PointerProvenance",
       "sc_bearing": null,
       "sc_neutral": null,
-      "sc_note_bearing": "SC: no PP-specific SourceComment heuristic (coverage gap)",
+      "sc_note_bearing": "SC: N/A \u2014 no PP-specific SourceComment heuristic (upstream coverage gap)",
       "pass": true
     },
     {
@@ -238,7 +238,7 @@
       "obligation": "ScalarRange",
       "sc_bearing": null,
       "sc_neutral": null,
-      "sc_note_bearing": "SC: no scalar-guard heuristic hit (expected on unbound-index templates)",
+      "sc_note_bearing": "SC: no scalar-guard line present to match (expected on unbound-index templates)",
       "pass": true
     },
     {
@@ -246,7 +246,7 @@
       "obligation": "ScalarRange",
       "sc_bearing": null,
       "sc_neutral": null,
-      "sc_note_bearing": "SC: no scalar-guard heuristic hit (expected on unbound-index templates)",
+      "sc_note_bearing": "SC: no scalar-guard line present to match (expected on unbound-index templates)",
       "pass": true
     },
     {
@@ -254,7 +254,7 @@
       "obligation": "ScalarRange",
       "sc_bearing": null,
       "sc_neutral": null,
-      "sc_note_bearing": "SC: no scalar-guard heuristic hit (expected on unbound-index templates)",
+      "sc_note_bearing": "SC: no scalar-guard line present to match (expected on unbound-index templates)",
       "pass": true
     }
   ],

@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: If you use this software, please cite it using these metadata.
-title: "bpfix-adversarial. Check eBPF diagnostic localization under pad and rename"
+title: "bpfix-adversarial: an evaluation harness for eBPF diagnostic localization under padding and renaming stress"
 version: 1.0.0
 date-released: "2026-08-07"
 type: software
@@ -16,6 +16,10 @@ url: "https://doi.org/10.5281/zenodo.21859746"
 identifiers:
   - type: doi
     value: 10.5281/zenodo.21859746
+    description: "This version"
+  - type: doi
+    value: 10.5281/zenodo.21859726
+    description: "All versions (concept DOI)"
 abstract: >-
   Check whether eBPF reject diagnostics still name the injection line after
   pad and rename stress. Markers are set at construction time. Scoring covers

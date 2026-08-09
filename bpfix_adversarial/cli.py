@@ -71,7 +71,7 @@ def cmd_score_log(args: argparse.Namespace) -> int:
     scores = None
     if args.oracle_loss is not None and args.oracle_reject is not None:
         scores = score_honesty(
-            oracle_loss_line=args.oracle_loss,
+            oracle_loss_code=args.oracle_loss,
             oracle_reject_line=args.oracle_reject,
             reported_loss_line=reported,
         )

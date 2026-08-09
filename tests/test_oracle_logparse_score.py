@@ -83,7 +83,7 @@ class LogParseTests(unittest.TestCase):
 class ScoreDistanceTests(unittest.TestCase):
     def test_top1_hit_zero_distance_error(self) -> None:
         s = score_honesty(
-            oracle_loss_line=10, oracle_reject_line=40, reported_loss_line=10
+            oracle_loss_code=10, oracle_reject_line=40, reported_loss_line=10
         )
         self.assertTrue(s["top1_loss_match"])
         self.assertEqual(s["distance_true"], 30)
@@ -91,7 +91,7 @@ class ScoreDistanceTests(unittest.TestCase):
 
     def test_near_reject_bias_distance_error(self) -> None:
         s = score_honesty(
-            oracle_loss_line=10, oracle_reject_line=40, reported_loss_line=39
+            oracle_loss_code=10, oracle_reject_line=40, reported_loss_line=39
         )
         self.assertFalse(s["top1_loss_match"])
         self.assertEqual(s["distance_true"], 30)
@@ -101,7 +101,7 @@ class ScoreDistanceTests(unittest.TestCase):
 
     def test_missing_report(self) -> None:
         s = score_honesty(
-            oracle_loss_line=5, oracle_reject_line=15, reported_loss_line=None
+            oracle_loss_code=5, oracle_reject_line=15, reported_loss_line=None
         )
         self.assertFalse(s["top1_loss_match"])
         self.assertIsNone(s["distance_error"])

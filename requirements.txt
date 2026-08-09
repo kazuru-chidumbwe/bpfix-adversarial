@@ -1,2 +1,5 @@
-openai==1.97.1
-paramiko==3.5.1
+# Core offline workflow is stdlib-only (Python 3.10+).
+# Optional extras (see pyproject.toml / docs/DEPENDENCIES.md):
+#   pip install -e ".[lab]"     # paramiko — SSH lab capture helpers
+#   pip install -e ".[openai]"  # openai — optional cloud LLM backend
+#   pip install -e ".[all]"

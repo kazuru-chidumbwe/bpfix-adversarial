@@ -64,18 +64,19 @@ def latest_captured_log(case_id: str) -> Path | None:
     return hits[-1] if hits else None
 
 
+# libbpf load-failure lines (not bare "invalid" in source comments).
+LIBBPF_LOAD_FAIL_RE = re.compile(
+    r"libbpf:.*(?:failed to load|BPF program load failed)",
+    re.IGNORECASE,
+)
+LIBBPF_LINE_RE = re.compile(r"^libbpf:", re.IGNORECASE)
+
+
 def lab_rejected(text: str) -> bool:
-    low = text.lower()
-    return any(
-        s in low
-        for s in (
-            "failed to load",
-            "invalid",
-            "math between",
-            "unbounded memory",
-            "permission denied",
-        )
-    ) and "BEGIN PROG LOAD LOG" in text
+    """True when the capture shows a libbpf program-load failure with a load log."""
+    if "BEGIN PROG LOAD LOG" not in text:
+        return False
+    return bool(LIBBPF_LOAD_FAIL_RE.search(text))
 
 
 def vs_stop_line(text: str) -> tuple[int | None, str | None, str]:
@@ -88,7 +89,7 @@ def vs_stop_line(text: str) -> tuple[int | None, str | None, str]:
         if m:
             locs.append((int(m.group(3)), m.group(1).strip()))
         low = line.lower()
-        if any(h in low for h in REJECT_HINTS) and "libbpf:" not in low[:8]:
+        if any(h in low for h in REJECT_HINTS) and not LIBBPF_LINE_RE.match(line):
             if "invalid" in low or "math between" in low or "unbounded" in low:
                 reject_idx = idx
                 break
@@ -131,10 +132,10 @@ def sc_report(src: Path, obligation: str, case_id: str) -> tuple[int | None, str
         for i, t in texts:
             if looks_like_scalar_guard(t) and "data_end" not in t:
                 return i, "SC: scalar-guard establish"
-        return None, "SC: no scalar-guard heuristic hit (expected on unbound-index templates)"
+        return None, "SC: no scalar-guard line present to match (expected on unbound-index templates)"
 
     if obligation == "PointerProvenance":
-        return None, "SC: no PP-specific SourceComment heuristic (coverage gap)"
+        return None, "SC: N/A — no PP-specific SourceComment heuristic (upstream coverage gap)"
 
     return None, f"SC: unknown obligation ({obligation})"
 
@@ -170,7 +171,7 @@ def score_reported(reported: int | None, sites: dict) -> dict:
             "reported": reported,
         }
     h = score_honesty(
-        oracle_loss_line=loss,
+        oracle_loss_code=loss,
         oracle_reject_line=reject,
         reported_loss_line=reported,
     )
@@ -334,7 +335,10 @@ def main() -> None:
                 "injection span), not the later marked use — not a semantic proof-loss claim"
             )
         if r["obligation"] == "ScalarRange" and r["vs_top1_span"] is False:
-            note = "VS near-reject (stack load); SC has no scalar-guard → both miss loss"
+            note = (
+                "VS near-reject (stack load); no scalar-guard line present to match "
+                "→ both miss loss"
+            )
         lines.append(
             f"| `{r['case_id']}` | {yn(r['sc_top1_line'])}/{yn(r['sc_top1_span'])} | "
             f"{yn(r['vs_top1_line'])}/{yn(r['vs_top1_span'])} | {note} |"
@@ -364,14 +368,17 @@ def main() -> None:
         "",
         "## Takeaways",
         "",
-        "- **PP:** SC has no provenance heuristic (systematic miss). VS **top1_span** hits "
+        "- **PP:** SC is N/A (no upstream provenance heuristic). VS **top1_span** hits "
         "the XOR wash (coincides with author injection span; **top1_line** may miss if "
         "the map is not the first executable line) — not a semantic proof-loss claim.",
-        "- **SR:** SC finds no scalar guard on unbound-index templates (miss). VS reports "
-        "the stack load (reject/use), not the unbound `idx` assignment (loss).",
+        "- **SR:** No scalar-guard `if` line is present to match on unbound-index templates "
+        "(SC miss by construction). VS reports the stack load (reject/use), not the unbound "
+        "`idx` assignment (loss).",
         "- **PB:** SC **top1_line** hits the under-check; VS hits the wide load (reject).",
         "- **NP-nocheck:** SC reports lookup (before injection); VS reports reject deref — "
         "both miss line and span; still the RQ4 separation seed.",
+        "- Of 10 rejecting rows, six have construction-determined SC outcomes "
+        "(PP N/A×3 + SR absent-guard×3); informative SC sample is 4 rows (3 PB + 1 NP).",
         "- Accepting NP-with-check rows: VS score n/a (no reject); SC rename story unchanged.",
         "",
         f"Artifacts: `{out_json.relative_to(ROOT).as_posix()}` · `{out_md.relative_to(ROOT).as_posix()}`",

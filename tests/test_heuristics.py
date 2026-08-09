@@ -45,7 +45,7 @@ class HeuristicTests(unittest.TestCase):
 
     def test_score_honesty(self):
         s = score_honesty(
-            oracle_loss_line=10, oracle_reject_line=40, reported_loss_line=10
+            oracle_loss_code=10, oracle_reject_line=40, reported_loss_line=10
         )
         self.assertTrue(s["top1_loss_match"])
         self.assertEqual(s["distance_true"], 30)

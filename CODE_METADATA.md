@@ -10,7 +10,7 @@ Same table as the manuscript Code metadata section (OSP template v6, C1–C8).
 | C3 | Legal code license | MIT License (`LICENSE`) |
 | C4 | Code versioning system used | Git |
 | C5 | Software code languages, tools, and services used | Python 3.10+; Clang with BPF target; bpftool/libbpf; Linux kernel eBPF verifier; Python unittest; optional Rust-built upstream bpfix CLI for RQ1 replay; optional Ollama HTTP API for the localization–repair separation demonstration |
-| C6 | Compilation requirements, operating environments, and dependencies | Offline workflow: Python 3.10+. Laboratory workflow: Linux with eBPF support, Clang, bpftool, and the pinned Debian 13 environment documented in `docs/LAB-PIN.md`. Optional RQ1 replay uses the specified bpfix revision; optional repair demonstration uses Ollama. Full versions and pins are documented in `requirements.txt`, `pyproject.toml`, `docs/DEPENDENCIES.md`, and `docs/LAB-PIN.md`. |
+| C6 | Compilation requirements, operating environments, and dependencies | Offline workflow: Python 3.10+ stdlib only (`pip install -e .`). Optional extras: `.[lab]` (paramiko), `.[openai]` (openai) — see `docs/DEPENDENCIES.md`. Laboratory workflow: Linux with eBPF support, Clang, bpftool, and the pinned Debian 13 environment documented in `docs/LAB-PIN.md`. Offline CLI replay may use WSL/Linux. Optional RQ1 replay uses the specified bpfix revision; optional repair demonstration uses Ollama. |
 | C7 | If available, link to developer documentation/manual | https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.0#readme · `docs/` · this file |
 | C8 | Support email for questions | kazuruuni@gmail.com |
 

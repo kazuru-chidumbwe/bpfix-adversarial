@@ -1,7 +1,7 @@
-.PHONY: help smoke test rename-demo insets version
+.PHONY: help smoke test rename-demo insets figures version
 
 help:
-	@echo "Targets: smoke | test | rename-demo | insets | version"
+	@echo "Targets: smoke | test | rename-demo | insets | figures | version"
 
 version:
 	python -c "import bpfix_adversarial as m; print(m.__version__)"
@@ -24,6 +24,10 @@ insets:
 	python tools/emit_baseline_battery.py
 	python tools/emit_oracle_controls.py
 	python tools/emit_marker_isolation.py
+	python tools/emit_figures.py
+
+figures:
+	python tools/emit_figures.py
 
 smoke: version test rename-demo
 	@echo "SMOKE COMPLETE"

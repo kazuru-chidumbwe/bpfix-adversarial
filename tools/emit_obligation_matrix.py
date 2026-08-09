@@ -119,7 +119,7 @@ def main() -> None:
         loss, reject = oracle_lines(src)
         reported, note = sc_reported_loss(src, obligation)
         honesty = score_honesty(
-            oracle_loss_line=loss or -1,
+            oracle_loss_code=loss or -1,
             oracle_reject_line=reject or -1,
             reported_loss_line=reported,
         )

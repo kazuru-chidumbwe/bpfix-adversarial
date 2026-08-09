@@ -1,9 +1,13 @@
 # SPDX-License-Identifier: MIT
-"""Faithful Python port of bpfix SourceComment heuristics.
+"""Python port of bpfix SourceComment *predicates* (not the full reporter).
 
 Pinned to eunomia-bpf/bpfix commit 81d97e4a528456e0082a77f4fb6edd13fa092b7b
-(`crates/bpfix/src/source.rs`). Do not "improve" these predicates here —
-the harness measures *their* honesty under adversarial renaming / distance.
+(`crates/bpfix/src/source.rs`). The seven ``looks_like_*`` helpers match upstream
+character-for-character. The harness *reporter* around them is not identical to
+upstream bpfix: we scan raw mutant C top-down for the first match, whereas
+upstream parses verifier-log source comments and selects via
+``latest_source_before``. Do not "improve" these predicates here — the harness
+measures *their* localization under adversarial renaming / distance.
 """
 
 from __future__ import annotations

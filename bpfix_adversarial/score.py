@@ -8,10 +8,11 @@ from typing import Any, Optional
 
 def score_honesty(
     *,
-    oracle_loss_line: int,
+    oracle_loss_code: int | None = None,
     oracle_reject_line: int,
     reported_loss_line: Optional[int],
     reported_reject_line: Optional[int] = None,
+    oracle_loss_line: int | None = None,
 ) -> dict[str, Any]:
     """Score a reported primary line against the injection primary line.
 
@@ -26,8 +27,14 @@ def score_honesty(
 
     ``top1_loss_match`` is **top1_line** only (``predicted == oracle_loss_code``).
     Span membership is a separate caller-side metric (``top1_span``).
+
+    ``oracle_loss_line`` is accepted as a deprecated alias of ``oracle_loss_code``.
     """
-    d_true = oracle_reject_line - oracle_loss_line
+    if oracle_loss_code is None:
+        if oracle_loss_line is None:
+            raise TypeError("score_honesty requires oracle_loss_code")
+        oracle_loss_code = oracle_loss_line
+    d_true = oracle_reject_line - oracle_loss_code
     if reported_loss_line is None:
         return {
             "top1_loss_match": False,
@@ -36,22 +43,24 @@ def score_honesty(
             "distance_reported": None,
             "distance_error": None,
             "signed_offset": None,
-            "oracle_loss_line": oracle_loss_line,
+            "oracle_loss_code": oracle_loss_code,
+            "oracle_loss_line": oracle_loss_code,  # legacy alias
             "oracle_reject_line": oracle_reject_line,
             "reported_loss_line": None,
             "reported_reject_line": reported_reject_line,
         }
     reject = reported_reject_line if reported_reject_line is not None else oracle_reject_line
     d_rep = reject - reported_loss_line
-    signed = reported_loss_line - oracle_loss_line
+    signed = reported_loss_line - oracle_loss_code
     return {
-        "top1_loss_match": reported_loss_line == oracle_loss_line,
-        "top1_line": reported_loss_line == oracle_loss_line,
+        "top1_loss_match": reported_loss_line == oracle_loss_code,
+        "top1_line": reported_loss_line == oracle_loss_code,
         "distance_true": d_true,
         "distance_reported": d_rep,
         "distance_error": abs(signed),
         "signed_offset": signed,
-        "oracle_loss_line": oracle_loss_line,
+        "oracle_loss_code": oracle_loss_code,
+        "oracle_loss_line": oracle_loss_code,  # legacy alias
         "oracle_reject_line": oracle_reject_line,
         "reported_loss_line": reported_loss_line,
         "reported_reject_line": reported_reject_line,

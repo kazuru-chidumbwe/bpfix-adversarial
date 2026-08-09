@@ -23,6 +23,12 @@ see `results/env_pins/app-test-server.20260807T112233Z.env.txt`. The SoftwareX
 Ollama localization–repair separation capture on that host recorded ACCEPT on
 2026-08-07 (stdlib `urllib` HTTP client; no `ollama` PyPI package).
 
+| Role | Host | Notes |
+| --- | --- | --- |
+| Template-oracle scores | `lab-server` (Debian 13 / `6.12.86+deb13-amd64`) | SoftwarX cite pin |
+| Separation + marker A/B | `app-test-server` (Ubuntu 24.04 / `6.8.0-136-generic`) | Not portability claim |
+| Offline bpfix CLI replay | WSL/Linux developer host | Reads stamped logs only; does not re-verify |
+
 Optional RQ1 offline CLI replay uses upstream bpfix at immutable commit
 `81d97e4a528456e0082a77f4fb6edd13fa092b7b` (see `docs/UPSTREAM.md`).
 

@@ -41,7 +41,7 @@ def score_fixture(path: Path, *, oracle_loss: int, oracle_reject: int) -> dict:
         else reported_loss_from_events(events)
     )
     honesty = score_honesty(
-        oracle_loss_line=oracle_loss,
+        oracle_loss_code=oracle_loss,
         oracle_reject_line=oracle_reject,
         reported_loss_line=reported,
     )

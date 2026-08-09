@@ -1,19 +1,22 @@
-# Python dependencies (pinned)
+# Python dependencies
 
-Offline SoftwareX inset emitters need only the stdlib **plus**:
+**Offline SoftwareX workflow (default):** Python **3.10+** stdlib only.
+`pip install -e .` installs no third-party packages.
 
+Optional extras (also documented in [`pyproject.toml`](../pyproject.toml)):
+
+```bash
+pip install -e ".[lab]"      # paramiko — tools/lab_*.py SSH capture
+pip install -e ".[openai]"   # openai — optional --backend openai
+pip install -e ".[all]"
 ```
-openai==1.97.1
-paramiko==3.5.1
-```
 
-Pinned in both [`requirements.txt`](requirements.txt) and [`pyproject.toml`](pyproject.toml).
+| Extra | Packages | Used by | Notes |
+| --- | --- | --- | --- |
+| (none) | — | `make insets`, unit tests, offline scoring | SoftwarX C6 offline claim |
+| `lab` | `paramiko>=3.5,<4` | `tools/lab_*.py` remote capture | Not required for Docker offline |
+| `openai` | `openai>=1.97,<2` | `tools/rq4_llm_repair.py --backend openai` | SoftwarX separation demo uses **Ollama** |
 
-| Package | Used by | Notes |
-| --- | --- | --- |
-| `paramiko==3.5.1` | `tools/lab_*.py` remote capture | Not required for `make insets` / Docker offline |
-| `openai==1.97.1` | optional `--backend openai` in `tools/rq4_llm_repair.py` | SoftwareX separation demo uses **Ollama** |
+**Ollama:** SoftwarX path talks to the Ollama **HTTP API** via stdlib `urllib` (`tools/rq4_llm_repair.py --backend ollama`). There is **no** `ollama` PyPI dependency.
 
-**Ollama:** SoftwareX path talks to the Ollama **HTTP API** via stdlib `urllib` (`tools/rq4_llm_repair.py --backend ollama`). There is **no** `ollama` PyPI dependency.
-
-**Host binaries (not pip):** clang, bpftool/libbpf, Linux kernel eBPF verifier — versions recorded in SoftwareX C6 and [`docs/LAB-PIN.md`](docs/LAB-PIN.md) / `results/env_pins/`.
+**Host binaries (not pip):** clang, bpftool/libbpf, Linux kernel eBPF verifier — versions recorded in SoftwarX C6 and [`docs/LAB-PIN.md`](LAB-PIN.md) / `results/env_pins/`.
