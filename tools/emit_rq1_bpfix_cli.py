@@ -5,9 +5,11 @@
 Parses `results/rq1_bpfix_cli_raw/<case>.txt` produced by
 `tools/run_rq1_bpfix_cli.sh` (WSL/Linux host with a built bpfix binary).
 
-Scoring (locked loss-anchored rule from docs/METRICS.md):
+    Scoring (locked loss-anchored rule from docs/METRICS.md):
   - primary_src = line from rustc-style `--> file:LINE` arrow
-  - top-1 if primary_src is in oracle_loss_span (or equals oracle_loss_code)
+  - top1_line if primary_src == oracle_loss_code (exact equality only)
+  - top1_span if primary_src ∈ oracle_loss_span (empty span → equality fallback)
+  - set_recall_message if oracle_loss_code appears as a snippet/primary decimal line
   - distance error uses source lines: |d_reported − d_true|, d = reject − reported/loss
   - nearest BPF PC is recorded as bpfix's native PC localization (typically reject PC)
 
@@ -59,12 +61,24 @@ def parse_raw(text: str) -> dict:
     }
 
 
-def in_loss(reported: int | None, loss_code: int | None, loss_span: list[int] | None) -> bool:
+def top1_line(reported: int | None, loss_code: int | None) -> bool:
+    return reported is not None and loss_code is not None and reported == loss_code
+
+
+def top1_span(reported: int | None, loss_code: int | None, loss_span: list[int] | None) -> bool:
     if reported is None:
         return False
-    if loss_span and reported in loss_span:
-        return True
-    return loss_code is not None and reported == loss_code
+    if loss_span:
+        return reported in loss_span
+    return top1_line(reported, loss_code)
+
+
+def set_recall_message(
+    primary: int | None, related: list[int], loss_code: int | None
+) -> bool:
+    if loss_code is None:
+        return False
+    return any(ln == loss_code for ln in ([primary] + related) if ln is not None)
 
 
 def dist_err(reported: int | None, loss: int | None, reject: int | None, top1: bool) -> int | None:
@@ -95,9 +109,9 @@ def main() -> None:
         reject = r.get("oracle_reject_code")
         span = r.get("oracle_loss_span") or []
         primary = parsed["primary_src"]
-        top1 = in_loss(primary, loss, span)
-        # Secondary: does the diagnostic snippet mention the loss site at all?
-        loss_mentioned = any(in_loss(ln, loss, span) for ln in ([primary] + parsed["related_src_lines"]))
+        line_hit = top1_line(primary, loss)
+        span_hit = top1_span(primary, loss, span)
+        recall = set_recall_message(primary, parsed["related_src_lines"], loss)
         d_true = (reject - loss) if loss is not None and reject is not None else None
         rows.append(
             {
@@ -113,9 +127,13 @@ def main() -> None:
                 "bpfix_primary_src": primary,
                 "bpfix_related_src": parsed["related_src_lines"],
                 "bpfix_nearest_pc": parsed["nearest_bpf_pc"],
-                "bpfix_top1_vs_loss": top1,
-                "bpfix_distance_error": dist_err(primary, loss, reject, top1),
-                "bpfix_loss_mentioned": loss_mentioned,
+                "bpfix_top1_line": line_hit,
+                "bpfix_top1_span": span_hit,
+                # Legacy alias kept for downstream readers: exact line only (METRICS top1_line).
+                "bpfix_top1_vs_loss": line_hit,
+                "bpfix_distance_error": dist_err(primary, loss, reject, line_hit),
+                "bpfix_set_recall_message": recall,
+                "bpfix_loss_mentioned": recall,
                 "log": r.get("log"),
                 "raw": str(raw_path.relative_to(ROOT).as_posix()),
             }
@@ -127,7 +145,7 @@ def main() -> None:
         "bpfix_pin": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
         "stamp_family": "20260801T181331Z",
         "host": "WSL (offline log replay; not lab-server)",
-        "scoring": "loss-anchored; primary = bpfix '-->' source line; PC = nearest BPF instruction note",
+        "scoring": "loss-anchored; top1_line = primary==oracle_loss_code; top1_span = span membership; set_recall_message = decimal loss line in CLI text",
         "pad_note": "scalar __pad chains DCE under clang — nearest_bpf_pc stable across pads for these templates",
         "rows": rows,
     }
@@ -144,18 +162,19 @@ def main() -> None:
         "# RQ1 — Full bpfix CLI localizations (lab pad reject-oracles)",
         "",
         f"Upstream bpfix **{meta['bpfix_version']}** @ `{meta['bpfix_pin'][:12]}…` · stamp `{meta['stamp_family']}` · {meta['host']}.",
-        "Primary report = rustc-style `--> file:LINE`. Top-1 / distance error use the locked **loss-anchored** rule (`docs/METRICS.md`).",
+        "Primary report = rustc-style `--> file:LINE`. **top1_line** = exact `oracle_loss_code`; **top1_span** = span membership (`docs/METRICS.md`).",
         f"Pad note: {meta['pad_note']}.",
         "",
-        "| Obligation | case_id | pad | d_true | primary | PC | top-1 | d_err | loss in snippet |",
-        "| --- | --- | ---: | ---: | ---: | ---: | --- | ---: | --- |",
+        "| Obligation | case_id | pad | d_true | primary | PC | top1_line | top1_span | d_err | set_recall |",
+        "| --- | --- | ---: | ---: | ---: | ---: | --- | --- | ---: | --- |",
     ]
     for r in rows:
         derr = r["bpfix_distance_error"]
         lines.append(
             f"| {r['obligation']} | `{r['case_id']}` | {r['pad']} | {r['d_true_src']} | "
-            f"{r['bpfix_primary_src']} | {r['bpfix_nearest_pc']} | {yn(r['bpfix_top1_vs_loss'])} | "
-            f"{derr if derr is not None else '—'} | {yn(r['bpfix_loss_mentioned'])} |"
+            f"{r['bpfix_primary_src']} | {r['bpfix_nearest_pc']} | {yn(r['bpfix_top1_line'])} | "
+            f"{yn(r['bpfix_top1_span'])} | {derr if derr is not None else '—'} | "
+            f"{yn(r['bpfix_set_recall_message'])} |"
         )
 
     pb = [r for r in rows if r["obligation"] == "PacketBounds"]
@@ -165,18 +184,19 @@ def main() -> None:
         "",
         "## Reading (SoftwareX)",
         "",
-        "- **PacketBounds:** primary `-->` tracks the wide load (reject). Under loss-anchored "
-        "**primary-arrow** scoring this is a top-1 miss; `d_err` tracks pad "
+        "- **PacketBounds:** primary `-->` tracks the wide load (reject). Under **top1_line** "
+        "this is a miss; `d_err` tracks pad "
         f"({', '.join(str(r['bpfix_distance_error']) for r in pb)}). "
         "The E001 snippet still *mentions* the narrow `data_end` check (loss) as related context — "
-        "`loss in snippet = yes`. This is **not** a contradiction with `rq1_lab_distance.*` "
+        "`set_recall_message = yes`. This is **not** a contradiction with `rq1_lab_distance.*` "
         "(SC port: PB honest): SC keys on contextual loss pickup; CLI primary is the headline "
         "location. Both are correct measurements of different things (headline vs full message).",
-        "- **PointerProvenance:** primary lands on the pkt⊕prandom wash (loss span) across pads "
-        f"({yn(all(r['bpfix_top1_vs_loss'] for r in pp))} top-1); nearest PC stable (DCE) — "
-        "validates the lab VS pattern.",
+        "- **PointerProvenance:** primary lands on a later XOR-wash line in the loss **span** "
+        f"(top1_line={yn(all(r['bpfix_top1_line'] for r in pp))}; "
+        f"top1_span={yn(all(r['bpfix_top1_span'] for r in pp))}); nearest PC stable (DCE) — "
+        "span hit without exact first-line hit.",
         "- **ScalarRange:** primary stays on the unbound stack load (reject); loss (`prandom` idx) "
-        f"not in snippet — miss ({yn(any(r['bpfix_top1_vs_loss'] for r in sr))} top-1), matching lab SC/VS.",
+        f"not in snippet — miss (top1_line={yn(any(r['bpfix_top1_line'] for r in sr))}), matching lab SC/VS.",
         "- Offline WSL replay of stamped lab logs (not lab-server): bpfix diagnoses log text and does "
         "not re-verify, so the offline host is not a kernel-version confound.",
         "- Complements `rq1_lab_distance.*` (SC-port / VS stop-site) with native upstream CLI output "

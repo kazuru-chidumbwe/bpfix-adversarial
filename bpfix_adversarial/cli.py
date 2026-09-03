@@ -18,6 +18,17 @@ def _print_json(obj: object) -> None:
     print(json.dumps(obj, indent=2, sort_keys=True))
 
 
+def _configure_stdio() -> None:
+    """Prefer UTF-8 on Windows so Path / mutant names do not crash cp1252 consoles."""
+    for stream in (sys.stdout, sys.stderr):
+        reconf = getattr(stream, "reconfigure", None)
+        if callable(reconf):
+            try:
+                reconf(encoding="utf-8", errors="replace")
+            except Exception:
+                pass
+
+
 def cmd_heuristics(args: argparse.Namespace) -> int:
     hits = {k: v.to_dict() for k, v in classify_line(args.text).items()}
     _print_json({"text": args.text, "heuristics": hits, "upstream": UPSTREAM_BPFIX})
@@ -130,6 +141,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    _configure_stdio()
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.cmd == "analyze" and args.text is None and args.file is None:

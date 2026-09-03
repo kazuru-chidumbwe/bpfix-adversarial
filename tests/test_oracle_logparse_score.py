@@ -52,6 +52,14 @@ class OracleMarkerTests(unittest.TestCase):
         self.assertIsNotNone(sites["oracle_reject_marker"])
         self.assertIsNotNone(sites["oracle_loss_code"])
         self.assertLess(sites["oracle_loss_marker"], sites["oracle_reject_marker"])
+        # Empty executable span → prior lookup/assignment, not the comment after LOSS.
+        self.assertEqual(sites["oracle_loss_span"], [])
+        self.assertEqual(sites["oracle_loss_code"], 21)
+        self.assertTrue(
+            __import__("bpfix_adversarial.oracle", fromlist=["is_code_line"]).is_code_line(
+                src.read_text(encoding="utf-8").splitlines()[sites["oracle_loss_code"] - 1]
+            )
+        )
 
 
 class LogParseTests(unittest.TestCase):

@@ -1,9 +1,15 @@
 # Changelog
 
-## Unreleased (toward v1.0.2)
+## v1.0.2 — 2026-09-03
 
-- PP SC-vs-VS **span disagree** renders **n/a** when `sc_applicable=false` (same class as N5)
-- `docs/TAGS.md`: SoftwareX spelling; immutable-tag policy; authoritative `v1.0.0` is Zenodo `21859746`
+SoftwareX minor-revision cite pin (SOFTX-D-26-01022).
+
+- CLI RQ1 scoring: `top1_line` = exact `oracle_loss_code`; `top1_span` separate; `set_recall_message` = decimal loss line in diagnostic text (fixes span-as-top1 bug)
+- Empty injection span: `oracle_loss_code` = last executable line *before* LOSS marker (`NP-idiomatic-nocheck` → lookup/assignment line)
+- `.gitattributes`: LF for `*.rs` / vendored Rust
+- CLI: UTF-8 stdout/stderr reconfigure on Windows
+- Regenerated offline results: `rq1_bpfix_cli.*`, `sc_vs_honesty.*`, `baseline_battery.*`, `oracle_controls.*`, `four_obligation_matrix.*`, `rq1_lab_distance.*`, figures
+- C2 remains GitHub `tree/v1.0.2`; Zenodo DOI archival in C7 only
 
 ## v1.0.1 — 2026-08-09
 

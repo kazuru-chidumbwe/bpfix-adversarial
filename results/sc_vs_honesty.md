@@ -14,7 +14,7 @@ SC = bpfix SourceComment heuristic port on mutant source. VS = last source-mappe
 | NullablePointer | `NP-idiomatic-nocheck-repaired-llm` | — | 21 | no | no | — | n/a | n/a | n/a | n/a |
 | NullablePointer | `NP-idiomatic-nocheck-repaired-ollama` | — | 21 | n/a | n/a | — | n/a | n/a | no | n/a |
 | NullablePointer | `NP-idiomatic-nocheck-repaired` | — | 21 | no | no | — | n/a | n/a | n/a | n/a |
-| NullablePointer | `NP-idiomatic-nocheck` | — | 21 | no | no | 36 | no | no | yes | no |
+| NullablePointer | `NP-idiomatic-nocheck` | — | 21 | yes | yes | 36 | no | no | yes | yes |
 | NullablePointer | `NP-idiomatic-pad0` | 19,20 | 17 | no | no | 23 | n/a | n/a | no | n/a |
 | NullablePointer | `NP-idiomatic-pad32` | 19,20 | 17 | no | no | 58 | n/a | n/a | no | n/a |
 | NullablePointer | `NP-idiomatic-pad8` | 19,20 | 17 | no | no | 34 | n/a | n/a | no | n/a |
@@ -43,7 +43,7 @@ SC = bpfix SourceComment heuristic port on mutant source. VS = last source-mappe
 
 | Obligation | n_reject | SC top1_line | SC top1_span | VS top1_line | VS top1_span | span disagree |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| NullablePointer | 1 | 0/1 | 0/1 | 0/1 | 0/1 | 0/1 |
+| NullablePointer | 1 | 1/1 | 1/1 | 0/1 | 0/1 | 1/1 |
 | PacketBounds | 3 | 3/3 | 3/3 | 0/3 | 0/3 | 3/3 |
 | PointerProvenance | 3 | n/a | n/a | 0/3 | 3/3 | n/a |
 | ScalarRange | 3 | 0/3 | 0/3 | 0/3 | 0/3 | 0/3 |

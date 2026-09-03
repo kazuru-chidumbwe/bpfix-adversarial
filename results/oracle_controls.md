@@ -35,7 +35,7 @@ VerifierState stop-site outside injection span.
 
 | case_id | injection in map | reject in map | pass |
 | --- | --- | --- | --- |
-| `NP-idiomatic-nocheck` | no | yes | yes |
+| `NP-idiomatic-nocheck` | yes | yes | yes |
 | `PB-pad0` | yes | yes | yes |
 | `PB-pad32` | yes | yes | yes |
 | `PB-pad8` | yes | yes | yes |

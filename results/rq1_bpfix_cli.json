@@ -4,7 +4,7 @@
   "bpfix_pin": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
   "stamp_family": "20260801T181331Z",
   "host": "WSL (offline log replay; not lab-server)",
-  "scoring": "loss-anchored; primary = bpfix '-->' source line; PC = nearest BPF instruction note",
+  "scoring": "loss-anchored; top1_line = primary==oracle_loss_code; top1_span = span membership; set_recall_message = decimal loss line in CLI text",
   "pad_note": "scalar __pad chains DCE under clang \u2014 nearest_bpf_pc stable across pads for these templates",
   "rows": [
     {
@@ -25,8 +25,11 @@
         12
       ],
       "bpfix_nearest_pc": 6,
+      "bpfix_top1_line": false,
+      "bpfix_top1_span": false,
       "bpfix_top1_vs_loss": false,
       "bpfix_distance_error": 3,
+      "bpfix_set_recall_message": true,
       "bpfix_loss_mentioned": true,
       "log": "fixtures/logs/captured/PB-pad0.20260801T181331Z.log",
       "raw": "results/rq1_bpfix_cli_raw/PB-pad0.txt"
@@ -49,8 +52,11 @@
         12
       ],
       "bpfix_nearest_pc": 6,
+      "bpfix_top1_line": false,
+      "bpfix_top1_span": false,
       "bpfix_top1_vs_loss": false,
       "bpfix_distance_error": 38,
+      "bpfix_set_recall_message": true,
       "bpfix_loss_mentioned": true,
       "log": "fixtures/logs/captured/PB-pad32.20260801T181331Z.log",
       "raw": "results/rq1_bpfix_cli_raw/PB-pad32.txt"
@@ -73,8 +79,11 @@
         12
       ],
       "bpfix_nearest_pc": 6,
+      "bpfix_top1_line": false,
+      "bpfix_top1_span": false,
       "bpfix_top1_vs_loss": false,
       "bpfix_distance_error": 14,
+      "bpfix_set_recall_message": true,
       "bpfix_loss_mentioned": true,
       "log": "fixtures/logs/captured/PB-pad8.20260801T181331Z.log",
       "raw": "results/rq1_bpfix_cli_raw/PB-pad8.txt"
@@ -97,9 +106,12 @@
         11
       ],
       "bpfix_nearest_pc": 7,
-      "bpfix_top1_vs_loss": true,
-      "bpfix_distance_error": 0,
-      "bpfix_loss_mentioned": true,
+      "bpfix_top1_line": false,
+      "bpfix_top1_span": true,
+      "bpfix_top1_vs_loss": false,
+      "bpfix_distance_error": 1,
+      "bpfix_set_recall_message": false,
+      "bpfix_loss_mentioned": false,
       "log": "fixtures/logs/captured/PP-pad0.20260801T181331Z.log",
       "raw": "results/rq1_bpfix_cli_raw/PP-pad0.txt"
     },
@@ -121,9 +133,12 @@
         11
       ],
       "bpfix_nearest_pc": 7,
-      "bpfix_top1_vs_loss": true,
-      "bpfix_distance_error": 0,
-      "bpfix_loss_mentioned": true,
+      "bpfix_top1_line": false,
+      "bpfix_top1_span": true,
+      "bpfix_top1_vs_loss": false,
+      "bpfix_distance_error": 1,
+      "bpfix_set_recall_message": false,
+      "bpfix_loss_mentioned": false,
       "log": "fixtures/logs/captured/PP-pad32.20260801T181331Z.log",
       "raw": "results/rq1_bpfix_cli_raw/PP-pad32.txt"
     },
@@ -145,9 +160,12 @@
         11
       ],
       "bpfix_nearest_pc": 7,
-      "bpfix_top1_vs_loss": true,
-      "bpfix_distance_error": 0,
-      "bpfix_loss_mentioned": true,
+      "bpfix_top1_line": false,
+      "bpfix_top1_span": true,
+      "bpfix_top1_vs_loss": false,
+      "bpfix_distance_error": 1,
+      "bpfix_set_recall_message": false,
+      "bpfix_loss_mentioned": false,
       "log": "fixtures/logs/captured/PP-pad8.20260801T181331Z.log",
       "raw": "results/rq1_bpfix_cli_raw/PP-pad8.txt"
     },
@@ -166,8 +184,11 @@
       "bpfix_primary_src": 13,
       "bpfix_related_src": [],
       "bpfix_nearest_pc": 7,
+      "bpfix_top1_line": false,
+      "bpfix_top1_span": false,
       "bpfix_top1_vs_loss": false,
       "bpfix_distance_error": 2,
+      "bpfix_set_recall_message": false,
       "bpfix_loss_mentioned": false,
       "log": "fixtures/logs/captured/SR-pad0.20260801T181331Z.log",
       "raw": "results/rq1_bpfix_cli_raw/SR-pad0.txt"
@@ -187,8 +208,11 @@
       "bpfix_primary_src": 48,
       "bpfix_related_src": [],
       "bpfix_nearest_pc": 7,
+      "bpfix_top1_line": false,
+      "bpfix_top1_span": false,
       "bpfix_top1_vs_loss": false,
       "bpfix_distance_error": 37,
+      "bpfix_set_recall_message": false,
       "bpfix_loss_mentioned": false,
       "log": "fixtures/logs/captured/SR-pad32.20260801T181331Z.log",
       "raw": "results/rq1_bpfix_cli_raw/SR-pad32.txt"
@@ -208,8 +232,11 @@
       "bpfix_primary_src": 24,
       "bpfix_related_src": [],
       "bpfix_nearest_pc": 7,
+      "bpfix_top1_line": false,
+      "bpfix_top1_span": false,
       "bpfix_top1_vs_loss": false,
       "bpfix_distance_error": 13,
+      "bpfix_set_recall_message": false,
       "bpfix_loss_mentioned": false,
       "log": "fixtures/logs/captured/SR-pad8.20260801T181331Z.log",
       "raw": "results/rq1_bpfix_cli_raw/SR-pad8.txt"

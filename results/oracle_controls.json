@@ -119,7 +119,7 @@
     {
       "case_id": "NP-idiomatic-nocheck",
       "obligation": "NullablePointer",
-      "oracle_loss_code": 23,
+      "oracle_loss_code": 21,
       "oracle_loss_span": [],
       "oracle_reject_code": 36,
       "mapped_source_lines": [
@@ -128,10 +128,10 @@
         21,
         36
       ],
-      "injection_line_in_map": false,
+      "injection_line_in_map": true,
       "reject_line_in_map": true,
       "pass": true,
-      "note": "injection span absent from map; reject/use line present (pad DCE / wash may collapse)"
+      "note": "verifier ; @path:LINE map covers injection span"
     },
     {
       "case_id": "PB-pad0",

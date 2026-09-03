@@ -31,7 +31,8 @@ def oracle_sites(src: Path | str) -> dict[str, Any]:
     preprocessor lines and distance pads (`__pad` / \"distance pad\").
 
     Scoring default: **top1_line** compares against ``oracle_loss_code`` (first span
-    line, else the line after the loss marker; **one-based**, pre-preprocessor).
+    line when non-empty; else the last **executable** line *before* the LOSS marker
+    for omitted-check seeds; **one-based**, pre-preprocessor).
     **top1_span** is set-membership against ``oracle_loss_span`` (separate metric).
     ``#`` lines are preprocessor directives and are skipped for the executable span.
     """
@@ -55,7 +56,16 @@ def oracle_sites(src: Path | str) -> dict[str, Any]:
                 continue
             span.append(i)
 
-    loss_code = span[0] if span else (loss_marker + 1 if loss_marker else None)
+    loss_code = span[0] if span else None
+    if loss_code is None and loss_marker is not None:
+        # Empty injection span (e.g. omitted-check seeds): prior executable line,
+        # not the comment immediately after the LOSS marker.
+        for i in range(loss_marker - 1, 0, -1):
+            if is_code_line(lines[i - 1]):
+                loss_code = i
+                break
+        if loss_code is None:
+            loss_code = loss_marker + 1
     reject_code = None
     if reject_marker is not None:
         for i in range(reject_marker + 1, len(lines) + 1):

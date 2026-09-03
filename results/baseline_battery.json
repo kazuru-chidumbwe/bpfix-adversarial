@@ -23,24 +23,24 @@
     {
       "case_id": "NP-idiomatic-nocheck",
       "obligation": "NullablePointer",
-      "oracle_loss_code": 23,
+      "oracle_loss_code": 21,
       "oracle_reject_code": 36,
       "baselines": [
         {
           "baseline": "terminal_site",
           "reported_line": 36,
           "top1_vs_loss": false,
-          "distance_error": 13
+          "distance_error": 15
         },
         {
           "baseline": "random_line",
           "reported_line": 8,
           "top1_vs_loss": false,
-          "distance_error": 15
+          "distance_error": 13
         },
         {
           "baseline": "oracle_upper",
-          "reported_line": 23,
+          "reported_line": 21,
           "top1_vs_loss": true,
           "distance_error": 0
         }

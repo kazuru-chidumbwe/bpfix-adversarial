@@ -46,8 +46,8 @@ Each template case declares `oracle.loss_*` and `oracle.reject_*` (source and/or
 | Line numbering | **One-based** lines in the mutant source file as stored (pre-preprocessor). `#` lines are preprocessor directives and are skipped when building the executable span; they can appear inside a marker span but do not count as executable. |
 | First executable line | Determined on the **pre-preprocessor** mutant text: first non-blank, non-comment, non-`#`, non-pad line strictly between markers (`oracle.py`). |
 | Effective injection span | Executable lines strictly between markers; skip blanks, `//` `/*` comments, `#` preprocessor, and distance pads (`__pad` / `distance pad`) |
-| Empty span fallback | If `oracle_loss_span` is empty after filtering, `top1_span` / `in_loss_span` degrades to **top1_line** equality (`reported == oracle_loss_code`). Documented for cases such as `NP-idiomatic-nocheck` with `oracle_loss_span: []`. |
-| top1_line target | Primary code line = first span line (`oracle_loss_code`); equality only on that line |
+| Empty span fallback | If `oracle_loss_span` is empty after filtering, `oracle_loss_code` is the last **executable** line *before* the LOSS marker (omitted-check seeds such as `NP-idiomatic-nocheck`); `top1_span` / `in_loss_span` then degrades to **top1_line** equality on that code. |
+| top1_line target | Primary code line = first span line, else prior-executable empty-span fallback (`oracle_loss_code`); equality only on that line |
 | top1_span | Any line in `oracle_loss_span` |
 | set_recall_message | See Primary table (decimal line numbers in rendered diagnostic) |
 | Missing BPF for a source line | SoftwareX distance uses **source-line** numbers from markers / log maps; PC distance is uninformative when pads compile away under `-O2` |
