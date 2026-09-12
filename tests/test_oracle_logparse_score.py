@@ -61,6 +61,25 @@ class OracleMarkerTests(unittest.TestCase):
             )
         )
 
+    def test_np_idiomatic_nocheck_oracle_loss_code_is_executable(self) -> None:
+        """R2 SoftwareX: NP-idiomatic-nocheck oracle_loss_code must be an executable line."""
+        from bpfix_adversarial.oracle import is_code_line
+
+        src = ROOT / "mutants" / "NullablePointer" / "NP-idiomatic-nocheck.c"
+        if not src.is_file():
+            self.skipTest("mutant fixture missing")
+        lines = src.read_text(encoding="utf-8").splitlines()
+        sites = oracle_sites(src)
+        code = sites["oracle_loss_code"]
+        self.assertIsNotNone(code)
+        assert code is not None
+        raw = lines[code - 1]
+        self.assertTrue(is_code_line(raw), f"oracle_loss_code={code} not executable: {raw!r}")
+        self.assertIn("bpf_map_lookup_elem", raw)
+        self.assertNotIn("ORACLE_", raw)
+        # Must not fall through to the comment immediately after the LOSS marker.
+        self.assertNotEqual(code, sites["oracle_loss_marker"] + 1)
+
 
 class LogParseTests(unittest.TestCase):
     def test_parses_source_at_comments(self) -> None:

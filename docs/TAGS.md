@@ -4,8 +4,8 @@ Annotated tags mark reproducible anchors. **`master` / `main` may advance** afte
 
 | Tag | Purpose |
 | --- | --- |
-| [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.2) | **SoftwareX cite pin** (current · SoftX minor rev) |
-| [`v1.0.1`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.1) | Prior SoftX submit pin · Zenodo `10.5281/zenodo.21860453` |
+| [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.2) | **SoftwareX cite pin** (current · SoftwareX minor rev) |
+| [`v1.0.1`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.1) | Prior SoftwareX submit pin · Zenodo `10.5281/zenodo.21860453` |
 | [`v1.0.0`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.0) | First public release label (see note below) |
 
 Zenodo archive steps (C2 DOI): [`ZENODO.md`](ZENODO.md).
@@ -26,7 +26,7 @@ git checkout v1.0.2
 
 ## Note on `v1.0.0`
 
-GitHub’s `v1.0.0` tag was retargeted during early revision hygiene, so the object currently reachable as `refs/tags/v1.0.0` on GitHub is **not** identical to the tree archived at Zenodo version DOI [`10.5281/zenodo.21859746`](https://doi.org/10.5281/zenodo.21859746). **Authoritative `v1.0.0` snapshot:** that Zenodo deposit (and its Software Heritage copy). SoftX minor-rev cites **`v1.0.2`** (GitHub C2). Zenodo `10.5281/zenodo.21860453` remains the `v1.0.1` archive until a new version DOI is minted for `v1.0.2`.
+GitHub’s `v1.0.0` tag was retargeted during early revision hygiene, so the object currently reachable as `refs/tags/v1.0.0` on GitHub is **not** identical to the tree archived at Zenodo version DOI [`10.5281/zenodo.21859746`](https://doi.org/10.5281/zenodo.21859746). **Authoritative `v1.0.0` snapshot:** that Zenodo deposit (and its Software Heritage copy). SoftwareX minor-rev cites **`v1.0.2`** (GitHub C2). Zenodo `10.5281/zenodo.21860453` remains the `v1.0.1` archive until a new version DOI is minted for `v1.0.2`.
 
 ## Lab host
 

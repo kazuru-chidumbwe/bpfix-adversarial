@@ -37,7 +37,7 @@ make smoke                   # version + unittest + rename-demo
 python tools/emit_rename_table.py
 python tools/emit_four_obligation_matrix.py
 python tools/score_sc_vs_honesty.py
-make figures                 # regenerate SoftwareX Figs 2–5 SVGs from results/*.json
+make figures                 # regenerate paper Figs 2–5 SVGs from results/*.json
 ```
 
 Or one-command offline smoke plus inset emitters. This path is Python tooling only.
@@ -165,7 +165,7 @@ docs/                 metrics, lab pin, deps, upstream, tags, Zenodo (see docs/R
 schemas/              optional JSON Schema contracts
 tests/                unittest suite
 Makefile              smoke / insets (peer-harness shape)
-CODE_METADATA.md      SoftwareX C1–C8 table
+CODE_METADATA.md      Journal code-metadata table (C1–C8)
 ```
 
 ## Scope note
