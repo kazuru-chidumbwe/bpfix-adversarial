@@ -19,6 +19,7 @@ Do **not** use the bare label “top-1” for both line equality and span member
 
 - Missing prediction → `distance_error` is **undefined** (`null` in JSON).
 - Any mean / summary distance **excludes** undefined rows and reports a separate **missing-prediction count**.
+- Do **not** zero `distance_error` on a span-only hit (`top1_span` True, `top1_line` False). Distance is always `abs(predicted - oracle_loss_code)`, including PointerProvenance wash-line maps (e.g. reported 15 vs `oracle_loss_code` 14 → `d = 1`). `tools/emit_baseline_battery.py` must call `score_honesty` with the actual reported line; packing `distance_error: 0 if hit else …` is a contract violation.
 - SoftwareX surfaces report **per-row** distances and **per-template** matrices (e.g. PB pads 0/8/32). Pad repeats are not independent semantic cases.
 - Fractions such as 3/10 on the rejecting campaign are **row-weighted descriptive tallies**, not template-weighted estimates and not a single campaign-wide “accuracy.”
 
@@ -49,6 +50,7 @@ Each template case declares `oracle.loss_*` and `oracle.reject_*` (source and/or
 | Empty span fallback | If `oracle_loss_span` is empty after filtering, `oracle_loss_code` is the last **executable** line *before* the LOSS marker (omitted-check seeds such as `NP-idiomatic-nocheck`); `top1_span` / `in_loss_span` then degrades to **top1_line** equality on that code. |
 | top1_line target | Primary code line = first span line, else prior-executable empty-span fallback (`oracle_loss_code`); equality only on that line |
 | top1_span | Any line in `oracle_loss_span` |
+| Span-only distance | `top1_span` membership does **not** set `distance_error = 0`. Keep `d = abs(predicted - oracle_loss_code)`. |
 | set_recall_message | See Primary table (decimal line numbers in rendered diagnostic) |
 | Missing BPF for a source line | SoftwareX distance uses **source-line** numbers from markers / log maps; PC distance is uninformative when pads compile away under `-O2` |
 | Macros / continuations | Not specially expanded; scoring is source-text / line-table based as emitted |

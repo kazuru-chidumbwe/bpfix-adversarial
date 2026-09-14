@@ -1,13 +1,19 @@
 # Changelog
 
-## Unreleased (`master` after `v1.0.2`)
+## Unreleased (`master` after `v1.0.3`)
 
-Docs, metadata, and tests only. Scoring and committed `results/` are unchanged; cite `v1.0.2`.
+Cite `v1.0.3`.
 
-- Named regression test `test_np_idiomatic_nocheck_oracle_loss_code_is_executable` (the `v1.0.2` test `test_real_mutant_has_markers` already asserts the same `oracle_loss_code` invariant)
-- Venue-neutral wording in `CODE_METADATA.md`, `README.md`, `docs/TAGS.md`
-- README heading and CLI `--help` use the paper title
-- Zenodo archive references removed from metadata and docs; the GitHub tag is the permanent link
+## v1.0.3 — 2026-09-14
+
+SoftwareX cite pin (SOFTX-D-26-01022).
+
+- `emit_baseline_battery.py`: do not zero `distance_error` on a span-only hit; regenerated `results/baseline_battery.json` (PP terminal `d=1`; PP-pad32 random `d=1`; top1_span rates unchanged 3/10, 1/10, 10/10)
+- `docs/METRICS.md`: same no-zeroing rule (prevents emitter drift)
+- `emit_figures.py`: SVG titles have no embedded “Fig. N —” (manuscript captions are authoritative)
+- `sc_vs_honesty.md` takeaways: NP-nocheck SC is a construction-determined **top1_line** hit, not a miss; informative SC sample is 3 PacketBounds rows
+- Named regression test `test_np_idiomatic_nocheck_oracle_loss_code_is_executable`
+- C2 GitHub `tree/v1.0.3`. Do **not** label Zenodo `10.5281/zenodo.21860453` as this version (that DOI is the **v1.0.1** archive)
 
 ## v1.0.2 — 2026-09-03
 

@@ -4,14 +4,15 @@ Annotated tags mark reproducible anchors. **`master` / `main` may advance** afte
 
 | Tag | Purpose |
 | --- | --- |
-| [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.2) | **SoftwareX cite pin** (current · SoftwareX minor rev) |
+| [`v1.0.3`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.3) | **SoftwareX cite pin** (current) |
+| [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.2) | Prior SoftwareX minor-rev pin |
 | [`v1.0.1`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.1) | Prior SoftwareX submit pin |
 | [`v1.0.0`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.0) | First public release label (see note below) |
 
 ## Quick checkout
 
 ```bash
-git checkout v1.0.2
+git checkout v1.0.3
 ```
 
 ## Tag policy
@@ -24,7 +25,7 @@ git checkout v1.0.2
 
 ## Note on `v1.0.0`
 
-GitHub’s `v1.0.0` tag was retargeted during early revision hygiene, so it is a release label only; do not use it to reproduce cited results. SoftwareX minor-rev cites **`v1.0.2`** (GitHub C2).
+GitHub’s `v1.0.0` tag was retargeted during early revision hygiene, so it is a release label only; do not use it to reproduce cited results. SoftwareX cites **`v1.0.3`** (GitHub C2).
 
 ## Lab host
 

@@ -77,6 +77,13 @@ def normalize_log_body(text: str) -> str:
             continue
         # Collapse absolute tmp paths / stamps / variant ids
         ln = re.sub(r"/tmp/bpfix-iso-[A-Za-z0-9_.-]+", "/tmp/bpfix-iso-STAMP", ln)
+        # Debian 6.12 bpftool source maps use bare tmp basenames
+        # (`...-bearing.c` vs `...-neutral.c`); Ubuntu 6.8 often omitted @file:line.
+        ln = re.sub(
+            r"bpfix-iso-[A-Za-z0-9_.-]+-(bearing|neutral)",
+            "bpfix-iso-STAMP-VARIANT",
+            ln,
+        )
         ln = re.sub(r"bpfix_iso_[A-Za-z0-9_]+", "bpfix_iso_ID", ln)
         ln = re.sub(r"markeriso-(bearing|neutral)", "markeriso-VARIANT", ln)
         # ASLR / map allocation addresses differ per load; not marker-dependent
@@ -357,7 +364,27 @@ def rescore_existing(lab_path: Path) -> dict:
     return lab
 
 
-def main() -> int:
+def parse_args(argv: list[str] | None = None):
+    import argparse
+
+    p = argparse.ArgumentParser(description="Lab A/B marker isolation")
+    p.add_argument(
+        "--out",
+        type=Path,
+        default=ROOT / "results" / "marker_isolation_lab.json",
+        help="Output JSON. Use a different path to avoid overwriting an existing host inset.",
+    )
+    p.add_argument("--rescore", action="store_true")
+    return p.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv)
+    if args.rescore:
+        lab = rescore_existing(args.out)
+        print(json.dumps(lab["summary"], indent=2))
+        return 0 if lab["summary"]["pass"] == lab["summary"]["n"] else 1
+
     sc = json.loads((ROOT / "results" / "sc_vs_honesty.json").read_text(encoding="utf-8"))
     rows = [
         r
@@ -473,7 +500,8 @@ def main() -> int:
             "Lab -O2 -g objects often differ (debug/source metadata; .BTF and .BTF.ext dumps); reported as dbg_obj_match."
         ),
     }
-    out = ROOT / "results" / "marker_isolation_lab.json"
+    out = args.out if args.out.is_absolute() else (ROOT / args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(payload["summary"], indent=2))
     print(f"Wrote {out}")
@@ -481,8 +509,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1] == "--rescore":
-        lab = rescore_existing(ROOT / "results" / "marker_isolation_lab.json")
-        print(json.dumps(lab["summary"], indent=2))
-        raise SystemExit(0 if lab["summary"]["pass"] == lab["summary"]["n"] else 1)
     raise SystemExit(main())

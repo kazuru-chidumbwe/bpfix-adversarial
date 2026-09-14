@@ -1,23 +1,23 @@
 # Code metadata
 
-Mandatory code metadata for **bpfix-adversarial** `v1.0.2` (Elsevier OSP-style C1–C8 scheme).  
+Mandatory code metadata for **bpfix-adversarial** `v1.0.3` (Elsevier OSP-style C1–C8 scheme).  
 Same table as the manuscript Code metadata section (OSP template v6, C1–C8).
 
 **Guide for Authors (current target venue):** C2 must be a **public GitHub** repository URL.
 
 | Nr | Code metadata description | Metadata |
 | --- | --- | --- |
-| C1 | Current code version | `v1.0.2` |
-| C2 | Permanent link to code/repository used for this code version | https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2 |
+| C1 | Current code version | `v1.0.3` |
+| C2 | Permanent link to code/repository used for this code version | https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.3 |
 | C3 | Legal code license | MIT License (`LICENSE` / `LICENSE.txt`) |
 | C4 | Code versioning system used | Git |
 | C5 | Software code languages, tools, and services used | Python 3.10+; Clang with BPF target; bpftool/libbpf; Linux kernel eBPF verifier; Python unittest; optional Rust-built upstream bpfix CLI for RQ1 replay; optional Ollama HTTP API for the localization–repair separation demonstration |
 | C6 | Compilation requirements, operating environments, and dependencies | Offline workflow: Python 3.10+ stdlib only (`pip install -e .`). Optional extras: `.[lab]` (paramiko), `.[openai]` (openai) — see `docs/DEPENDENCIES.md`. Laboratory workflow: Linux with eBPF support, Clang, bpftool, and the pinned Debian 13 environment documented in `docs/LAB-PIN.md`. Offline CLI replay may use WSL/Linux. Optional RQ1 replay uses the specified bpfix revision; optional repair demonstration uses Ollama. |
-| C7 | If available, link to developer documentation/manual | https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2#readme · `docs/` · this file |
+| C7 | If available, link to developer documentation/manual | https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.3#readme · `docs/` · this file |
 | C8 | Support email for questions | kazuruuni@gmail.com |
 
 Exact host labels, kernel/clang/bpftool version strings, cite stamps, and the upstream bpfix commit hash live in `docs/LAB-PIN.md`, `docs/UPSTREAM.md`, and `docs/DEPENDENCIES.md` — not in this metadata table.
 
-Also see: `CITATION.cff`, `codemeta.json`.
+Also see: `CITATION.cff`, `codemeta.json`, [`docs/ZENODO.md`](docs/ZENODO.md).
 
-**Note:** C2 is the **GitHub tree for tag `v1.0.2`** (current venue requirement). Release: https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.2.
+**Note:** C2 is the **GitHub tree for tag `v1.0.3`** (current venue requirement). Release: https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.3. Zenodo `10.5281/zenodo.21860453` is the **v1.0.1** archive — do not put it in C2 or label it as this version.

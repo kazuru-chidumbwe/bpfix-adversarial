@@ -134,7 +134,7 @@
           "baseline": "terminal_site",
           "reported_line": 15,
           "top1_vs_loss": true,
-          "distance_error": 0
+          "distance_error": 1
         },
         {
           "baseline": "random_line",
@@ -160,13 +160,13 @@
           "baseline": "terminal_site",
           "reported_line": 15,
           "top1_vs_loss": true,
-          "distance_error": 0
+          "distance_error": 1
         },
         {
           "baseline": "random_line",
           "reported_line": 15,
           "top1_vs_loss": true,
-          "distance_error": 0
+          "distance_error": 1
         },
         {
           "baseline": "oracle_upper",
@@ -186,7 +186,7 @@
           "baseline": "terminal_site",
           "reported_line": 15,
           "top1_vs_loss": true,
-          "distance_error": 0
+          "distance_error": 1
         },
         {
           "baseline": "random_line",

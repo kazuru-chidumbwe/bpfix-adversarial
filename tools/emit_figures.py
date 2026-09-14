@@ -101,7 +101,7 @@ def emit_fig2_sc_vs() -> None:
             sc_line.append(sum(1 for r in rows if r.get("sc_top1_line") is True) / n)
         vs_span.append(sum(1 for r in rows if r.get("vs_top1_span") is True) / n)
     bar_chart(
-        "Fig. 2 — SC top1_line vs VS top1_span (rejecting templates; PP SC = N/A)",
+        "SC top1_line vs VS top1_span (rejecting templates; PP SC = N/A)",
         ["PB", "PP*", "SR"],
         [
             ("SC top1_line", sc_line, "#2a6f97"),
@@ -122,7 +122,7 @@ def emit_fig3_lab_distance() -> None:
     sc_d = [float(r["sc_distance_error"] or 0) for r in pb]
     vs_d = [float(r["vs_distance_error"] or 0) for r in pb]
     bar_chart(
-        "Fig. 3 — PB lab distance vs pad (SC stays 0; VS grows with pad)",
+        "PB lab distance vs pad (SC stays 0; VS grows with pad)",
         labels,
         [
             ("SC d", sc_d, "#2a9d8f"),
@@ -145,7 +145,7 @@ def emit_fig4_set_recall() -> None:
     ]
     recall = [1.0 if r.get("bpfix_loss_mentioned") else 0.0 for r in rows]
     bar_chart(
-        "Fig. 4 — PacketBounds CLI: top1_line vs set_recall_message",
+        "PacketBounds CLI: top1_line vs set_recall_message",
         labels,
         [
             ("top1_line", top1, "#264653"),

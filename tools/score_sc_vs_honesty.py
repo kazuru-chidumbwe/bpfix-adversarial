@@ -414,10 +414,12 @@ def main() -> None:
         "(SC miss by construction). VS reports the stack load (reject/use), not the unbound "
         "`idx` assignment (loss).",
         "- **PB:** SC **top1_line** hits the under-check; VS hits the wide load (reject).",
-        "- **NP-nocheck:** SC reports lookup (before injection); VS reports reject deref — "
-        "both miss line and span; still the RQ4 separation seed.",
-        "- Of 10 rejecting rows, six have construction-determined SC outcomes "
-        "(PP N/A×3 + SR absent-guard×3); informative SC sample is 4 rows (3 PB + 1 NP).",
+        "- **NP-nocheck:** SC **top1_line** hits the lookup (empty-span fallback + "
+        "nullable-return nocheck predicate — construction-determined); VS reports the "
+        "reject deref (miss). Still the RQ4 separation seed.",
+        "- Of 10 rejecting rows, seven have construction-determined SC outcomes "
+        "(PP N/A×3 + SR absent-guard×3 + NP fallback×1); informative SC sample is "
+        "3 PacketBounds rows (3/3 top1_line).",
         "- Accepting NP-with-check rows: VS score n/a (no reject); SC rename story unchanged.",
         "",
         f"Artifacts: `{out_json.relative_to(ROOT).as_posix()}` · `{out_md.relative_to(ROOT).as_posix()}`",

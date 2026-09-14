@@ -7,8 +7,9 @@ Baselines (no new lab work):
   - random_line: uniform draw in [1, reject_code] with seed 42
   - oracle_upper: reports oracle_loss_code (perfect injection-site tip)
 
-Compares top-1 vs injection code on the same SoftwareX-stamp rejecting cases
-used in results/sc_vs_honesty.json.
+Compares top1_span membership (reported line in oracle_loss_span) on the same
+SoftwareX-stamp rejecting cases used in results/sc_vs_honesty.json. Distance is
+always abs(reported - oracle_loss_code); never zeroed on a span-only hit.
 """
 
 from __future__ import annotations
@@ -69,13 +70,14 @@ def main() -> None:
             h = score_honesty(
                 oracle_loss_code=int(loss),
                 oracle_reject_line=int(reject),
-                reported_loss_line=int(loss) if hit else int(reported),
+                reported_loss_line=int(reported),
             )
             return {
                 "baseline": name,
                 "reported_line": reported,
                 "top1_vs_loss": bool(hit),
-                "distance_error": 0 if hit else h["distance_error"],
+                # Table 4: d = abs(predicted - oracle_loss_code); never zero a span-only hit.
+                "distance_error": h["distance_error"],
             }
 
         rows.append(
@@ -139,7 +141,9 @@ def main() -> None:
         lines.append(f"| `{name}` | {s['hits']} | {s['n']} | {s['top1_rate']:.0%} |")
     lines += [
         "",
-        "Per-case rows: `baseline_battery.json`.",
+        "Per-case rows: `baseline_battery.json`. "
+        "`top1_vs_loss` is span membership; `distance_error` is "
+        "`abs(reported - oracle_loss_code)` (never zeroed on a span-only hit).",
         "",
     ]
     OUT_MD.write_text("\n".join(lines), encoding="utf-8")
