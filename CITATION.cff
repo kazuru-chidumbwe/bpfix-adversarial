@@ -12,14 +12,7 @@ authors:
     affiliation: "Independent Researcher, Malawi"
 license: MIT
 repository-code: "https://github.com/kazuru-chidumbwe/bpfix-adversarial"
-url: "https://doi.org/10.5281/zenodo.21860453"
-identifiers:
-  - type: doi
-    value: 10.5281/zenodo.21860453
-    description: "This version"
-  - type: doi
-    value: 10.5281/zenodo.21859726
-    description: "All versions (concept DOI)"
+url: "https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2"
 abstract: >-
   Check whether eBPF reject diagnostics still name the injection line after
   pad and rename stress. Markers are set at construction time. Scoring covers

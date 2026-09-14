@@ -102,8 +102,9 @@ def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="bpfix-adversarial",
         description=(
-            "Controlled stress testing of eBPF diagnostic localization "
-            "(injection-site agreement; SourceComment heuristics from eunomia-bpf/bpfix)."
+            "An evaluation harness for eBPF diagnostic localization under padding and "
+            "renaming stress (injection-site agreement; SourceComment heuristics from "
+            "eunomia-bpf/bpfix)."
         ),
     )
     sub = p.add_subparsers(dest="cmd", required=True)

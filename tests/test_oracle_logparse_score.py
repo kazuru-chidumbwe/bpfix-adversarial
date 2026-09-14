@@ -80,6 +80,24 @@ class OracleMarkerTests(unittest.TestCase):
         # Must not fall through to the comment immediately after the LOSS marker.
         self.assertNotEqual(code, sites["oracle_loss_marker"] + 1)
 
+    def test_every_marked_mutant_oracle_loss_code_is_executable(self) -> None:
+        from bpfix_adversarial.oracle import is_code_line
+
+        checked = 0
+        for src in sorted((ROOT / "mutants").rglob("*.c")):
+            sites = oracle_sites(src)
+            if sites["oracle_loss_marker"] is None:
+                continue
+            code = sites["oracle_loss_code"]
+            with self.subTest(mutant=src.relative_to(ROOT).as_posix()):
+                self.assertIsNotNone(code)
+                raw = src.read_text(encoding="utf-8").splitlines()[code - 1]
+                self.assertTrue(is_code_line(raw), f"oracle_loss_code={code}: {raw!r}")
+                self.assertNotIn("ORACLE_", raw)
+            checked += 1
+        if checked == 0:
+            self.skipTest("no marked mutants")
+
 
 class LogParseTests(unittest.TestCase):
     def test_parses_source_at_comments(self) -> None:

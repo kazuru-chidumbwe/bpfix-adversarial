@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased (`master` after `v1.0.2`)
+
+Docs, metadata, and tests only. Scoring and committed `results/` are unchanged; cite `v1.0.2`.
+
+- Named regression test `test_np_idiomatic_nocheck_oracle_loss_code_is_executable` (the `v1.0.2` test `test_real_mutant_has_markers` already asserts the same `oracle_loss_code` invariant)
+- Venue-neutral wording in `CODE_METADATA.md`, `README.md`, `docs/TAGS.md`
+- README heading and CLI `--help` use the paper title
+- Zenodo archive references removed from metadata and docs; the GitHub tag is the permanent link
+
 ## v1.0.2 — 2026-09-03
 
 SoftwareX minor-revision cite pin (SOFTX-D-26-01022).

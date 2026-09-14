@@ -1,4 +1,4 @@
-# bpfix-adversarial
+# bpfix-adversarial: an evaluation harness for eBPF diagnostic localization under padding and renaming stress
 
 Check whether eBPF reject diagnostics still name the line where a fault was
 injected after pad and rename stress.
@@ -17,9 +17,8 @@ This does **not** test verifier soundness, bypasses, or kernel CVEs.
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Cite pin [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2).
-Permanent archive: [doi:10.5281/zenodo.21860453](https://doi.org/10.5281/zenodo.21860453).
 See [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff), and [codemeta.json](codemeta.json).
-Cite the release tag / Zenodo version, not floating `master`.
+Cite the release tag, not floating `master`.
 Upstream bpfix pin is `81d97e4a528456e0082a77f4fb6edd13fa092b7b`.
 
 ## Quick Start (offline insets)
@@ -49,7 +48,7 @@ docker run --rm bpfix-adversarial:offline
 ```
 
 Committed paper tables live under [`results/`](results/).
-Docs index: [`docs/README.md`](docs/README.md) (metrics, lab pin, deps, upstream, tags, Zenodo).
+Docs index: [`docs/README.md`](docs/README.md) (metrics, lab pin, deps, upstream, tags).
 
 ## What it does
 
@@ -161,7 +160,7 @@ fixtures/upstream/    depth-21 sparse bpfix-bench cases (curated target)
 lab/                  Linux capture helpers
 tools/                emit tables, lab capture, generate mutants
 results/              committed paper insets (md/json)
-docs/                 metrics, lab pin, deps, upstream, tags, Zenodo (see docs/README.md)
+docs/                 metrics, lab pin, deps, upstream, tags (see docs/README.md)
 schemas/              optional JSON Schema contracts
 tests/                unittest suite
 Makefile              smoke / insets (peer-harness shape)
