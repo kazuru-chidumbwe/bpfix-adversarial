@@ -13,9 +13,9 @@ https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2
 | Concept (all versions) | https://doi.org/10.5281/zenodo.21859726 | series |
 | v1.0.0 | https://doi.org/10.5281/zenodo.21859746 | `v1.0.0` |
 | v1.0.1 | https://doi.org/10.5281/zenodo.21860453 | `v1.0.1` |
-| v1.0.2 | *not minted* (no `ZENODO_TOKEN` at tag time) | `v1.0.2` |
+| v1.0.2 | https://doi.org/10.5281/zenodo.22763331 | `v1.0.2` |
 
-C7 on this tag is the GitHub README. After a v1.0.2 Zenodo version is published, wire that **new** DOI into C7 / `CITATION.cff` on a later tag — do not relabel 21860453.
+The v1.0.2 archive was minted by hand on 15 Sep 2026 (Zenodo's API was unavailable at tag time) as a **new version** under the existing concept, so the concept DOI is unchanged. Its DOI is wired into C7, `CITATION.cff` and `codemeta.json` on `master`; the `v1.0.2` tag itself predates that wiring and was **not** moved for it. Do not relabel 21860453.
 
 ## Cite
 
