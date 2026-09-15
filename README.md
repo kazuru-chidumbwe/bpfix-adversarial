@@ -16,7 +16,7 @@ This does **not** test verifier soundness, bypasses, or kernel CVEs.
 [![CI](https://github.com/kazuru-chidumbwe/bpfix-adversarial/actions/workflows/ci.yml/badge.svg)](https://github.com/kazuru-chidumbwe/bpfix-adversarial/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Cite pin [`v1.0.3`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.3).
+Cite pin [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2).
 See [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff), and [codemeta.json](codemeta.json).
 Cite the release tag, not floating `master`.
 Upstream bpfix pin is `81d97e4a528456e0082a77f4fb6edd13fa092b7b`.
@@ -28,7 +28,7 @@ No lab SSH required. After install:
 ```bash
 git clone https://github.com/kazuru-chidumbwe/bpfix-adversarial.git
 cd bpfix-adversarial
-git checkout v1.0.3
+git checkout v1.0.2
 python -m venv .venv
 source .venv/bin/activate    # Windows: .venv\Scripts\activate
 pip install -U pip && pip install -e .   # stdlib-only core; optional: pip install -e ".[lab,openai]"
@@ -68,7 +68,7 @@ Requires Python 3.10+.
 ```bash
 git clone https://github.com/kazuru-chidumbwe/bpfix-adversarial.git
 cd bpfix-adversarial
-git checkout v1.0.3          # package cite pin
+git checkout v1.0.2          # package cite pin
 python -m venv .venv
 source .venv/bin/activate    # Windows: .venv\Scripts\activate
 pip install -U pip
@@ -88,7 +88,7 @@ while helper-anchored recognition stays stable.
 
 ```bash
 python -c "import bpfix_adversarial as m; print(m.__version__)"
-# → 1.0.3 on the v1.0.3 pin
+# → 1.0.2 on the v1.0.2 pin
 
 python -m bpfix_adversarial rename-demo --breaks-only --limit 2
 ```
@@ -172,7 +172,7 @@ CODE_METADATA.md      Journal code-metadata table (C1–C8)
 Validated paper evidence is the **template** four-obligation reject-oracles,
 SC/VS injection-site agreement, and the upstream bpfix CLI primary-arrow table
 on the Debian pin. Depth-21 under `fixtures/upstream/` is a **curated validation
-target**, not independently scored results. Cite tag `v1.0.3` records the Ollama
+target**, not independently scored results. Cite tag `v1.0.2` records the Ollama
 separation demonstration with n=1. The scored construct is injection-site
 agreement. It is not a verified semantic proof-loss oracle. See [`docs/METRICS.md`](docs/METRICS.md).
 

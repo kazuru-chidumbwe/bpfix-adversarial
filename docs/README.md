@@ -8,6 +8,6 @@ Lean set for reviewers and reproduce. Paper carries related-work / threat narrat
 | [`LAB-PIN.md`](LAB-PIN.md) | Debian template-oracle host + separation-demo pin |
 | [`DEPENDENCIES.md`](DEPENDENCIES.md) | Python pins vs offline path |
 | [`UPSTREAM.md`](UPSTREAM.md) | bpfix commit + SourceComment rename boundary |
-| [`TAGS.md`](TAGS.md) | Cite-tag policy (`v1.0.3`) |
+| [`TAGS.md`](TAGS.md) | Cite-tag policy (`v1.0.2`) |
 
 Start at the root [`README.md`](../README.md).
