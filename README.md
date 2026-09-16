@@ -1,29 +1,17 @@
-# bpfix-adversarial: an evaluation harness for eBPF diagnostic localization under padding and renaming stress
+# bpfix-adversarial
 
-Check whether eBPF reject diagnostics still name the line where a fault was
-injected after pad and rename stress.
+Does an eBPF reject log still point at the line where a fault was injected after padding and renaming?
 
-When the verifier rejects a program, the stop site in the log is often not where
-the missing check belongs. This repo builds small failing programs with known
-injection markers. It captures verifier logs on a pinned lab. It scores whether
-a diagnostic still points at that marker. Scoring covers bpfix SourceComment
-heuristics, thin baselines, and upstream CLI replay.
+When the verifier rejects a program, the stop site in the log is often not where the missing check belongs. This tree builds small failing programs with known injection markers, captures verifier logs on a pinned lab host, and scores whether a diagnostic still names that marker. Scoring covers bpfix SourceComment heuristics, thin baselines, and upstream CLI replay.
 
-Object under test is [bpfix](https://github.com/eunomia-bpf/bpfix) and Zheng et al.
-See [arXiv:2607.02748](https://arxiv.org/abs/2607.02748).
-This does **not** test verifier soundness, bypasses, or kernel CVEs.
+Target: [bpfix](https://github.com/eunomia-bpf/bpfix) / Zheng et al. ([arXiv:2607.02748](https://arxiv.org/abs/2607.02748)). Not a verifier-soundness, bypass, or CVE study.
 
 [![CI](https://github.com/kazuru-chidumbwe/bpfix-adversarial/actions/workflows/ci.yml/badge.svg)](https://github.com/kazuru-chidumbwe/bpfix-adversarial/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Cite pin [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2).
-See [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff), and [codemeta.json](codemeta.json).
-Cite the release tag, not floating `master`.
-Upstream bpfix pin is `81d97e4a528456e0082a77f4fb6edd13fa092b7b`.
+**Frozen tree for published numbers:** [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2). Metadata: [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff), [codemeta.json](codemeta.json). Prefer that tag over floating `master`. Upstream bpfix pin: `81d97e4a528456e0082a77f4fb6edd13fa092b7b`.
 
-## Quick Start (offline insets)
-
-No lab SSH required. After install:
+## Offline insets (no lab SSH)
 
 ```bash
 git clone https://github.com/kazuru-chidumbwe/bpfix-adversarial.git
@@ -36,19 +24,17 @@ make smoke                   # version + unittest + rename-demo
 python tools/emit_rename_table.py
 python tools/emit_four_obligation_matrix.py
 python tools/score_sc_vs_honesty.py
-make figures                 # regenerate paper Figs 2–5 SVGs from results/*.json
+make figures                 # regenerate Figs 2–5 SVGs from results/*.json
 ```
 
-Or one-command offline smoke plus inset emitters. This path is Python tooling only.
-It does **not** pin or emulate the eBPF verifier. Containers share the host kernel.
+One-command offline path (Python tooling only; does not emulate the verifier; containers share the host kernel):
 
 ```bash
 docker build -t bpfix-adversarial:offline .
 docker run --rm bpfix-adversarial:offline
 ```
 
-Committed paper tables live under [`results/`](results/).
-Docs index: [`docs/README.md`](docs/README.md) (metrics, lab pin, deps, upstream, tags).
+Committed tables: [`results/`](results/). Docs index: [`docs/README.md`](docs/README.md).
 
 ## What it does
 
@@ -68,7 +54,7 @@ Requires Python 3.10+.
 ```bash
 git clone https://github.com/kazuru-chidumbwe/bpfix-adversarial.git
 cd bpfix-adversarial
-git checkout v1.0.2          # package cite pin
+git checkout v1.0.2
 python -m venv .venv
 source .venv/bin/activate    # Windows: .venv\Scripts\activate
 pip install -U pip
@@ -163,8 +149,8 @@ results/              committed paper insets (md/json)
 docs/                 metrics, lab pin, deps, upstream, tags (see docs/README.md)
 schemas/              optional JSON Schema contracts
 tests/                unittest suite
-Makefile              smoke / insets (peer-harness shape)
-CODE_METADATA.md      Journal code-metadata table (C1–C8)
+Makefile              smoke / insets
+CODE_METADATA.md      code-metadata table (C1–C8)
 ```
 
 ## Scope note
