@@ -81,7 +81,7 @@ def bar_chart(
         )
         lx += 18 + 8 * len(name)
     lines.append("</svg>")
-    outfile.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    outfile.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
 
 def emit_fig2_sc_vs() -> None:
