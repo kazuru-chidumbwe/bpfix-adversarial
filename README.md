@@ -95,8 +95,11 @@ Example excerpt.
 }
 ```
 
-Full combinatorial matrix. **32/32** top-1 breaks for the SourceComment name-list
-heuristic. See `results/rename_honesty.md`.
+Full combinatorial **4x8** matrix of brittle x idiomatic name pairs: all 32 pairs flip
+the SourceComment null-check predicate. This draws the recognition boundary of a
+name-list heuristic; it is **not** scored as `top1_line` and is **not** an empirical
+localization rate over n=32. Helper-anchored `bpf_map_lookup_elem` recognition is
+rename-insensitive by construction. See `results/rename_honesty.md`.
 
 ## Tests
 
