@@ -34,9 +34,11 @@ def markdown_table(cases) -> str:
         )
     lines.append("")
     lines.append(
-        f"Full combinatorial matrix: **{len(breaks)}/{len(cases)}** "
-        f"({100.0 * len(breaks) / len(cases):.1f}%) honesty breaks "
-        f"(SourceComment null-check flips under idiomatic rename)."
+        f"Full combinatorial matrix: all **{len(breaks)}** brittle-name x "
+        f"idiomatic-rename pairs (of {len(cases)}) flip the SourceComment "
+        f"null-check recognition boundary under idiomatic rename. Exhaustive "
+        f"enumeration of the 4x8 grid, not a sampled rate over an empirical "
+        f"population."
     )
     lines.append("")
     lines.append(

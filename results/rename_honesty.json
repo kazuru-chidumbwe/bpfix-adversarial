@@ -2,7 +2,6 @@
   "summary": {
     "n_cases": 32,
     "n_honesty_breaks": 32,
-    "break_rate": 1.0,
     "brittle_names": [
       "tmp",
       "val",
@@ -19,7 +18,7 @@
       "node",
       "sk_ref"
     ],
-    "note": "looks_like_null_check flips under idiomatic rename of !tmp/!val/!ptr/!value; looks_like_nullable_return stays helper-anchored"
+    "note": "Exhaustive 4x8 combinatorial enumeration (all brittle names x all idiomatic renames), not a sampled rate over an empirical population: looks_like_null_check flips on all cases under idiomatic rename of !tmp/!val/!ptr/!value; looks_like_nullable_return stays helper-anchored on all cases"
   },
   "cases": [
     {

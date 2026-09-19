@@ -41,7 +41,7 @@ class HeuristicTests(unittest.TestCase):
         cases = generate_rename_cases()
         breaks = [c for c in cases if c.honesty_break]
         self.assertEqual(len(breaks), 32)
-        self.assertEqual(summary(cases)["break_rate"], 1.0)
+        self.assertEqual(summary(cases)["n_honesty_breaks"], 32)
 
     def test_score_honesty(self):
         s = score_honesty(
