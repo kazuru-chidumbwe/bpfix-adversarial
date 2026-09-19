@@ -1,0 +1,459 @@
+{
+  "upstream_repo": "https://github.com/eunomia-bpf/bpfix",
+  "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+  "split": "bpfix-bench/splits/main.txt",
+  "source": "bpfix-bench/cases/<case>/diagnostic.txt (first line: error ID and headline)",
+  "n_cases": 75,
+  "cases": [
+    {
+      "upstream_case_id": "alu32_pointer_cookie_001",
+      "error_id": "E006",
+      "headline": "verifier-visible compiler lowering hides the required proof",
+      "diagnostic_sha256": "34ebac8f61ad849928119390f4f0ed6bd0107282da3ef37c47eb2cffd562e9d3"
+    },
+    {
+      "upstream_case_id": "dynptr_slice_missing_null_check_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "c6731710af027252834770f6f9e7a5fc4eced5d2d4dba169e72bfac608570e5b"
+    },
+    {
+      "upstream_case_id": "dynptr_slice_short_mem_001",
+      "error_id": "E005",
+      "headline": "memory-object access exceeds the verifier-visible object size",
+      "diagnostic_sha256": "8e331fe6c1d1be61b85aa567126577b9544d61ec3d2f94d0b18cb15db97e25db"
+    },
+    {
+      "upstream_case_id": "dynptr_slice_stack_buffer_001",
+      "error_id": "E003",
+      "headline": "helper memory/length pair reads unwritten stack bytes",
+      "diagnostic_sha256": "d2c3b8a903ace4c3c2011da52d3af5cdcf2ee6b3d968fb4f7247b4d8d0833f2a"
+    },
+    {
+      "upstream_case_id": "dynptr_stack_copy_001",
+      "error_id": "E012",
+      "headline": "dynptr stack storage is being used as ordinary memory",
+      "diagnostic_sha256": "0e25266b63d245fba3275774de92f803995f463ab426e2598efd3c1f45f4dfad"
+    },
+    {
+      "upstream_case_id": "dynptr_uninitialized_slice_arg_001",
+      "error_id": "E012",
+      "headline": "dynptr helper argument is not an initialized verifier-tracked dynptr slot",
+      "diagnostic_sha256": "2377a8874fbc3f7f6e5246591c9174cc309b1a4b6e0712122de9b0c68465082c"
+    },
+    {
+      "upstream_case_id": "helper_csum_diff_stack_len_001",
+      "error_id": "E003",
+      "headline": "stack initialization proof is missing",
+      "diagnostic_sha256": "5c8504d5de6f6d2f4ec93063adea5c29cde4b4c17ff6c57aa9adeae7fc1ee55e"
+    },
+    {
+      "upstream_case_id": "helper_map_arg_stack_001",
+      "error_id": "E008",
+      "headline": "helper or kfunc argument has the wrong verifier-visible type",
+      "diagnostic_sha256": "557ebb5104bd05924c6ad5e7e55a34b45abc2eb9db6818cdf44c714281c24ac8"
+    },
+    {
+      "upstream_case_id": "map_value_branch_merge_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "4939526aa90898978e6baf806dd771f5eeda0674749013c9af8fd0a68dd10120"
+    },
+    {
+      "upstream_case_id": "map_value_index_guard_oob_001",
+      "error_id": "E005",
+      "headline": "map-value access exceeds the verifier-visible value size",
+      "diagnostic_sha256": "f7cb90be81ed749cbe0369ae12d2d63335771c12697d8ac679c98f954ad12f38"
+    },
+    {
+      "upstream_case_id": "map_value_inline_cookie_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "8d65172554971ea2013728d0bfe94be9d91c7bf3fcfe9d49bfd29912750ff8dd"
+    },
+    {
+      "upstream_case_id": "map_value_pointer_cookie_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "c5bfd737cdec307d2186c2399e877c008884d8191b17d56701c5487cb974d65e"
+    },
+    {
+      "upstream_case_id": "map_value_signed_index_001",
+      "error_id": "E005",
+      "headline": "scalar range at the rejected use is still verifier-unsafe",
+      "diagnostic_sha256": "0570944563afb16914ea6d6dd5225a8d3d9f870d8d607e36246a080ce5255ba6"
+    },
+    {
+      "upstream_case_id": "map_value_spill_cookie_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "4be38cd41f921348a8ba3586cc1cc5f044c19b495de7e361c0a8be41a3f99568"
+    },
+    {
+      "upstream_case_id": "packet_checked_wrong_base_001",
+      "error_id": "E001",
+      "headline": "packet bounds check is narrower than the later packet access",
+      "diagnostic_sha256": "9f0dadde92e8d3e5f863bdb45c8df0cf853e007bf05cc5155505701057b7875f"
+    },
+    {
+      "upstream_case_id": "packet_eth_off_by_one_001",
+      "error_id": "E001",
+      "headline": "packet bounds check is narrower than the later packet access",
+      "diagnostic_sha256": "312c39c053b0d70713aece2fb14c6d5a64e50f8f5a35f766115c4625bb4139ad"
+    },
+    {
+      "upstream_case_id": "packet_ihl_udp_undercheck_001",
+      "error_id": "E001",
+      "headline": "packet access reaches the use before the verifier has enough packet range",
+      "diagnostic_sha256": "9332dec5d2e265b78b4a3b62dfe859816ab32b819d729a3a1777e033fe0565d6"
+    },
+    {
+      "upstream_case_id": "packet_inline_return_cookie_001",
+      "error_id": "E006",
+      "headline": "verifier-visible compiler lowering hides the required proof",
+      "diagnostic_sha256": "5fb8f288406e06170bbf42e16e6e8e40d47510e8a52a1c3b9ae3052d765103a1"
+    },
+    {
+      "upstream_case_id": "packet_l4_branch_cookie_001",
+      "error_id": "E006",
+      "headline": "verifier-visible compiler lowering hides the required proof",
+      "diagnostic_sha256": "186e9ddbd8939b433b14b52f7a84025533a7f60e3916c72974179a6e88f7a9a3"
+    },
+    {
+      "upstream_case_id": "packet_macro_cookie_001",
+      "error_id": "E006",
+      "headline": "verifier-visible compiler lowering hides the required proof",
+      "diagnostic_sha256": "870f5d9d714d84d49d213675201648151d3d68b65579993ef59015b102a25526"
+    },
+    {
+      "upstream_case_id": "packet_macro_payload_undercheck_001",
+      "error_id": "E001",
+      "headline": "packet bounds proof is missing",
+      "diagnostic_sha256": "70c0a157e43cb7a4845b50b8e6d403840db2fd0dd88b875967c1dad10cd1ef90"
+    },
+    {
+      "upstream_case_id": "packet_vlan_cookie_001",
+      "error_id": "E006",
+      "headline": "verifier-visible compiler lowering hides the required proof",
+      "diagnostic_sha256": "c4e331cc37591f190567cf955573304e2877df1548f3807a275aced7d3fb6754"
+    },
+    {
+      "upstream_case_id": "perf_event_packet_payload_001",
+      "error_id": "E010",
+      "headline": "perf event output helper receives packet memory directly",
+      "diagnostic_sha256": "5ec28fc230350f68a74e7d503ee4af8cfc141514c046932c27bc98cba6d4beb3"
+    },
+    {
+      "upstream_case_id": "ringbuf_branch_cookie_001",
+      "error_id": "E006",
+      "headline": "verifier-visible compiler lowering hides the required proof",
+      "diagnostic_sha256": "2eb30da97a320feaf1ccf1d3904496e00b3d8b0227d33c6fe3639f3269cd2c65"
+    },
+    {
+      "upstream_case_id": "ringbuf_double_submit_001",
+      "error_id": "E006",
+      "headline": "pointer type proof is missing",
+      "diagnostic_sha256": "404ebe23a1a0591dda1b80e94dd75da4462a56c332ab14ab64d93c9504662ebb"
+    },
+    {
+      "upstream_case_id": "ringbuf_missing_null_check_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "af7aec209f643b68b4ce3bf4b14b564b672387b17aca99ccd50af6519667166b"
+    },
+    {
+      "upstream_case_id": "ringbuf_nested_missing_null_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "93920d909789d850e0ebf0d0c7cd1f5f334e0431e3bd6dd4fa6f2870ec9b5db9"
+    },
+    {
+      "upstream_case_id": "ringbuf_nested_reserve_leak_001",
+      "error_id": "E004",
+      "headline": "program exits while a verifier-tracked reference is still live",
+      "diagnostic_sha256": "2d3a99d1bb0749a1bf2dfa98f2f40abff7273272092aecd22ce947abbbd984fb"
+    },
+    {
+      "upstream_case_id": "ringbuf_pointer_cookie_001",
+      "error_id": "E006",
+      "headline": "verifier-visible compiler lowering hides the required proof",
+      "diagnostic_sha256": "fc7a95a51cc14b36faa4e4a807eba2369cd32ecb155ae09381f066f0ca07ef5d"
+    },
+    {
+      "upstream_case_id": "ringbuf_ref_leak_001",
+      "error_id": "E004",
+      "headline": "program exits while a verifier-tracked reference is still live",
+      "diagnostic_sha256": "cecdcf15174d7bb88e38aaec53c5ec54ad532391bbe5270f782badc2734dd877"
+    },
+    {
+      "upstream_case_id": "ringbuf_stack_discard_001",
+      "error_id": "E008",
+      "headline": "helper or kfunc argument has the wrong verifier-visible type",
+      "diagnostic_sha256": "a8d260091b3daff4a7a70787c82116c5af90c1963116041f665fde9f3746fc2d"
+    },
+    {
+      "upstream_case_id": "ringbuf_stack_submit_001",
+      "error_id": "E008",
+      "headline": "helper or kfunc argument has the wrong verifier-visible type",
+      "diagnostic_sha256": "906bfa9f818f8485431847216a5fde326e41cc69b12ce1fae079549fbbf57f19"
+    },
+    {
+      "upstream_case_id": "ringbuf_submit_after_discard_001",
+      "error_id": "E008",
+      "headline": "helper or kfunc argument has the wrong verifier-visible type",
+      "diagnostic_sha256": "431ba8e0aa4ea3a3f00a21260b9113e9293bfb23f2afc6fa0bfa220c6fb1ae71"
+    },
+    {
+      "upstream_case_id": "ringbuf_two_record_cookie_001",
+      "error_id": "E006",
+      "headline": "verifier-visible compiler lowering hides the required proof",
+      "diagnostic_sha256": "a6dd657117302566a4c6d2844dd8c6a99cb88470c108309c2e655410c2bf7536"
+    },
+    {
+      "upstream_case_id": "rs_actplane_cap_dynptr_payload_null_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "d1fef2341e3a32fd7638a26cbd5e0014b2d8e412a54b373fefed92e1b4242488"
+    },
+    {
+      "upstream_case_id": "rs_actplane_lsm_bpf_ringbuf_merge_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "2359e867be79f23a9d82c62344efd35a210927cd1d4400340908e39414bf0653"
+    },
+    {
+      "upstream_case_id": "rs_actplane_mmap_pending_merge_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "8a6d87b0d0da857b704f0a74608afce7cae2521bb8c6d1f64498dbd1f5941979"
+    },
+    {
+      "upstream_case_id": "rs_actplane_policy_map_merge_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "2c636cbff20e824c62356ce70370693155c4d9e4e962ca082177569ffde44ff7"
+    },
+    {
+      "upstream_case_id": "rs_actplane_taint_loop_count_bound_001",
+      "error_id": "E005",
+      "headline": "scalar range proof is missing",
+      "diagnostic_sha256": "e543bc3ba44b974917a57e075699deee3cd474ca93eefdf01a96a7d6e2f9feb7"
+    },
+    {
+      "upstream_case_id": "rs_agentsight_fs_overflow_counter_merge_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "caddff1450fc279e9aff5941eadc752045907016a10a2d9c5d9170cabc057e77"
+    },
+    {
+      "upstream_case_id": "rs_agentsight_process_ringbuf_null_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "9e16b82da8abac9e258ad68daffb3d368df45688a41776a3a22454193034d497"
+    },
+    {
+      "upstream_case_id": "rs_agentsight_stdiocap_user_copy_len_001",
+      "error_id": "E005",
+      "headline": "scalar range proof is missing",
+      "diagnostic_sha256": "0a1d20718febe68ccc36771248cc1a736045ba07dc3092f0a6c76aac073d5c0a"
+    },
+    {
+      "upstream_case_id": "rs_agentsight_write_ctx_merge_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "872b91791980d04d5b288918c281516ecc338c4eb52a808261dd893a3ce9e497"
+    },
+    {
+      "upstream_case_id": "rs_bpftime_opensnoop_ringbuf_filter_ref_001",
+      "error_id": "E004",
+      "headline": "program exits while a verifier-tracked reference is still live",
+      "diagnostic_sha256": "98587608d8fe3e34dda903766718e0086447c9006bddf4bcfa20d4db693ff9ac"
+    },
+    {
+      "upstream_case_id": "rs_bpftime_opensnoop_stack_wrong_prog_type_001",
+      "error_id": "E009",
+      "headline": "kernel or program-type capability is unavailable",
+      "diagnostic_sha256": "6ddffeb361d407d21e7a0586c6579b7086ad679ad85852154dd2afcb54ed9eea"
+    },
+    {
+      "upstream_case_id": "rs_bpftime_sslsniff_perf_copy_len_001",
+      "error_id": "E005",
+      "headline": "map-value access exceeds the verifier-visible value size",
+      "diagnostic_sha256": "71ab14f23db0b7811c6c5f4b1d4b85068c0ac7c7aab6aac32e388de53dee6613"
+    },
+    {
+      "upstream_case_id": "rs_cilium_change_proto_stale_001",
+      "error_id": "E011",
+      "headline": "skb/xdp packet pointer is reused after a helper invalidates it",
+      "diagnostic_sha256": "4f8bbbf1a792a97fa57cf53a9a371530921ef252471e2a896bb1ce82037c4cab"
+    },
+    {
+      "upstream_case_id": "rs_cilium_fib_lookup_param_len_001",
+      "error_id": "E003",
+      "headline": "stack initialization proof is missing",
+      "diagnostic_sha256": "f906cb00971e6b6a86cdcb1df703bc7099865e58d3492b7b2746d3d82d8bb170"
+    },
+    {
+      "upstream_case_id": "rs_cilium_ip_options_traceid_payload_bound_001",
+      "error_id": "E001",
+      "headline": "packet access reaches the use before the verifier has enough packet range",
+      "diagnostic_sha256": "3edc6fe4adab9d6b9ab6fc8e6317c94e6bf54a6651bbaa0a9b789d3eab4087bd"
+    },
+    {
+      "upstream_case_id": "rs_cilium_ipv6_exthdr_l4_offset_001",
+      "error_id": "E001",
+      "headline": "packet access reaches the use before the verifier has enough packet range",
+      "diagnostic_sha256": "cd9ec43393a398dda2a9870fa458df139e441626dbff64c3861751e73ec43e9b"
+    },
+    {
+      "upstream_case_id": "rs_cilium_mcast_igmpv3_grec_bound_001",
+      "error_id": "E001",
+      "headline": "packet bounds check is narrower than the later packet access",
+      "diagnostic_sha256": "439b76f7d55692263895f88c9f75ca5602574cb99a8de47b6e623e5141272c20"
+    },
+    {
+      "upstream_case_id": "rs_cilium_proxy_skc_assign_ref_leak_001",
+      "error_id": "E004",
+      "headline": "reference lifecycle proof is missing",
+      "diagnostic_sha256": "9f3d1bab1be599102665507452e17697c2b698a5d9525c836d13164b70f06426"
+    },
+    {
+      "upstream_case_id": "rs_cilium_srv6_segment_bound_001",
+      "error_id": "E001",
+      "headline": "packet bounds check is narrower than the later packet access",
+      "diagnostic_sha256": "e91b8e786d3400f060ea0b71f5dc3e6388969a37551e602381f5beb53b9c1427"
+    },
+    {
+      "upstream_case_id": "rs_datrail_browsertrace_start_ns_merge_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "3307cc74e6446f418492b0107918bab59c61dc487d751eeeb1a7bbe3e5e3ede4"
+    },
+    {
+      "upstream_case_id": "rs_datrail_cgroup_filter_key_width_001",
+      "error_id": "E003",
+      "headline": "stack initialization proof is missing",
+      "diagnostic_sha256": "eff351543eda4736b4eba596650c5d26117cb03820eb1fe68df512632bfaa666"
+    },
+    {
+      "upstream_case_id": "rs_eunomia_energy_runtime_merge_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "b21ecb8964ceb8318e7bad645127d0bdbbe34ad8f08e03f8005a95b236069f57"
+    },
+    {
+      "upstream_case_id": "rs_eunomia_http_doff_copy_bound_001",
+      "error_id": "E001",
+      "headline": "packet access reaches the use before the verifier has enough packet range",
+      "diagnostic_sha256": "aec4abb009a7eda037c1007f2b6cb08166a65400d8e6a85301b8a78fa751b2ad"
+    },
+    {
+      "upstream_case_id": "rs_eunomia_wq_container_map_001",
+      "error_id": "E010",
+      "headline": "helper or subprogram argument contract is not satisfied",
+      "diagnostic_sha256": "74e92e91a23b8bdaea1ddb081534f21e3aa3968130f98cfc6c4ed1b5c8646548"
+    },
+    {
+      "upstream_case_id": "rs_nccl_cpu_observer_slot_merge_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "43bda82e6ee437203bd7f7401e2d204ef93fcb63f4e87742b657ed7fd1f63c1e"
+    },
+    {
+      "upstream_case_id": "rs_tetragon_data_event_size_guard_001",
+      "error_id": "E005",
+      "headline": "scalar range proof is missing",
+      "diagnostic_sha256": "717255b1ab21bb4ac03099f5af62c13c07097e5d20d380c4419e25336f0152f6"
+    },
+    {
+      "upstream_case_id": "rs_tutorial_dynptr_tc_ref_leak_001",
+      "error_id": "E004",
+      "headline": "program exits while a verifier-tracked reference is still live",
+      "diagnostic_sha256": "4d799d187c2823313153bd160832f39776a435eceec1803205fd13b548dc509d"
+    },
+    {
+      "upstream_case_id": "rs_tutorial_memleak_free_info_merge_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "b7b54b74e5c32034125b0af15a6271b7a43e174fab8a2597da6770504d20564e"
+    },
+    {
+      "upstream_case_id": "rs_tutorial_pidhide_tailcall_map_type_001",
+      "error_id": "E009",
+      "headline": "kernel or program-type capability is unavailable",
+      "diagnostic_sha256": "fc349b92b112d8ad9320e941ccbc73b82dcb77a6671f53993982c6ad0d886326"
+    },
+    {
+      "upstream_case_id": "rs_tutorial_user_ringbuf_dynptr_merge_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "0f771f188b2c639a90aff52da6180669c16c12cce8048defc3e7e8772e7ef1f6"
+    },
+    {
+      "upstream_case_id": "rs_xdp_tools_ihl_macro_wrong_base_001",
+      "error_id": "E001",
+      "headline": "packet access reaches the use before the verifier has enough packet range",
+      "diagnostic_sha256": "4e213a5e2f68932a02a388873f1cdcdca730ca3a5e441878d58baa56c0d2b32b"
+    },
+    {
+      "upstream_case_id": "rs_xdp_tools_load_bytes_stack_len_001",
+      "error_id": "E003",
+      "headline": "stack initialization proof is missing",
+      "diagnostic_sha256": "ed106a95bfd06870675893427e2f28445f128f27a46d978fbd2c69ea75d76ae8"
+    },
+    {
+      "upstream_case_id": "rs_xdp_tools_xdpdump_perf_map_type_001",
+      "error_id": "E009",
+      "headline": "kernel or program-type capability is unavailable",
+      "diagnostic_sha256": "09a3b9749b9b991298406ab8f1ccd19791b7de9ce96cf8b6acab2df4d4f4ede4"
+    },
+    {
+      "upstream_case_id": "rs_xdp_tools_xdpfilt_udp_macro_bound_001",
+      "error_id": "E001",
+      "headline": "packet bounds check is narrower than the later packet access",
+      "diagnostic_sha256": "2ecde27e39d9cee30db0703ed81070c70c6a2ef212eaefab7e047724bd6fa908"
+    },
+    {
+      "upstream_case_id": "rs_xdp_tools_xdpsock_redirect_map_type_001",
+      "error_id": "E009",
+      "headline": "kernel or program-type capability is unavailable",
+      "diagnostic_sha256": "00f4be670dda7b153c32423bad7fb3252576ffbaf4d2100f010e7e7f5a89095e"
+    },
+    {
+      "upstream_case_id": "subprog_adjust_tail_stale_001",
+      "error_id": "E011",
+      "headline": "skb/xdp packet pointer is reused after a helper invalidates it",
+      "diagnostic_sha256": "b0973190a94d42a838478ec24091244c2286cf8303e822d586dcdf9aedd47d48"
+    },
+    {
+      "upstream_case_id": "subprog_map_value_null_001",
+      "error_id": "E002",
+      "headline": "nullable pointer is used before the verifier sees a non-null proof",
+      "diagnostic_sha256": "69b363f65ab4b8a9ce56ab3d589207a66cdb1085a8aedc394a737d44e4646532"
+    },
+    {
+      "upstream_case_id": "xdp_adjust_head_map_value_001",
+      "error_id": "E011",
+      "headline": "skb/xdp packet pointer is reused after a helper invalidates it",
+      "diagnostic_sha256": "cf09a25ad1866b18a5c4412708a23200c90dfb7d2b2df830b8494c8bec5540d4"
+    },
+    {
+      "upstream_case_id": "xdp_adjust_head_ringbuf_001",
+      "error_id": "E011",
+      "headline": "skb/xdp packet pointer is reused after a helper invalidates it",
+      "diagnostic_sha256": "ba26c42aa95edd52a86ceb6b3fca600d3bcc4d9d48d66681b564ca8c99552e6f"
+    },
+    {
+      "upstream_case_id": "xdp_adjust_head_stale_001",
+      "error_id": "E011",
+      "headline": "skb/xdp packet pointer is reused after a helper invalidates it",
+      "diagnostic_sha256": "81ecb6e5cd96b8f03196dc830ef56d0da99c452ae2bc1e66c9044a302b8d2c2a"
+    },
+    {
+      "upstream_case_id": "xdp_adjust_tail_stale_001",
+      "error_id": "E011",
+      "headline": "skb/xdp packet pointer is reused after a helper invalidates it",
+      "diagnostic_sha256": "bf57f772521f6aa64db0ce62f642cc142019eb69dd6b016d320c3ea36b97bf84"
+    }
+  ]
+}

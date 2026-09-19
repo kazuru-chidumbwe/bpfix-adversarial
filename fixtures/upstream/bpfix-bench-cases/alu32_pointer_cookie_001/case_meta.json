@@ -1,6 +1,6 @@
 {
   "upstream_case_id": "alu32_pointer_cookie_001",
-  "upstream_proof_obligation": "ScalarRange",
+  "keyword_label": "ScalarRange",
   "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
   "campaign_label": "20260728",
   "selection_method": "balanced obligation guess",

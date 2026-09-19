@@ -1,459 +1,293 @@
 {
   "campaign_label": "20260728",
-  "selection_method": "balanced obligation guess (per=6; SR pool=3)",
+  "selection_method": "stratified on case-name keyword labels (per=6; ScalarRange pool=3)",
   "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
   "n": 21,
-  "counts": {
+  "keyword_label_counts": {
     "PointerProvenance": 6,
     "ScalarRange": 3,
     "NullablePointer": 6,
     "PacketBounds": 6
   },
+  "keyword_label_agreement_with_upstream": 8,
+  "scored": false,
+  "template_evidence_by_family": {
+    "PointerProvenance": {
+      "template_cases": [
+        "PP-pad0",
+        "PP-pad8",
+        "PP-pad32"
+      ],
+      "lab_reject": "3/3",
+      "sourcecomment": "N/A (no upstream PointerProvenance predicate)",
+      "verifierstate": "top1_span 3/3, top1_line 0/3"
+    },
+    "ScalarRange": {
+      "template_cases": [
+        "SR-pad0",
+        "SR-pad8",
+        "SR-pad32"
+      ],
+      "lab_reject": "3/3",
+      "sourcecomment": "top1_line 0/3 (no scalar-guard line to match)",
+      "verifierstate": "top1_line 0/3"
+    },
+    "NullablePointer": {
+      "template_cases": [
+        "NP-brittle-pad0",
+        "NP-brittle-pad8",
+        "NP-brittle-pad32",
+        "NP-idiomatic-pad0",
+        "NP-idiomatic-pad8",
+        "NP-idiomatic-pad32",
+        "NP-idiomatic-nocheck"
+      ],
+      "lab_reject": "1/7 (nocheck); 6 ACCEPT controls",
+      "sourcecomment": "nocheck top1_line hit (construction-determined); rename boundary is an exhaustive 4x8 enumeration, not a rate",
+      "verifierstate": "nocheck top1_line miss; n/a on ACCEPT controls"
+    },
+    "PacketBounds": {
+      "template_cases": [
+        "PB-pad0",
+        "PB-pad8",
+        "PB-pad32"
+      ],
+      "lab_reject": "3/3",
+      "sourcecomment": "top1_line 3/3 (construction-determined)",
+      "verifierstate": "top1_line 0/3"
+    }
+  },
   "rows": [
     {
       "depth_index": 1,
       "upstream_case_id": "dynptr_slice_short_mem_001",
-      "obligation": "PointerProvenance",
+      "keyword_label": "PointerProvenance",
+      "upstream_error_id": "E005",
+      "upstream_obligation": "ScalarRange",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 1063,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/dynptr_slice_short_mem_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "PP-pad0",
-          "PP-pad8",
-          "PP-pad32"
-        ],
-        "lab_reject": "3/3",
-        "sc_top1": "0/3",
-        "vs_top1": "3/3",
-        "note": "pkt\u2295prandom wash; VS hits loss span"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/dynptr_slice_short_mem_001"
     },
     {
       "depth_index": 2,
       "upstream_case_id": "dynptr_slice_stack_buffer_001",
-      "obligation": "PointerProvenance",
+      "keyword_label": "PointerProvenance",
+      "upstream_error_id": "E003",
+      "upstream_obligation": "StackInitialized",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 950,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/dynptr_slice_stack_buffer_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "PP-pad0",
-          "PP-pad8",
-          "PP-pad32"
-        ],
-        "lab_reject": "3/3",
-        "sc_top1": "0/3",
-        "vs_top1": "3/3",
-        "note": "pkt\u2295prandom wash; VS hits loss span"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/dynptr_slice_stack_buffer_001"
     },
     {
       "depth_index": 3,
       "upstream_case_id": "dynptr_stack_copy_001",
-      "obligation": "PointerProvenance",
+      "keyword_label": "PointerProvenance",
+      "upstream_error_id": "E012",
+      "upstream_obligation": "DynptrSafety",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 1200,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/dynptr_stack_copy_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "PP-pad0",
-          "PP-pad8",
-          "PP-pad32"
-        ],
-        "lab_reject": "3/3",
-        "sc_top1": "0/3",
-        "vs_top1": "3/3",
-        "note": "pkt\u2295prandom wash; VS hits loss span"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/dynptr_stack_copy_001"
     },
     {
       "depth_index": 4,
       "upstream_case_id": "dynptr_uninitialized_slice_arg_001",
-      "obligation": "PointerProvenance",
+      "keyword_label": "PointerProvenance",
+      "upstream_error_id": "E012",
+      "upstream_obligation": "DynptrSafety",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 722,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/dynptr_uninitialized_slice_arg_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "PP-pad0",
-          "PP-pad8",
-          "PP-pad32"
-        ],
-        "lab_reject": "3/3",
-        "sc_top1": "0/3",
-        "vs_top1": "3/3",
-        "note": "pkt\u2295prandom wash; VS hits loss span"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/dynptr_uninitialized_slice_arg_001"
     },
     {
       "depth_index": 5,
       "upstream_case_id": "helper_csum_diff_stack_len_001",
-      "obligation": "PointerProvenance",
+      "keyword_label": "PointerProvenance",
+      "upstream_error_id": "E003",
+      "upstream_obligation": "StackInitialized",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 1633,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/helper_csum_diff_stack_len_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "PP-pad0",
-          "PP-pad8",
-          "PP-pad32"
-        ],
-        "lab_reject": "3/3",
-        "sc_top1": "0/3",
-        "vs_top1": "3/3",
-        "note": "pkt\u2295prandom wash; VS hits loss span"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/helper_csum_diff_stack_len_001"
     },
     {
       "depth_index": 6,
       "upstream_case_id": "helper_map_arg_stack_001",
-      "obligation": "PointerProvenance",
+      "keyword_label": "PointerProvenance",
+      "upstream_error_id": "E008",
+      "upstream_obligation": "TypeContract",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 1294,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/helper_map_arg_stack_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "PP-pad0",
-          "PP-pad8",
-          "PP-pad32"
-        ],
-        "lab_reject": "3/3",
-        "sc_top1": "0/3",
-        "vs_top1": "3/3",
-        "note": "pkt\u2295prandom wash; VS hits loss span"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/helper_map_arg_stack_001"
     },
     {
       "depth_index": 7,
       "upstream_case_id": "alu32_pointer_cookie_001",
-      "obligation": "ScalarRange",
+      "keyword_label": "ScalarRange",
+      "upstream_error_id": "E006",
+      "upstream_obligation": "PointerProvenance",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 1176,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/alu32_pointer_cookie_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "SR-pad0",
-          "SR-pad8",
-          "SR-pad32"
-        ],
-        "lab_reject": "3/3",
-        "sc_top1": "0/3",
-        "vs_top1": "0/3",
-        "note": "stack[prandom]; both miss loss (VS near-reject)"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/alu32_pointer_cookie_001"
     },
     {
       "depth_index": 8,
       "upstream_case_id": "map_value_index_guard_oob_001",
-      "obligation": "ScalarRange",
+      "keyword_label": "ScalarRange",
+      "upstream_error_id": "E005",
+      "upstream_obligation": "ScalarRange",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 1052,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/map_value_index_guard_oob_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "SR-pad0",
-          "SR-pad8",
-          "SR-pad32"
-        ],
-        "lab_reject": "3/3",
-        "sc_top1": "0/3",
-        "vs_top1": "0/3",
-        "note": "stack[prandom]; both miss loss (VS near-reject)"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/map_value_index_guard_oob_001"
     },
     {
       "depth_index": 9,
       "upstream_case_id": "map_value_signed_index_001",
-      "obligation": "ScalarRange",
+      "keyword_label": "ScalarRange",
+      "upstream_error_id": "E005",
+      "upstream_obligation": "ScalarRange",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 971,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/map_value_signed_index_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "SR-pad0",
-          "SR-pad8",
-          "SR-pad32"
-        ],
-        "lab_reject": "3/3",
-        "sc_top1": "0/3",
-        "vs_top1": "0/3",
-        "note": "stack[prandom]; both miss loss (VS near-reject)"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/map_value_signed_index_001"
     },
     {
       "depth_index": 10,
       "upstream_case_id": "dynptr_slice_missing_null_check_001",
-      "obligation": "NullablePointer",
+      "keyword_label": "NullablePointer",
+      "upstream_error_id": "E002",
+      "upstream_obligation": "NullablePointer",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 1006,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/dynptr_slice_missing_null_check_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "NP-brittle-pad0",
-          "NP-brittle-pad8",
-          "NP-brittle-pad32",
-          "NP-idiomatic-pad0",
-          "NP-idiomatic-pad8",
-          "NP-idiomatic-pad32",
-          "NP-idiomatic-nocheck"
-        ],
-        "lab_reject": "1/7 (nocheck); 6/7 accept controls",
-        "sc_top1": "rename matrix 32/32 breaks + brittle hits",
-        "vs_top1": "n/a on accepts; nocheck miss vs loss-span",
-        "note": "RQ2 lead + RQ4 seed"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/dynptr_slice_missing_null_check_001"
     },
     {
       "depth_index": 11,
       "upstream_case_id": "ringbuf_branch_cookie_001",
-      "obligation": "NullablePointer",
+      "keyword_label": "NullablePointer",
+      "upstream_error_id": "E006",
+      "upstream_obligation": "PointerProvenance",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 1449,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/ringbuf_branch_cookie_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "NP-brittle-pad0",
-          "NP-brittle-pad8",
-          "NP-brittle-pad32",
-          "NP-idiomatic-pad0",
-          "NP-idiomatic-pad8",
-          "NP-idiomatic-pad32",
-          "NP-idiomatic-nocheck"
-        ],
-        "lab_reject": "1/7 (nocheck); 6/7 accept controls",
-        "sc_top1": "rename matrix 32/32 breaks + brittle hits",
-        "vs_top1": "n/a on accepts; nocheck miss vs loss-span",
-        "note": "RQ2 lead + RQ4 seed"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/ringbuf_branch_cookie_001"
     },
     {
       "depth_index": 12,
       "upstream_case_id": "ringbuf_double_submit_001",
-      "obligation": "NullablePointer",
+      "keyword_label": "NullablePointer",
+      "upstream_error_id": "E006",
+      "upstream_obligation": "PointerProvenance",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 1176,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/ringbuf_double_submit_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "NP-brittle-pad0",
-          "NP-brittle-pad8",
-          "NP-brittle-pad32",
-          "NP-idiomatic-pad0",
-          "NP-idiomatic-pad8",
-          "NP-idiomatic-pad32",
-          "NP-idiomatic-nocheck"
-        ],
-        "lab_reject": "1/7 (nocheck); 6/7 accept controls",
-        "sc_top1": "rename matrix 32/32 breaks + brittle hits",
-        "vs_top1": "n/a on accepts; nocheck miss vs loss-span",
-        "note": "RQ2 lead + RQ4 seed"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/ringbuf_double_submit_001"
     },
     {
       "depth_index": 13,
       "upstream_case_id": "ringbuf_missing_null_check_001",
-      "obligation": "NullablePointer",
+      "keyword_label": "NullablePointer",
+      "upstream_error_id": "E002",
+      "upstream_obligation": "NullablePointer",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 1074,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/ringbuf_missing_null_check_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "NP-brittle-pad0",
-          "NP-brittle-pad8",
-          "NP-brittle-pad32",
-          "NP-idiomatic-pad0",
-          "NP-idiomatic-pad8",
-          "NP-idiomatic-pad32",
-          "NP-idiomatic-nocheck"
-        ],
-        "lab_reject": "1/7 (nocheck); 6/7 accept controls",
-        "sc_top1": "rename matrix 32/32 breaks + brittle hits",
-        "vs_top1": "n/a on accepts; nocheck miss vs loss-span",
-        "note": "RQ2 lead + RQ4 seed"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/ringbuf_missing_null_check_001"
     },
     {
       "depth_index": 14,
       "upstream_case_id": "ringbuf_nested_missing_null_001",
-      "obligation": "NullablePointer",
+      "keyword_label": "NullablePointer",
+      "upstream_error_id": "E002",
+      "upstream_obligation": "NullablePointer",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 1145,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/ringbuf_nested_missing_null_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "NP-brittle-pad0",
-          "NP-brittle-pad8",
-          "NP-brittle-pad32",
-          "NP-idiomatic-pad0",
-          "NP-idiomatic-pad8",
-          "NP-idiomatic-pad32",
-          "NP-idiomatic-nocheck"
-        ],
-        "lab_reject": "1/7 (nocheck); 6/7 accept controls",
-        "sc_top1": "rename matrix 32/32 breaks + brittle hits",
-        "vs_top1": "n/a on accepts; nocheck miss vs loss-span",
-        "note": "RQ2 lead + RQ4 seed"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/ringbuf_nested_missing_null_001"
     },
     {
       "depth_index": 15,
       "upstream_case_id": "ringbuf_nested_reserve_leak_001",
-      "obligation": "NullablePointer",
+      "keyword_label": "NullablePointer",
+      "upstream_error_id": "E004",
+      "upstream_obligation": "ReferenceLifecycle",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 1184,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/ringbuf_nested_reserve_leak_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "NP-brittle-pad0",
-          "NP-brittle-pad8",
-          "NP-brittle-pad32",
-          "NP-idiomatic-pad0",
-          "NP-idiomatic-pad8",
-          "NP-idiomatic-pad32",
-          "NP-idiomatic-nocheck"
-        ],
-        "lab_reject": "1/7 (nocheck); 6/7 accept controls",
-        "sc_top1": "rename matrix 32/32 breaks + brittle hits",
-        "vs_top1": "n/a on accepts; nocheck miss vs loss-span",
-        "note": "RQ2 lead + RQ4 seed"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/ringbuf_nested_reserve_leak_001"
     },
     {
       "depth_index": 16,
       "upstream_case_id": "packet_checked_wrong_base_001",
-      "obligation": "PacketBounds",
+      "keyword_label": "PacketBounds",
+      "upstream_error_id": "E001",
+      "upstream_obligation": "PacketBounds",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 692,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/packet_checked_wrong_base_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "PB-pad0",
-          "PB-pad8",
-          "PB-pad32"
-        ],
-        "lab_reject": "3/3",
-        "sc_top1": "3/3",
-        "vs_top1": "0/3",
-        "note": "SC/VS tier disagree"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/packet_checked_wrong_base_001"
     },
     {
       "depth_index": 17,
       "upstream_case_id": "packet_eth_off_by_one_001",
-      "obligation": "PacketBounds",
+      "keyword_label": "PacketBounds",
+      "upstream_error_id": "E001",
+      "upstream_obligation": "PacketBounds",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 976,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/packet_eth_off_by_one_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "PB-pad0",
-          "PB-pad8",
-          "PB-pad32"
-        ],
-        "lab_reject": "3/3",
-        "sc_top1": "3/3",
-        "vs_top1": "0/3",
-        "note": "SC/VS tier disagree"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/packet_eth_off_by_one_001"
     },
     {
       "depth_index": 18,
       "upstream_case_id": "packet_ihl_udp_undercheck_001",
-      "obligation": "PacketBounds",
+      "keyword_label": "PacketBounds",
+      "upstream_error_id": "E001",
+      "upstream_obligation": "PacketBounds",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 1725,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/packet_ihl_udp_undercheck_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "PB-pad0",
-          "PB-pad8",
-          "PB-pad32"
-        ],
-        "lab_reject": "3/3",
-        "sc_top1": "3/3",
-        "vs_top1": "0/3",
-        "note": "SC/VS tier disagree"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/packet_ihl_udp_undercheck_001"
     },
     {
       "depth_index": 19,
       "upstream_case_id": "packet_inline_return_cookie_001",
-      "obligation": "PacketBounds",
+      "keyword_label": "PacketBounds",
+      "upstream_error_id": "E006",
+      "upstream_obligation": "PointerProvenance",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 1346,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/packet_inline_return_cookie_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "PB-pad0",
-          "PB-pad8",
-          "PB-pad32"
-        ],
-        "lab_reject": "3/3",
-        "sc_top1": "3/3",
-        "vs_top1": "0/3",
-        "note": "SC/VS tier disagree"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/packet_inline_return_cookie_001"
     },
     {
       "depth_index": 20,
       "upstream_case_id": "packet_l4_branch_cookie_001",
-      "obligation": "PacketBounds",
+      "keyword_label": "PacketBounds",
+      "upstream_error_id": "E006",
+      "upstream_obligation": "PointerProvenance",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 1676,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/packet_l4_branch_cookie_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "PB-pad0",
-          "PB-pad8",
-          "PB-pad32"
-        ],
-        "lab_reject": "3/3",
-        "sc_top1": "3/3",
-        "vs_top1": "0/3",
-        "note": "SC/VS tier disagree"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/packet_l4_branch_cookie_001"
     },
     {
       "depth_index": 21,
       "upstream_case_id": "packet_macro_cookie_001",
-      "obligation": "PacketBounds",
+      "keyword_label": "PacketBounds",
+      "upstream_error_id": "E006",
+      "upstream_obligation": "PointerProvenance",
       "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
       "has_buggy": true,
       "buggy_bytes": 1257,
-      "local_path": "fixtures/upstream/bpfix-bench-cases/packet_macro_cookie_001",
-      "template_family_evidence": {
-        "template_cases": [
-          "PB-pad0",
-          "PB-pad8",
-          "PB-pad32"
-        ],
-        "lab_reject": "3/3",
-        "sc_top1": "3/3",
-        "vs_top1": "0/3",
-        "note": "SC/VS tier disagree"
-      }
+      "local_path": "fixtures/upstream/bpfix-bench-cases/packet_macro_cookie_001"
     }
-  ],
-  "status": "IDs_locked_sources_fetched_template_evidence_joined"
+  ]
 }

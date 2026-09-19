@@ -15,3 +15,12 @@ to upstream (`latest_source_before` over log-emitted source comments).
 
 Note: Rust uses `to_ascii_lowercase` while Python uses `str.lower()`; for ASCII
 C source comments these agree.
+
+## `classifier.rs`
+
+**Path:** `crates/bpfix/src/classifier.rs` (same commit)  
+**SHA-256:** `340462545a300d95af4d6b53c1ae8d354e7c0965acf7acbd3a2078df4e0ecb37`
+
+Verbatim copy (upstream is MIT-licensed). It is the reference for the error-ID →
+`ProofObligation` map in `bpfix_adversarial/upstream_corpus.py`, checked by
+`tests/test_upstream_classification.py`.

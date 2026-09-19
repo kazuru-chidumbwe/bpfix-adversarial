@@ -31,7 +31,7 @@ def main() -> None:
     rows = []
     for c in cases:
         cid = c["upstream_case_id"]
-        ob = c["upstream_proof_obligation"]
+        ob = c["keyword_label"]
         dest = OUT_DIR / cid
         dest.mkdir(parents=True, exist_ok=True)
         got = []
@@ -46,7 +46,7 @@ def main() -> None:
             got.append(name)
         meta = {
             "upstream_case_id": cid,
-            "upstream_proof_obligation": ob,
+            "keyword_label": ob,
             "upstream_commit": COMMIT,
             "campaign_label": "20260728",
             "selection_method": subset.get("selection_method"),
