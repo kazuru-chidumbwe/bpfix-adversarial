@@ -6,9 +6,14 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from tools.score_sc_vs_honesty import lab_rejected  # noqa: E402
+
 MUT = ROOT / "mutants"
 CAP = ROOT / "fixtures" / "logs" / "captured"
 SYN = ROOT / "fixtures" / "logs" / "synthetic"
@@ -62,23 +67,14 @@ def log_status(log: Path | None) -> dict:
         }
     text = log.read_text(encoding="utf-8", errors="replace")
     tier = "captured" if log.parent.name == "captured" else "synthetic"
-    rejected = any(
-        s in text.lower()
-        for s in (
-            "permission denied",
-            "invalid",
-            "r0",
-            "fail",
-            "error",
-            "rejected",
-            "cannot",
-        )
-    ) or "COMPILE_FAIL" in text
-    # empty successful load often has little text
-    nonempty = len(text.strip()) > 0
+    # Same libbpf program-load-failure detector as tools/score_sc_vs_honesty.py
+    # (requires a "BEGIN PROG LOAD LOG" marker, not a substring match): a naive
+    # substring scan false-positives on "r0" (the verifier's return register,
+    # present in nearly every log regardless of verdict).
+    rejected = lab_rejected(text)
     return {
         "log_tier": tier,
-        "rejected_or_error": rejected if nonempty else False,
+        "rejected_or_error": rejected,
         "log_bytes": len(text.encode("utf-8")),
         "log_sha256": sha256_file(log),
         "log_path": str(log.relative_to(ROOT)).replace("\\", "/"),
