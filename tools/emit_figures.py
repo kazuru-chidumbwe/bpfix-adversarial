@@ -34,7 +34,7 @@ def svg_header(w: int, h: int, title: str) -> list[str]:
 def bar_chart(
     title: str,
     labels: list[str],
-    series: list[tuple[str, list[float], str]],
+    series: list[tuple[str, list[float | None], str]],
     outfile: Path,
     *,
     ymax: float | None = None,
@@ -44,7 +44,7 @@ def bar_chart(
     plot_w = w - left - right
     plot_h = h - top - bottom
     mx = ymax if ymax is not None else max(
-        (v for _, vals, _ in series for v in vals), default=1.0
+        (v for _, vals, _ in series for v in vals if v is not None), default=1.0
     )
     mx = max(mx, 1e-6)
     n = max(len(labels), 1)
@@ -65,8 +65,15 @@ def bar_chart(
             if i >= len(vals):
                 continue
             v = vals[i]
-            bh = (v / mx) * plot_h
             x = gx + (j + 0.5) * bar_w
+            if v is None:
+                lines.append(
+                    f'<text x="{x + bar_w*0.425:.1f}" y="{top+plot_h-6}" text-anchor="middle" '
+                    f'font-family="Segoe UI, Arial, sans-serif" font-size="11" '
+                    f'fill="{color}">N/A</text>'
+                )
+                continue
+            bh = (v / mx) * plot_h
             y = top + plot_h - bh
             lines.append(
                 f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_w*0.85:.1f}" '
@@ -100,13 +107,13 @@ def emit_fig2_sc_vs() -> None:
         ]
         n = len(rows) or 1
         if fam == "PointerProvenance":
-            sc_line.append(0.0)  # N/A — plotted as 0 with label PP*
+            sc_line.append(None)  # no upstream PointerProvenance predicate
         else:
             sc_line.append(sum(1 for r in rows if r.get("sc_top1_line") is True) / n)
         vs_span.append(sum(1 for r in rows if r.get("vs_top1_span") is True) / n)
     bar_chart(
-        "SC top1_line vs VS top1_span (rejecting templates; PP SC = N/A)",
-        ["PB", "PP*", "SR"],
+        "SC top1_line vs VS top1_span (rejecting templates)",
+        ["PB", "PP", "SR"],
         [
             ("SC top1_line", sc_line, "#2a6f97"),
             ("VS top1_span", vs_span, "#ee6c4d"),
