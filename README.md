@@ -24,7 +24,9 @@ make smoke                   # version + unittest + rename-demo
 python tools/emit_rename_table.py
 python tools/emit_four_obligation_matrix.py
 python tools/score_sc_vs_honesty.py
-make figures                 # regenerate Figs 2–5 SVGs from results/*.json
+make figures                 # regenerate the three figure SVGs from results/*.json (paper Figs. 3-5)
+pip install -e ".[dev]"
+python tools/measure_coverage.py   # single-command repro of the coverage figures quoted in the paper
 ```
 
 One-command offline path (Python tooling only; does not emulate the verifier; containers share the host kernel):
@@ -83,7 +85,7 @@ Example excerpt.
 
 ```json
 {
-  "summary": { "n_honesty_breaks": 32, "break_rate": 1.0 },
+  "summary": { "n_cases": 32, "n_honesty_breaks": 32 },
   "cases": [
     {
       "original_line": "if (!tmp)",

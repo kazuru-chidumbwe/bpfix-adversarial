@@ -7,8 +7,8 @@
 ## Obligation-family labelling rubric (`upstream_proof_obligation`)
 
 Labels in `fixtures/upstream/main75_case_index.json` are **author-maintained**, not
-upstream bpfix taxonomy. SoftwareX Table 4 reports label-taxonomy coverage of this
-index only. Assignment rules (single annotator):
+upstream bpfix taxonomy. SoftwareX Table 2 reports label-taxonomy coverage of this
+index only (Table 4 is the scoring contract). Assignment rules (single annotator):
 
 | Family | Evidence that assigns a case |
 | --- | --- |

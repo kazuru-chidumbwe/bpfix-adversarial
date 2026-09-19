@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Emit SoftwareX Figs 2–4 as SVG from committed results/*.json (stdlib only).
+"""Emit three SoftwareX figure SVGs from committed results/*.json (stdlib only).
 
-Fig. 1 (architecture) is hand-authored outside this emitter.
+Files use this repo's own fig2/fig3/fig4 numbering, one behind the paper's
+Fig. 3/Fig. 4/Fig. 5: fig2-sc-vs-honesty.svg -> paper Fig. 3,
+fig3-lab-distance.svg -> paper Fig. 4, fig4-scoring-modes-cli.svg -> paper Fig. 5.
+Paper Figs. 1 (architecture) and 2 (synthetic/rename) are hand-authored outside
+this emitter, so the paper has one more figure than this emitter produces.
 Rename boundary is prose-only (no rate figure).
 """
 
