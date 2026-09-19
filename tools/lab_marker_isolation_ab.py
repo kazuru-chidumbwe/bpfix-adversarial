@@ -213,8 +213,11 @@ def pair_match(b: dict, n: dict) -> dict:
         and n.get("nodbg_obj_sha256")
         and b["nodbg_obj_sha256"] == n["nodbg_obj_sha256"]
     )
-    # -g ELF often differs: debug/source metadata retains authored source text
-    # (.BTF and .BTF.ext dumps differ on the Ubuntu A/B campaign). Reported, not required for pass.
+    # -g ELF often differs (.BTF and .BTF.ext dumps differ on the Ubuntu A/B
+    # campaign), but this does not isolate an effect of marker text: the two
+    # arms compile under variant-specific file names and the section hashes
+    # are taken over llvm-objdump -s output, which embeds the object path.
+    # Reported, not required for pass.
     same_dbg = (
         b.get("obj_sha256")
         and n.get("obj_sha256")
@@ -497,7 +500,10 @@ def main(argv: list[str] | None = None) -> int:
             "Marker-neutral = ORACLE_* → /* */ (line-preserving). "
             "pass = verdict + normalized -g load log (timing/ASLR stripped) + "
             "source-comment texts + same-path -O2 (no -g) ELF sha256 identity. "
-            "Lab -O2 -g objects often differ (debug/source metadata; .BTF and .BTF.ext dumps); reported as dbg_obj_match."
+            "Lab -O2 -g objects often differ (.BTF and .BTF.ext dumps); this does not "
+            "isolate an effect of marker text (variant-specific file names, and the "
+            "section hashes are taken over llvm-objdump -s output, which embeds the "
+            "object path); reported as dbg_obj_match."
         ),
     }
     out = args.out if args.out.is_absolute() else (ROOT / args.out)
