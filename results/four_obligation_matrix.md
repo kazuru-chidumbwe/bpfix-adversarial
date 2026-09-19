@@ -3,17 +3,14 @@
 Construction-time oracle markers scanned from mutant sources.
 Log tier: `captured` = lab bpftool; `synthetic` = fixture; `missing` = no log yet.
 
-## NullablePointer (n=10)
+## NullablePointer (n=7)
 
 | case_id | pad | loss | reject | log_tier | log_sha256 | note |
 | --- | ---: | ---: | ---: | --- | --- | --- |
 | `NP-brittle-pad0` | 0 | 18 | 21 | captured | `6ef5414b7cec…` | SC name-list hit expected (!ptr) |
 | `NP-brittle-pad32` | 32 | 18 | 56 | captured | `7b81929baf37…` | SC name-list hit expected (!ptr) |
 | `NP-brittle-pad8` | 8 | 18 | 32 | captured | `ecc7c7d84085…` | SC name-list hit expected (!ptr) |
-| `NP-idiomatic-nocheck-repaired-llm` | None | 24 | 37 | missing | `—` | RQ4 repaired program (wrong-tip protocol) |
-| `NP-idiomatic-nocheck-repaired-ollama` | None | None | None | captured | `7f2d340b18eb…` | RQ4 repaired program (wrong-tip protocol) |
-| `NP-idiomatic-nocheck-repaired` | None | 24 | 37 | missing | `—` | RQ4 repaired program (wrong-tip protocol) |
-| `NP-idiomatic-nocheck` | None | 22 | 35 | captured | `84584b7274c9…` | RQ4 failing seed (missing check) |
+| `NP-idiomatic-nocheck` | None | 22 | 35 | captured | `84584b7274c9…` | rejecting NP template (missing check) |
 | `NP-idiomatic-pad0` | 0 | 18 | 21 | captured | `a579a464e6ee…` | SC name-list miss expected (!entry) |
 | `NP-idiomatic-pad32` | 32 | 18 | 56 | captured | `d25136325d9a…` | SC name-list miss expected (!entry) |
 | `NP-idiomatic-pad8` | 8 | 18 | 32 | captured | `c7a70e2eb136…` | SC name-list miss expected (!entry) |
@@ -42,6 +39,6 @@ Log tier: `captured` = lab bpftool; `synthetic` = fixture; `missing` = no log ye
 | `SR-pad32` | 32 | 10 | 47 | captured | `fa42f2ab68e9…` | unbound stack[prandom] (reject: unbounded mem) |
 | `SR-pad8` | 8 | 10 | 23 | captured | `29f92d41180e…` | unbound stack[prandom] (reject: unbounded mem) |
 
-**Summary:** 19 mutants · 17 lab-captured logs · 0 synthetic · 2 missing.
+**Summary:** 16 mutants · 16 lab-captured logs · 0 synthetic · 0 missing.
 
 Honesty scores vs construction oracle for SC/VS remain in `rename_honesty.*`, `np_pair_score.json`, `tier_disagreement.*`; this matrix is the stratified coverage table for the four-obligation review.

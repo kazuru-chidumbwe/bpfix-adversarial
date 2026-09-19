@@ -83,14 +83,12 @@ def log_status(log: Path | None) -> dict:
 
 
 def rename_honesty_note(case_id: str) -> str:
-    if "repaired" in case_id:
-        return "RQ4 repaired program (wrong-tip protocol)"
     if "idiomatic" in case_id and "nocheck" not in case_id:
         return "SC name-list miss expected (!entry)"
     if "brittle" in case_id:
         return "SC name-list hit expected (!ptr)"
     if "nocheck" in case_id:
-        return "RQ4 failing seed (missing check)"
+        return "rejecting NP template (missing check)"
     if case_id.startswith("PB-"):
         return "packet under-check template"
     if case_id.startswith("PP-"):

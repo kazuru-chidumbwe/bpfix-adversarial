@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 """Fail if committed results/*.json drift from a fresh offline emitter run.
 
-Lab / network / Ollama-backed artifacts are listed as SKIP with a reason so every
+Lab-capture artifacts are listed as SKIP with a reason so every
 results/*.json is accounted for (closes the “forgot to recommit” hole).
 """
 
@@ -33,13 +33,10 @@ OFFLINE_EMITTERS: list[tuple[str, list[str]]] = [
     ("results/rq1_bpfix_cli.json", ["tools/emit_rq1_bpfix_cli.py"]),
 ]
 
-# Must exist under results/; not re-run in CI (lab / Ollama / capture-only).
+# Must exist under results/; not re-run in CI (lab capture only).
 SKIP_RESULTS: dict[str, str] = {
     "results/marker_isolation_lab.json": (
         "Ubuntu lab A/B capture (tools/lab_marker_isolation_ab.py); requires SSH host"
-    ),
-    "results/honesty_utility_rq4.json": (
-        "Pinned Ollama separation demonstration (tools/rq4_llm_repair.py); not offline"
     ),
 }
 

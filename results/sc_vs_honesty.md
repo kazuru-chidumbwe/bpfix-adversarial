@@ -11,9 +11,6 @@ SC = bpfix SourceComment heuristic port on mutant source. VS = last source-mappe
 | NullablePointer | `NP-brittle-pad0` | 19,20 | 19 | yes | yes | 23 | n/a | n/a | no | n/a |
 | NullablePointer | `NP-brittle-pad32` | 19,20 | 19 | yes | yes | 58 | n/a | n/a | no | n/a |
 | NullablePointer | `NP-brittle-pad8` | 19,20 | 19 | yes | yes | 34 | n/a | n/a | no | n/a |
-| NullablePointer | `NP-idiomatic-nocheck-repaired-llm` | — | 21 | no | no | — | n/a | n/a | n/a | n/a |
-| NullablePointer | `NP-idiomatic-nocheck-repaired-ollama` | — | 21 | n/a | n/a | — | n/a | n/a | no | n/a |
-| NullablePointer | `NP-idiomatic-nocheck-repaired` | — | 21 | no | no | — | n/a | n/a | n/a | n/a |
 | NullablePointer | `NP-idiomatic-nocheck` | — | 21 | yes | yes | 36 | no | no | yes | yes |
 | NullablePointer | `NP-idiomatic-pad0` | 19,20 | 17 | no | no | 23 | n/a | n/a | no | n/a |
 | NullablePointer | `NP-idiomatic-pad32` | 19,20 | 17 | no | no | 58 | n/a | n/a | no | n/a |
@@ -53,7 +50,7 @@ SC = bpfix SourceComment heuristic port on mutant source. VS = last source-mappe
 - **PP:** SC is N/A (no upstream provenance heuristic). VS **top1_span** hits the XOR wash (coincides with author injection span; **top1_line** may miss if the map is not the first executable line) — not a semantic proof-loss claim.
 - **SR:** No scalar-guard `if` line is present to match on unbound-index templates (SC miss by construction). VS reports the stack load (reject/use), not the unbound `idx` assignment (loss).
 - **PB:** SC **top1_line** hits the under-check; VS hits the wide load (reject).
-- **NP-nocheck:** SC **top1_line** hits the lookup (empty-span fallback + nullable-return nocheck predicate — construction-determined); VS reports the reject deref (miss). Still the RQ4 separation seed.
+- **NP-nocheck:** SC **top1_line** hits the lookup (empty-span fallback + nullable-return nocheck predicate — construction-determined); VS reports the reject deref (miss).
 - Of 10 rejecting rows, seven have construction-determined SC outcomes (PP N/A×3 + SR absent-guard×3 + NP fallback×1); informative SC sample is 3 PacketBounds rows (3/3 top1_line).
 - Accepting NP-with-check rows: VS score n/a (no reject); SC rename story unchanged.
 

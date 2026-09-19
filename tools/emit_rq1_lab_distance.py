@@ -38,7 +38,7 @@ def main() -> None:
             continue
         pad = pad_of(r["case_id"])
         if pad is None and "nocheck" in r["case_id"]:
-            continue  # RQ4 seed — not a distance-pad arm
+            continue  # nocheck template — not a distance-pad arm
         loss = r.get("oracle_loss_code")
         reject = r.get("oracle_reject_code")
         sc = r.get("sc_reported_line")

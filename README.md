@@ -19,7 +19,7 @@ cd bpfix-adversarial
 git checkout v1.0.2
 python -m venv .venv
 source .venv/bin/activate    # Windows: .venv\Scripts\activate
-pip install -U pip && pip install -e .   # stdlib-only core; optional: pip install -e ".[lab,openai]"
+pip install -U pip && pip install -e .   # stdlib-only core; optional: pip install -e ".[lab]"
 make smoke                   # version + unittest + rename-demo
 python tools/emit_rename_table.py
 python tools/emit_four_obligation_matrix.py
@@ -63,9 +63,6 @@ pip install -U pip
 pip install -e .
 ```
 
-Optional. The OpenAI separation path needs `OPENAI_API_KEY`.
-The paper separation demonstration used **Ollama** with `--backend ollama`. No cloud key.
-Model digest and seed are pinned. See `tools/rq4_llm_repair.py` and `results/rq4_ollama/`.
 Lab SSH helpers need `paramiko` and a `lab/.env`. See [`docs/LAB-PIN.md`](docs/LAB-PIN.md) and [`docs/TAGS.md`](docs/TAGS.md).
 To add a reporter: map a log to a primary line, then call `bpfix_adversarial.score.score_honesty` (see `docs/METRICS.md`).
 
@@ -129,9 +126,6 @@ python tools/emit_depth21_selection.py       # depth-21 curated join table (unsc
 # Optional lab / CLI:
 #   python tools/lab_capture_via_env.py
 #   tools/run_rq1_bpfix_cli.sh && python tools/emit_rq1_bpfix_cli.py
-#   python tools/rq4_llm_repair.py --backend ollama   # separation demonstration
-#   python tools/rq4_llm_repair.py --backend openai   # optional; needs OPENAI_API_KEY
-#   # Do not use tools/honesty_utility_rq4.py to regenerate cite insets (legacy; refuses by default).
 ```
 
 | Campaign | Focus | Primary inset |
@@ -139,13 +133,12 @@ python tools/emit_depth21_selection.py       # depth-21 curated join table (unsc
 | Distance | Injection-site distance under padding | `distance_sweep.*`, `rq1_lab_distance.*`, `rq1_bpfix_cli.*` |
 | Rename | Null-check name-list brittleness | `rename_honesty.*` |
 | Tiers | SourceComment vs VerifierState | `tier_disagreement.*`, `sc_vs_honesty.*` |
-| Separation | Localization is not repair. n=1 demo | `honesty_utility_rq4.*` via `rq4_llm_repair.py --backend ollama` |
 
 ## Layout
 
 ```
 bpfix_adversarial/   heuristic port, generators, logparse, score
-mutants/              NP + PP/SR/PB C templates (+ repaired seeds)
+mutants/              NP + PP/SR/PB C templates
 fixtures/logs/        synthetic/ + captured/ (lab bpftool logs)
 fixtures/upstream/    depth-21 sparse bpfix-bench cases (curated target)
 lab/                  Linux capture helpers
@@ -163,8 +156,7 @@ CODE_METADATA.md      code-metadata table (C1–C8)
 Validated paper evidence is the **template** four-obligation reject-oracles,
 SC/VS injection-site agreement, and the upstream bpfix CLI primary-arrow table
 on the Debian pin. Depth-21 under `fixtures/upstream/` is a **curated validation
-target**, not independently scored results. Cite tag `v1.0.2` records the Ollama
-separation demonstration with n=1. The scored construct is injection-site
+target**, not independently scored results. The scored construct is injection-site
 agreement. It is not a verified semantic proof-loss oracle. See [`docs/METRICS.md`](docs/METRICS.md).
 
 ## License

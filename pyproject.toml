@@ -14,9 +14,8 @@ dependencies = []
 
 [project.optional-dependencies]
 lab = ["paramiko>=3.5,<4"]
-openai = ["openai>=1.97,<2"]
 dev = ["coverage>=7.16,<8"]
-all = ["bpfix-adversarial[lab,openai]"]
+all = ["bpfix-adversarial[lab]"]
 
 [project.scripts]
 bpfix-adversarial = "bpfix_adversarial.cli:main"

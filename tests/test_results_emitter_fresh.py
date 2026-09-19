@@ -2,7 +2,7 @@
 """Committed results/*.json must match a fresh offline emitter run.
 
 Extends the narrow src_sha256 guards: every results/*.json is either
-re-emitted and compared, or explicitly listed as lab/Ollama SKIP in
+re-emitted and compared, or explicitly listed as lab SKIP in
 tools/check_results_fresh.py (so drift cannot recur unnoticed).
 """
 

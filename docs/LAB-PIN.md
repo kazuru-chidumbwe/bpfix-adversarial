@@ -17,16 +17,14 @@ emitters do **not** need it.
 | bpftool | v7.5.0 (libbpf v1.5) |
 | Capture | `bpftool prog load … -d` |
 
-Separation demonstration (not template-oracle scores): Ubuntu 24.04
-`app-test-server`, kernel `6.8.0-136-generic`, clang 18.1.3, bpftool v7.4.0 —
-see `results/env_pins/app-test-server.20260807T112233Z.env.txt`. The SoftwareX
-Ollama localization–repair separation capture on that host recorded ACCEPT on
-2026-08-07 (stdlib `urllib` HTTP client; no `ollama` PyPI package).
+Marker A/B (not template-oracle scores): Ubuntu 24.04 `app-test-server`,
+kernel `6.8.0-136-generic`, clang 18.1.3, bpftool v7.4.0 — see
+`results/env_pins/app-test-server.20260807T112233Z.env.txt`.
 
 | Role | Host | Notes |
 | --- | --- | --- |
 | Template-oracle scores | `lab-server` (Debian 13 / `6.12.86+deb13-amd64`) | SoftwareX cite pin |
-| Separation + marker A/B | `app-test-server` (Ubuntu 24.04 / `6.8.0-136-generic`) | Not portability claim |
+| Marker A/B | `app-test-server` (Ubuntu 24.04 / `6.8.0-136-generic`) | Not portability claim |
 | Offline bpfix CLI replay | WSL/Linux developer host | Reads stamped logs only; does not re-verify |
 
 Optional RQ1 offline CLI replay uses upstream bpfix at immutable commit

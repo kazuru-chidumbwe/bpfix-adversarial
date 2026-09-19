@@ -416,7 +416,7 @@ def main() -> None:
         "- **PB:** SC **top1_line** hits the under-check; VS hits the wide load (reject).",
         "- **NP-nocheck:** SC **top1_line** hits the lookup (empty-span fallback + "
         "nullable-return nocheck predicate — construction-determined); VS reports the "
-        "reject deref (miss). Still the RQ4 separation seed.",
+        "reject deref (miss).",
         "- Of 10 rejecting rows, seven have construction-determined SC outcomes "
         "(PP N/A×3 + SR absent-guard×3 + NP fallback×1); informative SC sample is "
         "3 PacketBounds rows (3/3 top1_line).",
