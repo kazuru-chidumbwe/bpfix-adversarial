@@ -25,6 +25,7 @@ OFFLINE_EMITTERS: list[tuple[str, list[str]]] = [
     ("results/tier_disagreement.json", ["tools/emit_tier_table.py"]),
     ("results/four_obligation_matrix.json", ["tools/emit_four_obligation_matrix.py"]),
     ("results/upstream_obligations.json", ["tools/emit_upstream_obligations.py"]),
+    ("results/pad_rename_invariance.json", ["tools/emit_pad_rename_invariance.py"]),
     ("results/depth21_selection.json", ["tools/emit_depth21_selection.py"]),
     ("results/sc_vs_honesty.json", ["tools/score_sc_vs_honesty.py"]),
     ("results/rq1_lab_distance.json", ["tools/emit_rq1_lab_distance.py"]),
