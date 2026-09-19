@@ -13,12 +13,11 @@ subprocess.run, and coverage.py does not trace child processes unless the
 interpreter is instrumented at startup (see
 https://coverage.readthedocs.io/en/latest/subprocess.html). A plain
 `coverage run -m unittest discover` under-reports tools/ at 0% and the
-total at roughly 14%. This script wires up the subprocess hook for the
-duration of the run only: it writes a `.pth` file into the current
-interpreter's site-packages that calls `coverage.process_startup()`, points
-`COVERAGE_PROCESS_START` at a throwaway rcfile, runs the suite, combines the
-parallel data files, prints the report, and removes both the `.pth` and the
-rcfile again on exit. It does not touch this repository's own files.
+total at roughly 14%. coverage.py installs its own startup hook
+(a1_coverage.pth) that traces any child process when COVERAGE_PROCESS_START
+is set, so this script writes a temporary rcfile and data files at the
+repository root, sets that variable for the run, combines the parallel data
+files, prints the report, and removes the rcfile and data files on exit.
 
 Usage: python tools/measure_coverage.py
 """
@@ -29,11 +28,9 @@ import atexit
 import os
 import subprocess
 import sys
-import sysconfig
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PTH_NAME = "bpfix_adversarial_coverage_subprocess.pth"
 RCFILE = ROOT / ".coveragerc.measure"
 DATA_PREFIX = ".coverage.measure"
 
@@ -49,9 +46,6 @@ def main() -> int:
         )
         return 1
 
-    site_dir = Path(sysconfig.get_path("purelib"))
-    pth = site_dir / PTH_NAME
-
     RCFILE.write_text(
         "[run]\n"
         "parallel = True\n"
@@ -63,12 +57,7 @@ def main() -> int:
         "show_missing = False\n",
         encoding="utf-8",
     )
-    pth.write_text(
-        "import coverage; coverage.process_startup()\n", encoding="utf-8"
-    )
-
     def cleanup() -> None:
-        pth.unlink(missing_ok=True)
         RCFILE.unlink(missing_ok=True)
         for f in ROOT.glob(f"{DATA_PREFIX}*"):
             f.unlink(missing_ok=True)
@@ -106,6 +95,20 @@ def main() -> int:
     )
     subprocess.run(
         [sys.executable, "-m", "coverage", "report", f"--rcfile={RCFILE}"],
+        cwd=ROOT,
+        env=env,
+        check=True,
+    )
+    print("\nPackage only (bpfix_adversarial/):", flush=True)
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "coverage",
+            "report",
+            f"--rcfile={RCFILE}",
+            "--include=bpfix_adversarial/*",
+        ],
         cwd=ROOT,
         env=env,
         check=True,
