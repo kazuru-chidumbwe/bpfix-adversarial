@@ -52,12 +52,20 @@ Additions:
   `CODE_METADATA.md` and `docs/ZENODO.md`.
 
 Removed: superseded `tools/emit_obligation_matrix.py`; unreferenced
-`lab/batch_capture_all.sh` and `lab/Makefile`.
+`lab/batch_capture_all.sh` and `lab/Makefile`; the `LAB_TEST_USER` default in the
+lab SSH helpers (the variable is now required).
+
+Kept for provenance: the header comments of `mutants/NullablePointer/NP-idiomatic-nocheck.c`
+and the 2026-08-07 env pin under `results/env_pins/` still mention the removed
+demonstration. The mutant's hash is recorded with the lab captures and the env pin is
+a historical host record, so neither is edited.
 
 Unchanged: every template tally the paper reports (SC/VS rejecting inset, lab
 distance, baselines 3/10 · 1/10 · 10/10, CLI replay, marker isolation 16/16).
 
-- CLI RQ1 scoring: `top1_line` = exact `oracle_loss_code`; `top1_span` separate; `set_recall_message` = decimal loss line in diagnostic text (fixes span-as-top1 bug)
+### 2026-09-03 release and 2026-09-14 re-cut
+
+- CLI scoring: `top1_line` = exact `oracle_loss_code`; `top1_span` separate; `set_recall_message` = decimal loss line in diagnostic text (fixes span-as-top1 bug)
 - Empty injection span: `oracle_loss_code` = last executable line *before* LOSS marker (`NP-idiomatic-nocheck` → lookup/assignment line)
 - `.gitattributes`: LF for `*.rs` / vendored Rust
 - CLI: UTF-8 stdout/stderr reconfigure on Windows

@@ -27,7 +27,7 @@ kernel `6.8.0-136-generic`, clang 18.1.3, bpftool v7.4.0 — see
 | Marker A/B | `app-test-server` (Ubuntu 24.04 / `6.8.0-136-generic`) | Not portability claim |
 | Offline bpfix CLI replay | WSL/Linux developer host | Reads stamped logs only; does not re-verify |
 
-Optional RQ1 offline CLI replay uses upstream bpfix at immutable commit
+Optional offline CLI replay uses upstream bpfix at immutable commit
 `81d97e4a528456e0082a77f4fb6edd13fa092b7b` (see `docs/UPSTREAM.md`).
 
 ## What reviewers must match

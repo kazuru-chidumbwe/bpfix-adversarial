@@ -61,11 +61,13 @@ def main() -> int:
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     cfg = load_env(ENV)
     host = (cfg.get("LAB_TEST_HOST") or "").strip()
-    user = (cfg.get("LAB_TEST_USER") or "boma").strip()
+    user = (cfg.get("LAB_TEST_USER") or "").strip()
     key_path = (cfg.get("LAB_TEST_SSH_KEY") or "").strip()
     password = (cfg.get("LAB_TEST_PASSWORD") or "").strip() or None
     if not host:
         raise SystemExit("Set LAB_TEST_HOST (or LAB_HOST2) in lab/.env / BPFIX_LAB_ENV_FILE")
+    if not user:
+        raise SystemExit("Set LAB_TEST_USER in lab/.env / BPFIX_LAB_ENV_FILE")
     c = paramiko.SSHClient()
     c.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     kwargs: dict = {

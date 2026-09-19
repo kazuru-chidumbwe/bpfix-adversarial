@@ -51,11 +51,13 @@ def normalize_lab_env(cfg: dict[str, str]) -> dict[str, str]:
 
 def connect(cfg: dict[str, str]) -> paramiko.SSHClient:
     host = (cfg.get("LAB_TEST_HOST") or "").strip()
-    user = (cfg.get("LAB_TEST_USER") or "boma").strip()
+    user = (cfg.get("LAB_TEST_USER") or "").strip()
     password = (cfg.get("LAB_TEST_PASSWORD") or "").strip() or None
     key_path = (cfg.get("LAB_TEST_SSH_KEY") or "").strip()
     if not host:
         raise SystemExit("Set LAB_TEST_HOST (or LAB_HOST2) in lab/.env (or BPFIX_LAB_ENV_FILE)")
+    if not user:
+        raise SystemExit("Set LAB_TEST_USER in lab/.env (or BPFIX_LAB_ENV_FILE)")
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     kwargs: dict = {
@@ -115,7 +117,7 @@ def main() -> None:
                 tar.add(p, arcname=rel)
 
     sftp = client.open_sftp()
-    home = f"/home/{cfg.get('LAB_TEST_USER', 'boma').strip()}"
+    home = f"/home/{cfg['LAB_TEST_USER'].strip()}"
     sftp.put(str(pack), f"{home}/bpfix-adv-lab.tgz")
     print(f"uploaded {pack.name} ({pack.stat().st_size} bytes)")
 
