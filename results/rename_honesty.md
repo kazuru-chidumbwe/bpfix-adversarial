@@ -1,4 +1,4 @@
-# RQ2 inset — rename honesty of `looks_like_null_check`
+# Rename boundary of `looks_like_null_check`
 
 | Original check | Renamed check | `looks_like_null_check` before | after | Honesty break |
 | --- | --- | --- | --- | --- |

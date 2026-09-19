@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Emit RQ2 rename-honesty table (JSON + Markdown) for the paper inset."""
+"""Emit the rename-boundary table (JSON + Markdown) for the paper inset."""
 
 from __future__ import annotations
 
@@ -66,7 +66,7 @@ def main() -> None:
     (out_dir / "rename_honesty.json").write_text(
         json.dumps(payload, indent=2) + "\n", encoding="utf-8"
     )
-    md = "# RQ2 inset — rename honesty of `looks_like_null_check`\n\n" + markdown_table(
+    md = "# Rename boundary of `looks_like_null_check`\n\n" + markdown_table(
         cases
     )
     (out_dir / "rename_honesty.md").write_text(md + "\n", encoding="utf-8")

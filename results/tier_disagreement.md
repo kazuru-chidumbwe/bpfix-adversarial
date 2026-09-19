@@ -1,4 +1,4 @@
-# RQ3 — SourceComment vs VerifierState
+# SourceComment vs VerifierState
 
 | case | SC null-check? | SC line | VS line | SC ok | VS ok | Disagree |
 | --- | --- | ---: | ---: | --- | --- | --- |

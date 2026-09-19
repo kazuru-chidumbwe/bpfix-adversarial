@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""RQ3 — SourceComment vs VerifierState disagreement table."""
+"""SourceComment vs VerifierState disagreement table."""
 
 from __future__ import annotations
 
@@ -88,7 +88,7 @@ def analyze(case: dict) -> dict:
 
 def markdown(rows: list[dict]) -> str:
     lines = [
-        "# RQ3 — SourceComment vs VerifierState",
+        "# SourceComment vs VerifierState",
         "",
         "| case | SC null-check? | SC line | VS line | SC ok | VS ok | Disagree |",
         "| --- | --- | ---: | ---: | --- | --- | --- |",

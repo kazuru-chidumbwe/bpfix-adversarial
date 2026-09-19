@@ -110,7 +110,7 @@ def main() -> None:
         name: {
             "hits": rate(name)[0],
             "n": rate(name)[1],
-            "top1_rate": round(rate(name)[2], 4),
+            "top1_span_fraction": round(rate(name)[2], 4),
         }
         for name in ("terminal_site", "random_line", "oracle_upper")
     }
@@ -133,16 +133,17 @@ def main() -> None:
         "",
         f"Stamp filter `{STAMP}` · n={len(rows)} rejecting cases · random seed `{SEED}`.",
         "",
-        "| Baseline | Top-1 hits | n | Rate |",
+        "| Baseline | top1_span hits | n | Row tally |",
         "| --- | ---: | ---: | ---: |",
     ]
     for name in ("terminal_site", "random_line", "oracle_upper"):
         s = summary[name]
-        lines.append(f"| `{name}` | {s['hits']} | {s['n']} | {s['top1_rate']:.0%} |")
+        lines.append(f"| `{name}` | {s['hits']} | {s['n']} | {s['hits']}/{s['n']} |")
     lines += [
         "",
         "Per-case rows: `baseline_battery.json`. "
-        "`top1_vs_loss` is span membership; `distance_error` is "
+        "`top1_vs_loss` is the legacy name for top1_span (span membership, not "
+        "exact-line top1_line); tallies are pad-repeat rows, not a rate. `distance_error` is "
         "`abs(reported - oracle_loss_code)` (never zeroed on a span-only hit).",
         "",
     ]

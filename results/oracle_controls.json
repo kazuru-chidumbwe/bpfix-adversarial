@@ -128,7 +128,7 @@
         21,
         36
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": true,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"
@@ -149,7 +149,7 @@
         12,
         15
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": true,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"
@@ -170,7 +170,7 @@
         12,
         50
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": true,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"
@@ -191,7 +191,7 @@
         12,
         26
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": true,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"
@@ -212,7 +212,7 @@
         11,
         15
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": false,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"
@@ -233,7 +233,7 @@
         11,
         15
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": false,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"
@@ -254,7 +254,7 @@
         11,
         15
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": false,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"
@@ -271,7 +271,7 @@
         11,
         13
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": true,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"
@@ -288,7 +288,7 @@
         11,
         48
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": true,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"
@@ -305,7 +305,7 @@
         11,
         24
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": true,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"

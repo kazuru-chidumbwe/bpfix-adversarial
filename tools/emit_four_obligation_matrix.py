@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-"""Emit §6.5 four-obligation stratified score table from mutants + available logs."""
+"""Emit the four-obligation stratified mutant table from mutants + available logs."""
 
 from __future__ import annotations
 
@@ -126,7 +126,7 @@ def main() -> None:
         by_ob.setdefault(r["obligation"], []).append(r)
 
     lines = [
-        "# Four-obligation stratified mutant matrix (§6.5)",
+        "# Four-obligation stratified mutant matrix",
         "",
         "Construction-time oracle markers scanned from mutant sources.",
         "Log tier: `captured` = lab bpftool; `synthetic` = fixture; `missing` = no log yet.",

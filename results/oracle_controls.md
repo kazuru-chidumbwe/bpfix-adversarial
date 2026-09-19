@@ -2,11 +2,11 @@
 
 Stamp filter `20260801T181331Z`. Offline only — no new lab captures.
 
-| Control | Pass | n | Rate |
+| Control | Pass | n | Row tally |
 | --- | ---: | ---: | ---: |
-| negative (markers + ACCEPT) | 6 | 6 | 100% |
-| positive (PB stop ≠ injection) | 3 | 3 | 100% |
-| compiler-preservation (source map) | 10 | 10 | 100% |
+| negative (markers + ACCEPT) | 6 | 6 | 6/6 |
+| positive (PB stop ≠ injection) | 3 | 3 | 3/3 |
+| compiler-preservation (source map) | 10 | 10 | 10/10 |
 
 ## Negative control
 
@@ -25,7 +25,7 @@ Injection markers present; lab load **ACCEPT**s.
 
 VerifierState stop-site outside injection span.
 
-| case_id | loss | VS | SC top-1 | VS top-1 | diverge |
+| case_id | loss | VS | SC top1_span | VS top1_span | diverge |
 | --- | ---: | ---: | --- | --- | --- |
 | `PB-pad0` | 12 | 15 | yes | no | yes |
 | `PB-pad32` | 12 | 50 | yes | no | yes |
@@ -33,7 +33,7 @@ VerifierState stop-site outside injection span.
 
 ## Compiler-preservation (verifier source map)
 
-| case_id | injection in map | reject in map | pass |
+| case_id | injection span in map | reject line in map | pass |
 | --- | --- | --- | --- |
 | `NP-idiomatic-nocheck` | yes | yes | yes |
 | `PB-pad0` | yes | yes | yes |

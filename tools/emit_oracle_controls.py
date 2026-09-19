@@ -123,7 +123,7 @@ def main() -> None:
                 "oracle_loss_span": span,
                 "oracle_reject_code": reject,
                 "mapped_source_lines": mapped,
-                "injection_line_in_map": hit_injection,
+                "injection_span_in_map": hit_injection,
                 "reject_line_in_map": hit_reject,
                 "pass": ok,
                 "note": (
@@ -170,7 +170,7 @@ def main() -> None:
         "",
         f"Stamp filter `{STAMP}`. Offline only — no new lab captures.",
         "",
-        "| Control | Pass | n | Rate |",
+        "| Control | Pass | n | Row tally |",
         "| --- | ---: | ---: | ---: |",
     ]
     labels = [
@@ -180,7 +180,7 @@ def main() -> None:
     ]
     for key, label in labels:
         s = summary[key]
-        lines.append(f"| {label} | {s['hits']} | {s['n']} | {s['pass_rate']:.0%} |")
+        lines.append(f"| {label} | {s['hits']} | {s['n']} | {s['hits']}/{s['n']} |")
     lines += [
         "",
         "## Negative control",
@@ -198,7 +198,7 @@ def main() -> None:
         "",
         "VerifierState stop-site outside injection span.",
         "",
-        "| case_id | loss | VS | SC top-1 | VS top-1 | diverge |",
+        "| case_id | loss | VS | SC top1_span | VS top1_span | diverge |",
         "| --- | ---: | ---: | --- | --- | --- |",
     ]
     for r in positives:
@@ -212,12 +212,12 @@ def main() -> None:
         "",
         "## Compiler-preservation (verifier source map)",
         "",
-        "| case_id | injection in map | reject in map | pass |",
+        "| case_id | injection span in map | reject line in map | pass |",
         "| --- | --- | --- | --- |",
     ]
     for r in preservations:
         lines.append(
-            f"| `{r['case_id']}` | {'yes' if r['injection_line_in_map'] else 'no'} | "
+            f"| `{r['case_id']}` | {'yes' if r['injection_span_in_map'] else 'no'} | "
             f"{'yes' if r['reject_line_in_map'] else 'no'} | "
             f"{'yes' if r['pass'] else 'no'} |"
         )

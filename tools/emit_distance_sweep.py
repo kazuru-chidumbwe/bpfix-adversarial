@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""RQ1 distance sweep using synthetic oracle + SourceComment diagnostic model.
+"""Distance sweep using a synthetic oracle and two synthetic reporter models.
 
 For each pad length, oracle distance grows; a diagnostic that always reports
 reject_line - 1 (near-reject bias) accumulates distance_error — illustrating
@@ -39,23 +39,22 @@ def sweep(pads: list[int] | None = None) -> dict:
         rows_biased.append({"pad": pad, **biased})
         rows_honest.append({"pad": pad, **honest})
     return {
-        "metric": "accuracy / distance_error vs pad",
+        "metric": "top1_line and distance_error vs pad (synthetic unit check)",
         "near_reject_bias_model": rows_biased,
         "oracle_honest_model": rows_honest,
-        "top1_accuracy_biased": sum(1 for r in rows_biased if r["top1_loss_match"])
-        / len(rows_biased),
-        "top1_accuracy_honest": sum(1 for r in rows_honest if r["top1_loss_match"])
-        / len(rows_honest),
+        "top1_line_hits_biased": sum(1 for r in rows_biased if r["top1_loss_match"]),
+        "top1_line_hits_honest": sum(1 for r in rows_honest if r["top1_loss_match"]),
+        "n_pads": len(rows_honest),
         "note": (
-            "Replace near_reject_bias_model with real bpfix loss PCs once lab "
-            "captures are pinned; metric definitions stay fixed."
+            "Synthetic reporter models exercise the distance contract; this is a "
+            "unit check of the scoring rules, not an empirical finding."
         ),
     }
 
 
 def markdown(payload: dict) -> str:
     lines = [
-        "# RQ1 — distance vs honesty (synthetic models)",
+        "# Distance under padding (synthetic reporter models)",
         "",
         "| pad | d_true | d_err (near-reject bias) | top1 bias | d_err (honest) | top1 honest |",
         "| ---: | ---: | ---: | --- | ---: | --- |",
@@ -68,8 +67,10 @@ def markdown(payload: dict) -> str:
         )
     lines.append("")
     lines.append(
-        f"Biased top-1 accuracy: **{payload['top1_accuracy_biased']:.0%}**; "
-        f"honest model: **{payload['top1_accuracy_honest']:.0%}**."
+        f"Unit check of the distance contract, not an empirical finding: the "
+        f"near-reject-bias model hits top1_line on {payload['top1_line_hits_biased']}/"
+        f"{payload['n_pads']} pads and the injection-line model on "
+        f"{payload['top1_line_hits_honest']}/{payload['n_pads']}."
     )
     return "\n".join(lines)
 

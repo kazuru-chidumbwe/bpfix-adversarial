@@ -195,8 +195,8 @@ def main() -> None:
         "",
         f"SoftwareX-stamp filter `{STAMP}`. Offline suite always; lab A/B when host reachable.",
         "",
-        "| Check | Pass | n | Rate |",
-        "| --- | ---: | ---: | ---: |",
+        "| Check | Pass | n |",
+        "| --- | ---: | ---: |",
     ]
     for key, label in (
         ("log_input_no_oracle_tokens", "no ORACLE_* in verifier logs"),
@@ -204,15 +204,12 @@ def main() -> None:
         ("oracle_comments_not_heuristic_hits", "ORACLE lines ≠ heuristic hits"),
     ):
         s = summary[key]
-        lines.append(f"| {label} | {s['hits']} | {s['n']} | {s['pass_rate']:.0%} |")
+        lines.append(f"| {label} | {s['hits']} | {s['n']} |")
     lab_s = summary["lab_bearing_vs_neutral_load"]
     if lab_s.get("pass_rate") is None:
-        lines.append("| lab bearing≡neutral load | — | 0 | not run |")
+        lines.append("| lab bearing≡neutral load | — | 0 (not run) |")
     else:
-        lines.append(
-            f"| lab bearing≡neutral load | {lab_s['pass']} | {lab_s['n']} | "
-            f"{lab_s['pass_rate']:.0%} |"
-        )
+        lines.append(f"| lab bearing≡neutral load | {lab_s['pass']} | {lab_s['n']} |")
     lines += [
         "",
         "## Gates mapping",

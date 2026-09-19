@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""RQ1 lab distance table from sc_vs_honesty (pad 0/8/32 reject-oracles).
+"""Lab distance table from sc_vs_honesty (pad 0/8/32 reject-oracles).
 
 Uses loss-anchored scoring on lab-captured templates. This is SC-port + VerifierState
 stop-site distance. Full upstream bpfix CLI localizations: `tools/emit_rq1_bpfix_cli.py`.
@@ -71,7 +71,7 @@ def main() -> None:
     OUT_JSON.write_text(json.dumps({"n": len(out_rows), "rows": out_rows}, indent=2) + "\n", encoding="utf-8")
 
     lines = [
-        "# RQ1 — Lab distance vs construction oracle (template pads)",
+        "# Lab distance vs construction oracle (template pads)",
         "",
         "Source: `results/sc_vs_honesty.json` · stamp family `20260801T181331Z`.",
         "Distance error: `d = |predicted − oracle_loss_code|` (absolute source-line error).",

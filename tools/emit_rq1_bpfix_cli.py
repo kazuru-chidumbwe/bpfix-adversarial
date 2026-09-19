@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""RQ1 — full upstream bpfix CLI localizations on lab pad reject-oracles.
+"""Upstream bpfix CLI localizations on lab pad reject-oracles (offline replay).
 
 Parses `results/rq1_bpfix_cli_raw/<case>.txt` produced by
 `tools/run_rq1_bpfix_cli.sh` (WSL/Linux host with a built bpfix binary).
@@ -159,7 +159,7 @@ def main() -> None:
         return "—"
 
     lines = [
-        "# RQ1 — Full bpfix CLI localizations (lab pad reject-oracles)",
+        "# Upstream bpfix CLI localizations (lab pad reject-oracles, offline replay)",
         "",
         f"Upstream bpfix **{meta['bpfix_version']}** @ `{meta['bpfix_pin'][:12]}…` · stamp `{meta['stamp_family']}` · {meta['host']}.",
         "Primary report = rustc-style `--> file:LINE`. **top1_line** = exact `oracle_loss_code`; **top1_span** = span membership (`docs/METRICS.md`).",

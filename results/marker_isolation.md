@@ -2,12 +2,12 @@
 
 SoftwareX-stamp filter `20260801T181331Z`. Offline suite always; lab A/B when host reachable.
 
-| Check | Pass | n | Rate |
-| --- | ---: | ---: | ---: |
-| no ORACLE_* in verifier logs | 16 | 16 | 100% |
-| SC bearing ≡ neutral | 16 | 16 | 100% |
-| ORACLE lines ≠ heuristic hits | 16 | 16 | 100% |
-| lab bearing≡neutral load | 16 | 16 | 100% |
+| Check | Pass | n |
+| --- | ---: | ---: |
+| no ORACLE_* in verifier logs | 16 | 16 |
+| SC bearing ≡ neutral | 16 | 16 |
+| ORACLE lines ≠ heuristic hits | 16 | 16 |
+| lab bearing≡neutral load | 16 | 16 |
 
 ## Gates mapping
 

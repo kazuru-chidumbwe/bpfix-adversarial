@@ -1,4 +1,4 @@
-# RQ1 — Lab distance vs construction oracle (template pads)
+# Lab distance vs construction oracle (template pads)
 
 Source: `results/sc_vs_honesty.json` · stamp family `20260801T181331Z`.
 Distance error: `d = |predicted − oracle_loss_code|` (absolute source-line error).

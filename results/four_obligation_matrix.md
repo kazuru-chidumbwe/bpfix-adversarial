@@ -1,4 +1,4 @@
-# Four-obligation stratified mutant matrix (§6.5)
+# Four-obligation stratified mutant matrix
 
 Construction-time oracle markers scanned from mutant sources.
 Log tier: `captured` = lab bpftool; `synthetic` = fixture; `missing` = no log yet.

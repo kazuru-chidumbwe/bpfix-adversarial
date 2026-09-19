@@ -1,4 +1,4 @@
-# RQ1 — Full bpfix CLI localizations (lab pad reject-oracles)
+# Upstream bpfix CLI localizations (lab pad reject-oracles, offline replay)
 
 Upstream bpfix **0.1.9** @ `81d97e4a5284…` · stamp `20260801T181331Z` · WSL (offline log replay; not lab-server).
 Primary report = rustc-style `--> file:LINE`. **top1_line** = exact `oracle_loss_code`; **top1_span** = span membership (`docs/METRICS.md`).

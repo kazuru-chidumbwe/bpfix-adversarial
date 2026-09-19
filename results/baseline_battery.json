@@ -6,17 +6,17 @@
     "terminal_site": {
       "hits": 3,
       "n": 10,
-      "top1_rate": 0.3
+      "top1_span_fraction": 0.3
     },
     "random_line": {
       "hits": 1,
       "n": 10,
-      "top1_rate": 0.1
+      "top1_span_fraction": 0.1
     },
     "oracle_upper": {
       "hits": 10,
       "n": 10,
-      "top1_rate": 1.0
+      "top1_span_fraction": 1.0
     }
   },
   "rows": [
