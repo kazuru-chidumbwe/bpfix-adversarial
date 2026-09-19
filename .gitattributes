@@ -10,3 +10,17 @@ fixtures/**/*.c text eol=lf
 *.sh text eol=lf
 *.rs text eol=lf
 **/vendor/**/*.rs text eol=lf
+
+# Figures and metadata are compared byte-for-byte by tools/check_results_fresh.py,
+# so they must stay LF on Windows checkouts too (default core.autocrlf=true).
+*.svg text eol=lf
+*.txt text eol=lf
+*.cff text eol=lf
+Makefile text eol=lf
+Dockerfile text eol=lf
+Vagrantfile text eol=lf
+.dockerignore text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+LICENSE text eol=lf
+.githooks/* text eol=lf

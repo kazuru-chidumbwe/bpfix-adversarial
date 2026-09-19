@@ -32,3 +32,26 @@ jobs:
         run: python tools/check_results_fresh.py
       - name: Unit tests
         run: python -m unittest discover -s tests -v
+
+  # A default Windows clone uses core.autocrlf=true. Without the LF rules in
+  # .gitattributes that rewrites the committed SVGs and check_results_fresh.py
+  # reports them stale, so the paper's "43/43 on Windows" claim needs testing
+  # on a checkout that actually converts line endings.
+  unittest-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Force Windows default line-ending conversion
+        run: git config --global core.autocrlf true
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install package
+        run: |
+          python -m pip install -U pip
+          pip install -e .
+      - name: Committed results match offline emitters
+        run: python tools/check_results_fresh.py
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v

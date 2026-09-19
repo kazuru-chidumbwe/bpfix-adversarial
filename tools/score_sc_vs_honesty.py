@@ -413,13 +413,18 @@ def main() -> None:
         "- **SR:** No scalar-guard `if` line is present to match on unbound-index templates "
         "(SC miss by construction). VS reports the stack load (reject/use), not the unbound "
         "`idx` assignment (loss).",
-        "- **PB:** SC **top1_line** hits the under-check; VS hits the wide load (reject).",
+        "- **PB:** SC **top1_line** hits the under-check; VS hits the wide load (reject). "
+        "The SC hit is construction-determined: the only line matching "
+        "`looks_like_packet_bounds_check` is the injection line, which a first-match "
+        "reporter cannot miss.",
         "- **NP-nocheck:** SC **top1_line** hits the lookup (empty-span fallback + "
         "nullable-return nocheck predicate — construction-determined); VS reports the "
         "reject deref (miss).",
-        "- Of 10 rejecting rows, seven have construction-determined SC outcomes "
-        "(PP N/A×3 + SR absent-guard×3 + NP fallback×1); informative SC sample is "
-        "3 PacketBounds rows (3/3 top1_line).",
+        "- All 10 rejecting rows have construction-determined SC outcomes "
+        "(PP N/A×3 + SR absent-guard×3 + NP fallback×1 + PB first-match×3): the inset "
+        "exercises the scoring pipeline rather than discriminating among candidates. "
+        "The evidence that is not fixed by construction is the VS stop site and the "
+        "upstream CLI output (`rq1_bpfix_cli.*`).",
         "- Accepting NP-with-check rows: VS score n/a (no reject); SC rename story unchanged.",
         "",
         f"Artifacts: `{out_json.relative_to(ROOT).as_posix()}` · `{out_md.relative_to(ROOT).as_posix()}`",

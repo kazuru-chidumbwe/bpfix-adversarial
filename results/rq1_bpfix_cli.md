@@ -18,7 +18,7 @@ Pad note: scalar __pad chains DCE under clang — nearest_bpf_pc stable across p
 
 ## Reading (SoftwareX)
 
-- **PacketBounds:** primary `-->` tracks the wide load (reject). Under **top1_line** this is a miss; `d_err` tracks pad (3, 38, 14). The E001 snippet still *mentions* the narrow `data_end` check (loss) as related context — `set_recall_message = yes`. This is **not** a contradiction with `rq1_lab_distance.*` (SC port: PB honest): SC keys on contextual loss pickup; CLI primary is the headline location. Both are correct measurements of different things (headline vs full message).
+- **PacketBounds:** primary `-->` tracks the wide load (reject). Under **top1_line** this is a miss; `d_err` tracks pad (3, 38, 14). The E001 snippet still *mentions* the narrow `data_end` check (loss) as related context — `set_recall_message = yes`. This is **not** a contradiction with `rq1_lab_distance.*` (SC port: PB **top1_line** hit, construction-determined): SC keys on contextual loss pickup; CLI primary is the headline location. Both are correct measurements of different things (headline vs full message).
 - **PointerProvenance:** primary lands on a later XOR-wash line in the loss **span** (top1_line=no; top1_span=yes); nearest PC stable (DCE) — span hit without exact first-line hit.
 - **ScalarRange:** primary stays on the unbound stack load (reject); loss (`prandom` idx) not in snippet — miss (top1_line=no), matching lab SC/VS.
 - Offline WSL replay of stamped lab logs (not lab-server): bpfix diagnoses log text and does not re-verify, so the offline host is not a kernel-version confound.

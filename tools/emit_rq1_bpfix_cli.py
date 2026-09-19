@@ -189,8 +189,9 @@ def main() -> None:
         f"({', '.join(str(r['bpfix_distance_error']) for r in pb)}). "
         "The E001 snippet still *mentions* the narrow `data_end` check (loss) as related context — "
         "`set_recall_message = yes`. This is **not** a contradiction with `rq1_lab_distance.*` "
-        "(SC port: PB honest): SC keys on contextual loss pickup; CLI primary is the headline "
-        "location. Both are correct measurements of different things (headline vs full message).",
+        "(SC port: PB **top1_line** hit, construction-determined): SC keys on contextual loss "
+        "pickup; CLI primary is the headline location. Both are correct measurements of "
+        "different things (headline vs full message).",
         "- **PointerProvenance:** primary lands on a later XOR-wash line in the loss **span** "
         f"(top1_line={yn(all(r['bpfix_top1_line'] for r in pp))}; "
         f"top1_span={yn(all(r['bpfix_top1_span'] for r in pp))}); nearest PC stable (DCE) — "

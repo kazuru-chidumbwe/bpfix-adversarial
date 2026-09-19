@@ -4,11 +4,31 @@
 
 Cite `v1.0.2`.
 
-## v1.0.2 — 2026-09-03 (tag re-cut 2026-09-14 and 2026-09-19)
+## v1.0.2 — 2026-09-03 (tag re-cut 2026-09-14, and twice on 2026-09-19)
 
 SoftwareX minor-revision cite pin (SOFTX-D-26-01022).
 
-### 2026-09-19 re-cut (previous commit `899f112`)
+### 2026-09-19 second re-cut (previous commit `bbfebe6`)
+
+Folded in two findings from a pre-submission review, before the Zenodo file was
+replaced and before the revision was uploaded, so that one tree is published.
+No reported number changes.
+
+- `results/sc_vs_honesty.md` and `results/rq1_bpfix_cli.md` still described the
+  three PacketBounds rows as an "informative SC sample" and the SC port as
+  "PB honest". Both contradicted the manuscript's Limitation 1, which states that
+  all ten rejecting-row SourceComment outcomes are construction-determined, the
+  PacketBounds rows included. The emitter strings and the regenerated tables now
+  say so.
+- `.gitattributes` had no LF rule for `*.svg` (nor for `Makefile`, `Dockerfile`,
+  `Vagrantfile`, `*.txt`, `*.cff`, `LICENSE`). On a default Windows clone
+  (`core.autocrlf=true`) the committed figures were rewritten with CRLF and
+  `tools/check_results_fresh.py` reported them stale, so the suite ran 42/43 —
+  the paper's "43/43 on Windows" claim had never been exercised by CI, which
+  runs `ubuntu-latest` only. Rules added, tree renormalized, and a
+  `windows-latest` CI job added that forces `core.autocrlf=true` before checkout.
+
+### 2026-09-19 first re-cut (previous commit `899f112`)
 
 The tag was re-cut a second time so the cited tree matches the revised manuscript
 and the minor-revision response letter, which name `v1.0.2`. If you cloned before
