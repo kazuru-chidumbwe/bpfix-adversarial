@@ -9,7 +9,7 @@ Target: [bpfix](https://github.com/eunomia-bpf/bpfix) / Zheng et al. ([arXiv:260
 [![CI](https://github.com/kazuru-chidumbwe/bpfix-adversarial/actions/workflows/ci.yml/badge.svg)](https://github.com/kazuru-chidumbwe/bpfix-adversarial/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**Frozen tree for published numbers:** [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2). Metadata: [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff), [codemeta.json](codemeta.json). Prefer that tag over floating `master`. Upstream bpfix pin: `81d97e4a528456e0082a77f4fb6edd13fa092b7b`.
+**Frozen tree for published numbers:** [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2). Metadata: [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff), [codemeta.json](codemeta.json). Prefer that tag over floating `master`. The tag was re-cut on 2026-09-19 (see [`CHANGELOG.md`](CHANGELOG.md)); if you cloned earlier, run `git fetch --tags --force`. Upstream bpfix pin: `81d97e4a528456e0082a77f4fb6edd13fa092b7b`.
 
 ## Offline insets (no lab SSH)
 
@@ -44,7 +44,7 @@ Committed tables: [`results/`](results/). Docs index: [`docs/README.md`](docs/RE
 | --- | --- |
 | Mutant generators | Obligation-scoped C under `mutants/` with `ORACLE_LOSS_LINE` / `ORACLE_REJECT_LINE` |
 | Lab capture | clang + `bpftool -d` on a pinned Debian 13 host (`tools/lab_*.py`) |
-| Scoring | SourceComment port + VerifierState + upstream bpfix CLI replay; top-1 / set-recall |
+| Scoring | SourceComment port + VerifierState + upstream bpfix CLI replay; `top1_line` / `top1_span` / `set_recall_message` |
 | Paper insets | Committed tables under `results/` |
 
 Four stress families. NullablePointer, PointerProvenance, ScalarRange, PacketBounds.

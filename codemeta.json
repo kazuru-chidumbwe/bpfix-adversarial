@@ -5,7 +5,7 @@
   "description": "Check whether eBPF reject diagnostics still name the line where a fault was injected after pad and rename stress.",
   "version": "1.0.2",
   "identifier": "https://doi.org/10.5281/zenodo.22763331",
-  "dateModified": "2026-09-15",
+  "dateModified": "2026-09-19",
   "license": "https://spdx.org/licenses/MIT.html",
   "codeRepository": "https://github.com/kazuru-chidumbwe/bpfix-adversarial",
   "url": "https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2",

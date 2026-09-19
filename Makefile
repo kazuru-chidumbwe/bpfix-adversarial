@@ -18,8 +18,10 @@ insets:
 	python tools/emit_distance_sweep.py
 	python tools/emit_tier_table.py
 	python tools/emit_four_obligation_matrix.py
+	python tools/emit_upstream_obligations.py
 	python tools/score_sc_vs_honesty.py
 	python tools/emit_rq1_lab_distance.py
+	python tools/emit_pad_rename_invariance.py
 	python tools/emit_depth21_selection.py
 	python tools/emit_baseline_battery.py
 	python tools/emit_oracle_controls.py
