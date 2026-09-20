@@ -44,6 +44,17 @@ REJECT_HINTS = (
     "r1 offset",
 )
 
+# Rejecting rows whose SC outcome is fixed by construction, in takeaway order.
+# The takeaway counts are derived from the scored rows via this table, so adding
+# or dropping a fixture cannot leave the committed prose stale (results/*.md is
+# not covered by tools/check_results_fresh.py).
+SC_CONSTRUCTION_REASONS = (
+    ("PointerProvenance", "PP N/A"),
+    ("ScalarRange", "SR absent-guard"),
+    ("NullablePointer", "NP fallback"),
+    ("PacketBounds", "PB first-match"),
+)
+
 
 def sha256_file(p: Path) -> str:
     # Normalize CRLF→LF so Windows/Linux checkouts yield the same src_sha256.
@@ -403,6 +414,20 @@ def main() -> None:
             f"{vs_l}/{n} | {vs_s}/{n} | {dis_s} |"
         )
 
+    rej_by = {ob: [r for r in rs if r["lab_rejected"]] for ob, rs in by.items()}
+    n_rej = sum(len(v) for v in rej_by.values())
+    covered = sum(len(rej_by.get(ob, ())) for ob, _ in SC_CONSTRUCTION_REASONS)
+    if covered != n_rej:
+        raise SystemExit(
+            f"score_sc_vs_honesty: {n_rej - covered} rejecting row(s) outside "
+            "SC_CONSTRUCTION_REASONS; classify them before emitting the takeaway."
+        )
+    sc_breakdown = " + ".join(
+        f"{label}×{len(rej_by[ob])}"
+        for ob, label in SC_CONSTRUCTION_REASONS
+        if rej_by.get(ob)
+    )
+
     lines += [
         "",
         "## Takeaways",
@@ -420,8 +445,8 @@ def main() -> None:
         "- **NP-nocheck:** SC **top1_line** hits the lookup (empty-span fallback + "
         "nullable-return nocheck predicate — construction-determined); VS reports the "
         "reject deref (miss).",
-        "- All 10 rejecting rows have construction-determined SC outcomes "
-        "(PP N/A×3 + SR absent-guard×3 + NP fallback×1 + PB first-match×3): the inset "
+        f"- All {n_rej} rejecting rows have construction-determined SC outcomes "
+        f"({sc_breakdown}): the inset "
         "exercises the scoring pipeline rather than discriminating among candidates. "
         "The evidence that is not fixed by construction is the VS stop site and the "
         "upstream CLI output (`rq1_bpfix_cli.*`).",

@@ -4,15 +4,16 @@
 
 Cite `v1.0.2`.
 
-## v1.0.2 — 2026-09-03 (tag re-cut 2026-09-14, and twice on 2026-09-19)
+## v1.0.2 — 2026-09-03 (tag re-cut 2026-09-14, 2026-09-19 and 2026-09-20)
 
 SoftwareX minor-revision cite pin (SOFTX-D-26-01022).
 
-### 2026-09-19 second re-cut (previous commit `bbfebe6`)
+### 2026-09-20 re-cut (previous commit `bbfebe6`)
 
-Folded in two findings from a pre-submission review, before the Zenodo file was
+Folded in findings from a pre-submission review, before the Zenodo file was
 replaced and before the revision was uploaded, so that one tree is published.
-No reported number changes.
+No reported number changes. Existing clones: `git fetch --tags --force` (a plain
+`git pull` leaves an existing local tag in place).
 
 - `results/sc_vs_honesty.md` and `results/rq1_bpfix_cli.md` still described the
   three PacketBounds rows as an "informative SC sample" and the SC port as
@@ -25,10 +26,16 @@ No reported number changes.
   (`core.autocrlf=true`) the committed figures were rewritten with CRLF and
   `tools/check_results_fresh.py` reported them stale, so the suite ran 42/43 —
   the paper's "43/43 on Windows" claim had never been exercised by CI, which
-  runs `ubuntu-latest` only. Rules added, tree renormalized, and a
-  `windows-latest` CI job added that forces `core.autocrlf=true` before checkout.
+  runs `ubuntu-latest` only. Rules added, tree renormalized, and the CI matrix
+  extended with a `windows-latest` entry that forces `core.autocrlf=true` before
+  checkout, so both platforms run the same hygiene steps.
+- Review follow-ups on the above: `docs/TAGS.md` now repeats the
+  `git fetch --tags --force` reminder in the third-exception note, and
+  `tools/score_sc_vs_honesty.py` derives the takeaway counts from the scored rows
+  (`SC_CONSTRUCTION_REASONS`) instead of hard-coding them, since `results/*.md` is
+  not covered by `tools/check_results_fresh.py`. Regenerated output is unchanged.
 
-### 2026-09-19 first re-cut (previous commit `899f112`)
+### 2026-09-19 re-cut (previous commit `899f112`)
 
 The tag was re-cut a second time so the cited tree matches the revised manuscript
 and the minor-revision response letter, which name `v1.0.2`. If you cloned before

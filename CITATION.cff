@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: If you use this software, please cite it using these metadata.
 title: "bpfix-adversarial: an evaluation harness for eBPF diagnostic localization under padding and renaming stress"
 version: 1.0.2
-date-released: "2026-09-19"
+date-released: "2026-09-20"
 type: software
 authors:
   - family-names: Kazuru
