@@ -11,14 +11,14 @@ Cite `v1.0.2`.
   note). `NP-idiomatic-nocheck.c` is left byte-identical so committed `src_sha256`
   pins stay valid.
 
-## v1.0.2 - 2026-09-03 (tag re-cut during revision)
+## v1.0.2 - 2026-09-21
 
 the paper's minor-revision cite pin (SOFTX-D-26-01022).
 
-### 2026-09-21 re-cut (previous commit `653dde7`, now `95d4184`)
+### Pre-submission review fixes and release hygiene
 
-Folded in an external pre-submission review of the tree, before the revision was
-uploaded, so one tree is published.
+An external pre-submission review of the tree, folded in before the revision was
+uploaded so that one tree is published.
 
 - Two committed insets scored against oracles that disagreed with the repository's
   own `oracle_sites`. The synthetic fixture logs pointed their `@` paths at the
@@ -53,12 +53,10 @@ No scored result changed: `sc_vs_honesty`, `rq1_lab_distance`, `rename_honesty`,
 `distance_sweep`, `upstream_obligations`, `depth21_selection` and
 `pad_rename_invariance` are unchanged.
 
-### 2026-09-20 re-cut (previous commit `bbfebe6`)
+### Committed takeaways, Windows line endings and CI
 
-Folded in findings from a pre-submission review, before the Zenodo file was
-replaced and before the revision was uploaded, so that one tree is published.
-No reported number changes. Existing clones: `git fetch --tags --force` (a plain
-`git pull` leaves an existing local tag in place).
+Findings from a pre-submission review, folded in before the revision was
+uploaded. No reported number changes.
 
 - `results/sc_vs_honesty.md` and `results/rq1_bpfix_cli.md` still described the
   three PacketBounds rows as an "informative SC sample" and the SC port as
@@ -75,17 +73,15 @@ No reported number changes. Existing clones: `git fetch --tags --force` (a plain
   extended with a `windows-latest` entry that forces `core.autocrlf=true` before
   checkout, so both platforms run the same hygiene steps.
 - Review follow-ups on the above: `docs/TAGS.md` now repeats the
-  `git fetch --tags --force` reminder in the third-exception note, and
+  the tag-citation note, and
   `tools/score_sc_vs_honesty.py` derives the takeaway counts from the scored rows
   (`SC_CONSTRUCTION_REASONS`) instead of hard-coding them, since `results/*.md` is
   not covered by `tools/check_results_fresh.py`. Regenerated output is unchanged.
 
-### 2026-09-19 re-cut (previous commit `899f112`)
+### Manuscript and release reconciliation
 
-The tag was re-cut a second time so the cited tree matches the revised manuscript
-and the minor-revision response letter, which name `v1.0.2`. If you cloned before
-19 Sep 2026, refresh with `git fetch --tags --force` (a plain `git pull` leaves an
-existing local tag in place).
+Reconciles the released tree with the revised manuscript and the response letter,
+which name `v1.0.2`.
 
 Corrections:
 - Removed the one-shot localization–repair demonstration (repair tool, legacy
@@ -135,7 +131,7 @@ tip wording there no longer names the removed repair path.
 Unchanged: every template tally the paper reports (SC/VS rejecting inset, lab
 distance, baselines 3/10 · 1/10 · 10/10, CLI replay, marker isolation 16/16).
 
-### 2026-09-03 release and 2026-09-14 re-cut
+### Scoring contract and offline refinements
 
 - CLI scoring: `top1_line` = exact `oracle_loss_code`; `top1_span` separate; `set_recall_message` = decimal loss line in diagnostic text (fixes span-as-top1 bug)
 - Empty injection span: `oracle_loss_code` = last executable line *before* LOSS marker (`NP-idiomatic-nocheck` → lookup/assignment line)
@@ -148,7 +144,6 @@ distance, baselines 3/10 · 1/10 · 10/10, CLI replay, marker isolation 16/16).
 - Named regression test `test_np_idiomatic_nocheck_oracle_loss_code_is_executable`
 - C2 remains GitHub `tree/v1.0.2`; Zenodo DOI archival in C7 only. Do **not** label Zenodo `10.5281/zenodo.21860453` as this version (that DOI is the **v1.0.1** archive)
 
-> **2026-09-14 note.** The `v1.0.2` tag was re-cut to fold in the offline-only refinements listed above (no-zeroing rule, regression test, figure-title cleanup, takeaway wording) so the cited GitHub tree matches the minor-revision response letter and the submitted manuscript. Headline localization outcomes are unchanged; the interim `v1.0.3` label was retired in favour of the single cited pin.
 
 ## v1.0.1 - 2026-08-09
 

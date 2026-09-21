@@ -9,7 +9,7 @@ Target: [bpfix](https://github.com/eunomia-bpf/bpfix) / Zheng et al. ([arXiv:260
 [![CI](https://github.com/kazuru-chidumbwe/bpfix-adversarial/actions/workflows/ci.yml/badge.svg)](https://github.com/kazuru-chidumbwe/bpfix-adversarial/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**Frozen tree for published numbers:** [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2). Metadata: [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff), [codemeta.json](codemeta.json). Prefer that tag over floating `master`. The tag was re-cut during revision (see [`CHANGELOG.md`](CHANGELOG.md)); if you cloned earlier, run `git fetch --tags --force`. Upstream bpfix pin: `81d97e4a528456e0082a77f4fb6edd13fa092b7b`.
+**Frozen tree for published numbers:** [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2). Metadata: [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff), [codemeta.json](codemeta.json). Prefer that tag over floating `master`. Upstream bpfix pin: `81d97e4a528456e0082a77f4fb6edd13fa092b7b`.
 
 ## Offline insets (no lab SSH)
 
@@ -24,7 +24,7 @@ make smoke                   # version + unittest + rename-demo
 python tools/emit_rename_table.py
 python tools/emit_four_obligation_matrix.py
 python tools/score_sc_vs_honesty.py
-make figures                 # regenerate the three figure SVGs from results/*.json (paper Figs. 3-5)
+make figures                 # regenerate figures/fig3-fig5 SVGs from results/*.json
 pip install -e ".[dev]"
 python tools/measure_coverage.py   # single-command repro of the coverage figures quoted in the paper
 ```
@@ -107,7 +107,7 @@ make smoke          # version + unittest + rename-demo
 # or: python -m unittest discover -s tests -v
 ```
 
-CI runs the same suite on Python 3.10 and 3.12. See `.github/workflows/ci.yml`.
+CI runs the same suite on Python 3.10 and 3.12 on Linux, and on Python 3.12 on Windows with `core.autocrlf=true`, so the committed line endings are exercised on both. See `.github/workflows/ci.yml`.
 
 ## Reproduce paper insets
 

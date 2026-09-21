@@ -1,14 +1,14 @@
 # Code metadata
 
 Mandatory code metadata for **bpfix-adversarial** `v1.0.2` (C1–C8 code-metadata scheme).  
-Same table as the manuscript Code metadata section (OSP template v6, C1–C8).
+Same table as the manuscript Code metadata section.
 
-**Guide for Authors (current target venue):** C2 must be a **public GitHub** repository URL.
+**Guide for Authors:** C2 must be a **public GitHub** repository URL.
 
 | Nr | Code metadata description | Metadata |
 | --- | --- | --- |
 | C1 | Current code version | `v1.0.2` |
-| C2 | Permanent link to code/repository used for this code version | https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2 |
+| C2 | Permanent link to code/repository used for this code version | https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2 (immutable equivalent: `.../tree/61c07b0f3b21fe2153c0d9c76442e105e748a3b5`) |
 | C3 | Legal code license | MIT License (`LICENSE` / `LICENSE.txt`) |
 | C4 | Code versioning system used | Git |
 | C5 | Software code languages, tools, and services used | Python 3.10+; Clang with BPF target; bpftool/libbpf; Linux kernel eBPF verifier; Python unittest; optional Rust-built upstream bpfix CLI for offline log replay |

@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: MIT
 """Emit three the paper's figure SVGs from committed results/*.json (stdlib only).
 
-Files use this repo's own fig2/fig3/fig4 numbering, one behind the paper's
-Fig. 3/Fig. 4/Fig. 5: fig2-sc-vs-honesty.svg -> paper Fig. 3,
-fig3-lab-distance.svg -> paper Fig. 4, fig4-scoring-modes-cli.svg -> paper Fig. 5.
+File names match the paper's figure numbers: fig3-sc-vs-honesty.svg,
+fig4-lab-distance.svg and fig5-scoring-modes-cli.svg are Figs. 3, 4 and 5.
+Figs. 1 and 2 are author-drawn and are not generated here.
 Paper Figs. 1 (architecture) and 2 (synthetic/rename) are hand-authored outside
 this emitter, so the paper has one more figure than this emitter produces.
 Rename boundary is prose-only (no rate figure).
@@ -95,7 +95,7 @@ def bar_chart(
     outfile.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
 
-def emit_fig2_sc_vs() -> None:
+def emit_fig3_sc_vs() -> None:
     data = json.loads((RESULTS / "sc_vs_honesty.json").read_text(encoding="utf-8"))
     fams = ["PacketBounds", "PointerProvenance", "ScalarRange"]
     sc_line, vs_span = [], []
@@ -118,12 +118,12 @@ def emit_fig2_sc_vs() -> None:
             ("SC top1_line", sc_line, "#2a6f97"),
             ("VS top1_span", vs_span, "#ee6c4d"),
         ],
-        OUT / "fig2-sc-vs-honesty.svg",
+        OUT / "fig3-sc-vs-honesty.svg",
         ymax=1.0,
     )
 
 
-def emit_fig3_lab_distance() -> None:
+def emit_fig4_lab_distance() -> None:
     data = json.loads((RESULTS / "rq1_lab_distance.json").read_text(encoding="utf-8"))
     pb = sorted(
         (r for r in data["rows"] if r["obligation"] == "PacketBounds"),
@@ -139,11 +139,11 @@ def emit_fig3_lab_distance() -> None:
             ("SC d", sc_d, "#2a9d8f"),
             ("VS d", vs_d, "#e76f51"),
         ],
-        OUT / "fig3-lab-distance.svg",
+        OUT / "fig4-lab-distance.svg",
     )
 
 
-def emit_fig4_set_recall() -> None:
+def emit_fig5_set_recall() -> None:
     data = json.loads((RESULTS / "rq1_bpfix_cli.json").read_text(encoding="utf-8"))
     rows = sorted(
         (r for r in data["rows"] if r.get("obligation") == "PacketBounds"),
@@ -162,33 +162,23 @@ def emit_fig4_set_recall() -> None:
             ("top1_line", top1, "#264653"),
             ("set_recall_message", recall, "#f4a261"),
         ],
-        OUT / "fig4-scoring-modes-cli.svg",
+        OUT / "fig5-scoring-modes-cli.svg",
         ymax=1.0,
     )
 
 
 FIGURE_OUTPUTS = (
-    "figures/fig2-sc-vs-honesty.svg",
-    "figures/fig3-lab-distance.svg",
-    "figures/fig4-scoring-modes-cli.svg",
+    "figures/fig3-sc-vs-honesty.svg",
+    "figures/fig4-lab-distance.svg",
+    "figures/fig5-scoring-modes-cli.svg",
 )
 
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    emit_fig2_sc_vs()
-    emit_fig3_lab_distance()
-    emit_fig4_set_recall()
-    # Remove retired rename-rate figure if present
-    stale = OUT / "fig3-rename-boundary.svg"
-    if stale.is_file():
-        stale.unlink()
-    stale5 = OUT / "fig5-scoring-modes-cli.svg"
-    if stale5.is_file():
-        stale5.unlink()
-    stale4old = OUT / "fig4-lab-distance.svg"
-    if stale4old.is_file():
-        stale4old.unlink()
+    emit_fig3_sc_vs()
+    emit_fig4_lab_distance()
+    emit_fig5_set_recall()
     print(f"Wrote SVGs under {OUT}")
 
 

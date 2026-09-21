@@ -29,7 +29,6 @@ Do **not** use the bare label “top-1” for both line equality and span member
 | --- | --- |
 | Obligation confusion | Wrong `ProofObligation` family labeled |
 | Tier dependence | Accuracy when only `SourceComment` vs when `VerifierState` is available |
-| Localization–repair separation | Documented case where repair succeeds despite a wrong tip (existence / counterexample; not a rate) |
 
 ## Oracle
 

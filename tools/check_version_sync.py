@@ -7,7 +7,7 @@ __version__, pyproject.toml, CITATION.cff and codemeta.json must agree on the
 version, and CITATION.cff date-released must match codemeta.json dateModified.
 
 Checking only pyproject against the package left the other two files free to
-drift, which is how a stale release date survived a tag re-cut.
+drift.
 """
 
 from __future__ import annotations

@@ -109,9 +109,9 @@ def check_one(rel: str, script_argv: list[str]) -> None:
 def check_figures() -> None:
     """Regenerate SVGs and require byte-identical committed figures/."""
     figure_outputs = (
-        "figures/fig2-sc-vs-honesty.svg",
-        "figures/fig3-lab-distance.svg",
-        "figures/fig4-scoring-modes-cli.svg",
+        "figures/fig3-sc-vs-honesty.svg",
+        "figures/fig4-lab-distance.svg",
+        "figures/fig5-scoring-modes-cli.svg",
     )
     backups: dict[Path, bytes] = {}
     for rel in figure_outputs:
