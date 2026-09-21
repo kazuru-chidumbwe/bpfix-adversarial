@@ -4,7 +4,7 @@
 
 | Tag | Purpose |
 | --- | --- |
-| [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.2) | **Current frozen tree** (minor-rev; tag re-cut 2026-09-14, 2026-09-19 and 2026-09-20) |
+| [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.2) | **Current frozen tree** (minor revision). The tag was re-cut during revision, so a clone made earlier needs `git fetch --tags --force`. |
 | [`v1.0.1`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.1) | Prior submit pin |
 | [`v1.0.0`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.0) | First public release label (see note below) |
 

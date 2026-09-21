@@ -1,4 +1,4 @@
-# Docs (SoftwareX cite pin)
+# Docs (cite pin)
 
 Lean set for reviewers and reproduce. Paper carries related-work / threat narrative.
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Emit three SoftwareX figure SVGs from committed results/*.json (stdlib only).
+"""Emit three the paper's figure SVGs from committed results/*.json (stdlib only).
 
 Files use this repo's own fig2/fig3/fig4 numbering, one behind the paper's
 Fig. 3/Fig. 4/Fig. 5: fig2-sc-vs-honesty.svg -> paper Fig. 3,

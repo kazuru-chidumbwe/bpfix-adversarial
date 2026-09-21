@@ -2,7 +2,7 @@
 """Construction-time injection markers (ORACLE_* comments).
 
 Historical names ORACLE_LOSS_LINE / ORACLE_REJECT_LINE are retained for fixture
-compatibility. SoftwareX measures injection-site agreement against these markers,
+compatibility. This harness measures injection-site agreement against these markers,
 not a verified verifier-state transition.
 """
 
@@ -79,7 +79,7 @@ def oracle_sites(src: Path | str) -> dict[str, Any]:
         "oracle_loss_span": span,
         "oracle_loss_code": loss_code,
         "oracle_reject_code": reject_code,
-        # SoftwareX aliases
+        # Published aliases
         "injection_marker": loss_marker,
         "injection_code": loss_code,
         "injection_span": span,

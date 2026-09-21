@@ -1,5 +1,12 @@
 {
   "n": 9,
+  "excluded": [
+    {
+      "case_id": "NP-idiomatic-nocheck",
+      "reason": "no pad variant (omitted-check seed)"
+    }
+  ],
+  "excluded_note": "Rejecting rows in sc_vs_honesty without a pad variant are outside this pad-indexed replay. n here is smaller than the 10 rejecting rows scored in sc_vs_honesty.*",
   "bpfix_version": "0.1.9",
   "bpfix_pin": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
   "stamp_family": "20260801T181331Z",

@@ -5,7 +5,7 @@
 **Path:** `crates/bpfix/src/source.rs`  
 **SHA-256:** `f86f884583491f7c0606772ba4ec56e4468437f6d986e26412931820cbf73e52`
 
-This directory holds a **predicates-only** snapshot for SoftwareX port-fidelity tests
+This directory holds a **predicates-only** snapshot for port-fidelity tests
 (`tests/test_port_fidelity.py`). It does **not** vendor the full bpfix crate.
 
 The Python helpers in `bpfix_adversarial/heuristics.py` match the seven

@@ -1,6 +1,6 @@
 # Code metadata
 
-Mandatory code metadata for **bpfix-adversarial** `v1.0.2` (Elsevier OSP-style C1–C8 scheme).  
+Mandatory code metadata for **bpfix-adversarial** `v1.0.2` (C1–C8 code-metadata scheme).  
 Same table as the manuscript Code metadata section (OSP template v6, C1–C8).
 
 **Guide for Authors (current target venue):** C2 must be a **public GitHub** repository URL.

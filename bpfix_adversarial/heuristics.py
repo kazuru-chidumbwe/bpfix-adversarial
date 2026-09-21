@@ -14,7 +14,8 @@ from __future__ import annotations
 
 from .model import HeuristicHit
 
-# Name-shaped substrings inside looks_like_null_check (sponsor: rename-brittle).
+# Name-shaped substrings inside looks_like_null_check; the closed list is what
+# makes recognition brittle under rename.
 # Upstream uses bang-prefixed forms: !tmp, !val, !ptr, !value.
 NULL_CHECK_NAME_SUBSTRINGS = ("!tmp", "!val", "!ptr", "!value")
 

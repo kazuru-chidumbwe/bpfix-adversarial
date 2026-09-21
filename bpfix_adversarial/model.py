@@ -33,7 +33,7 @@ class ProofObligation(str, Enum):
     UNKNOWN = "Unknown"
 
 
-# Adversarial v0 scope (sponsor lock)
+# Adversarial v0 scope
 ADVERSARIAL_SCOPE = (
     ProofObligation.POINTER_PROVENANCE,
     ProofObligation.SCALAR_RANGE,

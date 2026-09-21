@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Cheap SoftwareX baseline battery over already-captured rejecting logs.
+"""Cheap baseline battery over already-captured rejecting logs.
 
 Baselines (no new lab work):
   - terminal_site: VerifierState stop-site map (last BTF line before reject)
@@ -8,7 +8,7 @@ Baselines (no new lab work):
   - oracle_upper: reports oracle_loss_code (perfect injection-site tip)
 
 Compares top1_span membership (reported line in oracle_loss_span) on the same
-SoftwareX-stamp rejecting cases used in results/sc_vs_honesty.json. Distance is
+primary-stamp rejecting cases used in results/sc_vs_honesty.json. Distance is
 always abs(reported - oracle_loss_code); never zeroed on a span-only hit.
 """
 
@@ -115,6 +115,27 @@ def main() -> None:
         for name in ("terminal_site", "random_line", "oracle_upper")
     }
 
+    # A single draw per row has a standard deviation close to its own mean, so
+    # the drawn tally carries almost no information. The expectation over the
+    # same rows is the stable quantity, and it costs nothing to state.
+    per_row_p = []
+    for r in rows_in:
+        loss = r["oracle_loss_code"]
+        reject = r.get("oracle_reject_code") or r.get("oracle_reject_marker") or loss
+        span = r.get("oracle_loss_span") or [loss]
+        if not reject:
+            continue
+        per_row_p.append(min(1.0, len(span) / int(reject)))
+    expected = sum(per_row_p)
+    variance = sum(p * (1.0 - p) for p in per_row_p)
+    summary["random_line"]["expected_top1_span_hits"] = round(expected, 3)
+    summary["random_line"]["expected_top1_span_sd"] = round(variance ** 0.5, 3)
+    summary["random_line"]["expectation_note"] = (
+        "Analytic expectation of span membership for a uniform draw over "
+        "{1..reject_code}, summed across these rows. The drawn tally above is a "
+        "single realisation and should not be read as a rate."
+    )
+
     payload = {
         "stamp_filter": STAMP,
         "seed": SEED,
@@ -129,7 +150,7 @@ def main() -> None:
     OUT_JSON.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
     lines = [
-        "# Baseline battery (rejecting SoftwareX-stamp cases)",
+        "# Baseline battery (rejecting primary-stamp cases)",
         "",
         f"Stamp filter `{STAMP}` · n={len(rows)} rejecting cases · random seed `{SEED}`.",
         "",
@@ -140,6 +161,12 @@ def main() -> None:
         s = summary[name]
         lines.append(f"| `{name}` | {s['hits']} | {s['n']} | {s['hits']}/{s['n']} |")
     lines += [
+        "",
+        f"The `random_line` row is one draw per case (seed {SEED}). Its expected "
+        f"top1_span hit count over these rows is "
+        f"{summary['random_line']['expected_top1_span_hits']} "
+        f"(SD {summary['random_line']['expected_top1_span_sd']}), which is the "
+        "stable comparison; the drawn tally is a single realisation.",
         "",
         "Per-case rows: `baseline_battery.json`. "
         "`top1_vs_loss` is the legacy name for top1_span (span membership, not "

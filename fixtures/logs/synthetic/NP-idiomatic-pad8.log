@@ -1,13 +1,14 @@
 ; fixture verifier log — NullablePointer idiomatic rename (entry)
+; Line numbers below are this fixture's own; they are not lines in the committed mutant.
 ; Same structure as brittle; SourceComment should MISS looks_like_null_check.
 
-; __u64 *entry = bpf_map_lookup_elem(&m, &key); @ mutants/NullablePointer/NP-idiomatic-pad8.c:12
+; __u64 *entry = bpf_map_lookup_elem(&m, &key); @ synthetic/NP-idiomatic-pad8.fixture.c:12
 0: (85) call bpf_map_lookup_elem#1
  R0=map_value_or_null
-; if (!entry) @ mutants/NullablePointer/NP-idiomatic-pad8.c:14
+; if (!entry) @ synthetic/NP-idiomatic-pad8.fixture.c:14
 1: (15) if r0 == 0 goto pc+10
  R0=map_value
-; return *entry; @ mutants/NullablePointer/NP-idiomatic-pad8.c:24
+; return *entry; @ synthetic/NP-idiomatic-pad8.fixture.c:24
 20: (79) r0 = *(u64 *)(r0 +0)
 processed 21 insns
 

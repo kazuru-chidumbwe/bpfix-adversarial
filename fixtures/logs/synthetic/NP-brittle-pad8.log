@@ -1,15 +1,16 @@
 ; fixture verifier log — NullablePointer brittle name (ptr)
+; Line numbers below are this fixture's own; they are not lines in the committed mutant.
 ; Simulates log_level=2 source comments for SourceComment tier scoring.
 ; NOT a captured kernel log; lab runner replaces with real bpftool output on Linux.
 
-; __u64 *ptr = bpf_map_lookup_elem(&m, &key); @ mutants/NullablePointer/NP-brittle-pad8.c:12
+; __u64 *ptr = bpf_map_lookup_elem(&m, &key); @ synthetic/NP-brittle-pad8.fixture.c:12
 0: (85) call bpf_map_lookup_elem#1
  R0=map_value_or_null
-; if (!ptr) @ mutants/NullablePointer/NP-brittle-pad8.c:14
+; if (!ptr) @ synthetic/NP-brittle-pad8.fixture.c:14
 1: (15) if r0 == 0 goto pc+10
  R0=map_value
 ; distance pad omitted in fixture
-; return *ptr; @ mutants/NullablePointer/NP-brittle-pad8.c:24
+; return *ptr; @ synthetic/NP-brittle-pad8.fixture.c:24
 20: (79) r0 = *(u64 *)(r0 +0)
 processed 21 insns
 

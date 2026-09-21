@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Minimal offline oracle-independence controls (SoftwareX punch-list).
+"""Minimal offline oracle-independence controls .
 
-Uses already-captured SoftwareX-stamp rows in results/sc_vs_honesty.json —
+Uses already-captured stamped rows in results/sc_vs_honesty.json —
 no new lab work.
 
 Controls
@@ -17,7 +17,7 @@ Controls
    Shows scoring still anchors on injection while the stop can diverge.
 
 3. compiler_preservation
-   For rejecting SoftwareX-stamp logs, assert at least one injection-span line
+   For rejecting stamped logs, assert at least one injection-span line
    (else reject/use code line) appears in verifier ``; … @ path:LINE`` maps.
    Links authored source lines to emitted debug maps without claiming a
    full semantic proof-loss oracle.
@@ -158,7 +158,7 @@ def main() -> None:
         "positive_control_pb_stop_vs_injection": positives,
         "compiler_preservation_source_map": preservations,
         "note": (
-            "Minimal offline controls over SoftwareX-stamp captures. "
+            "Minimal offline controls over stamped captures. "
             "Not a verified semantic proof-loss oracle; not negative controls "
             "that mutate away the reject while keeping the same marker text."
         ),
@@ -166,7 +166,7 @@ def main() -> None:
     OUT_JSON.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
     lines = [
-        "# Oracle-independence controls (minimal, SoftwareX-stamp)",
+        "# Oracle-independence controls (minimal, stamped)",
         "",
         f"Stamp filter `{STAMP}`. Offline only — no new lab captures.",
         "",

@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Fail if committed results/*.json drift from a fresh offline emitter run.
+"""Fail if committed results/* drift from a fresh offline emitter run.
+
+Covers the .md tables as well as the .json. The .md files are what the
+manuscript reproduces, so leaving them outside the guard meant a hand-edited
+table could survive a green CI run.
 
 Lab-capture artifacts are listed as SKIP with a reason so every
 results/*.json is accounted for (closes the “forgot to recommit” hole).
@@ -56,8 +60,10 @@ def check_one(rel: str, script_argv: list[str]) -> None:
     if not path.is_file():
         raise SystemExit(f"missing committed artifact: {rel}")
     committed = _load(path)
+    sidecars = [p for p in (path.with_suffix(".md"),) if p.is_file()]
     # Run emitter in a copy of the tree's CWD so it writes the real path, then restore.
     backup = path.read_bytes()
+    sidecar_backup = {p: p.read_bytes() for p in sidecars}
     try:
         cmd = [sys.executable, *script_argv]
         proc = subprocess.run(
@@ -73,8 +79,18 @@ def check_one(rel: str, script_argv: list[str]) -> None:
                 f"stdout:\n{proc.stdout}\nstderr:\n{proc.stderr}"
             )
         fresh = _load(path)
+        fresh_sidecars = {p: p.read_bytes() for p in sidecars}
     finally:
         path.write_bytes(backup)
+        for p, data in sidecar_backup.items():
+            p.write_bytes(data)
+
+    for p, data in sidecar_backup.items():
+        if fresh_sidecars.get(p) != data:
+            raise SystemExit(
+                f"committed {p.relative_to(ROOT).as_posix()} does not match its emitter; "
+                f"re-run {' '.join(script_argv)} and commit the result"
+            )
 
     if committed != fresh:
         # Write a temp diff aid for humans
@@ -154,7 +170,7 @@ def main() -> int:
 
     check_figures()
 
-    print("All offline results/*.json and figures/*.svg match their emitters.")
+    print("All offline results/*.json, results/*.md and figures/*.svg match their emitters.")
     return 0
 
 

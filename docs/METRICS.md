@@ -1,6 +1,6 @@
 # Metrics — injection-site agreement
 
-SoftwareX / cite-pin terminology. Historical script and filename strings may still say “honesty”; the **construct** scored against markers is injection-site agreement.
+Cite-pin terminology. Historical script and filename strings may still say “honesty”; the **construct** scored against markers is injection-site agreement.
 
 ## Primary
 
@@ -20,7 +20,7 @@ Do **not** use the bare label “top-1” for both line equality and span member
 - Missing prediction → `distance_error` is **undefined** (`null` in JSON).
 - Any mean / summary distance **excludes** undefined rows and reports a separate **missing-prediction count**.
 - Do **not** zero `distance_error` on a span-only hit (`top1_span` True, `top1_line` False). Distance is always `abs(predicted - oracle_loss_code)`, including PointerProvenance wash-line maps (e.g. reported 15 vs `oracle_loss_code` 14 → `d = 1`). `tools/emit_baseline_battery.py` must call `score_honesty` with the actual reported line; packing `distance_error: 0 if hit else …` is a contract violation.
-- SoftwareX surfaces report **per-row** distances and **per-template** matrices (e.g. PB pads 0/8/32). Pad repeats are not independent semantic cases.
+- The reported surfaces give **per-row** distances and **per-template** matrices (e.g. PB pads 0/8/32). Pad repeats are not independent semantic cases.
 - Fractions such as 3/10 on the rejecting campaign are **row-weighted descriptive tallies**, not template-weighted estimates and not a single campaign-wide “accuracy.”
 
 ## Secondary
@@ -35,7 +35,7 @@ Do **not** use the bare label “top-1” for both line equality and span member
 
 Each template case declares `oracle.loss_*` and `oracle.reject_*` (source and/or insn) at generation time. Scoring never uses the diagnostic’s output as ground truth.
 
-**Independence (SoftwareX):** markers are assigned before diagnostics run and do not read bpfix or kernel logs to choose the injection site. **Tested reporter/log invariance** (`results/marker_isolation.*`): SoftwareX-stamp logs contain no `ORACLE_*` tokens; SourceComment primary lines are invariant under line-preserving marker neutralization; Ubuntu 6.8 lab bearing/neutral compile+load yields identical verdicts and normalized verifier logs. Debug (`-O2 -g`) object identity is **not** invariant: on the Ubuntu A/B campaign both `.BTF` and `.BTF.ext` section dumps differ (`llvm-objdump -s -j`; 16/16). That comparison does **not** isolate an effect of marker text — the two `-g` arms compile under variant-specific file names and the section hashes are taken over `llvm-objdump -s` output, which embeds the object path — so no debug-section invariance is claimed either way. DWARF was not compared. Scoring still reads markers via `oracle_sites` for ground truth only. SoftwareX still does **not** claim these markers equal a machine-verified verifier-state transition (semantic proof-loss). That stronger oracle is future work.
+**Independence :** markers are assigned before diagnostics run and do not read bpfix or kernel logs to choose the injection site. **Tested reporter/log invariance** (`results/marker_isolation.*`): primary-stamp logs contain no `ORACLE_*` tokens; SourceComment primary lines are invariant under line-preserving marker neutralization; Ubuntu 6.8 lab bearing/neutral compile+load yields identical verdicts and normalized verifier logs. Debug (`-O2 -g`) object identity is **not** invariant: on the Ubuntu A/B campaign both `.BTF` and `.BTF.ext` section dumps differ (`llvm-objdump -s -j`; 16/16). That comparison does **not** isolate an effect of marker text — the two `-g` arms compile under variant-specific file names and the section hashes are taken over `llvm-objdump -s` output, which embeds the object path — so no debug-section invariance is claimed either way. DWARF was not compared. Scoring still reads markers via `oracle_sites` for ground truth only. This harness still does **not** claim these markers equal a machine-verified verifier-state transition (semantic proof-loss). That stronger oracle is future work.
 
 **Scoring rule (locked):** top1_line, top1_span, and distance_error are always computed against the construction-time **injection** site. When injection and reject/use markers diverge, do **not** score against the marked reject/use line.
 
@@ -43,7 +43,7 @@ Each template case declares `oracle.loss_*` and `oracle.reject_*` (source and/or
 
 | Concept | Rule |
 | --- | --- |
-| Marker lines | Comment lines containing `ORACLE_LOSS_LINE` / `ORACLE_REJECT_LINE` (names kept for fixture compatibility; SoftwareX prose: injection / terminal-or-use span). `ORACLE_REJECT_LINE` is **author-assigned source** (expected use or terminal *source* site)—not the kernel’s terminal verifier instruction and not a compiler-emitted BPF insn index. |
+| Marker lines | Comment lines containing `ORACLE_LOSS_LINE` / `ORACLE_REJECT_LINE` (names kept for fixture compatibility; paper prose: injection / terminal-or-use span). `ORACLE_REJECT_LINE` is **author-assigned source** (expected use or terminal *source* site)—not the kernel’s terminal verifier instruction and not a compiler-emitted BPF insn index. |
 | Line numbering | **One-based** lines in the mutant source file as stored (pre-preprocessor). `#` lines are preprocessor directives and are skipped when building the executable span; they can appear inside a marker span but do not count as executable. |
 | First executable line | Determined on the **pre-preprocessor** mutant text: first non-blank, non-comment, non-`#`, non-pad line strictly between markers (`oracle.py`). |
 | Effective injection span | Executable lines strictly between markers; skip blanks, `//` `/*` comments, `#` preprocessor, and distance pads (`__pad` / `distance pad`) |
@@ -52,7 +52,7 @@ Each template case declares `oracle.loss_*` and `oracle.reject_*` (source and/or
 | top1_span | Any line in `oracle_loss_span` |
 | Span-only distance | `top1_span` membership does **not** set `distance_error = 0`. Keep `d = abs(predicted - oracle_loss_code)`. |
 | set_recall_message | See Primary table (decimal line numbers in rendered diagnostic) |
-| Missing BPF for a source line | SoftwareX distance uses **source-line** numbers from markers / log maps; PC distance is uninformative when pads compile away under `-O2` |
+| Missing BPF for a source line | Reported distance uses **source-line** numbers from markers / log maps; PC distance is uninformative when pads compile away under `-O2` |
 | Macros / continuations | Not specially expanded; scoring is source-text / line-table based as emitted |
 
 Implemented in `bpfix_adversarial/oracle.py` (`oracle_sites`) and `bpfix_adversarial/score.py` (`score_honesty`).
@@ -85,7 +85,7 @@ Implemented by `tools/lab_marker_isolation_ab.py::normalize_log_body`. Used only
 
 ## Reported-site modes (methodological parameter)
 
-| Mode | SoftwareX name | What counts as “reported” | Used by |
+| Mode | Reported name | What counts as “reported” | Used by |
 | --- | --- | --- | --- |
 | Headline line | **top1_line** | rustc-style `--> file:LINE` / stop-site map equals `oracle_loss_code` | Default `score_honesty`; CLI primary when compared to primary line |
 | Headline span | **top1_span** | Stop-site map ∈ injection span | Lab SC/VS inset (multi-line wash) |

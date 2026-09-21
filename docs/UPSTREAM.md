@@ -6,7 +6,7 @@
 
 ## Obligation classification of main75
 
-**Upstream's own classification** (SoftwareX Table 2): each main75 case ships
+**Upstream's own classification** (the paper's main75 table): each main75 case ships
 upstream's `diagnostic.txt`; its error ID is mapped to the `ProofObligation` that
 upstream `crates/bpfix/src/classifier.rs` declares for that ID. Vendored inputs:
 `fixtures/upstream/main75_upstream_diagnostics.json` (error ID, headline and SHA-256

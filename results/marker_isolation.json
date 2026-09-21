@@ -359,12 +359,12 @@
   },
   "gates_mapping": {
     "what_this_establishes": [
-      "Captured SoftwareX-stamp verifier logs contain no ORACLE_* tokens (VS / upstream bpfix CLI cannot read markers from log text).",
-      "SourceComment reported line is invariant under line-preserving marker neutralization on the same SoftwareX-stamp sources.",
+      "Captured primary-stamp verifier logs contain no ORACLE_* tokens (VS / upstream bpfix CLI cannot read markers from log text).",
+      "SourceComment reported line is invariant under line-preserving marker neutralization on the same primary-stamp sources.",
       "ORACLE comment lines themselves are not looks_like_* hits."
     ],
     "what_requires_lab_ab": [
-      "Compile+load identity: marker-bearing vs marker-neutral produce identical ACCEPT/REJECT, VS stop site, and source-map pairs (tools/lab_marker_isolation_ab.py on the SoftwareX pin host)."
+      "Compile+load identity: marker-bearing vs marker-neutral produce identical ACCEPT/REJECT, VS stop site, and source-map pairs (tools/lab_marker_isolation_ab.py on the pin host)."
     ]
   },
   "note": "Scoring still reads ORACLE_* via oracle_sites for ground truth only. That path is not a diagnostic reporter input."

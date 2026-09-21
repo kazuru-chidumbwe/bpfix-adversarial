@@ -311,5 +311,5 @@
       "note": "verifier ; @path:LINE map covers injection span"
     }
   ],
-  "note": "Minimal offline controls over SoftwareX-stamp captures. Not a verified semantic proof-loss oracle; not negative controls that mutate away the reject while keeping the same marker text."
+  "note": "Minimal offline controls over stamped captures. Not a verified semantic proof-loss oracle; not negative controls that mutate away the reject while keeping the same marker text."
 }

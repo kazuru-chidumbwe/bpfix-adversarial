@@ -1,4 +1,4 @@
-# Oracle-independence controls (minimal, SoftwareX-stamp)
+# Oracle-independence controls (minimal, stamped)
 
 Stamp filter `20260801T181331Z`. Offline only — no new lab captures.
 

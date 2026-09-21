@@ -91,15 +91,39 @@ def dist_err(reported: int | None, loss: int | None, reject: int | None, top1: b
     return abs(d_rep - d_true)
 
 
+def recorded_bpfix_version() -> str:
+    """Version string recorded by tools/run_rq1_bpfix_cli.sh at replay time.
+
+    Read rather than hardcoded so the reported version cannot drift from the
+    binary that actually produced results/rq1_bpfix_cli_raw/.
+    """
+    path = RAW_DIR / "bpfix-version.txt"
+    if not path.is_file():
+        raise SystemExit(
+            f"missing {path.relative_to(ROOT).as_posix()}; re-run "
+            "tools/run_rq1_bpfix_cli.sh to record the CLI version"
+        )
+    text = path.read_text(encoding="utf-8").strip()
+    if not text:
+        raise SystemExit(f"empty version record: {path.relative_to(ROOT).as_posix()}")
+    return text.split()[-1]
+
+
 def main() -> None:
     honesty = json.loads(HONESTY.read_text(encoding="utf-8"))["rows"]
     rows = []
+    excluded: list[dict] = []
     for r in honesty:
         if not r.get("lab_rejected"):
             continue
         case_id = r["case_id"]
         pad = pad_of(case_id)
         if pad is None:
+            # Omitted-check seeds carry no pad variant, so they have no row in
+            # the pad-indexed CLI replay. Recorded rather than dropped silently.
+            excluded.append(
+                {"case_id": case_id, "reason": "no pad variant (omitted-check seed)"}
+            )
             continue
         raw_path = RAW_DIR / f"{case_id}.txt"
         if not raw_path.is_file():
@@ -141,7 +165,13 @@ def main() -> None:
 
     meta = {
         "n": len(rows),
-        "bpfix_version": "0.1.9",
+        "excluded": excluded,
+        "excluded_note": (
+            "Rejecting rows in sc_vs_honesty without a pad variant are outside this "
+            "pad-indexed replay. n here is smaller than the 10 rejecting rows scored "
+            "in sc_vs_honesty.*"
+        ),
+        "bpfix_version": recorded_bpfix_version(),
         "bpfix_pin": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
         "stamp_family": "20260801T181331Z",
         "host": "WSL (offline log replay; not lab-server)",
@@ -182,7 +212,7 @@ def main() -> None:
     sr = [r for r in rows if r["obligation"] == "ScalarRange"]
     lines += [
         "",
-        "## Reading (SoftwareX)",
+        "## Reading ",
         "",
         "- **PacketBounds:** primary `-->` tracks the wide load (reject). Under **top1_line** "
         "this is a miss; `d_err` tracks pad "

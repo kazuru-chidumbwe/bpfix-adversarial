@@ -11,7 +11,10 @@
     "random_line": {
       "hits": 1,
       "n": 10,
-      "top1_span_fraction": 0.1
+      "top1_span_fraction": 0.1,
+      "expected_top1_span_hits": 0.645,
+      "expected_top1_span_sd": 0.768,
+      "expectation_note": "Analytic expectation of span membership for a uniform draw over {1..reject_code}, summed across these rows. The drawn tally above is a single realisation and should not be read as a rate."
     },
     "oracle_upper": {
       "hits": 10,

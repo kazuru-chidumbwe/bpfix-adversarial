@@ -16,7 +16,7 @@ def score_honesty(
 ) -> dict[str, Any]:
     """Score a reported primary line against the injection primary line.
 
-    Distance (SoftwareX / Gates v1.1.11):
+    Distance:
       ``distance_error = |predicted − oracle_loss_code|``
     This is absolute localization error on source lines — not a signed cancel
     of ``(reject−pred)−(reject−oracle)``. The algebraically equivalent signed

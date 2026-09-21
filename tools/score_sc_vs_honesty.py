@@ -68,7 +68,7 @@ def latest_captured_log(case_id: str) -> Path | None:
         for p in cap.glob(f"{case_id}.*.log")
         if not p.name.endswith(".compile")
     )
-    # Prefer SoftwareX template-oracle stamp when present; else newest stamp.
+    # Prefer the paper's template-oracle stamp when present; else newest stamp.
     preferred = [p for p in hits if "20260801T181331Z" in p.name]
     if preferred:
         return preferred[-1]

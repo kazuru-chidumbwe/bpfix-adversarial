@@ -23,7 +23,12 @@ if [[ ! -x "$BPFIX" ]]; then
   exit 1
 fi
 
-echo "bpfix=$("$BPFIX" --version 2>&1)"
+BPFIX_VERSION="$("$BPFIX" --version 2>&1)"
+# Record it: every other pin in this artifact is hash- or manifest-backed,
+# and the emitter reads this file rather than carrying a literal.
+printf '%s
+' "$BPFIX_VERSION" > "$OUTDIR/bpfix-version.txt"
+echo "bpfix=$BPFIX_VERSION"
 echo "root=$ROOT"
 echo "stamp=$STAMP"
 

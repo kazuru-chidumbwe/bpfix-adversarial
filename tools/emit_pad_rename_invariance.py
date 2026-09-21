@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 """Verifier-level check that padding and renaming leave the loaded program unchanged.
 
-Reads the SoftwareX-stamp captures and compares, across pads 0/8/32 for each
+Reads the stamped captures and compares, across pads 0/8/32 for each
 rejecting template and within each NullablePointer brittle/idiomatic rename
 pair: verdict, processed-instruction count, reject message, and the sequence of
 verifier-listed instructions. The only value masked is the kernel address that
@@ -89,7 +89,7 @@ def main() -> None:
     lines = [
         "# Pad and rename invariance at the verifier",
         "",
-        f"SoftwareX-stamp captures `{STAMP}`. Compared: verdict, processed-instruction "
+        f"stamped captures `{STAMP}`. Compared: verdict, processed-instruction "
         "count, reject message, and the verifier-listed instruction sequence (the "
         "load-time kernel address in `ld_imm64` map references is masked).",
         "",

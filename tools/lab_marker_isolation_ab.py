@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Lab A/B: marker-bearing vs marker-neutral mutants (Gates marker isolation).
+"""Lab A/B: marker-bearing vs marker-neutral mutants (marker isolation).
 
-For each SoftwareX-stamp case in results/sc_vs_honesty.json, compile+load the
+For each stamped case in results/sc_vs_honesty.json, compile+load the
 original source and a line-preserving marker-stripped twin on the same lab host
 in one SSH session. Compare verdict, VerifierState stop line, and normalized
 source-map sets.
@@ -174,6 +174,9 @@ def analyze_captured_log(
         "disasm_sha256": meta.get("disasm_sha256"),
         "btf_sha256": meta.get("btf_sha256"),
         "btf_ext_sha256": meta.get("btf_ext_sha256"),
+        # Present when carried from a previous capture (see carried_object_meta);
+        # a fresh capture fills this in after the no-debug object build step.
+        "nodbg_obj_sha256": meta.get("nodbg_obj_sha256"),
     }
 
 
@@ -231,6 +234,8 @@ def pair_match(b: dict, n: dict) -> dict:
         "source_comment_texts": same_comments,
         "normalized_log": same_norm,
         "nodbg_obj_sha256": bool(same_nodbg),
+        # Derived from obj_sha256 (the -O2 -g object), not from a field of
+        # this name; there is no dbg_obj_sha256 entry field.
         "dbg_obj_sha256": bool(same_dbg),
         "no_oracle_in_logs": no_oracle,
         "pass": bool(
@@ -308,6 +313,25 @@ def load_pair(
     )
 
 
+OBJECT_META_KEYS = (
+    "obj_sha256",
+    "disasm_sha256",
+    "btf_sha256",
+    "btf_ext_sha256",
+    "nodbg_obj_sha256",
+)
+
+
+def carried_object_meta(entry: dict) -> dict:
+    """Object hashes from a previous capture.
+
+    They are computed on the lab host from compiled objects, so a rescore that
+    only re-reads log text cannot recompute them. Carrying them forward keeps
+    --rescore idempotent; recomputing without them scored every pair as a miss.
+    """
+    return {k: entry[k] for k in OBJECT_META_KEYS if entry.get(k) is not None}
+
+
 def rescore_existing(lab_path: Path) -> dict:
     """Recompute match fields from already-captured markeriso logs."""
     lab = json.loads(lab_path.read_text(encoding="utf-8"))
@@ -321,6 +345,7 @@ def rescore_existing(lab_path: Path) -> dict:
             prog_type=p["bearing"]["prog_type"],
             src_sha256=p["bearing"]["src_sha256"],
             log_rel=p["bearing"]["log"],
+            object_meta=carried_object_meta(p["bearing"]),
         )
         n = analyze_captured_log(
             n_text,
@@ -328,6 +353,7 @@ def rescore_existing(lab_path: Path) -> dict:
             prog_type=p["neutral"]["prog_type"],
             src_sha256=p["neutral"]["src_sha256"],
             log_rel=p["neutral"]["log"],
+            object_meta=carried_object_meta(p["neutral"]),
         )
         pairs.append(
             {
@@ -352,10 +378,8 @@ def rescore_existing(lab_path: Path) -> dict:
         "source_map_match": sum(1 for p in pairs if p["match"]["source_map_pairs"]),
         "source_comment_match": sum(1 for p in pairs if p["match"]["source_comment_texts"]),
         "normalized_log_match": sum(1 for p in pairs if p["match"]["normalized_log"]),
-        "obj_sha_match": sum(1 for p in pairs if p["match"].get("obj_sha256")),
-        "disasm_sha_match": sum(1 for p in pairs if p["match"].get("disasm_sha256")),
-        "btf_sha_match": sum(1 for p in pairs if p["match"].get("btf_sha256")),
-        "btf_ext_sha_match": sum(1 for p in pairs if p["match"].get("btf_ext_sha256")),
+        "nodbg_obj_match": sum(1 for p in pairs if p["match"].get("nodbg_obj_sha256")),
+        "dbg_obj_match": sum(1 for p in pairs if p["match"].get("dbg_obj_sha256")),
     }
     lab["note"] = (
         "Marker-neutral = ORACLE_* comments replaced with /* */ (line-preserving). "

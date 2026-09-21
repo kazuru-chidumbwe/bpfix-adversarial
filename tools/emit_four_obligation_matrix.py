@@ -12,6 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from bpfix_adversarial.oracle import oracle_sites  # noqa: E402
 from tools.score_sc_vs_honesty import lab_rejected  # noqa: E402
 
 MUT = ROOT / "mutants"
@@ -32,7 +33,13 @@ def sha256_file(p: Path) -> str:
     return h.hexdigest()
 
 
-def oracle_lines(src: Path) -> tuple[int | None, int | None]:
+def marker_lines(src: Path) -> tuple[int | None, int | None]:
+    """Line numbers of the ORACLE_* marker comments themselves.
+
+    These are not oracle_loss_code / oracle_reject_code, which
+    bpfix_adversarial.oracle derives as the first executable line after
+    each marker. The two differ on every committed mutant.
+    """
     loss = reject = None
     for i, line in enumerate(src.read_text(encoding="utf-8").splitlines(), 1):
         if "ORACLE_LOSS_LINE" in line:
@@ -103,7 +110,8 @@ def main() -> None:
     for src in sorted(MUT.glob("*/*.c")):
         obligation = src.parent.name
         case_id = src.stem
-        loss, reject = oracle_lines(src)
+        loss, reject = marker_lines(src)
+        sites = oracle_sites(src)
         log = latest_log(case_id)
         st = log_status(log)
         rows.append(
@@ -113,8 +121,10 @@ def main() -> None:
                 "pad": int(re.search(r"pad(\d+)", case_id).group(1))
                 if re.search(r"pad(\d+)", case_id)
                 else None,
-                "oracle_loss_line": loss,
-                "oracle_reject_line": reject,
+                "oracle_loss_marker": loss,
+                "oracle_reject_marker": reject,
+                "oracle_loss_code": sites.get("oracle_loss_code"),
+                "oracle_reject_code": sites.get("oracle_reject_code"),
                 "src_sha256": sha256_file(src),
                 "note": rename_honesty_note(case_id),
                 **st,
@@ -128,7 +138,11 @@ def main() -> None:
     lines = [
         "# Four-obligation stratified mutant matrix",
         "",
-        "Construction-time oracle markers scanned from mutant sources.",
+        "Construction-time oracle markers scanned from mutant sources. The marker "
+            "columns give the line of the ORACLE_* comment; the code columns give the "
+            "first executable line after it, which is what scoring uses "
+            "(`oracle_loss_code`). Score against the code columns, never the marker "
+            "columns.",
         "Log tier: `captured` = lab bpftool; `synthetic` = fixture; `missing` = no log yet.",
         "",
     ]
@@ -136,16 +150,18 @@ def main() -> None:
         lines.append(f"## {ob} (n={len(items)})")
         lines.append("")
         lines.append(
-            "| case_id | pad | loss | reject | log_tier | log_sha256 | note |"
+            "| case_id | pad | loss marker | loss code | reject marker | "
+            "reject code | log_tier | log_sha256 | note |"
         )
-        lines.append("| --- | ---: | ---: | ---: | --- | --- | --- |")
+        lines.append("| --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |")
         for r in items:
             h = (r.get("log_sha256") or "—")[:12]
             if r.get("log_sha256"):
                 h = r["log_sha256"][:12] + "…"
             lines.append(
-                f"| `{r['case_id']}` | {r['pad']} | {r['oracle_loss_line']} | "
-                f"{r['oracle_reject_line']} | {r['log_tier']} | `{h}` | {r['note']} |"
+                f"| `{r['case_id']}` | {r['pad']} | {r['oracle_loss_marker']} | "
+                f"{r['oracle_loss_code']} | {r['oracle_reject_marker']} | "
+                f"{r['oracle_reject_code']} | {r['log_tier']} | `{h}` | {r['note']} |"
             )
         lines.append("")
 

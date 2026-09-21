@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Marker isolation evidence (Gates primary validity threat).
+"""Marker isolation evidence for the primary construct-validity threat.
 
-Offline SoftwareX-stamp suite (no lab required):
+Offline primary-stamp suite (no lab required):
   1. ORACLE_* tokens absent from captured verifier logs (VS / bpfix CLI inputs).
   2. SourceComment reports identical lines on marker-bearing vs line-preserving
      marker-neutral sources (reporter output invariant to marker text).
@@ -171,16 +171,16 @@ def main() -> None:
         },
         "gates_mapping": {
             "what_this_establishes": [
-                "Captured SoftwareX-stamp verifier logs contain no ORACLE_* tokens "
+                "Captured primary-stamp verifier logs contain no ORACLE_* tokens "
                 "(VS / upstream bpfix CLI cannot read markers from log text).",
                 "SourceComment reported line is invariant under line-preserving "
-                "marker neutralization on the same SoftwareX-stamp sources.",
+                "marker neutralization on the same primary-stamp sources.",
                 "ORACLE comment lines themselves are not looks_like_* hits.",
             ],
             "what_requires_lab_ab": [
                 "Compile+load identity: marker-bearing vs marker-neutral produce "
                 "identical ACCEPT/REJECT, VS stop site, and source-map pairs "
-                "(tools/lab_marker_isolation_ab.py on the SoftwareX pin host).",
+                "(tools/lab_marker_isolation_ab.py on the pin host).",
             ],
         },
         "note": (
@@ -191,9 +191,9 @@ def main() -> None:
     OUT_JSON.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
     lines = [
-        "# Marker isolation (Gates construct validity)",
+        "# Marker isolation (construct validity)",
         "",
-        f"SoftwareX-stamp filter `{STAMP}`. Offline suite always; lab A/B when host reachable.",
+        f"primary-stamp filter `{STAMP}`. Offline suite always; lab A/B when host reachable.",
         "",
         "| Check | Pass | n |",
         "| --- | ---: | ---: |",
@@ -212,11 +212,11 @@ def main() -> None:
         lines.append(f"| lab bearing≡neutral load | {lab_s['pass']} | {lab_s['n']} |")
     lines += [
         "",
-        "## Gates mapping",
+        "## What these checks isolate",
         "",
         "Offline checks isolate **reporter inputs/outputs** from marker text.",
         "Full **log identity** under compile+load still requires "
-        "`python tools/lab_marker_isolation_ab.py` on the SoftwareX pin host.",
+        "`python tools/lab_marker_isolation_ab.py` on the pin host.",
         "",
         "JSON: `marker_isolation.json`.",
         "",

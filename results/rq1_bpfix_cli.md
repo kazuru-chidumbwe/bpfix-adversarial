@@ -16,7 +16,7 @@ Pad note: scalar __pad chains DCE under clang — nearest_bpf_pc stable across p
 | ScalarRange | `SR-pad32` | 32 | 37 | 48 | 7 | no | no | 37 | no |
 | ScalarRange | `SR-pad8` | 8 | 13 | 24 | 7 | no | no | 13 | no |
 
-## Reading (SoftwareX)
+## Reading 
 
 - **PacketBounds:** primary `-->` tracks the wide load (reject). Under **top1_line** this is a miss; `d_err` tracks pad (3, 38, 14). The E001 snippet still *mentions* the narrow `data_end` check (loss) as related context — `set_recall_message = yes`. This is **not** a contradiction with `rq1_lab_distance.*` (SC port: PB **top1_line** hit, construction-determined): SC keys on contextual loss pickup; CLI primary is the headline location. Both are correct measurements of different things (headline vs full message).
 - **PointerProvenance:** primary lands on a later XOR-wash line in the loss **span** (top1_line=no; top1_span=yes); nearest PC stable (DCE) — span hit without exact first-line hit.

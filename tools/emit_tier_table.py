@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -20,25 +21,30 @@ CASES = [
     {
         "case_id": "NP-idiomatic-pad8",
         "log": "fixtures/logs/synthetic/NP-idiomatic-pad8.log",
-        "oracle_loss_line": 14,
-        "verifier_state_loss_line": 14,  # check still in ISA / state
+        "verifier_state_loss_line": 14,  # asserted by the fixture annotation
         "notes": "Rename breaks SourceComment establish; VerifierState still sees null branch",
     },
     {
         "case_id": "NP-brittle-pad8",
         "log": "fixtures/logs/synthetic/NP-brittle-pad8.log",
-        "oracle_loss_line": 14,
-        "verifier_state_loss_line": 14,
+        "verifier_state_loss_line": 14,  # asserted by the fixture annotation
         "notes": "Tiers agree: SourceComment recognizes !ptr",
     },
     {
         "case_id": "PB-pad0",
         "log": "fixtures/logs/synthetic/PB-pad0.log",
-        "oracle_loss_line": 10,
-        "verifier_state_loss_line": 10,
+        "verifier_state_loss_line": 10,  # asserted by the fixture annotation
         "notes": "Packet under-check: SourceComment sees data_end; VerifierState sees r=1<8",
     },
 ]
+
+
+def fixture_oracle(text: str) -> int:
+    """Oracle loss line as the fixture itself declares it."""
+    m = re.search(r"ORACLE_LOSS_LINE=(\d+)", text)
+    if not m:
+        raise SystemExit("fixture carries no ORACLE_LOSS_LINE annotation")
+    return int(m.group(1))
 
 
 def analyze(case: dict) -> dict:
@@ -63,26 +69,26 @@ def analyze(case: dict) -> dict:
         if loc.text.strip().startswith("if ")
     ]
     sc_null_ok = any(looks_like_null_check(loc.text) for loc in null_lines)
-    # VerifierState tier: from fixture annotation / oracle (lab fills real PC later)
+    # VerifierState tier: asserted by the fixture annotation, not measured from
+    # the log. It is an input to this inset, so it is reported but never scored
+    # against the oracle; doing so would restate the input.
     vs_line = case["verifier_state_loss_line"]
+    oracle_loss_line = fixture_oracle(path.read_text(encoding="utf-8"))
     sc_reported = (
         sc_establish[-1].source.line
         if sc_establish and sc_establish[-1].source
         else (sc_loss[-1].source.line if sc_loss and sc_loss[-1].source else None)
     )
     agree = sc_reported == vs_line if sc_reported is not None else False
-    # Disagreement of interest: VS correct vs oracle, SC wrong
-    vs_correct = vs_line == case["oracle_loss_line"]
-    sc_correct = sc_reported == case["oracle_loss_line"] if sc_reported else False
+    sc_correct = sc_reported == oracle_loss_line if sc_reported else False
     return {
         **case,
+        "oracle_loss_line": oracle_loss_line,
         "sourcecomment_null_check_recognized": sc_null_ok,
         "sourcecomment_reported_line": sc_reported,
-        "verifier_state_reported_line": vs_line,
+        "verifier_state_asserted_line": vs_line,
         "tiers_agree": agree,
         "sourcecomment_correct_vs_oracle": sc_correct,
-        "verifier_state_correct_vs_oracle": vs_correct,
-        "disagreement": sc_correct != vs_correct,
     }
 
 
@@ -90,22 +96,28 @@ def markdown(rows: list[dict]) -> str:
     lines = [
         "# SourceComment vs VerifierState",
         "",
-        "| case | SC null-check? | SC line | VS line | SC ok | VS ok | Disagree |",
-        "| --- | --- | ---: | ---: | --- | --- | --- |",
+        "| case | SC null-check? | SC line | VS line (asserted) | SC matches oracle |",
+        "| --- | --- | ---: | ---: | --- |",
     ]
     for r in rows:
         lines.append(
             f"| {r['case_id']} | "
             f"{'yes' if r['sourcecomment_null_check_recognized'] else 'no'} | "
-            f"{r['sourcecomment_reported_line']} | {r['verifier_state_reported_line']} | "
-            f"{'yes' if r['sourcecomment_correct_vs_oracle'] else 'no'} | "
-            f"{'yes' if r['verifier_state_correct_vs_oracle'] else 'no'} | "
-            f"{'yes' if r['disagreement'] else 'no'} |"
+            f"{r['sourcecomment_reported_line']} | {r['verifier_state_asserted_line']} | "
+            f"{'yes' if r['sourcecomment_correct_vs_oracle'] else 'no'} |"
         )
     lines.append("")
     lines.append(
-        "Lead example: **NP-idiomatic-pad8** — VerifierState remains oracle-correct; "
-        "SourceComment misses `if (!entry)` establish."
+        "Lead example: **NP-idiomatic-pad8**. SourceComment misses the "
+        "`if (!entry)` establish under rename."
+    )
+    lines.append("")
+    lines.append(
+        "Illustration of the tier contract on synthetic fixture logs, not an "
+        "empirical finding. The VS line is carried by each fixture's annotation "
+        "rather than measured from the log, so it is reported for context and is "
+        "not scored against the oracle. Lab-derived SourceComment and "
+        "VerifierState outcomes are in `sc_vs_honesty.*`."
     )
     return "\n".join(lines)
 

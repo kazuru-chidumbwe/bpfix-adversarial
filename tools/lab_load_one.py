@@ -93,7 +93,7 @@ def main() -> int:
     with sftp.file(remote_c, "w") as f:
         f.write(text)
     # Prefer passworded sudo when LAB_TEST_PASSWORD is set (app-test-server);
-    # fall back to passwordless sudo -n (SoftwareX pin / lab-test).
+    # fall back to passwordless sudo -n (cite pin host).
     if password:
         pw_file = f"/tmp/.bpfix_one_pw_{stamp}"
         with sftp.file(pw_file, "w") as f:

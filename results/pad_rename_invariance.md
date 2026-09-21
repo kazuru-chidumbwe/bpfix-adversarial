@@ -1,6 +1,6 @@
 # Pad and rename invariance at the verifier
 
-SoftwareX-stamp captures `20260801T181331Z`. Compared: verdict, processed-instruction count, reject message, and the verifier-listed instruction sequence (the load-time kernel address in `ld_imm64` map references is masked).
+stamped captures `20260801T181331Z`. Compared: verdict, processed-instruction count, reject message, and the verifier-listed instruction sequence (the load-time kernel address in `ld_imm64` map references is masked).
 
 ## Padding (pads 0 / 8 / 32)
 

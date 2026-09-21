@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Score NullablePointer fixture pair (brittle vs idiomatic) for paper Figure 1."""
+"""Score the NullablePointer fixture pair (brittle vs idiomatic).
+
+Both inputs are synthetic fixture logs with their own line numbering, not
+captures of the committed mutants. The oracle is read from each fixture's own
+ORACLE_* annotation rather than hardcoded, so the scored oracle and the log can
+not drift apart.
+"""
 
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -21,8 +28,17 @@ from bpfix_adversarial.model import ProofEventRole  # noqa: E402
 from bpfix_adversarial.score import score_honesty  # noqa: E402
 
 
-def score_fixture(path: Path, *, oracle_loss: int, oracle_reject: int) -> dict:
+def fixture_oracle(text: str) -> tuple[int, int]:
+    """Read ORACLE_LOSS_LINE / ORACLE_REJECT_LINE from the fixture itself."""
+    m = re.search(r"ORACLE_LOSS_LINE=(\d+)\s+ORACLE_REJECT_LINE=(\d+)", text)
+    if not m:
+        raise SystemExit("fixture carries no ORACLE_* annotation")
+    return int(m.group(1)), int(m.group(2))
+
+
+def score_fixture(path: Path) -> dict:
     text = path.read_text(encoding="utf-8")
+    oracle_loss, oracle_reject = fixture_oracle(text)
     log = parse_verifier_log(text)
     events = sourcecomment_events(log)
     # For NullablePointer honesty of *establish* recognition:
@@ -62,19 +78,20 @@ def score_fixture(path: Path, *, oracle_loss: int, oracle_reject: int) -> dict:
 def main() -> None:
     fixtures = ROOT / "fixtures" / "logs" / "synthetic"
     results = [
-        score_fixture(
-            fixtures / "NP-brittle-pad8.log", oracle_loss=14, oracle_reject=24
-        ),
-        score_fixture(
-            fixtures / "NP-idiomatic-pad8.log", oracle_loss=14, oracle_reject=24
-        ),
+        score_fixture(fixtures / "NP-brittle-pad8.log"),
+        score_fixture(fixtures / "NP-idiomatic-pad8.log"),
     ]
     out = {
         "figure": "NP rename pair end-to-end (fixture logs + SourceComment port)",
+        "basis": (
+            "Synthetic fixture logs with their own line numbering. Oracle read from "
+            "each fixture's ORACLE_* annotation. Not a capture of the committed "
+            "mutants and not comparable to results/sc_vs_honesty.json line numbers."
+        ),
         "results": results,
         "paper_takeaway": (
             "Brittle `if (!ptr)` is recognized as ProofEstablished; "
-            "idiomatic `if (!entry)` is not — SourceComment honesty break under rename."
+            "idiomatic `if (!entry)` is not. SourceComment recognition breaks under rename."
         ),
     }
     out_path = ROOT / "results" / "np_pair_score.json"

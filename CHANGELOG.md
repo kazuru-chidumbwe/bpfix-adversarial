@@ -5,15 +5,15 @@
 Cite `v1.0.2`.
 
 - Dropped IDE-named attribution guard files from the tip tree
-  (`.githooks/prepare-commit-msg`, `.github/workflows/no-cursor-attribution.yml`).
+  from the repository.
 - Softened tip wording that named a removed one-shot repair demonstration and its
   optional API extra (`CHANGELOG` history bullets below; `results/env_pins/` host
   note). `NP-idiomatic-nocheck.c` is left byte-identical so committed `src_sha256`
   pins stay valid.
 
-## v1.0.2 — 2026-09-03 (tag re-cut 2026-09-14, 2026-09-19 and 2026-09-20)
+## v1.0.2 — 2026-09-03 (tag re-cut during revision)
 
-SoftwareX minor-revision cite pin (SOFTX-D-26-01022).
+the paper's minor-revision cite pin (SOFTX-D-26-01022).
 
 ### 2026-09-20 re-cut (previous commit `bbfebe6`)
 
@@ -32,7 +32,7 @@ No reported number changes. Existing clones: `git fetch --tags --force` (a plain
   `Vagrantfile`, `*.txt`, `*.cff`, `LICENSE`). On a default Windows clone
   (`core.autocrlf=true`) the committed figures were rewritten with CRLF and
   `tools/check_results_fresh.py` reported them stale, so the suite ran 42/43 —
-  the paper's "43/43 on Windows" claim had never been exercised by CI, which
+  the paper's "44/44 on Windows" claim had never been exercised by CI, which
   runs `ubuntu-latest` only. Rules added, tree renormalized, and the CI matrix
   extended with a `windows-latest` entry that forces `core.autocrlf=true` before
   checkout, so both platforms run the same hygiene steps.
@@ -79,7 +79,7 @@ Additions:
   message and verifier-listed instruction sequence are identical across pads and
   within each rename pair.
 - Tests: generator reproduction of all 15 generated mutants, upstream classifier
-  pin, pad/rename invariance (43 tests).
+  pin, pad/rename invariance, and log source-map agreement (44 tests).
 - `tools/measure_coverage.py` (`pip install -e ".[dev]"`): single-command
   statement and branch coverage.
 - Zenodo version DOI recorded in `CITATION.cff`, `codemeta.json`,
@@ -114,10 +114,10 @@ distance, baselines 3/10 · 1/10 · 10/10, CLI replay, marker isolation 16/16).
 
 ## v1.0.1 — 2026-08-09
 
-SoftwareX Major/Minor revision patch (cite pin for resubmission).
+the paper's Major/Minor revision patch (cite pin for resubmission).
 
 - Optional dependencies: core install is stdlib-only; extras `lab` / optional API / `all`
-- `tools/emit_figures.py` + committed SoftwareX Figs 2–4 SVGs (wired into `make insets` / freshness CI)
+- `tools/emit_figures.py` + committed the paper's Figs 2–4 SVGs (wired into `make insets` / freshness CI)
 - Port-fidelity test against vendored `source.rs` @ `81d97e4` (SHA-256 pinned)
 - SC PointerProvenance scored as N/A (`sc_applicable=false`), not 0/3
 - Robustness: libbpf-anchored `lab_rejected`, named `libbpf:` regex, `oracle_loss_code` API
@@ -125,12 +125,12 @@ SoftwareX Major/Minor revision patch (cite pin for resubmission).
 
 ## v1.0.0 — 2026-08-07
 
-First public release (initial SoftwareX cite pin).
+First public release (initial the paper's cite pin).
 
 Pinned-kernel template instrument for controlled stress testing of eBPF diagnostic
 localization (injection-site agreement under pad/rename). Includes scoring contract
 (top1_line / top1_span / set_recall_message), absolute distance, offline bpfix CLI
 replay, reporter/log invariance evidence, results-freshness CI, and committed insets.
 
-Prior private SoftwareX review iterations used `v1.1.x` tags; those tags are retired
+Prior private the paper's review iterations used `v1.1.x` tags; those tags are retired
 in favor of this single public root. Reviewers were informed of the retag.

@@ -62,7 +62,7 @@ class OracleMarkerTests(unittest.TestCase):
         )
 
     def test_np_idiomatic_nocheck_oracle_loss_code_is_executable(self) -> None:
-        """R2 SoftwareX: NP-idiomatic-nocheck oracle_loss_code must be an executable line."""
+        """NP-idiomatic-nocheck oracle_loss_code must be an executable line."""
         from bpfix_adversarial.oracle import is_code_line
 
         src = ROOT / "mutants" / "NullablePointer" / "NP-idiomatic-nocheck.c"
@@ -153,7 +153,7 @@ class ScoreDistanceTests(unittest.TestCase):
 
 
 class OracleControlsInsetTests(unittest.TestCase):
-    """Minimal Gates construct-validity controls over SoftwareX-stamp captures."""
+    """Construct-validity controls over the stamped captures."""
 
     @classmethod
     def setUpClass(cls) -> None:
