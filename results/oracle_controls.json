@@ -25,7 +25,7 @@
       "oracle_loss_code": 19,
       "lab_rejected": false,
       "pass": true,
-      "note": "markers present; lab ACCEPT \u2014 injection did not induce reject"
+      "note": "markers present; lab ACCEPT, injection did not induce reject"
     },
     {
       "case_id": "NP-brittle-pad32",
@@ -33,7 +33,7 @@
       "oracle_loss_code": 19,
       "lab_rejected": false,
       "pass": true,
-      "note": "markers present; lab ACCEPT \u2014 injection did not induce reject"
+      "note": "markers present; lab ACCEPT, injection did not induce reject"
     },
     {
       "case_id": "NP-brittle-pad8",
@@ -41,7 +41,7 @@
       "oracle_loss_code": 19,
       "lab_rejected": false,
       "pass": true,
-      "note": "markers present; lab ACCEPT \u2014 injection did not induce reject"
+      "note": "markers present; lab ACCEPT, injection did not induce reject"
     },
     {
       "case_id": "NP-idiomatic-pad0",
@@ -49,7 +49,7 @@
       "oracle_loss_code": 19,
       "lab_rejected": false,
       "pass": true,
-      "note": "markers present; lab ACCEPT \u2014 injection did not induce reject"
+      "note": "markers present; lab ACCEPT, injection did not induce reject"
     },
     {
       "case_id": "NP-idiomatic-pad32",
@@ -57,7 +57,7 @@
       "oracle_loss_code": 19,
       "lab_rejected": false,
       "pass": true,
-      "note": "markers present; lab ACCEPT \u2014 injection did not induce reject"
+      "note": "markers present; lab ACCEPT, injection did not induce reject"
     },
     {
       "case_id": "NP-idiomatic-pad8",
@@ -65,7 +65,7 @@
       "oracle_loss_code": 19,
       "lab_rejected": false,
       "pass": true,
-      "note": "markers present; lab ACCEPT \u2014 injection did not induce reject"
+      "note": "markers present; lab ACCEPT, injection did not induce reject"
     }
   ],
   "positive_control_pb_stop_vs_injection": [

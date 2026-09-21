@@ -36,7 +36,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!tmp)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!tmp"
         ]
@@ -64,7 +64,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!tmp)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!tmp"
         ]
@@ -92,7 +92,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!tmp)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!tmp"
         ]
@@ -120,7 +120,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!tmp)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!tmp"
         ]
@@ -148,7 +148,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!tmp)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!tmp"
         ]
@@ -176,7 +176,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!tmp)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!tmp"
         ]
@@ -204,7 +204,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!tmp)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!tmp"
         ]
@@ -232,7 +232,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!tmp)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!tmp"
         ]
@@ -260,7 +260,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!val)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!val"
         ]
@@ -288,7 +288,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!val)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!val"
         ]
@@ -316,7 +316,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!val)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!val"
         ]
@@ -344,7 +344,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!val)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!val"
         ]
@@ -372,7 +372,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!val)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!val"
         ]
@@ -400,7 +400,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!val)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!val"
         ]
@@ -428,7 +428,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!val)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!val"
         ]
@@ -456,7 +456,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!val)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!val"
         ]
@@ -484,7 +484,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!ptr)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!ptr"
         ]
@@ -512,7 +512,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!ptr)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!ptr"
         ]
@@ -540,7 +540,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!ptr)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!ptr"
         ]
@@ -568,7 +568,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!ptr)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!ptr"
         ]
@@ -596,7 +596,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!ptr)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!ptr"
         ]
@@ -624,7 +624,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!ptr)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!ptr"
         ]
@@ -652,7 +652,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!ptr)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!ptr"
         ]
@@ -680,7 +680,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!ptr)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!ptr"
         ]
@@ -708,7 +708,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!value)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!val",
           "!value"
@@ -737,7 +737,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!value)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!val",
           "!value"
@@ -766,7 +766,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!value)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!val",
           "!value"
@@ -795,7 +795,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!value)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!val",
           "!value"
@@ -824,7 +824,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!value)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!val",
           "!value"
@@ -853,7 +853,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!value)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!val",
           "!value"
@@ -882,7 +882,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!value)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!val",
           "!value"
@@ -911,7 +911,7 @@
         "name": "looks_like_null_check",
         "matched": true,
         "text": "if (!value)",
-        "notes": "matched only via name substrings \u2014 brittle under idiomatic rename",
+        "notes": "matched only via name substrings, brittle under idiomatic rename",
         "matched_patterns": [
           "!val",
           "!value"

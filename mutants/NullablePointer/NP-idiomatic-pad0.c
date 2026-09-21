@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Lab-only adversarial mutant — not for production.
+// Lab-only adversarial mutant, not for production.
 #include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
 

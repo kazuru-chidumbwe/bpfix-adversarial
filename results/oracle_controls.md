@@ -1,6 +1,6 @@
-# Oracle-independence controls (minimal, stamped)
+# Oracle-independence controls (offline, stamped lab family)
 
-Stamp filter `20260801T181331Z`. Offline only — no new lab captures.
+Stamp filter `20260801T181331Z`. Offline only, no new lab captures.
 
 | Control | Pass | n | Row tally |
 | --- | ---: | ---: | ---: |

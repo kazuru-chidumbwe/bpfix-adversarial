@@ -1,4 +1,4 @@
-# Baseline battery (rejecting primary-stamp cases)
+# Baseline battery (rejecting cases in the stamped lab family)
 
 Stamp filter `20260801T181331Z` · n=10 rejecting cases · random seed `42`.
 

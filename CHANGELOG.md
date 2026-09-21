@@ -11,9 +11,47 @@ Cite `v1.0.2`.
   note). `NP-idiomatic-nocheck.c` is left byte-identical so committed `src_sha256`
   pins stay valid.
 
-## v1.0.2 — 2026-09-03 (tag re-cut during revision)
+## v1.0.2 - 2026-09-03 (tag re-cut during revision)
 
 the paper's minor-revision cite pin (SOFTX-D-26-01022).
+
+### 2026-09-21 re-cut (previous commit `653dde7`, now `95d4184`)
+
+Folded in an external pre-submission review of the tree, before the revision was
+uploaded, so one tree is published.
+
+- Two committed insets scored against oracles that disagreed with the repository's
+  own `oracle_sites`. The synthetic fixture logs pointed their `@` paths at the
+  committed mutants while citing line numbers that do not exist there; they now
+  carry their own fixture coordinates and say so, and `score_np_pair.py` and
+  `emit_tier_table.py` read the oracle from each fixture's `ORACLE_*` annotation
+  instead of hardcoding it.
+- `tier_disagreement` published a VerifierState column set equal to the oracle
+  and then compared against it, so it could never disagree. The VS line is now
+  labelled asserted, is not scored, and the inset carries a disclaimer.
+- `four_obligation_matrix` headed its marker-comment lines `loss`/`reject`. The
+  marker and code columns are now separate and named.
+- `lab_marker_isolation_ab.py --rescore` recomputed object hashes it cannot
+  recover from log text, rewriting the inset from 1.0 to 0.0 and failing the
+  suite. Capture-time metadata is carried forward, so rescoring is idempotent,
+  and the inset is now covered by `check_results_fresh.py` rather than skipped.
+- `check_results_fresh.py` now compares `results/*.md` as well as the JSON. The
+  markdown tables are what the paper reproduces and were previously unguarded.
+- The upstream CLI version is recorded by the replay script and read by the
+  emitter instead of being asserted as a literal, and the pad-indexed replay's
+  exclusion of the omitted-check seed is recorded with a reason.
+- The random baseline reports its analytic expectation (0.645, SD 0.768) beside
+  the single drawn tally, whose standard deviation exceeds its mean.
+- `check_version_sync.py` now covers CITATION.cff and codemeta.json, version and
+  release date, which is what `docs/TAGS.md` already claimed it did.
+- New test: every `path:LINE` in the stamped captures still names the same source
+  text in the committed mutants (76/76). Suite is 44 tests.
+- `fixtures/upstream/NOTICE` carries the upstream MIT notice, pin and inventory
+  for the vendored material.
+
+No scored result changed: `sc_vs_honesty`, `rq1_lab_distance`, `rename_honesty`,
+`distance_sweep`, `upstream_obligations`, `depth21_selection` and
+`pad_rename_invariance` are unchanged.
 
 ### 2026-09-20 re-cut (previous commit `bbfebe6`)
 
@@ -31,8 +69,8 @@ No reported number changes. Existing clones: `git fetch --tags --force` (a plain
 - `.gitattributes` had no LF rule for `*.svg` (nor for `Makefile`, `Dockerfile`,
   `Vagrantfile`, `*.txt`, `*.cff`, `LICENSE`). On a default Windows clone
   (`core.autocrlf=true`) the committed figures were rewritten with CRLF and
-  `tools/check_results_fresh.py` reported them stale, so the suite ran 42/43 —
-  the paper's "44/44 on Windows" claim had never been exercised by CI, which
+  `tools/check_results_fresh.py` reported them stale, so the suite ran 42/43,
+  the paper's "43/43 on Windows" claim had never been exercised by CI, which
   runs `ubuntu-latest` only. Rules added, tree renormalized, and the CI matrix
   extended with a `windows-latest` entry that forces `core.autocrlf=true` before
   checkout, so both platforms run the same hygiene steps.
@@ -79,7 +117,7 @@ Additions:
   message and verifier-listed instruction sequence are identical across pads and
   within each rename pair.
 - Tests: generator reproduction of all 15 generated mutants, upstream classifier
-  pin, pad/rename invariance, and log source-map agreement (44 tests).
+  pin, pad/rename invariance (43 tests).
 - `tools/measure_coverage.py` (`pip install -e ".[dev]"`): single-command
   statement and branch coverage.
 - Zenodo version DOI recorded in `CITATION.cff`, `codemeta.json`,
@@ -105,14 +143,14 @@ distance, baselines 3/10 · 1/10 · 10/10, CLI replay, marker isolation 16/16).
 - CLI: UTF-8 stdout/stderr reconfigure on Windows
 - Regenerated offline results: `rq1_bpfix_cli.*`, `sc_vs_honesty.*`, `baseline_battery.*`, `oracle_controls.*`, `four_obligation_matrix.*`, `rq1_lab_distance.*`, figures
 - `emit_baseline_battery.py` / `docs/METRICS.md`: do not zero `distance_error` on a span-only hit (PP terminal `d=1`; PP-pad32 random `d=1`; top1_span rates unchanged 3/10, 1/10, 10/10)
-- `emit_figures.py`: SVG titles carry no embedded “Fig. N —” (manuscript captions are authoritative)
+- `emit_figures.py`: SVG titles carry no embedded “Fig. N” prefix (manuscript captions are authoritative)
 - `sc_vs_honesty.md` takeaways: NP-nocheck SC is a construction-determined **top1_line** hit, not a miss; informative SC sample is 3 PacketBounds rows
 - Named regression test `test_np_idiomatic_nocheck_oracle_loss_code_is_executable`
 - C2 remains GitHub `tree/v1.0.2`; Zenodo DOI archival in C7 only. Do **not** label Zenodo `10.5281/zenodo.21860453` as this version (that DOI is the **v1.0.1** archive)
 
 > **2026-09-14 note.** The `v1.0.2` tag was re-cut to fold in the offline-only refinements listed above (no-zeroing rule, regression test, figure-title cleanup, takeaway wording) so the cited GitHub tree matches the minor-revision response letter and the submitted manuscript. Headline localization outcomes are unchanged; the interim `v1.0.3` label was retired in favour of the single cited pin.
 
-## v1.0.1 — 2026-08-09
+## v1.0.1 - 2026-08-09
 
 the paper's Major/Minor revision patch (cite pin for resubmission).
 
@@ -123,7 +161,7 @@ the paper's Major/Minor revision patch (cite pin for resubmission).
 - Robustness: libbpf-anchored `lab_rejected`, named `libbpf:` regex, `oracle_loss_code` API
 - Docs: WSL environment, UPSTREAM labelling rubric, empty-span fallback, concept DOI in CITATION.cff
 
-## v1.0.0 — 2026-08-07
+## v1.0.0 - 2026-08-07
 
 First public release (initial the paper's cite pin).
 

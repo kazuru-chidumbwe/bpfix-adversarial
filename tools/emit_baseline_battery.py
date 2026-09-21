@@ -8,7 +8,7 @@ Baselines (no new lab work):
   - oracle_upper: reports oracle_loss_code (perfect injection-site tip)
 
 Compares top1_span membership (reported line in oracle_loss_span) on the same
-primary-stamp rejecting cases used in results/sc_vs_honesty.json. Distance is
+Stamped rejecting cases used in results/sc_vs_honesty.json. Distance is
 always abs(reported - oracle_loss_code); never zeroed on a span-only hit.
 """
 
@@ -150,7 +150,7 @@ def main() -> None:
     OUT_JSON.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
     lines = [
-        "# Baseline battery (rejecting primary-stamp cases)",
+        "# Baseline battery (rejecting cases in the stamped lab family)",
         "",
         f"Stamp filter `{STAMP}` · n={len(rows)} rejecting cases · random seed `{SEED}`.",
         "",

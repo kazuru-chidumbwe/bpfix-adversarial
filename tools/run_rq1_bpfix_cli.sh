@@ -45,4 +45,4 @@ for c in "${CASES[@]}"; do
   echo "ran $c rc=$rc bytes=$(wc -c < "$OUTDIR/${c}.txt")"
 done
 
-echo "DONE — next: python tools/emit_rq1_bpfix_cli.py"
+echo "DONE. Next: python tools/emit_rq1_bpfix_cli.py"

@@ -27,7 +27,7 @@ def main() -> int:
             # bare CR without LF also counts as non-LF
             bad.append(str(p.relative_to(ROOT)).replace("\\", "/"))
     if bad:
-        print("CRLF (or CR) found in log files — run: git add --renormalize fixtures/")
+        print("CRLF (or CR) found in log files. Run: git add --renormalize fixtures/")
         for b in bad:
             print(f"  {b}")
         return 1

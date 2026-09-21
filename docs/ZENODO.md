@@ -1,6 +1,6 @@
 # Zenodo archive companion for cite pin `v1.0.2`
 
-**C2:** public GitHub tree — **not** Zenodo:
+**C2:** public GitHub tree, **not** Zenodo:
 
 https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2
 

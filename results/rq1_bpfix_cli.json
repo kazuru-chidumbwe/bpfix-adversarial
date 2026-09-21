@@ -12,7 +12,7 @@
   "stamp_family": "20260801T181331Z",
   "host": "WSL (offline log replay; not lab-server)",
   "scoring": "loss-anchored; top1_line = primary==oracle_loss_code; top1_span = span membership; set_recall_message = decimal loss line in CLI text",
-  "pad_note": "scalar __pad chains DCE under clang \u2014 nearest_bpf_pc stable across pads for these templates",
+  "pad_note": "scalar __pad chains DCE under clang; nearest_bpf_pc stable across pads for these templates",
   "rows": [
     {
       "obligation": "PacketBounds",

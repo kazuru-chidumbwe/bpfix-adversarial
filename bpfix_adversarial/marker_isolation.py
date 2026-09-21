@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-"""Marker isolation helpers — strip ORACLE_* comments without shifting code lines."""
+"""Marker isolation helpers: strip ORACLE_* comments without shifting code lines."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ def strip_oracle_markers(text: str, *, preserve_lines: bool = True) -> str:
 
     When ``preserve_lines`` is True (default), each ORACLE comment line is
     replaced with an inert ``/* */`` so subsequent code keeps the same line
-    numbers — required for fair SC/VS line comparisons.
+    numbers, required for fair SC/VS line comparisons.
     """
     out_lines: list[str] = []
     for raw in text.splitlines():

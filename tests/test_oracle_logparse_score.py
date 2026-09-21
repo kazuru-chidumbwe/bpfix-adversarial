@@ -159,7 +159,7 @@ class OracleControlsInsetTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         path = ROOT / "results" / "oracle_controls.json"
         if not path.is_file():
-            raise unittest.SkipTest("oracle_controls.json missing — run emit_oracle_controls.py")
+            raise unittest.SkipTest("oracle_controls.json missing; run emit_oracle_controls.py")
         cls.payload = json.loads(path.read_text(encoding="utf-8"))
 
     def test_negative_control_all_accept_with_markers(self) -> None:

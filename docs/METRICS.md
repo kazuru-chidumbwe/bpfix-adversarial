@@ -1,4 +1,4 @@
-# Metrics — injection-site agreement
+# Metrics: injection-site agreement
 
 Cite-pin terminology. Historical script and filename strings may still say “honesty”; the **construct** scored against markers is injection-site agreement.
 
@@ -35,7 +35,7 @@ Do **not** use the bare label “top-1” for both line equality and span member
 
 Each template case declares `oracle.loss_*` and `oracle.reject_*` (source and/or insn) at generation time. Scoring never uses the diagnostic’s output as ground truth.
 
-**Independence :** markers are assigned before diagnostics run and do not read bpfix or kernel logs to choose the injection site. **Tested reporter/log invariance** (`results/marker_isolation.*`): primary-stamp logs contain no `ORACLE_*` tokens; SourceComment primary lines are invariant under line-preserving marker neutralization; Ubuntu 6.8 lab bearing/neutral compile+load yields identical verdicts and normalized verifier logs. Debug (`-O2 -g`) object identity is **not** invariant: on the Ubuntu A/B campaign both `.BTF` and `.BTF.ext` section dumps differ (`llvm-objdump -s -j`; 16/16). That comparison does **not** isolate an effect of marker text — the two `-g` arms compile under variant-specific file names and the section hashes are taken over `llvm-objdump -s` output, which embeds the object path — so no debug-section invariance is claimed either way. DWARF was not compared. Scoring still reads markers via `oracle_sites` for ground truth only. This harness still does **not** claim these markers equal a machine-verified verifier-state transition (semantic proof-loss). That stronger oracle is future work.
+**Independence:** markers are assigned before diagnostics run and do not read bpfix or kernel logs to choose the injection site. **Tested reporter/log invariance** (`results/marker_isolation.*`): the stamped logs contain no `ORACLE_*` tokens; SourceComment primary lines are invariant under line-preserving marker neutralization; Ubuntu 6.8 lab bearing/neutral compile+load yields identical verdicts and normalized verifier logs. Debug (`-O2 -g`) object identity is **not** invariant: on the Ubuntu A/B campaign both `.BTF` and `.BTF.ext` section dumps differ (`llvm-objdump -s -j`; 16/16). That comparison does **not** isolate an effect of marker text. The two `-g` arms compile under variant-specific file names and the section hashes are taken over `llvm-objdump -s` output, which embeds the object path, so no debug-section invariance is claimed either way. DWARF was not compared. Scoring still reads markers via `oracle_sites` for ground truth only. This harness still does **not** claim these markers equal a machine-verified verifier-state transition (semantic proof-loss). That stronger oracle is future work.
 
 **Scoring rule (locked):** top1_line, top1_span, and distance_error are always computed against the construction-time **injection** site. When injection and reject/use markers diverge, do **not** score against the marked reject/use line.
 
@@ -43,7 +43,7 @@ Each template case declares `oracle.loss_*` and `oracle.reject_*` (source and/or
 
 | Concept | Rule |
 | --- | --- |
-| Marker lines | Comment lines containing `ORACLE_LOSS_LINE` / `ORACLE_REJECT_LINE` (names kept for fixture compatibility; paper prose: injection / terminal-or-use span). `ORACLE_REJECT_LINE` is **author-assigned source** (expected use or terminal *source* site)—not the kernel’s terminal verifier instruction and not a compiler-emitted BPF insn index. |
+| Marker lines | Comment lines containing `ORACLE_LOSS_LINE` / `ORACLE_REJECT_LINE` (names kept for fixture compatibility; paper prose: injection / terminal-or-use span). `ORACLE_REJECT_LINE` is **author-assigned source** (expected use or terminal *source* site), not the kernel’s terminal verifier instruction and not a compiler-emitted BPF insn index. |
 | Line numbering | **One-based** lines in the mutant source file as stored (pre-preprocessor). `#` lines are preprocessor directives and are skipped when building the executable span; they can appear inside a marker span but do not count as executable. |
 | First executable line | Determined on the **pre-preprocessor** mutant text: first non-blank, non-comment, non-`#`, non-pad line strictly between markers (`oracle.py`). |
 | Effective injection span | Executable lines strictly between markers; skip blanks, `//` `/*` comments, `#` preprocessor, and distance pads (`__pad` / `distance pad`) |
@@ -69,7 +69,7 @@ Lab captures use clang **`-O2 -g -target bpf`** so the verifier log carries BTF-
 
 ## Log normalization contract (marker A/B)
 
-Implemented by `tools/lab_marker_isolation_ab.py::normalize_log_body`. Used only to compare bearing vs neutral verifier logs for reporter/log invariance—not as a second scoring channel.
+Implemented by `tools/lab_marker_isolation_ab.py::normalize_log_body`. Used only to compare bearing vs neutral verifier logs for reporter/log invariance, not as a second scoring channel.
 
 | Rule | Behavior |
 | --- | --- |

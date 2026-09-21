@@ -43,7 +43,7 @@ ADVERSARIAL_SCOPE = (
 
 
 class ProofEventEvidence(str, Enum):
-    """Evidence tier — load-bearing shared design with adjacent eBPF work."""
+    """Evidence tier; load-bearing shared design with adjacent eBPF work."""
 
     SOURCE_COMMENT = "SourceComment"
     VERIFIER_STATE = "VerifierState"

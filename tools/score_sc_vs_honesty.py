@@ -3,7 +3,7 @@
 """SC vs VS honesty on lab-captured mutants (loss-anchored scoring).
 
 General rule (locked): top-1 and distance are measured against the construction-time
-**loss** site whenever loss and reject markers diverge — not against the marked
+**loss** site whenever loss and reject markers diverge, not against the marked
 reject/use line.
 
 SourceComment (SC): bpfix heuristic port on mutant source.
@@ -146,7 +146,7 @@ def sc_report(src: Path, obligation: str, case_id: str) -> tuple[int | None, str
         return None, "SC: no scalar-guard line present to match (expected on unbound-index templates)"
 
     if obligation == "PointerProvenance":
-        return None, "SC: N/A — no PP-specific SourceComment heuristic (upstream coverage gap)"
+        return None, "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
 
     return None, f"SC: unknown obligation ({obligation})"
 
@@ -211,7 +211,7 @@ def score_reported(
         "applicable": True,
         "top1_line": top1_line if reported is not None else False,
         "top1_span": top1_span,
-        "top1_vs_loss": top1_span,  # legacy alias — lab inset used span membership
+        "top1_vs_loss": top1_span,  # legacy alias; the lab inset used span membership
         "distance_true": h["distance_true"],
         "distance_error": h["distance_error"],
         "signed_offset": h.get("signed_offset"),
@@ -242,7 +242,7 @@ def main() -> None:
             rejected = lab_rejected(text)
             vs_line, vs_txt, vs_note = vs_stop_line(text)
             if not rejected:
-                vs_note = "VS: load accepted — stop-site N/A for reject honesty"
+                vs_note = "VS: load accepted; stop-site N/A for reject honesty"
                 # still record last map for transparency but don't claim honesty
             log_rel = str(log.relative_to(ROOT)).replace("\\", "/")
             log_sha = sha256_file(log)
@@ -324,7 +324,7 @@ def main() -> None:
     out_json.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
     lines = [
-        "# SC vs VS injection-site agreement — lab stamp family `20260801T181331Z`",
+        "# SC vs VS injection-site agreement, lab stamp family `20260801T181331Z`",
         "",
         "Scoring: **top1_line** (`predicted == oracle_loss_code`); **top1_span**",
         "(membership in injection span); **distance_error** `|predicted − oracle_loss_code|`.",
@@ -347,12 +347,12 @@ def main() -> None:
 
     for r in rows:
         span = r["oracle_loss_span"]
-        span_s = ",".join(str(x) for x in span) if span else "—"
-        sc_line_s = "—" if not r.get("sc_applicable", True) else (r["sc_reported_line"] or "—")
+        span_s = ",".join(str(x) for x in span) if span else "n/a"
+        sc_line_s = "n/a" if not r.get("sc_applicable", True) else (r["sc_reported_line"] or "n/a")
         lines.append(
             f"| {r['obligation']} | `{r['case_id']}` | {span_s} | "
             f"{sc_line_s} | {yn(r['sc_top1_line'])} | {yn(r['sc_top1_span'])} | "
-            f"{r['vs_reported_line'] or '—'} | {yn(r['vs_top1_line'])} | {yn(r['vs_top1_span'])} | "
+            f"{r['vs_reported_line'] or 'n/a'} | {yn(r['vs_top1_line'])} | {yn(r['vs_top1_span'])} | "
             f"{yn(r['lab_rejected'])} | {yn(r['disagreement'])} |"
         )
 
@@ -434,7 +434,7 @@ def main() -> None:
         "",
         "- **PP:** SC is N/A (no upstream provenance heuristic). VS **top1_span** hits "
         "the XOR wash (coincides with author injection span; **top1_line** may miss if "
-        "the map is not the first executable line) — not a semantic proof-loss claim.",
+        "the map is not the first executable line). This is not a semantic proof-loss claim.",
         "- **SR:** No scalar-guard `if` line is present to match on unbound-index templates "
         "(SC miss by construction). VS reports the stack load (reject/use), not the unbound "
         "`idx` assignment (loss).",
@@ -443,7 +443,7 @@ def main() -> None:
         "`looks_like_packet_bounds_check` is the injection line, which a first-match "
         "reporter cannot miss.",
         "- **NP-nocheck:** SC **top1_line** hits the lookup (empty-span fallback + "
-        "nullable-return nocheck predicate — construction-determined); VS reports the "
+        "nullable-return nocheck predicate, construction-determined); VS reports the "
         "reject deref (miss).",
         f"- All {n_rej} rejecting rows have construction-determined SC outcomes "
         f"({sc_breakdown}): the inset "

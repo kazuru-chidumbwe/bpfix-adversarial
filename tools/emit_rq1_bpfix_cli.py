@@ -176,7 +176,7 @@ def main() -> None:
         "stamp_family": "20260801T181331Z",
         "host": "WSL (offline log replay; not lab-server)",
         "scoring": "loss-anchored; top1_line = primary==oracle_loss_code; top1_span = span membership; set_recall_message = decimal loss line in CLI text",
-        "pad_note": "scalar __pad chains DCE under clang — nearest_bpf_pc stable across pads for these templates",
+        "pad_note": "scalar __pad chains DCE under clang; nearest_bpf_pc stable across pads for these templates",
         "rows": rows,
     }
     OUT_JSON.write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
@@ -186,7 +186,7 @@ def main() -> None:
             return "yes"
         if v is False:
             return "no"
-        return "—"
+        return "n/a"
 
     lines = [
         "# Upstream bpfix CLI localizations (lab pad reject-oracles, offline replay)",
@@ -203,7 +203,7 @@ def main() -> None:
         lines.append(
             f"| {r['obligation']} | `{r['case_id']}` | {r['pad']} | {r['d_true_src']} | "
             f"{r['bpfix_primary_src']} | {r['bpfix_nearest_pc']} | {yn(r['bpfix_top1_line'])} | "
-            f"{yn(r['bpfix_top1_span'])} | {derr if derr is not None else '—'} | "
+            f"{yn(r['bpfix_top1_span'])} | {derr if derr is not None else 'n/a'} | "
             f"{yn(r['bpfix_set_recall_message'])} |"
         )
 
@@ -217,17 +217,17 @@ def main() -> None:
         "- **PacketBounds:** primary `-->` tracks the wide load (reject). Under **top1_line** "
         "this is a miss; `d_err` tracks pad "
         f"({', '.join(str(r['bpfix_distance_error']) for r in pb)}). "
-        "The E001 snippet still *mentions* the narrow `data_end` check (loss) as related context — "
+        "The E001 snippet still *mentions* the narrow `data_end` check (loss) as related context. "
         "`set_recall_message = yes`. This is **not** a contradiction with `rq1_lab_distance.*` "
         "(SC port: PB **top1_line** hit, construction-determined): SC keys on contextual loss "
         "pickup; CLI primary is the headline location. Both are correct measurements of "
         "different things (headline vs full message).",
         "- **PointerProvenance:** primary lands on a later XOR-wash line in the loss **span** "
         f"(top1_line={yn(all(r['bpfix_top1_line'] for r in pp))}; "
-        f"top1_span={yn(all(r['bpfix_top1_span'] for r in pp))}); nearest PC stable (DCE) — "
+        f"top1_span={yn(all(r['bpfix_top1_span'] for r in pp))}); nearest PC stable (DCE). "
         "span hit without exact first-line hit.",
         "- **ScalarRange:** primary stays on the unbound stack load (reject); loss (`prandom` idx) "
-        f"not in snippet — miss (top1_line={yn(any(r['bpfix_top1_line'] for r in sr))}), matching lab SC/VS.",
+        f"not in snippet, so a miss (top1_line={yn(any(r['bpfix_top1_line'] for r in sr))}), matching lab SC/VS.",
         "- Offline WSL replay of stamped lab logs (not lab-server): bpfix diagnoses log text and does "
         "not re-verify, so the offline host is not a kernel-version confound.",
         "- Complements `rq1_lab_distance.*` (SC-port / VS stop-site) with native upstream CLI output "

@@ -1,6 +1,6 @@
 # Marker isolation (construct validity)
 
-primary-stamp filter `20260801T181331Z`. Offline suite always; lab A/B when host reachable.
+Stamp filter `20260801T181331Z`. Offline suite always; lab A/B when host reachable.
 
 | Check | Pass | n |
 | --- | ---: | ---: |

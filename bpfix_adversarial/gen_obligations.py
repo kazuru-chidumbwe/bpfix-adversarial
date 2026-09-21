@@ -13,7 +13,7 @@ def pointer_provenance_src(*, pad: int = 0, case_id: str) -> str:
 
     Plain (__u64)data casts are optimized away; the verifier keeps pkt type.
     Retune: XOR with bpf_get_prandom_u32() so the address becomes an unbound
-    scalar — expect reject (invalid mem access / scalar). Bounds-check first
+    scalar; expect reject (invalid mem access / scalar). Bounds-check first
     so failure is provenance wash, not PacketBounds under-check.
     """
     pad_block = pad_nops_c(pad)
@@ -25,7 +25,7 @@ int pp_pad{pad}(struct xdp_md *ctx)
 \tvoid *data_end = (void *)(long)ctx->data_end;
 \tif (data + 8 > data_end)
 \t\treturn XDP_DROP;
-\t/* ORACLE_LOSS_LINE: provenance washed — pkt pointer XOR prandom → scalar */
+\t/* ORACLE_LOSS_LINE: provenance washed, pkt pointer XOR prandom → scalar */
 \t__u64 cookie = (__u64)data;
 \tcookie ^= bpf_get_prandom_u32();
 {pad_block}\t/* ORACLE_REJECT_LINE: dereference unbound scalar as pointer */
@@ -38,7 +38,7 @@ char _license[] SEC("license") = "MIT";
 
 
 def scalar_range_src(*, pad: int = 0, case_id: str) -> str:
-    """Unbounded stack index — genuine scalar-range violation.
+    """Unbounded stack index, a genuine scalar-range violation.
 
     Prior template used ARRAY bpf_map_lookup_elem(prandom); the helper returns
     NULL for OOB keys, so the program never rejected. Retune: index a fixed
@@ -70,7 +70,7 @@ int pb_pad{pad}(struct xdp_md *ctx)
 {{
 \tvoid *data = (void *)(long)ctx->data;
 \tvoid *data_end = (void *)(long)ctx->data_end;
-\t/* ORACLE_LOSS_LINE: under-check — only 1 byte proven */
+\t/* ORACLE_LOSS_LINE: under-check, only 1 byte proven */
 \tif (data + 1 > data_end)
 \t\treturn XDP_DROP;
 {pad_block}\t/* ORACLE_REJECT_LINE: 8-byte load needs larger packet range */

@@ -6,7 +6,7 @@ Pinned to eunomia-bpf/bpfix commit 81d97e4a528456e0082a77f4fb6edd13fa092b7b
 character-for-character. The harness *reporter* around them is not identical to
 upstream bpfix: we scan raw mutant C top-down for the first match, whereas
 upstream parses verifier-log source comments and selects via
-``latest_source_before``. Do not "improve" these predicates here — the harness
+``latest_source_before``. Do not "improve" these predicates here; the harness
 measures *their* localization under adversarial renaming / distance.
 """
 
@@ -55,7 +55,7 @@ def looks_like_null_check(text: str) -> bool:
 
 
 def looks_like_nullable_return(text: str) -> bool:
-    """Helper-anchored — rename-insensitive (contrast with looks_like_null_check)."""
+    """Helper-anchored and rename-insensitive (contrast with looks_like_null_check)."""
     return any(
         h in text
         for h in (
@@ -98,7 +98,7 @@ def null_check_match_detail(text: str) -> HeuristicHit:
     )
     notes = ""
     if matched and name_only:
-        notes = "matched only via name substrings — brittle under idiomatic rename"
+        notes = "matched only via name substrings, brittle under idiomatic rename"
     elif matched:
         notes = "matched (structural and/or name patterns)"
     elif lower.startswith("if ") and "!" in lower:

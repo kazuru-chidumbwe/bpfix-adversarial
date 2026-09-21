@@ -1,4 +1,4 @@
-; fixture verifier log — NullablePointer brittle name (ptr)
+; fixture verifier log: NullablePointer brittle name (ptr)
 ; Line numbers below are this fixture's own; they are not lines in the committed mutant.
 ; Simulates log_level=2 source comments for SourceComment tier scoring.
 ; NOT a captured kernel log; lab runner replaces with real bpftool output on Linux.
@@ -14,5 +14,5 @@
 20: (79) r0 = *(u64 *)(r0 +0)
 processed 21 insns
 
-; VERIFIER_STATE_LOSS_PC=1 (nullable cleared at check — honest establish)
+; VERIFIER_STATE_LOSS_PC=1 (nullable cleared at check, honest establish)
 ; ORACLE_LOSS_LINE=14 ORACLE_REJECT_LINE=24

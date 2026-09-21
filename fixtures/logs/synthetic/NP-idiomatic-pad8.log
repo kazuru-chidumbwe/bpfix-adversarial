@@ -1,4 +1,4 @@
-; fixture verifier log — NullablePointer idiomatic rename (entry)
+; fixture verifier log: NullablePointer idiomatic rename (entry)
 ; Line numbers below are this fixture's own; they are not lines in the committed mutant.
 ; Same structure as brittle; SourceComment should MISS looks_like_null_check.
 

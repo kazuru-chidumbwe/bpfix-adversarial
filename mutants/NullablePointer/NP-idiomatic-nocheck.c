@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Lab-only adversarial mutant — not for production.
+// Lab-only adversarial mutant, not for production.
 // RQ4 honesty≠utility arm: same idiomatic `entry` naming as NP-idiomatic-pad8,
 // but the null check is deliberately omitted so the program fails verification.
 // Construction oracle: proof is lost because the required null check was never

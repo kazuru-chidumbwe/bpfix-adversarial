@@ -12,7 +12,7 @@ test:
 rename-demo:
 	python -m bpfix_adversarial rename-demo --breaks-only --limit 2
 
-# Offline SoftwareX inset emitters (no lab SSH).
+# Offline inset emitters (no lab SSH).
 insets:
 	python tools/emit_rename_table.py
 	python tools/emit_distance_sweep.py

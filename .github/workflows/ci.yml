@@ -1,4 +1,4 @@
-# CI — unit tests + release hygiene
+# CI: unit tests and release hygiene
 
 name: ci
 
@@ -19,7 +19,7 @@ jobs:
         # in .gitattributes that rewrites the committed SVGs and
         # check_results_fresh.py reports them stale, so the paper's "44/44 on
         # Windows" claim needs testing on a checkout that actually converts
-        # line endings. Same steps as Linux — one source of truth.
+        # line endings. Same steps as Linux, one source of truth.
         include:
           - os: windows-latest
             python-version: "3.12"

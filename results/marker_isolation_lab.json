@@ -1,7 +1,6 @@
 {
   "generator": "tools/lab_marker_isolation_ab.py",
   "run_stamp": "20260807T185821Z",
-  "softwarex_stamp_filter": "20260801T181331Z",
   "host_probe": "app-test-server\r\n6.8.0-136-generic\r\nUbuntu clang version 18.1.3 (1ubuntu1)\r\nbpftool v7.4.0",
   "n_pairs": 16,
   "summary": {
@@ -41,7 +40,7 @@
           "return *ptr;",
           "}"
         ],
-        "normalized_log_sha256": "34c3638161ebea47919cd8fa67d467c832d06455a51f7b553204d83dbe8bd178",
+        "normalized_log_sha256": "684e3629565186e100bf4f320ef95759c5a5022ac99cde95113020506135c1a6",
         "has_oracle_token_in_log": false,
         "obj_sha256": "e09cb89643566bc40528bf8083fa7b4a69ff84002def12cc61a1ff0ee31f1e0b",
         "disasm_sha256": "b8f5690fdffc050a973e6aa6b13dde06c8204719a2cfdda48ec1917d05c1b006",
@@ -69,7 +68,7 @@
           "return *ptr;",
           "}"
         ],
-        "normalized_log_sha256": "34c3638161ebea47919cd8fa67d467c832d06455a51f7b553204d83dbe8bd178",
+        "normalized_log_sha256": "684e3629565186e100bf4f320ef95759c5a5022ac99cde95113020506135c1a6",
         "has_oracle_token_in_log": false,
         "obj_sha256": "3f1aa39a1a2e69ed149651c7cdb699c607a55302f3194d47aff6de1543a24952",
         "disasm_sha256": "e50cc98011dc13edcff3f117610a51908c770a664fa6b2f443a7855359513ae6",
@@ -113,7 +112,7 @@
           "return *ptr;",
           "}"
         ],
-        "normalized_log_sha256": "1cc0681fb2007a8deb40ecd790bd40ee2c1d063a24df8a1850f976f92df4ca97",
+        "normalized_log_sha256": "af58fa323535d8feb0d534f7652dfc93d6b78a07ab4ecf6a8532d430df94af1f",
         "has_oracle_token_in_log": false,
         "obj_sha256": "9e2fbf0a0971fb1ee6dec72734eb40ab78ef31aa7f8f7ceff91a46da67dfb832",
         "disasm_sha256": "2086db65658d032b6150dab6e64e277a6a590f45dde79b013e93cef8f0d151c4",
@@ -141,7 +140,7 @@
           "return *ptr;",
           "}"
         ],
-        "normalized_log_sha256": "1cc0681fb2007a8deb40ecd790bd40ee2c1d063a24df8a1850f976f92df4ca97",
+        "normalized_log_sha256": "af58fa323535d8feb0d534f7652dfc93d6b78a07ab4ecf6a8532d430df94af1f",
         "has_oracle_token_in_log": false,
         "obj_sha256": "1a61a3fcaa8cb2ea411edec8c7dbecee796c04bb3690a4f8ff1a2cb63406ddde",
         "disasm_sha256": "93beabc71c08727d98f85a397f9f8fc63df78b3333ecb1bda073d94982fbbd87",
@@ -185,7 +184,7 @@
           "return *ptr;",
           "}"
         ],
-        "normalized_log_sha256": "038ffad0d691d1739b7029b120e63e1fd68202bb6dd3d62b81924030558dccb9",
+        "normalized_log_sha256": "4b3f6856553e77de02aa8ee13146452786e116d11ddda26ff24195b8eb43458f",
         "has_oracle_token_in_log": false,
         "obj_sha256": "64e5c40f9e1669b7f93e62f7406c95e8cd0f4faac3ff493555b73a45c36dd12d",
         "disasm_sha256": "c623b72896973c82a1c677a9d1bef933508186f75e0ef0032445d1d56bd76d52",
@@ -213,7 +212,7 @@
           "return *ptr;",
           "}"
         ],
-        "normalized_log_sha256": "038ffad0d691d1739b7029b120e63e1fd68202bb6dd3d62b81924030558dccb9",
+        "normalized_log_sha256": "4b3f6856553e77de02aa8ee13146452786e116d11ddda26ff24195b8eb43458f",
         "has_oracle_token_in_log": false,
         "obj_sha256": "9e11e8947988653870972d2721ec852b1e89ac67a4e4daa77b78fb74b6654aa4",
         "disasm_sha256": "6094f39c8ab85b649fe59f76f8a6602a70c825dcdc3b6da0ed1dcb4a7543e6dd",
@@ -255,7 +254,7 @@
           "__u64 *entry = bpf_map_lookup_elem(&m, &key);",
           "return *entry;"
         ],
-        "normalized_log_sha256": "2471aaa85126115d903c5587237a103fd6f64515ca8faab5f828908dbd172e45",
+        "normalized_log_sha256": "d5ca4c0c5c6e0e1ace1327677d8d89592a7847952ee7f3610655dc86e6e6e617",
         "has_oracle_token_in_log": false,
         "obj_sha256": "6ca2a34e0010ff7cea9bf1ef3f7151aea97792d2d588b767b9bbd756533fa6cc",
         "disasm_sha256": "40b7a85e9324acf9d5a09adc11d327af3c081d432f777ca7362384775f6084c4",
@@ -281,7 +280,7 @@
           "__u64 *entry = bpf_map_lookup_elem(&m, &key);",
           "return *entry;"
         ],
-        "normalized_log_sha256": "2471aaa85126115d903c5587237a103fd6f64515ca8faab5f828908dbd172e45",
+        "normalized_log_sha256": "d5ca4c0c5c6e0e1ace1327677d8d89592a7847952ee7f3610655dc86e6e6e617",
         "has_oracle_token_in_log": false,
         "obj_sha256": "56c8945df250bf0127b5d28fa59440274f6331bbb5ad375e14ed030476581dd8",
         "disasm_sha256": "f942ce11a2680eb097c5ed6ac3a67311e1f58931ac6d6ff3969f8a8b44125338",
@@ -325,7 +324,7 @@
           "return *entry;",
           "}"
         ],
-        "normalized_log_sha256": "5a0324cd3f86ade71e923eee0b578b747347c9cf4b001ec63e4ae44cd56d3ae8",
+        "normalized_log_sha256": "5fa7468bd643a38b0341eb6e64eec5e2b008833cc419347a96a3bb9db57a89ed",
         "has_oracle_token_in_log": false,
         "obj_sha256": "d4e864dec5c6f56bf95c6649b46d3b7d9a83ea0ccd8c629078e9e5967648728b",
         "disasm_sha256": "c97ea511cf8ff81b7fd9342e3ace83e74fbc5b4a6c241ca232a93fa3d396abbe",
@@ -353,7 +352,7 @@
           "return *entry;",
           "}"
         ],
-        "normalized_log_sha256": "5a0324cd3f86ade71e923eee0b578b747347c9cf4b001ec63e4ae44cd56d3ae8",
+        "normalized_log_sha256": "5fa7468bd643a38b0341eb6e64eec5e2b008833cc419347a96a3bb9db57a89ed",
         "has_oracle_token_in_log": false,
         "obj_sha256": "64db3d8587ab77688265cc4e4951bc6ca474dbdf2937c45dc298cab5580f37d1",
         "disasm_sha256": "aa5f7dcfbe5182e550ac0cb5daf534cb1be82a096ef865c2d76b091c63403941",
@@ -397,7 +396,7 @@
           "return *entry;",
           "}"
         ],
-        "normalized_log_sha256": "cc0a503aa58eeed50c573b4386f47bb86782b77bd729969f72d27e4b3909a048",
+        "normalized_log_sha256": "63b2f3ec8c6492b2982428d754e048c5290f8f51f5c8cc1bf3d14f0bed326415",
         "has_oracle_token_in_log": false,
         "obj_sha256": "effcca590151f10d91aaabd7994a1ceeed7dfc5a74ccb23302db73a725aa1c93",
         "disasm_sha256": "37b29e9a79f8ae6f4e2175d8c9a256caabce5629b1b2f208d46171415c7afd73",
@@ -425,7 +424,7 @@
           "return *entry;",
           "}"
         ],
-        "normalized_log_sha256": "cc0a503aa58eeed50c573b4386f47bb86782b77bd729969f72d27e4b3909a048",
+        "normalized_log_sha256": "63b2f3ec8c6492b2982428d754e048c5290f8f51f5c8cc1bf3d14f0bed326415",
         "has_oracle_token_in_log": false,
         "obj_sha256": "8bab4c760e63bb545bc1792b2805b12ba998cefbec2938dffd2304fb914321d0",
         "disasm_sha256": "803cd804297fd8307f8b874f40f83891b5a2f85ec7fbc3fd20fc687e6025809f",
@@ -469,7 +468,7 @@
           "return *entry;",
           "}"
         ],
-        "normalized_log_sha256": "5784b3a57a386e7510e1c27118ddfb5c1f9b146a6d826b0a603e18a34d6ffc38",
+        "normalized_log_sha256": "eb7c6a5d541597ff9717f3d5648b6be2cfa88e938ad908cddd240824a3ebcfd2",
         "has_oracle_token_in_log": false,
         "obj_sha256": "b8ca2d3fad6c2e081bd6652b0dd411e63e4db0fb7e5b595e8564850f3c97915c",
         "disasm_sha256": "07cc71076218e421488f09a28950561127dc3ead9701e00bbba87962827a0a8c",
@@ -497,7 +496,7 @@
           "return *entry;",
           "}"
         ],
-        "normalized_log_sha256": "5784b3a57a386e7510e1c27118ddfb5c1f9b146a6d826b0a603e18a34d6ffc38",
+        "normalized_log_sha256": "eb7c6a5d541597ff9717f3d5648b6be2cfa88e938ad908cddd240824a3ebcfd2",
         "has_oracle_token_in_log": false,
         "obj_sha256": "5b23a97c158ea1b3c70507678650e61f00f8e79802b60f8728e4dd17c68fe6e4",
         "disasm_sha256": "6f7934649919da0f534280687084a3e500d6b8a550dca39fb36c9914a0d12e16",
@@ -541,7 +540,7 @@
           "if (data + 1 > data_end)",
           "return *(__u64 *)data;"
         ],
-        "normalized_log_sha256": "cd3f9325087476fb4ed4f5bcd225e60dd64eb5e2c6bb96b01e5b8f20fff6fa8f",
+        "normalized_log_sha256": "24c6e8337500ddc5c6181addd197c9cdfb1c4c51881f9632e671db17c7a45903",
         "has_oracle_token_in_log": false,
         "obj_sha256": "74910d7a0a451a26230059fd87fc977d0a6c16caa5c379718ba8c188f7ea11ab",
         "disasm_sha256": "1b45a3a14a0fcac2c3a76f00a687b30d68b8384ab4648366b573e350fe95f98f",
@@ -569,7 +568,7 @@
           "if (data + 1 > data_end)",
           "return *(__u64 *)data;"
         ],
-        "normalized_log_sha256": "cd3f9325087476fb4ed4f5bcd225e60dd64eb5e2c6bb96b01e5b8f20fff6fa8f",
+        "normalized_log_sha256": "24c6e8337500ddc5c6181addd197c9cdfb1c4c51881f9632e671db17c7a45903",
         "has_oracle_token_in_log": false,
         "obj_sha256": "260b5590a5e6040bc2c38ebcbccb72f983a2b2c0862e5c58f0d6c6f73ee5f776",
         "disasm_sha256": "e5af16272b8082255e97fe29ea811c1f4ce02360a109e953a69992c671254457",
@@ -613,7 +612,7 @@
           "if (data + 1 > data_end)",
           "return *(__u64 *)data;"
         ],
-        "normalized_log_sha256": "b06eb856779e536e664acc67a1d6ed32037ac5326de16088017d0b73d3efd8c7",
+        "normalized_log_sha256": "ba4d51f38580cf033112197cafc892f5c6ef725ba2394f441b21ea2d3e8d67d0",
         "has_oracle_token_in_log": false,
         "obj_sha256": "14d55ecf36d87c072135d1f97da94f3f504a294f2ba6a2d16ea9940e8d9ff664",
         "disasm_sha256": "e602c5b3f705571860a008998a13091d57c65072ddbc1ba85770a9226dba010b",
@@ -641,7 +640,7 @@
           "if (data + 1 > data_end)",
           "return *(__u64 *)data;"
         ],
-        "normalized_log_sha256": "b06eb856779e536e664acc67a1d6ed32037ac5326de16088017d0b73d3efd8c7",
+        "normalized_log_sha256": "ba4d51f38580cf033112197cafc892f5c6ef725ba2394f441b21ea2d3e8d67d0",
         "has_oracle_token_in_log": false,
         "obj_sha256": "a552abfbb273d78b16d87c67e57951e6b7622bc5d74621c0c71fc7a81967a7d0",
         "disasm_sha256": "1cb3010a4beaea89f969846e0075bcd6ed289892a5a2a87d56500cb293b8183b",
@@ -685,7 +684,7 @@
           "if (data + 1 > data_end)",
           "return *(__u64 *)data;"
         ],
-        "normalized_log_sha256": "2c26c86dd5511efe0dd67ae8bbc18618b13e19c85c408f0699aabb60f4c39a20",
+        "normalized_log_sha256": "5551e608e7d24a28abf0f71dcf6a7f958a02d56f0ec99b2a270a00fcb1422c7c",
         "has_oracle_token_in_log": false,
         "obj_sha256": "64a5e8fabfd873db44d1fc6f7a6e6d441b174250ce3d7a5ad359df73a3b0a5e8",
         "disasm_sha256": "92685012ba962e4b93d2e9a7dcd18ca5a05a04c6f11107ae672717d65441f3a7",
@@ -713,7 +712,7 @@
           "if (data + 1 > data_end)",
           "return *(__u64 *)data;"
         ],
-        "normalized_log_sha256": "2c26c86dd5511efe0dd67ae8bbc18618b13e19c85c408f0699aabb60f4c39a20",
+        "normalized_log_sha256": "5551e608e7d24a28abf0f71dcf6a7f958a02d56f0ec99b2a270a00fcb1422c7c",
         "has_oracle_token_in_log": false,
         "obj_sha256": "02ff11a29c64ca6b1276ec71410d2b542d35913941332eeb7ed50b7ddcae0fad",
         "disasm_sha256": "e4e805c79f609b5be9dcd7682727f28a43579a2d0060164e8ce5f120f3b5f804",
@@ -758,7 +757,7 @@
           "cookie ^= bpf_get_prandom_u32();",
           "cookie ^= bpf_get_prandom_u32();"
         ],
-        "normalized_log_sha256": "72da9d35127f8549f70fca69a81c0b475c05189c361ae18f015ea429f5c2c211",
+        "normalized_log_sha256": "bba2520a44f14b4ca4af5d9e0ab4cf9999ebfadb376b2b57d09d28d8e683bcf3",
         "has_oracle_token_in_log": false,
         "obj_sha256": "753faab7fa8da2787640ca06317156c27b63bc331109b7f9055adb057892462c",
         "disasm_sha256": "4a7145bec6d41a87b5f1e115dbd8b3446ada6ae431a63bc6777a668bb8eef334",
@@ -787,7 +786,7 @@
           "cookie ^= bpf_get_prandom_u32();",
           "cookie ^= bpf_get_prandom_u32();"
         ],
-        "normalized_log_sha256": "72da9d35127f8549f70fca69a81c0b475c05189c361ae18f015ea429f5c2c211",
+        "normalized_log_sha256": "bba2520a44f14b4ca4af5d9e0ab4cf9999ebfadb376b2b57d09d28d8e683bcf3",
         "has_oracle_token_in_log": false,
         "obj_sha256": "cf408113b4e6bf9d7f898046b2545b0caa2bf74705b3cd4e7f3aada02a140eea",
         "disasm_sha256": "95088f750c0b93717a5cc84a1ecdbc37f81ed6f74b4bd3f3d8435855dd553623",
@@ -832,7 +831,7 @@
           "cookie ^= bpf_get_prandom_u32();",
           "cookie ^= bpf_get_prandom_u32();"
         ],
-        "normalized_log_sha256": "b6ccdfa8d5241f78d6dd236bc37a90096c2b997d58b76a6078319d3f22345367",
+        "normalized_log_sha256": "4a2f8c16165d633f71ef8644364b9d60ac15e91803640306ab39fb7325f8196f",
         "has_oracle_token_in_log": false,
         "obj_sha256": "1e8508bef6667e991456746e71770fea23e296d8a6816585c629a8631cf5b559",
         "disasm_sha256": "bbe03ca531e5f0c2c6a08364368031396f2d9f955a61cc80058803a31376bea6",
@@ -861,7 +860,7 @@
           "cookie ^= bpf_get_prandom_u32();",
           "cookie ^= bpf_get_prandom_u32();"
         ],
-        "normalized_log_sha256": "b6ccdfa8d5241f78d6dd236bc37a90096c2b997d58b76a6078319d3f22345367",
+        "normalized_log_sha256": "4a2f8c16165d633f71ef8644364b9d60ac15e91803640306ab39fb7325f8196f",
         "has_oracle_token_in_log": false,
         "obj_sha256": "b928e41bb77f46ce92d339c1bd68ce95ddc7f8600921dbc2183a2b359c220076",
         "disasm_sha256": "22ae05d0bdd036aad9b2ee040ccdb11388787ef0e44b443076c936f399d30285",
@@ -906,7 +905,7 @@
           "cookie ^= bpf_get_prandom_u32();",
           "cookie ^= bpf_get_prandom_u32();"
         ],
-        "normalized_log_sha256": "fc6d79b55f8deb650c6750fd333cd1b2ac86b8682ae98e68bd254fcde847e52d",
+        "normalized_log_sha256": "c7055c0f9070bad4871d7be949aa53a44d958bd2b2c5eec25ac73ba463ea334c",
         "has_oracle_token_in_log": false,
         "obj_sha256": "b18b19dc9e55c41430f24e6947dface37c55cd3bcd3d3e177930ba5a4d68fdb9",
         "disasm_sha256": "b2d89d853ad54b972c53a4eee1ae4c0299a2e9a3f55c1ad48e42d3b457183a55",
@@ -935,7 +934,7 @@
           "cookie ^= bpf_get_prandom_u32();",
           "cookie ^= bpf_get_prandom_u32();"
         ],
-        "normalized_log_sha256": "fc6d79b55f8deb650c6750fd333cd1b2ac86b8682ae98e68bd254fcde847e52d",
+        "normalized_log_sha256": "c7055c0f9070bad4871d7be949aa53a44d958bd2b2c5eec25ac73ba463ea334c",
         "has_oracle_token_in_log": false,
         "obj_sha256": "8afa4113671315a01e3b214312f4fae3276c3f1e1acdcd7dd093e10e751557a6",
         "disasm_sha256": "03a787a58f61bc4880a12235addfaa61efd4ceeb75ce4dee252972a6e8e5ccd9",
@@ -975,7 +974,7 @@
           "__u32 idx = bpf_get_prandom_u32();",
           "return stack[idx];"
         ],
-        "normalized_log_sha256": "53031719ce00684ad302afe90e20d57eebbff75564e5ceb430c3f57e04523067",
+        "normalized_log_sha256": "e273f8f5eec8d68e63acc65a1891ed189182a602b0ccf345860831fdae543d8f",
         "has_oracle_token_in_log": false,
         "obj_sha256": "6b8a087abb0df5d1e56ff7074ade8540508e8f3680cbcfc91bb1ad63b0aa7e17",
         "disasm_sha256": "22da557326801f2ea751ae0d40845809d8ec778e1be54bb8b63116e4e149838f",
@@ -999,7 +998,7 @@
           "__u32 idx = bpf_get_prandom_u32();",
           "return stack[idx];"
         ],
-        "normalized_log_sha256": "53031719ce00684ad302afe90e20d57eebbff75564e5ceb430c3f57e04523067",
+        "normalized_log_sha256": "e273f8f5eec8d68e63acc65a1891ed189182a602b0ccf345860831fdae543d8f",
         "has_oracle_token_in_log": false,
         "obj_sha256": "67d65cb55eb45706a88b17499574466cedeb2c1d775dd9a9bba3429de3805790",
         "disasm_sha256": "12719cd20aa4097977d2251e863958d82df0d5a867f404c9bc52ddbda9b73de4",
@@ -1039,7 +1038,7 @@
           "__u32 idx = bpf_get_prandom_u32();",
           "return stack[idx];"
         ],
-        "normalized_log_sha256": "553778c70642fea72b00e96c5e27e4f5406ac298dbc6ea74f1f73af6306fab3b",
+        "normalized_log_sha256": "cefa7870cb94c9c15351d022b1cff5a81eb66637deba036e442204f449b729a2",
         "has_oracle_token_in_log": false,
         "obj_sha256": "275c378d237c803164eb5b2bc00deac4cee8a47fe843dfc4c75c64178bb39359",
         "disasm_sha256": "530758acd48c4b8947a6d3b6a4f31c75f09e2db7277aded27cbcfd5bac31ed65",
@@ -1063,7 +1062,7 @@
           "__u32 idx = bpf_get_prandom_u32();",
           "return stack[idx];"
         ],
-        "normalized_log_sha256": "553778c70642fea72b00e96c5e27e4f5406ac298dbc6ea74f1f73af6306fab3b",
+        "normalized_log_sha256": "cefa7870cb94c9c15351d022b1cff5a81eb66637deba036e442204f449b729a2",
         "has_oracle_token_in_log": false,
         "obj_sha256": "da96e927a9329092801006a3a173d53c7d5d147c2a9de374392f656f519d8a79",
         "disasm_sha256": "76fffb78e1af9c262bdbb61b47d012a14c6f397dc6ee1609f3c3f5f63d826d67",
@@ -1103,7 +1102,7 @@
           "__u32 idx = bpf_get_prandom_u32();",
           "return stack[idx];"
         ],
-        "normalized_log_sha256": "3cdccaa88f4cf5c602d769f0d13b91d7d29143c18b722faf60b221deb34c6c0e",
+        "normalized_log_sha256": "e7d8bf499e312d1f5de5dbfe4238f401e62ea90001a82c67e3202d3c955d730a",
         "has_oracle_token_in_log": false,
         "obj_sha256": "eb0e485a801fcf38af0bc9516307b6f5d213f72d13a43f938893f7fa8bf6c56f",
         "disasm_sha256": "162b2be59c9e491c3f6d9bd10c3283b5b70ecfcf92e99f9fc459e6252127b650",
@@ -1127,7 +1126,7 @@
           "__u32 idx = bpf_get_prandom_u32();",
           "return stack[idx];"
         ],
-        "normalized_log_sha256": "3cdccaa88f4cf5c602d769f0d13b91d7d29143c18b722faf60b221deb34c6c0e",
+        "normalized_log_sha256": "e7d8bf499e312d1f5de5dbfe4238f401e62ea90001a82c67e3202d3c955d730a",
         "has_oracle_token_in_log": false,
         "obj_sha256": "61a898e7b4da3f62489bacc810579cfad9d63bc9c0b0db395078a119d6f57a01",
         "disasm_sha256": "7823ac26f8ada090e320134624fa97fe4ac68d25763257f75f8f6b9081c4d77e",
@@ -1148,5 +1147,6 @@
       }
     }
   ],
-  "note": "Marker-neutral = ORACLE_* \u2192 /* */ (line-preserving). pass = verdict + normalized -g load log (timing/ASLR stripped) + source-comment texts + same-path -O2 (no -g) ELF sha256 identity. Lab -O2 -g objects often differ (.BTF and .BTF.ext dumps); this does not isolate an effect of marker text (variant-specific file names, and the section hashes are taken over llvm-objdump -s output, which embeds the object path); reported as dbg_obj_match. Corrected 2026-09-19 to match docs/METRICS.md; not re-captured (SSH lab host)."
+  "note": "Marker-neutral = ORACLE_* comments replaced with /* */ (line-preserving). pass = identical verdict + normalized verifier log body (timing/ASLR stripped) + source-comment texts + ELF object SHA-256 + llvm-objdump -d SHA-256, and no ORACLE_ token in either log. BTF section hashes reported when available.",
+  "stamp_filter": "20260801T181331Z"
 }

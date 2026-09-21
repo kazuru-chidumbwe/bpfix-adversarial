@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 """Minimal offline oracle-independence controls .
 
-Uses already-captured stamped rows in results/sc_vs_honesty.json —
+Uses already-captured stamped rows in results/sc_vs_honesty.json,
 no new lab work.
 
 Controls
@@ -64,7 +64,7 @@ def main() -> None:
                 "oracle_loss_code": r.get("oracle_loss_code"),
                 "lab_rejected": False,
                 "pass": True,
-                "note": "markers present; lab ACCEPT — injection did not induce reject",
+                "note": "markers present; lab ACCEPT, injection did not induce reject",
             }
         )
 
@@ -166,9 +166,9 @@ def main() -> None:
     OUT_JSON.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
     lines = [
-        "# Oracle-independence controls (minimal, stamped)",
+        "# Oracle-independence controls (offline, stamped lab family)",
         "",
-        f"Stamp filter `{STAMP}`. Offline only — no new lab captures.",
+        f"Stamp filter `{STAMP}`. Offline only, no new lab captures.",
         "",
         "| Control | Pass | n | Row tally |",
         "| --- | ---: | ---: | ---: |",

@@ -299,7 +299,7 @@ def load_pair(
     local_dir = ROOT / "fixtures" / "logs" / "captured"
     local_dir.mkdir(parents=True, exist_ok=True)
     local_log = local_dir / f"{case_id}.markeriso-{variant}.{run_stamp}.log"
-    # Always LF — Windows captures must not commit CRLF (CI: tools/check_lf_logs.py).
+    # Always LF; Windows captures must not commit CRLF (CI: tools/check_lf_logs.py).
     text = out.replace("\r\n", "\n").replace("\r", "\n")
     with local_log.open("w", encoding="utf-8", newline="\n") as fh:
         fh.write(text)
@@ -471,7 +471,7 @@ def main(argv: list[str] | None = None) -> int:
                 password=password,
                 run_stamp=run_stamp,
             )
-            # Same-path -O2 (no -g) ELF identity — path embedding cannot confound.
+            # Same-path -O2 (no -g) ELF identity; path embedding cannot confound.
             b["nodbg_obj_sha256"] = nodbg_object_sha(client, sftp, bearing)
             n["nodbg_obj_sha256"] = nodbg_object_sha(client, sftp, neutral)
             pairs.append(
@@ -502,7 +502,7 @@ def main(argv: list[str] | None = None) -> int:
     payload = {
         "generator": "tools/lab_marker_isolation_ab.py",
         "run_stamp": run_stamp,
-        "softwarex_stamp_filter": STAMP_FILTER,
+        "stamp_filter": STAMP_FILTER,
         "host_probe": host_probe,
         "n_pairs": n,
         "summary": {

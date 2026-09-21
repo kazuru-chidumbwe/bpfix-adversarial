@@ -1,4 +1,4 @@
-# Upstream pin — eunomia-bpf/bpfix
+# Upstream pin: eunomia-bpf/bpfix
 
 **Repo:** https://github.com/eunomia-bpf/bpfix  
 **Commit:** `81d97e4a528456e0082a77f4fb6edd13fa092b7b` (2026-07-11)  
@@ -43,4 +43,4 @@ Pointer-provenance / packet-bounds SourceComment helpers similarly avoid bang-va
 
 ## Evidence tiers
 
-`ProofEventEvidence::SourceComment` vs `VerifierState` — extend this ontology in adjacent work; do not fork.
+`ProofEventEvidence::SourceComment` vs `VerifierState`; extend this ontology in adjacent work; do not fork.

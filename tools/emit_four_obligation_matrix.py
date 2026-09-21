@@ -155,7 +155,7 @@ def main() -> None:
         )
         lines.append("| --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |")
         for r in items:
-            h = (r.get("log_sha256") or "—")[:12]
+            h = (r.get("log_sha256") or "n/a")[:12]
             if r.get("log_sha256"):
                 h = r["log_sha256"][:12] + "…"
             lines.append(

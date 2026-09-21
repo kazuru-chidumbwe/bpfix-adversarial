@@ -18,7 +18,7 @@ def score_honesty(
 
     Distance:
       ``distance_error = |predicted − oracle_loss_code|``
-    This is absolute localization error on source lines — not a signed cancel
+    This is absolute localization error on source lines, not a signed cancel
     of ``(reject−pred)−(reject−oracle)``. The algebraically equivalent signed
     form is exposed as ``signed_offset = predicted − oracle_loss_code``.
 

@@ -1,4 +1,4 @@
-; fixture — PacketBounds under-check then wide load (pad distance varies by case id)
+; fixture: PacketBounds under-check then wide load (pad distance varies by case id)
 ; Line numbers below are this fixture's own; they are not lines in the committed mutant.
 
 ; if (data + 1 > data_end) @ synthetic/PB-pad0.fixture.c:10

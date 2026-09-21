@@ -37,14 +37,15 @@ OFFLINE_EMITTERS: list[tuple[str, list[str]]] = [
     ("results/oracle_controls.json", ["tools/emit_oracle_controls.py"]),
     ("results/marker_isolation.json", ["tools/emit_marker_isolation.py"]),
     ("results/rq1_bpfix_cli.json", ["tools/emit_rq1_bpfix_cli.py"]),
+    # Rescored from the committed capture logs, not re-captured: the lab host is
+    # not needed and the object hashes are carried from the original capture.
+    ("results/marker_isolation_lab.json",
+     ["tools/lab_marker_isolation_ab.py", "--rescore"]),
 ]
 
-# Must exist under results/; not re-run in CI (lab capture only).
-SKIP_RESULTS: dict[str, str] = {
-    "results/marker_isolation_lab.json": (
-        "Ubuntu lab A/B capture (tools/lab_marker_isolation_ab.py); requires SSH host"
-    ),
-}
+# Every results/*.json is now covered by an emitter above. Kept as an explicit
+# empty registry so an unaccounted-for file still fails the check.
+SKIP_RESULTS: dict[str, str] = {}
 
 
 def _load(path: Path) -> object:

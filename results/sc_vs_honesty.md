@@ -1,4 +1,4 @@
-# SC vs VS injection-site agreement — lab stamp family `20260801T181331Z`
+# SC vs VS injection-site agreement, lab stamp family `20260801T181331Z`
 
 Scoring: **top1_line** (`predicted == oracle_loss_code`); **top1_span**
 (membership in injection span); **distance_error** `|predicted − oracle_loss_code|`.
@@ -11,19 +11,19 @@ SC = bpfix SourceComment heuristic port on mutant source. VS = last source-mappe
 | NullablePointer | `NP-brittle-pad0` | 19,20 | 19 | yes | yes | 23 | n/a | n/a | no | n/a |
 | NullablePointer | `NP-brittle-pad32` | 19,20 | 19 | yes | yes | 58 | n/a | n/a | no | n/a |
 | NullablePointer | `NP-brittle-pad8` | 19,20 | 19 | yes | yes | 34 | n/a | n/a | no | n/a |
-| NullablePointer | `NP-idiomatic-nocheck` | — | 21 | yes | yes | 36 | no | no | yes | yes |
+| NullablePointer | `NP-idiomatic-nocheck` | n/a | 21 | yes | yes | 36 | no | no | yes | yes |
 | NullablePointer | `NP-idiomatic-pad0` | 19,20 | 17 | no | no | 23 | n/a | n/a | no | n/a |
 | NullablePointer | `NP-idiomatic-pad32` | 19,20 | 17 | no | no | 58 | n/a | n/a | no | n/a |
 | NullablePointer | `NP-idiomatic-pad8` | 19,20 | 17 | no | no | 34 | n/a | n/a | no | n/a |
 | PacketBounds | `PB-pad0` | 12,13 | 12 | yes | yes | 15 | no | no | yes | yes |
 | PacketBounds | `PB-pad32` | 12,13 | 12 | yes | yes | 50 | no | no | yes | yes |
 | PacketBounds | `PB-pad8` | 12,13 | 12 | yes | yes | 26 | no | no | yes | yes |
-| PointerProvenance | `PP-pad0` | 14,15 | — | n/a | n/a | 15 | no | yes | yes | n/a |
-| PointerProvenance | `PP-pad32` | 14,15 | — | n/a | n/a | 15 | no | yes | yes | n/a |
-| PointerProvenance | `PP-pad8` | 14,15 | — | n/a | n/a | 15 | no | yes | yes | n/a |
-| ScalarRange | `SR-pad0` | 11 | — | no | no | 13 | no | no | yes | no |
-| ScalarRange | `SR-pad32` | 11 | — | no | no | 48 | no | no | yes | no |
-| ScalarRange | `SR-pad8` | 11 | — | no | no | 24 | no | no | yes | no |
+| PointerProvenance | `PP-pad0` | 14,15 | n/a | n/a | n/a | 15 | no | yes | yes | n/a |
+| PointerProvenance | `PP-pad32` | 14,15 | n/a | n/a | n/a | 15 | no | yes | yes | n/a |
+| PointerProvenance | `PP-pad8` | 14,15 | n/a | n/a | n/a | 15 | no | yes | yes | n/a |
+| ScalarRange | `SR-pad0` | 11 | n/a | no | no | 13 | no | no | yes | no |
+| ScalarRange | `SR-pad32` | 11 | n/a | no | no | 48 | no | no | yes | no |
+| ScalarRange | `SR-pad8` | 11 | n/a | no | no | 24 | no | no | yes | no |
 
 ## PointerProvenance + ScalarRange
 
@@ -47,10 +47,10 @@ SC = bpfix SourceComment heuristic port on mutant source. VS = last source-mappe
 
 ## Takeaways
 
-- **PP:** SC is N/A (no upstream provenance heuristic). VS **top1_span** hits the XOR wash (coincides with author injection span; **top1_line** may miss if the map is not the first executable line) — not a semantic proof-loss claim.
+- **PP:** SC is N/A (no upstream provenance heuristic). VS **top1_span** hits the XOR wash (coincides with author injection span; **top1_line** may miss if the map is not the first executable line). This is not a semantic proof-loss claim.
 - **SR:** No scalar-guard `if` line is present to match on unbound-index templates (SC miss by construction). VS reports the stack load (reject/use), not the unbound `idx` assignment (loss).
 - **PB:** SC **top1_line** hits the under-check; VS hits the wide load (reject). The SC hit is construction-determined: the only line matching `looks_like_packet_bounds_check` is the injection line, which a first-match reporter cannot miss.
-- **NP-nocheck:** SC **top1_line** hits the lookup (empty-span fallback + nullable-return nocheck predicate — construction-determined); VS reports the reject deref (miss).
+- **NP-nocheck:** SC **top1_line** hits the lookup (empty-span fallback + nullable-return nocheck predicate, construction-determined); VS reports the reject deref (miss).
 - All 10 rejecting rows have construction-determined SC outcomes (PP N/A×3 + SR absent-guard×3 + NP fallback×1 + PB first-match×3): the inset exercises the scoring pipeline rather than discriminating among candidates. The evidence that is not fixed by construction is the VS stop site and the upstream CLI output (`rq1_bpfix_cli.*`).
 - Accepting NP-with-check rows: VS score n/a (no reject); SC rename story unchanged.
 

@@ -18,7 +18,7 @@ emitters do **not** need it.
 | Capture | `bpftool prog load … -d` |
 
 Marker A/B (not template-oracle scores): Ubuntu 24.04 `app-test-server`,
-kernel `6.8.0-136-generic`, clang 18.1.3, bpftool v7.4.0 — see
+kernel `6.8.0-136-generic`, clang 18.1.3, bpftool v7.4.0; see
 `results/env_pins/app-test-server.20260807T112233Z.env.txt`.
 
 | Role | Host | Notes |
@@ -41,7 +41,7 @@ when the string differs.
 
 ## Bootstrap (Debian 13 / x86_64)
 
-Run on a fresh Debian 13 VM (Hyper-V, QEMU, Vagrant — see `Vagrantfile`):
+Run on a fresh Debian 13 VM (Hyper-V, QEMU, Vagrant; see `Vagrantfile`):
 
 ```bash
 sudo apt-get update
@@ -73,7 +73,7 @@ cd bpfix-adversarial
 git checkout v1.0.2   # cite tag
 python3 -m venv .venv && . .venv/bin/activate
 pip install -U pip && pip install -e .
-# LAB_TEST_HOST / LAB_TEST_SSH_KEY or PASSWORD — see docs/TAGS.md
+# LAB_TEST_HOST / LAB_TEST_SSH_KEY or PASSWORD; see docs/TAGS.md
 python tools/lab_capture_via_env.py
 ```
 

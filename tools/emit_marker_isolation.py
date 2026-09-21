@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 """Marker isolation evidence for the primary construct-validity threat.
 
-Offline primary-stamp suite (no lab required):
+Offline suite over the stamped captures (no lab required):
   1. ORACLE_* tokens absent from captured verifier logs (VS / bpfix CLI inputs).
   2. SourceComment reports identical lines on marker-bearing vs line-preserving
      marker-neutral sources (reporter output invariant to marker text).
@@ -169,12 +169,12 @@ def main() -> None:
             "summary": lab["summary"] if lab else None,
             "host_probe": lab.get("host_probe") if lab else None,
         },
-        "gates_mapping": {
+        "isolation_mapping": {
             "what_this_establishes": [
-                "Captured primary-stamp verifier logs contain no ORACLE_* tokens "
+                "Captured verifier logs contain no ORACLE_* tokens "
                 "(VS / upstream bpfix CLI cannot read markers from log text).",
                 "SourceComment reported line is invariant under line-preserving "
-                "marker neutralization on the same primary-stamp sources.",
+                "marker neutralization on the same stamped sources.",
                 "ORACLE comment lines themselves are not looks_like_* hits.",
             ],
             "what_requires_lab_ab": [
@@ -193,7 +193,7 @@ def main() -> None:
     lines = [
         "# Marker isolation (construct validity)",
         "",
-        f"primary-stamp filter `{STAMP}`. Offline suite always; lab A/B when host reachable.",
+        f"Stamp filter `{STAMP}`. Offline suite always; lab A/B when host reachable.",
         "",
         "| Check | Pass | n |",
         "| --- | ---: | ---: |",
@@ -207,7 +207,7 @@ def main() -> None:
         lines.append(f"| {label} | {s['hits']} | {s['n']} |")
     lab_s = summary["lab_bearing_vs_neutral_load"]
     if lab_s.get("pass_rate") is None:
-        lines.append("| lab bearing≡neutral load | — | 0 (not run) |")
+        lines.append("| lab bearing≡neutral load | n/a | 0 (not run) |")
     else:
         lines.append(f"| lab bearing≡neutral load | {lab_s['pass']} | {lab_s['n']} |")
     lines += [

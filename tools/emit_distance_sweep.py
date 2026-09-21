@@ -3,7 +3,7 @@
 """Distance sweep using a synthetic oracle and two synthetic reporter models.
 
 For each pad length, oracle distance grows; a diagnostic that always reports
-reject_line - 1 (near-reject bias) accumulates distance_error — illustrating
+reject_line - 1 (near-reject bias) accumulates distance_error, illustrating
 the honesty metric. A second model reports oracle_loss (honest).
 """
 
