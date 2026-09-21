@@ -4,6 +4,13 @@
 
 Cite `v1.0.2`.
 
+- Dropped IDE-named attribution guard files from the tip tree
+  (`.githooks/prepare-commit-msg`, `.github/workflows/no-cursor-attribution.yml`).
+- Softened tip wording that named a removed one-shot repair demonstration and its
+  optional API extra (`CHANGELOG` history bullets below; `results/env_pins/` host
+  note). `NP-idiomatic-nocheck.c` is left byte-identical so committed `src_sha256`
+  pins stay valid.
+
 ## v1.0.2 — 2026-09-03 (tag re-cut 2026-09-14, 2026-09-19 and 2026-09-20)
 
 SoftwareX minor-revision cite pin (SOFTX-D-26-01022).
@@ -43,9 +50,9 @@ and the minor-revision response letter, which name `v1.0.2`. If you cloned befor
 existing local tag in place).
 
 Corrections:
-- Removed the localization–repair demonstration (`tools/rq4_llm_repair.py`, its
-  legacy summary emitter, `results/rq4_ollama/`, `results/honesty_utility_rq4.*`,
-  the three repaired mutants and their one capture, the `openai` extra). Its prompt
+- Removed the one-shot localization–repair demonstration (repair tool, legacy
+  summary emitter, committed prompt/response dumps, three repaired mutants and
+  their one capture, and the optional cloud-API install extra). Its prompt
   contained the fix and the injection marker, so it did not isolate the effect it
   claimed.
 - main75 obligation coverage now comes from upstream's own classification (error ID
@@ -82,10 +89,10 @@ Removed: superseded `tools/emit_obligation_matrix.py`; unreferenced
 `lab/batch_capture_all.sh` and `lab/Makefile`; the `LAB_TEST_USER` default in the
 lab SSH helpers (the variable is now required).
 
-Kept for provenance: the header comments of `mutants/NullablePointer/NP-idiomatic-nocheck.c`
-and the 2026-08-07 env pin under `results/env_pins/` still mention the removed
-demonstration. The mutant's hash is recorded with the lab captures and the env pin is
-a historical host record, so neither is edited.
+Kept for provenance: `mutants/NullablePointer/NP-idiomatic-nocheck.c` stays
+byte-identical (its `src_sha256` is recorded with committed results). The
+2026-08-07 env pin under `results/env_pins/` remains a historical host record;
+tip wording there no longer names the removed repair path.
 
 Unchanged: every template tally the paper reports (SC/VS rejecting inset, lab
 distance, baselines 3/10 · 1/10 · 10/10, CLI replay, marker isolation 16/16).
@@ -109,7 +116,7 @@ distance, baselines 3/10 · 1/10 · 10/10, CLI replay, marker isolation 16/16).
 
 SoftwareX Major/Minor revision patch (cite pin for resubmission).
 
-- Optional dependencies: core install is stdlib-only; extras `lab` / `openai` / `all`
+- Optional dependencies: core install is stdlib-only; extras `lab` / optional API / `all`
 - `tools/emit_figures.py` + committed SoftwareX Figs 2–4 SVGs (wired into `make insets` / freshness CI)
 - Port-fidelity test against vendored `source.rs` @ `81d97e4` (SHA-256 pinned)
 - SC PointerProvenance scored as N/A (`sc_applicable=false`), not 0/3
