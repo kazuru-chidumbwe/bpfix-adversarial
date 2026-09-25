@@ -22,15 +22,14 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-import paramiko
-
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from bpfix_adversarial.marker_isolation import strip_oracle_markers  # noqa: E402
 from tools.score_sc_vs_honesty import lab_rejected, vs_stop_line  # noqa: E402
 
-# Reuse lab env helpers without treating tools/ as a package.
+# Reuse lab env helpers by path. paramiko is imported inside connect(), so
+# --rescore needs no lab extra.
 import importlib.util
 
 def _load_mod(name: str, path: Path):
@@ -48,6 +47,18 @@ normalize_lab_env = _cap.normalize_lab_env
 STAMP_FILTER = "20260801T181331Z"
 SOURCE_AT_RE = re.compile(r";\s*(.*?)\s*@\s*([^:]+):(\d+)\s*$")
 ENV = Path(os.environ.get("BPFIX_LAB_ENV_FILE", str(ROOT / "lab" / ".env")))
+
+# Written into marker_isolation_lab.json by both the capture path and --rescore,
+# so the committed note always states the criterion pair_match() applies.
+PASS_NOTE = (
+    "Marker-neutral = ORACLE_* comments replaced with /* */ (line-preserving). "
+    "pass = identical verdict + normalized -O2 -g load log (timing/ASLR stripped) + "
+    "source-comment texts + same-path -O2 (no -g) ELF sha256 identity, and no "
+    "ORACLE_ token in either log. The -O2 -g object, llvm-objdump -d and BTF section "
+    "hashes are reported but are not part of pass: the two arms compile under "
+    "variant-specific file names and llvm-objdump output embeds the object path, so "
+    "those hashes differ for reasons that do not isolate marker text (dbg_obj_match)."
+)
 
 
 def prog_type_for(text: str) -> str:
@@ -381,13 +392,8 @@ def rescore_existing(lab_path: Path) -> dict:
         "nodbg_obj_match": sum(1 for p in pairs if p["match"].get("nodbg_obj_sha256")),
         "dbg_obj_match": sum(1 for p in pairs if p["match"].get("dbg_obj_sha256")),
     }
-    lab["note"] = (
-        "Marker-neutral = ORACLE_* comments replaced with /* */ (line-preserving). "
-        "pass = identical verdict + normalized verifier log body (timing/ASLR stripped) + "
-        "source-comment texts + ELF object SHA-256 + llvm-objdump -d SHA-256, "
-        "and no ORACLE_ token in either log. BTF section hashes reported when available."
-    )
-    lab_path.write_text(json.dumps(lab, indent=2) + "\n", encoding="utf-8")
+    lab["note"] = PASS_NOTE
+    lab_path.write_text(json.dumps(lab, indent=2) + "\n", encoding="utf-8", newline="\n")
     return lab
 
 
@@ -419,7 +425,6 @@ def main(argv: list[str] | None = None) -> int:
         if STAMP_FILTER in (r.get("log") or "")
         and r.get("src")
         and Path(ROOT / r["src"]).is_file()
-        and "repaired" not in r["case_id"]
     ]
     cfg = normalize_lab_env(load_env(ENV))
     password = (cfg.get("LAB_TEST_PASSWORD") or "").strip() or None
@@ -439,6 +444,7 @@ def main(argv: list[str] | None = None) -> int:
     if password:
         pw_file = f"/tmp/.bpfix_iso_pw_{run_stamp}"
         with sftp.file(pw_file, "w") as f:
+            f.chmod(0o600)  # before the password is written
             f.write(password + "\n")
         client.exec_command(f"chmod 600 {pw_file}", timeout=10)
 
@@ -520,19 +526,11 @@ def main(argv: list[str] | None = None) -> int:
             "dbg_obj_match": sum(1 for p in pairs if p["match"].get("dbg_obj_sha256")),
         },
         "pairs": pairs,
-        "note": (
-            "Marker-neutral = ORACLE_* → /* */ (line-preserving). "
-            "pass = verdict + normalized -g load log (timing/ASLR stripped) + "
-            "source-comment texts + same-path -O2 (no -g) ELF sha256 identity. "
-            "Lab -O2 -g objects often differ (.BTF and .BTF.ext dumps); this does not "
-            "isolate an effect of marker text (variant-specific file names, and the "
-            "section hashes are taken over llvm-objdump -s output, which embeds the "
-            "object path); reported as dbg_obj_match."
-        ),
+        "note": PASS_NOTE,
     }
     out = args.out if args.out.is_absolute() else (ROOT / args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(json.dumps(payload["summary"], indent=2))
     print(f"Wrote {out}")
     return 0 if hits == n and n > 0 else 1

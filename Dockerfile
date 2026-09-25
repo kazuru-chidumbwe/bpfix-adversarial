@@ -17,6 +17,7 @@ COPY tests ./tests
 COPY fixtures ./fixtures
 COPY mutants ./mutants
 COPY results ./results
+COPY figures ./figures
 COPY schemas ./schemas
 COPY docs ./docs
 COPY Makefile ./

@@ -64,12 +64,12 @@ def main() -> None:
         },
     }
     (out_dir / "rename_honesty.json").write_text(
-        json.dumps(payload, indent=2) + "\n", encoding="utf-8"
+        json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n"
     )
     md = "# Rename boundary of `looks_like_null_check`\n\n" + markdown_table(
         cases
     )
-    (out_dir / "rename_honesty.md").write_text(md + "\n", encoding="utf-8")
+    (out_dir / "rename_honesty.md").write_text(md + "\n", encoding="utf-8", newline="\n")
     print(md)
     print(f"\nWrote {out_dir / 'rename_honesty.json'}")
 

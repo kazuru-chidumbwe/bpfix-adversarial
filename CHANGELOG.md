@@ -1,21 +1,85 @@
 # Changelog
 
-## Unreleased (`master` after `v1.0.2`)
+## v1.0.2 - 2026-09-25
 
-Cite `v1.0.2`.
+Minor-revision cite pin for the software paper (SOFTX-D-26-01022).
 
-- Dropped IDE-named attribution guard files from the tip tree
-  from the repository.
-- Softened tip wording that named a removed one-shot repair demonstration and its
-  optional API extra (`CHANGELOG` history bullets below; `results/env_pins/` host
-  note). `NP-idiomatic-nocheck.c` is left byte-identical so committed `src_sha256`
-  pins stay valid.
+### Tag history
 
-## v1.0.2 - 2026-09-21
+`v1.0.2` was first cut on 2026-09-03 and has been re-cut during revision so
+that one tree matches the manuscript and the response letter. Every target it
+has had, oldest first:
 
-the paper's minor-revision cite pin (SOFTX-D-26-01022).
+| Date | Commit | Reason |
+| --- | --- | --- |
+| 2026-09-03 | `46a709e` | first cut |
+| 2026-09-14 | `899f112` | fold interim `v1.0.3` refinements; `v1.0.3` label retired |
+| 2026-09-19 | `bbfebe6` | reconcile with revised manuscript and response letter |
+| 2026-09-20 | `653dde7` | pre-submission review follow-ups |
+| 2026-09-21 | `95d4184` | inset oracle fixes, wider drift guard |
+| 2026-09-21 | `f04c923` | release hygiene and documentation pass |
+| 2026-09-25 | this tree | final re-cut, below |
 
-### Pre-submission review fixes and release hygiene
+A clone made before the final re-cut still has an older local tag. Refresh it
+with `git fetch --tags --force` (a plain `git pull` leaves an existing local tag
+in place). The GitHub release notes give the commit SHA of the final tag.
+
+### Final re-cut (2026-09-25)
+
+No scored value changes: every `top1_line`, `top1_span`, distance, baseline,
+control and CLI field is identical to `f04c923`.
+
+- The offline suite and CI failed on a stdlib-only install from `f04c923`:
+  `tools/check_results_fresh.py` runs `tools/lab_marker_isolation_ab.py --rescore`,
+  which imported paramiko at module level. paramiko is now imported only where an
+  SSH connection is opened, so `make smoke`, the Docker image and CI pass without
+  the `lab` extra.
+- The Windows CI job failed from `95d4184`: emitters wrote `results/*.md` in text
+  mode, which is CRLF on Windows, and the markdown freshness check compares bytes.
+  Every writer now pins `newline="\n"`.
+- The Docker image did not copy `figures/`, which the freshness check has required
+  since `v1.0.1`, so `docker run` failed its own `make smoke`. `make insets` also
+  skipped three emitters the freshness check covers (`score_np_pair.py`,
+  `emit_rq1_bpfix_cli.py`, the marker A/B rescore); it now runs the same set.
+- `f04c923` had rewritten comment text (em dash to comma) in all 16 mutants,
+  including the ORACLE marker comments. The tree then held none of the source
+  files the committed logs were captured from. `mutants/` and the generator
+  strings are restored to the captured bytes, and the new
+  `tests/test_capture_provenance.py` checks the capture manifest (15/16; the
+  hand-written `NP-idiomatic-nocheck` seed's capture-time copy was never
+  committed) and the marker A/B hashes (16/16).
+- PointerProvenance disclosure: the verifier rejects the pointer XOR itself,
+  inside the injection span, and never reaches the marked dereference; upstream
+  bpfix labels these captures E005, which its classifier maps to ScalarRange.
+  `rq1_bpfix_cli.*` now shows each row's error ID and upstream obligation, and the
+  `sc_vs_honesty.md`, `rq1_bpfix_cli.md` and `baseline_battery.md` text says the PP
+  rows carry no stop-site distance evidence.
+- The negative control is selected by construction (templates built to be
+  well-formed) instead of by the observed ACCEPT, so it can now fail, and
+  `oracle_controls.*` adds `verdict_matches_construction` over all 16 templates.
+- `marker_isolation_lab.json` stated a pass criterion (`-g` ELF and
+  `llvm-objdump -d` identity) that the code does not apply and that the data
+  fail in 16/16 pairs. Both the capture path and `--rescore` now write one note
+  that matches `pair_match`.
+- `score_sc_vs_honesty.py` checks each rejecting row's construction reason
+  before it emits the "construction-determined" takeaway, and
+  `emit_depth21_selection.py` checks its per-family evidence text against
+  `sc_vs_honesty.json`.
+- `tier_disagreement.json` no longer publishes `tiers_agree` against an asserted
+  VerifierState line.
+- The port-fidelity behaviour test compares against outputs recorded from the
+  vendored Rust predicates instead of a Python restatement.
+- `check_version_sync.py` now also checks C1 in `CODE_METADATA.md`, which
+  `docs/TAGS.md` said it did.
+- The lab upload tarball no longer includes `lab/.env`, and it is deleted after
+  upload; sudo password files are set to 0600 before the password is written.
+- Documentation: tag history restored (README, `docs/TAGS.md`, this file),
+  `docs/ZENODO.md` states which tree the record holds, C2 no longer names a commit
+  other than the tag, lab environment variables documented in
+  `docs/LAB-PIN.md`, `fixtures/upstream/NOTICE` separates copied from generated
+  files, and leftover find-and-replace damage fixed.
+
+### Pre-submission review fixes and release hygiene (re-cuts of 2026-09-21)
 
 An external pre-submission review of the tree, folded in before the revision was
 uploaded so that one tree is published.
@@ -53,7 +117,7 @@ No scored result changed: `sc_vs_honesty`, `rq1_lab_distance`, `rename_honesty`,
 `distance_sweep`, `upstream_obligations`, `depth21_selection` and
 `pad_rename_invariance` are unchanged.
 
-### Committed takeaways, Windows line endings and CI
+### Committed takeaways, Windows line endings and CI (re-cut of 2026-09-20)
 
 Findings from a pre-submission review, folded in before the revision was
 uploaded. No reported number changes.
@@ -73,12 +137,13 @@ uploaded. No reported number changes.
   extended with a `windows-latest` entry that forces `core.autocrlf=true` before
   checkout, so both platforms run the same hygiene steps.
 - Review follow-ups on the above: `docs/TAGS.md` now repeats the
-  the tag-citation note, and
+  `git fetch --tags --force` reminder, and
   `tools/score_sc_vs_honesty.py` derives the takeaway counts from the scored rows
-  (`SC_CONSTRUCTION_REASONS`) instead of hard-coding them, since `results/*.md` is
-  not covered by `tools/check_results_fresh.py`. Regenerated output is unchanged.
+  (`SC_CONSTRUCTION_REASONS`) instead of hard-coding them (at the time
+  `results/*.md` was not yet covered by `tools/check_results_fresh.py`).
+  Regenerated output is unchanged.
 
-### Manuscript and release reconciliation
+### Manuscript and release reconciliation (re-cut of 2026-09-19)
 
 Reconciles the released tree with the revised manuscript and the response letter,
 which name `v1.0.2`.
@@ -123,15 +188,16 @@ Removed: superseded `tools/emit_obligation_matrix.py`; unreferenced
 `lab/batch_capture_all.sh` and `lab/Makefile`; the `LAB_TEST_USER` default in the
 lab SSH helpers (the variable is now required).
 
-Kept for provenance: `mutants/NullablePointer/NP-idiomatic-nocheck.c` stays
-byte-identical (its `src_sha256` is recorded with committed results). The
+Kept for provenance: `mutants/NullablePointer/NP-idiomatic-nocheck.c` is kept
+byte-identical to its first public version (`f04c923` changed it; the final
+re-cut restores it). The
 2026-08-07 env pin under `results/env_pins/` remains a historical host record;
 tip wording there no longer names the removed repair path.
 
 Unchanged: every template tally the paper reports (SC/VS rejecting inset, lab
 distance, baselines 3/10 · 1/10 · 10/10, CLI replay, marker isolation 16/16).
 
-### Scoring contract and offline refinements
+### Scoring contract and offline refinements (2026-09-03 release and 2026-09-14 re-cut)
 
 - CLI scoring: `top1_line` = exact `oracle_loss_code`; `top1_span` separate; `set_recall_message` = decimal loss line in diagnostic text (fixes span-as-top1 bug)
 - Empty injection span: `oracle_loss_code` = last executable line *before* LOSS marker (`NP-idiomatic-nocheck` → lookup/assignment line)
@@ -147,7 +213,7 @@ distance, baselines 3/10 · 1/10 · 10/10, CLI replay, marker isolation 16/16).
 
 ## v1.0.1 - 2026-08-09
 
-the paper's Major/Minor revision patch (cite pin for resubmission).
+Major/minor revision patch for the software paper (cite pin for resubmission).
 
 - Optional dependencies: core install is stdlib-only; extras `lab` / optional API / `all`
 - `tools/emit_figures.py` + committed the paper's Figs 2–4 SVGs (wired into `make insets` / freshness CI)
@@ -158,12 +224,12 @@ the paper's Major/Minor revision patch (cite pin for resubmission).
 
 ## v1.0.0 - 2026-08-07
 
-First public release (initial the paper's cite pin).
+First public release (initial cite pin for the software paper).
 
 Pinned-kernel template instrument for controlled stress testing of eBPF diagnostic
 localization (injection-site agreement under pad/rename). Includes scoring contract
 (top1_line / top1_span / set_recall_message), absolute distance, offline bpfix CLI
 replay, reporter/log invariance evidence, results-freshness CI, and committed insets.
 
-Prior private the paper's review iterations used `v1.1.x` tags; those tags are retired
+Prior private review iterations of the paper used `v1.1.x` tags; those tags are retired
 in favor of this single public root. Reviewers were informed of the retag.

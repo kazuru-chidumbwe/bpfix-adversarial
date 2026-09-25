@@ -24,6 +24,16 @@ PIN = "81d97e4a528456e0082a77f4fb6edd13fa092b7b"
 # SHA-256 of upstream crates/bpfix/src/source.rs @ PIN (verified round-2 review).
 SOURCE_RS_SHA256 = "f86f884583491f7c0606772ba4ec56e4468437f6d986e26412931820cbf73e52"
 
+PREDICATES = (
+    looks_like_scalar_guard,
+    looks_like_packet_bounds_check,
+    looks_like_null_check,
+    looks_like_nullable_return,
+    looks_like_stack_initialization,
+    looks_like_reference_acquire,
+    looks_like_reference_release,
+)
+
 FN_NAMES = (
     "looks_like_scalar_guard",
     "looks_like_packet_bounds_check",
@@ -69,22 +79,31 @@ EXPECTED_LITERALS: dict[str, set[str]] = {
     },
 }
 
-CASES = [
-    "if (!tmp)",
-    "if (!entry)",
-    "if (idx < 8)",
-    "if (data + 8 > data_end)",
-    "entry = bpf_map_lookup_elem(&m, &key);",
-    "bpf_ringbuf_reserve(&rb, 8, 0);",
-    "bpf_ringbuf_submit(e, 0);",
-    "bpf_sk_release(sk);",
-    "x = bpf_skc_lookup_tcp(&skb, &tuple, sizeof(tuple), BPF_F_CURRENT_NETNS, 0);",
-    "memset(buf, 0, sizeof(buf));",
-    "x = 0;",
-    "if (p == null)",
-    "if (p != 0)",
-    "if (X == NULL)",
-    "not a match",
+# Outputs of the seven upstream predicates, recorded by compiling
+# fixtures/upstream/bpfix-source-rs-pin/source.rs lines 80-129 unchanged and
+# running them on each string (rustc 1.95, 2026-09-25). Bit order follows
+# PREDICATES below. This is Rust output, not a Python restatement.
+RUST_TRUTH: list[tuple[str, str]] = [
+    ('if (!tmp)', "0010000"),
+    ('if (!entry)', "0000000"),
+    ('if (idx < 8)', "1000000"),
+    ('if (data + 8 > data_end)', "1100000"),
+    ('entry = bpf_map_lookup_elem(&m, &key);', "0001000"),
+    ('bpf_ringbuf_reserve(&rb, 8, 0);', "0001010"),
+    ('bpf_ringbuf_submit(e, 0);', "0000001"),
+    ('bpf_sk_release(sk);', "0000001"),
+    ('x = bpf_skc_lookup_tcp(&skb, &tuple, sizeof(tuple), BPF_F_CURRENT_NETNS, 0);', "0001110"),
+    ('memset(buf, 0, sizeof(buf));', "0000000"),
+    ('x = 0;', "0000100"),
+    ('if (p == null)', "1010000"),
+    ('if (p != 0)', "1010100"),
+    ('if (X == NULL)', "1010000"),
+    ('not a match', "0000000"),
+    ('  if (!ptr)', "0000000"),
+    ('IF (!PTR)', "0010000"),
+    ('if(!ptr)', "0000000"),
+    ('if (a >= b)', "1000000"),
+    ('cookie ^= bpf_get_prandom_u32();', "0000000"),
 ]
 
 
@@ -127,62 +146,10 @@ class TestPortFidelity(unittest.TestCase):
                 msg=f"{name}: Rust literals {got} != expected {EXPECTED_LITERALS[name]}",
             )
 
-    def test_python_predicates_agree_on_cases(self) -> None:
-        # Ground behavioural check against the same literal rules as Rust.
-        for case in CASES:
-            lower = case.lower()  # C identifiers; matches Rust to_ascii_lowercase for ASCII
-            self.assertEqual(
-                looks_like_null_check(case),
-                lower.startswith("if ")
-                and any(
-                    p in lower
-                    for p in (
-                        "null",
-                        "!tmp",
-                        "!val",
-                        "!ptr",
-                        "!value",
-                        "== 0",
-                        "!= 0",
-                        "== null",
-                        "!= null",
-                    )
-                ),
-                msg=case,
-            )
-            self.assertEqual(
-                looks_like_packet_bounds_check(case),
-                case.startswith("if ") and "data_end" in case,
-                msg=case,
-            )
-            self.assertEqual(
-                looks_like_nullable_return(case),
-                any(
-                    h in case
-                    for h in (
-                        "bpf_map_lookup_elem",
-                        "bpf_ringbuf_reserve",
-                        "bpf_sk_lookup",
-                        "bpf_skc_lookup",
-                    )
-                ),
-                msg=case,
-            )
-            self.assertEqual(
-                looks_like_reference_release(case),
-                any(
-                    h in case
-                    for h in (
-                        "bpf_ringbuf_discard",
-                        "bpf_ringbuf_submit",
-                        "bpf_sk_release",
-                    )
-                ),
-                msg=case,
-            )
-            _ = looks_like_scalar_guard(case)
-            _ = looks_like_stack_initialization(case)
-            _ = looks_like_reference_acquire(case)
+    def test_python_predicates_match_rust_outputs(self) -> None:
+        for text, bits in RUST_TRUTH:
+            got = "".join(str(int(fn(text))) for fn in PREDICATES)
+            self.assertEqual(got, bits, msg=repr(text))
 
 
 if __name__ == "__main__":

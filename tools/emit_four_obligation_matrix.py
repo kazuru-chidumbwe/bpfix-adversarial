@@ -37,8 +37,10 @@ def marker_lines(src: Path) -> tuple[int | None, int | None]:
     """Line numbers of the ORACLE_* marker comments themselves.
 
     These are not oracle_loss_code / oracle_reject_code, which
-    bpfix_adversarial.oracle derives as the first executable line after
-    each marker. The two differ on every committed mutant.
+    bpfix_adversarial.oracle derives from the executable lines around each
+    marker (first line of the injection span; for an empty span, the last
+    executable line before the LOSS marker). The two differ on every committed
+    mutant.
     """
     loss = reject = None
     for i, line in enumerate(src.read_text(encoding="utf-8").splitlines(), 1):
@@ -50,11 +52,7 @@ def marker_lines(src: Path) -> tuple[int | None, int | None]:
 
 
 def latest_log(case_id: str) -> Path | None:
-    caps = sorted(
-        p
-        for p in CAP.glob(f"{case_id}.*.log")
-        if not p.name.endswith(".compile")
-    )
+    caps = sorted(CAP.glob(f"{case_id}.*.log"))
     preferred = [p for p in caps if "20260801T181331Z" in p.name]
     if preferred:
         return preferred[-1]
@@ -140,9 +138,10 @@ def main() -> None:
         "",
         "Construction-time oracle markers scanned from mutant sources. The marker "
             "columns give the line of the ORACLE_* comment; the code columns give the "
-            "first executable line after it, which is what scoring uses "
-            "(`oracle_loss_code`). Score against the code columns, never the marker "
-            "columns.",
+            "line scoring uses: the first executable line of the injection span "
+            "(`oracle_loss_code`), or for an empty span the last executable line before "
+            "the marker (`NP-idiomatic-nocheck`). Score against the code columns, never "
+            "the marker columns.",
         "Log tier: `captured` = lab bpftool; `synthetic` = fixture; `missing` = no log yet.",
         "",
     ]
@@ -159,7 +158,8 @@ def main() -> None:
             if r.get("log_sha256"):
                 h = r["log_sha256"][:12] + "…"
             lines.append(
-                f"| `{r['case_id']}` | {r['pad']} | {r['oracle_loss_marker']} | "
+                f"| `{r['case_id']}` | {r['pad'] if r['pad'] is not None else 'n/a'} | "
+                f"{r['oracle_loss_marker']} | "
                 f"{r['oracle_loss_code']} | {r['oracle_reject_marker']} | "
                 f"{r['oracle_reject_code']} | {r['log_tier']} | `{h}` | {r['note']} |"
             )
@@ -173,13 +173,14 @@ def main() -> None:
     )
     lines.append("")
     lines.append(
-        "Honesty scores vs construction oracle for SC/VS remain in "
-        "`rename_honesty.*`, `np_pair_score.json`, `tier_disagreement.*`; "
-        "this matrix is the stratified coverage table for the four-obligation review."
+        "SC/VS scores on the lab captures are in `sc_vs_honesty.*`; the rename "
+        "boundary is in `rename_honesty.*`; `np_pair_score.json` and "
+        "`tier_disagreement.*` are synthetic-fixture illustrations. This matrix is the "
+        "stratified coverage table for the four families."
     )
 
-    OUT_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    OUT_JSON.write_text(json.dumps({"rows": rows}, indent=2) + "\n", encoding="utf-8")
+    OUT_MD.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+    OUT_JSON.write_text(json.dumps({"rows": rows}, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"wrote {OUT_MD}")
     print(f"wrote {OUT_JSON}")
     print(f"mutants={len(rows)} captured={captured_n}")

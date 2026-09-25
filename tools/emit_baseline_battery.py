@@ -8,7 +8,7 @@ Baselines (no new lab work):
   - oracle_upper: reports oracle_loss_code (perfect injection-site tip)
 
 Compares top1_span membership (reported line in oracle_loss_span) on the same
-Stamped rejecting cases used in results/sc_vs_honesty.json. Distance is
+stamped rejecting cases used in results/sc_vs_honesty.json. Distance is
 always abs(reported - oracle_loss_code); never zeroed on a span-only hit.
 """
 
@@ -147,7 +147,7 @@ def main() -> None:
             "random_line = Uniform{1..reject_code} seed 42; oracle_upper = injection code."
         ),
     }
-    OUT_JSON.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    OUT_JSON.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n")
 
     lines = [
         "# Baseline battery (rejecting cases in the stamped lab family)",
@@ -160,7 +160,22 @@ def main() -> None:
     for name in ("terminal_site", "random_line", "oracle_upper"):
         s = summary[name]
         lines.append(f"| `{name}` | {s['hits']} | {s['n']} | {s['hits']}/{s['n']} |")
+    term_hits = sorted(
+        row["obligation"]
+        for row in rows
+        for b in row["baselines"]
+        if b["baseline"] == "terminal_site" and b["top1_vs_loss"]
+    )
+    by_family = ", ".join(f"{ob} {term_hits.count(ob)}" for ob in sorted(set(term_hits))) or "none"
     lines += [
+        "",
+        f"`terminal_site` hits by family: {by_family}."
+        + (
+            " PointerProvenance templates are rejected at the pointer XOR inside the "
+            "injection span, so those hits are construction-determined."
+            if "PointerProvenance" in term_hits
+            else ""
+        ),
         "",
         f"The `random_line` row is one draw per case (seed {SEED}). Its expected "
         f"top1_span hit count over these rows is "
@@ -174,7 +189,7 @@ def main() -> None:
         "`abs(reported - oracle_loss_code)` (never zeroed on a span-only hit).",
         "",
     ]
-    OUT_MD.write_text("\n".join(lines), encoding="utf-8")
+    OUT_MD.write_text("\n".join(lines), encoding="utf-8", newline="\n")
     print(f"Wrote {OUT_JSON.relative_to(ROOT)} and {OUT_MD.relative_to(ROOT)}")
     print(json.dumps(summary, indent=2))
 

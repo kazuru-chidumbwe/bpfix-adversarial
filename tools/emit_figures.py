@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Emit three the paper's figure SVGs from committed results/*.json (stdlib only).
+"""Emit three of the paper's figure SVGs from committed results/*.json (stdlib only).
 
 File names match the paper's figure numbers: fig3-sc-vs-honesty.svg,
 fig4-lab-distance.svg and fig5-scoring-modes-cli.svg are Figs. 3, 4 and 5.
-Figs. 1 and 2 are author-drawn and are not generated here.
-Paper Figs. 1 (architecture) and 2 (synthetic/rename) are hand-authored outside
-this emitter, so the paper has one more figure than this emitter produces.
-Rename boundary is prose-only (no rate figure).
+Figs. 1 (architecture) and 2 (synthetic/rename) are hand-authored and are not
+generated here. The rename boundary is prose-only (no rate figure).
 """
 
 from __future__ import annotations

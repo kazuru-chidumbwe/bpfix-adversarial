@@ -70,7 +70,6 @@ def main() -> None:
         if STAMP in (r.get("log") or "")
         and r.get("src")
         and (ROOT / r["src"]).is_file()
-        and "repaired" not in r["case_id"]
     ]
 
     log_isolation = []
@@ -99,8 +98,8 @@ def main() -> None:
         with tempfile.TemporaryDirectory() as td:
             nb = Path(td) / "bearing.c"
             nn = Path(td) / "neutral.c"
-            nb.write_text(bearing, encoding="utf-8")
-            nn.write_text(neutral, encoding="utf-8")
+            nb.write_text(bearing, encoding="utf-8", newline="\n")
+            nn.write_text(neutral, encoding="utf-8", newline="\n")
             b_line, b_note = sc_report(nb, r["obligation"], r["case_id"])
             n_line, n_note = sc_report(nn, r["obligation"], r["case_id"])
         sc_ab.append(
@@ -188,7 +187,7 @@ def main() -> None:
             "That path is not a diagnostic reporter input."
         ),
     }
-    OUT_JSON.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    OUT_JSON.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n")
 
     lines = [
         "# Marker isolation (construct validity)",
@@ -221,7 +220,7 @@ def main() -> None:
         "JSON: `marker_isolation.json`.",
         "",
     ]
-    OUT_MD.write_text("\n".join(lines), encoding="utf-8")
+    OUT_MD.write_text("\n".join(lines), encoding="utf-8", newline="\n")
     print(f"Wrote {OUT_JSON.relative_to(ROOT)} and {OUT_MD.relative_to(ROOT)}")
     print(json.dumps(summary, indent=2))
 

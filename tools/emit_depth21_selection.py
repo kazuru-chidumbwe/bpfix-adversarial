@@ -66,7 +66,65 @@ TEMPLATE_EVIDENCE = {
 FAMILIES = ("PointerProvenance", "ScalarRange", "NullablePointer", "PacketBounds")
 
 
+def check_template_evidence() -> None:
+    """Fail if the per-family literals above drift from results/sc_vs_honesty.json.
+
+    The literals are prose for the paper; the freshness guard alone cannot see
+    them go stale because the emitter and the committed file share them.
+    """
+    rows = json.loads((ROOT / "results" / "sc_vs_honesty.json").read_text(encoding="utf-8"))["rows"]
+
+    def fam(ob: str) -> list[dict]:
+        return [r for r in rows if r["obligation"] == ob]
+
+    def rej(ob: str) -> list[dict]:
+        return [r for r in fam(ob) if r["lab_rejected"]]
+
+    def tally(rs: list[dict], key: str) -> str:
+        return f"{sum(1 for r in rs if r[key] is True)}/{len(rs)}"
+
+    nocheck = [r for r in rej("NullablePointer") if "nocheck" in r["case_id"]]
+    hit = lambda key: "hit" if nocheck and nocheck[0][key] is True else "miss"  # noqa: E731
+    expect = {
+        "PointerProvenance": {
+            "lab_reject": f"{len(rej('PointerProvenance'))}/{len(fam('PointerProvenance'))}",
+            "verifierstate": (
+                f"top1_span {tally(rej('PointerProvenance'), 'vs_top1_span')}, "
+                f"top1_line {tally(rej('PointerProvenance'), 'vs_top1_line')}"
+            ),
+        },
+        "ScalarRange": {
+            "lab_reject": f"{len(rej('ScalarRange'))}/{len(fam('ScalarRange'))}",
+            "sourcecomment": f"top1_line {tally(rej('ScalarRange'), 'sc_top1_line')}",
+            "verifierstate": f"top1_line {tally(rej('ScalarRange'), 'vs_top1_line')}",
+        },
+        "NullablePointer": {
+            "lab_reject": (
+                f"{len(rej('NullablePointer'))}/{len(fam('NullablePointer'))} (nocheck); "
+                f"{len(fam('NullablePointer')) - len(rej('NullablePointer'))} ACCEPT"
+            ),
+            "sourcecomment": f"nocheck top1_line {hit('sc_top1_line')}",
+            "verifierstate": f"nocheck top1_line {hit('vs_top1_line')}",
+        },
+        "PacketBounds": {
+            "lab_reject": f"{len(rej('PacketBounds'))}/{len(fam('PacketBounds'))}",
+            "sourcecomment": f"top1_line {tally(rej('PacketBounds'), 'sc_top1_line')}",
+            "verifierstate": f"top1_line {tally(rej('PacketBounds'), 'vs_top1_line')}",
+        },
+    }
+    for ob, fields in expect.items():
+        te = TEMPLATE_EVIDENCE[ob]
+        if sorted(te["template_cases"]) != sorted(r["case_id"] for r in fam(ob)):
+            raise SystemExit(f"TEMPLATE_EVIDENCE[{ob}] case list differs from sc_vs_honesty.json")
+        for key, want in fields.items():
+            if want not in te[key]:
+                raise SystemExit(
+                    f"TEMPLATE_EVIDENCE[{ob}][{key}] = {te[key]!r} no longer states {want!r}"
+                )
+
+
 def main() -> None:
+    check_template_evidence()
     man = json.loads(MANIFEST.read_text(encoding="utf-8"))
     diag = {
         c["upstream_case_id"]: c

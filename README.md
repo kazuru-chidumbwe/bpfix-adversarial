@@ -9,7 +9,7 @@ Target: [bpfix](https://github.com/eunomia-bpf/bpfix) / Zheng et al. ([arXiv:260
 [![CI](https://github.com/kazuru-chidumbwe/bpfix-adversarial/actions/workflows/ci.yml/badge.svg)](https://github.com/kazuru-chidumbwe/bpfix-adversarial/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**Frozen tree for published numbers:** [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2). Metadata: [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff), [codemeta.json](codemeta.json). Prefer that tag over floating `master`. Upstream bpfix pin: `81d97e4a528456e0082a77f4fb6edd13fa092b7b`.
+**Frozen tree for published numbers:** [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2). Metadata: [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff), [codemeta.json](codemeta.json). Prefer that tag over floating `master`. The tag was re-cut during revision (history in [`docs/TAGS.md`](docs/TAGS.md)); if you cloned earlier, run `git fetch --tags --force`. Upstream bpfix pin: `81d97e4a528456e0082a77f4fb6edd13fa092b7b`.
 
 ## Offline insets (no lab SSH)
 
@@ -47,7 +47,7 @@ Committed tables: [`results/`](results/). Docs index: [`docs/README.md`](docs/RE
 | Scoring | SourceComment port + VerifierState + upstream bpfix CLI replay; `top1_line` / `top1_span` / `set_recall_message` |
 | Paper insets | Committed tables under `results/` |
 
-Four stress families. NullablePointer, PointerProvenance, ScalarRange, PacketBounds.
+Four template families: NullablePointer, PointerProvenance, ScalarRange, PacketBounds. On the cite pin the PointerProvenance templates are rejected at the pointer XOR itself, inside the injection span, and upstream bpfix labels them E005 (ScalarRange); they are not a stop-site distance test (see `results/rq1_bpfix_cli.md`).
 
 ## Install
 
@@ -63,7 +63,7 @@ pip install -U pip
 pip install -e .
 ```
 
-Lab SSH helpers need `paramiko` and a `lab/.env`. See [`docs/LAB-PIN.md`](docs/LAB-PIN.md) and [`docs/TAGS.md`](docs/TAGS.md).
+Lab SSH helpers need `pip install -e ".[lab]"` (paramiko) and a `lab/.env`; the variables are listed in [`docs/LAB-PIN.md`](docs/LAB-PIN.md).
 To add a reporter: map a log to a primary line, then call `bpfix_adversarial.score.score_honesty` (see `docs/METRICS.md`).
 
 ## Minimal demo

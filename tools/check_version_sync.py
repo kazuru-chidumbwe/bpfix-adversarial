@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: MIT
 """Fail unless the version and release date agree across the files that state them.
 
-docs/TAGS.md tells readers this check covers CITATION.cff, so it does. The package
-__version__, pyproject.toml, CITATION.cff and codemeta.json must agree on the
-version, and CITATION.cff date-released must match codemeta.json dateModified.
+docs/TAGS.md lists what this check covers, so it covers exactly that: the package
+__version__, pyproject.toml, CITATION.cff, codemeta.json and code-metadata row C1
+(CODE_METADATA.md) must agree on the version, and CITATION.cff date-released must
+match codemeta.json dateModified.
 
 Checking only pyproject against the package left the other two files free to
 drift.
@@ -50,6 +51,15 @@ def main() -> int:
         print(f"ERROR: codemeta.json version={meta.get('version')!r} != pyproject={expected!r}")
         return 1
 
+    code_meta = (ROOT / "CODE_METADATA.md").read_text(encoding="utf-8")
+    m_c1 = re.search(r"(?m)^\|\s*C1\s*\|[^|]*\|\s*`?v?([^`|\s]+)`?\s*\|", code_meta)
+    if not m_c1:
+        print("ERROR: CODE_METADATA.md has no C1 row")
+        return 1
+    if m_c1.group(1) != expected:
+        print(f"ERROR: CODE_METADATA.md C1={m_c1.group(1)!r} != pyproject={expected!r}")
+        return 1
+
     m_date = re.search(r'(?m)^date-released:\s*"?(\d{4}-\d{2}-\d{2})"?', cff)
     if not m_date:
         print("ERROR: CITATION.cff has no date-released")
@@ -62,7 +72,7 @@ def main() -> int:
         )
         return 1
 
-    print(f"OK: version {got} across pyproject, package, CITATION.cff and codemeta")
+    print(f"OK: version {got} across pyproject, package, CITATION.cff, codemeta and C1")
     print(f"OK: release date {released} consistent across CITATION.cff and codemeta")
     return 0
 

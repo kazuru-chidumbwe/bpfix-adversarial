@@ -22,19 +22,19 @@ CASES = [
         "case_id": "NP-idiomatic-pad8",
         "log": "fixtures/logs/synthetic/NP-idiomatic-pad8.log",
         "verifier_state_loss_line": 14,  # asserted by the fixture annotation
-        "notes": "Rename breaks SourceComment establish; VerifierState still sees null branch",
+        "notes": "Rename breaks SourceComment establish",
     },
     {
         "case_id": "NP-brittle-pad8",
         "log": "fixtures/logs/synthetic/NP-brittle-pad8.log",
         "verifier_state_loss_line": 14,  # asserted by the fixture annotation
-        "notes": "Tiers agree: SourceComment recognizes !ptr",
+        "notes": "SourceComment recognizes !ptr",
     },
     {
         "case_id": "PB-pad0",
         "log": "fixtures/logs/synthetic/PB-pad0.log",
         "verifier_state_loss_line": 10,  # asserted by the fixture annotation
-        "notes": "Packet under-check: SourceComment sees data_end; VerifierState sees r=1<8",
+        "notes": "Packet under-check: SourceComment sees data_end",
     },
 ]
 
@@ -79,7 +79,6 @@ def analyze(case: dict) -> dict:
         if sc_establish and sc_establish[-1].source
         else (sc_loss[-1].source.line if sc_loss and sc_loss[-1].source else None)
     )
-    agree = sc_reported == vs_line if sc_reported is not None else False
     sc_correct = sc_reported == oracle_loss_line if sc_reported else False
     return {
         **case,
@@ -87,7 +86,6 @@ def analyze(case: dict) -> dict:
         "sourcecomment_null_check_recognized": sc_null_ok,
         "sourcecomment_reported_line": sc_reported,
         "verifier_state_asserted_line": vs_line,
-        "tiers_agree": agree,
         "sourcecomment_correct_vs_oracle": sc_correct,
     }
 
@@ -116,8 +114,9 @@ def markdown(rows: list[dict]) -> str:
         "Illustration of the tier contract on synthetic fixture logs, not an "
         "empirical finding. The VS line is carried by each fixture's annotation "
         "rather than measured from the log, so it is reported for context and is "
-        "not scored against the oracle. Lab-derived SourceComment and "
-        "VerifierState outcomes are in `sc_vs_honesty.*`."
+        "not scored against the oracle. On the lab captures VS behaves differently: "
+        "for PacketBounds it stops at the wide load, not the check (VS top1_line 0/3). "
+        "Lab-derived SourceComment and VerifierState outcomes are in `sc_vs_honesty.*`."
     )
     return "\n".join(lines)
 
@@ -128,10 +127,10 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     payload = {"cases": rows}
     (out_dir / "tier_disagreement.json").write_text(
-        json.dumps(payload, indent=2) + "\n", encoding="utf-8"
+        json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n"
     )
     md = markdown(rows)
-    (out_dir / "tier_disagreement.md").write_text(md + "\n", encoding="utf-8")
+    (out_dir / "tier_disagreement.md").write_text(md + "\n", encoding="utf-8", newline="\n")
     print(md)
     print(f"Wrote {out_dir / 'tier_disagreement.json'}")
     print(f"Wrote {out_dir / 'tier_disagreement.md'}")

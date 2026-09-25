@@ -1147,6 +1147,6 @@
       }
     }
   ],
-  "note": "Marker-neutral = ORACLE_* comments replaced with /* */ (line-preserving). pass = identical verdict + normalized verifier log body (timing/ASLR stripped) + source-comment texts + ELF object SHA-256 + llvm-objdump -d SHA-256, and no ORACLE_ token in either log. BTF section hashes reported when available.",
+  "note": "Marker-neutral = ORACLE_* comments replaced with /* */ (line-preserving). pass = identical verdict + normalized -O2 -g load log (timing/ASLR stripped) + source-comment texts + same-path -O2 (no -g) ELF sha256 identity, and no ORACLE_ token in either log. The -O2 -g object, llvm-objdump -d and BTF section hashes are reported but are not part of pass: the two arms compile under variant-specific file names and llvm-objdump output embeds the object path, so those hashes differ for reasons that do not isolate marker text (dbg_obj_match).",
   "stamp_filter": "20260801T181331Z"
 }

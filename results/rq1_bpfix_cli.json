@@ -27,6 +27,7 @@
       "d_true_src": 3,
       "bpfix_error_id": "BPFIX-E001",
       "bpfix_error_msg": "packet bounds check is narrower than the later packet access",
+      "bpfix_upstream_obligation": "PacketBounds",
       "bpfix_primary_src": 15,
       "bpfix_related_src": [
         12
@@ -43,33 +44,6 @@
     },
     {
       "obligation": "PacketBounds",
-      "case_id": "PB-pad32",
-      "pad": 32,
-      "oracle_loss_code": 12,
-      "oracle_reject_code": 50,
-      "oracle_loss_span": [
-        12,
-        13
-      ],
-      "d_true_src": 38,
-      "bpfix_error_id": "BPFIX-E001",
-      "bpfix_error_msg": "packet bounds check is narrower than the later packet access",
-      "bpfix_primary_src": 50,
-      "bpfix_related_src": [
-        12
-      ],
-      "bpfix_nearest_pc": 6,
-      "bpfix_top1_line": false,
-      "bpfix_top1_span": false,
-      "bpfix_top1_vs_loss": false,
-      "bpfix_distance_error": 38,
-      "bpfix_set_recall_message": true,
-      "bpfix_loss_mentioned": true,
-      "log": "fixtures/logs/captured/PB-pad32.20260801T181331Z.log",
-      "raw": "results/rq1_bpfix_cli_raw/PB-pad32.txt"
-    },
-    {
-      "obligation": "PacketBounds",
       "case_id": "PB-pad8",
       "pad": 8,
       "oracle_loss_code": 12,
@@ -81,6 +55,7 @@
       "d_true_src": 14,
       "bpfix_error_id": "BPFIX-E001",
       "bpfix_error_msg": "packet bounds check is narrower than the later packet access",
+      "bpfix_upstream_obligation": "PacketBounds",
       "bpfix_primary_src": 26,
       "bpfix_related_src": [
         12
@@ -96,6 +71,34 @@
       "raw": "results/rq1_bpfix_cli_raw/PB-pad8.txt"
     },
     {
+      "obligation": "PacketBounds",
+      "case_id": "PB-pad32",
+      "pad": 32,
+      "oracle_loss_code": 12,
+      "oracle_reject_code": 50,
+      "oracle_loss_span": [
+        12,
+        13
+      ],
+      "d_true_src": 38,
+      "bpfix_error_id": "BPFIX-E001",
+      "bpfix_error_msg": "packet bounds check is narrower than the later packet access",
+      "bpfix_upstream_obligation": "PacketBounds",
+      "bpfix_primary_src": 50,
+      "bpfix_related_src": [
+        12
+      ],
+      "bpfix_nearest_pc": 6,
+      "bpfix_top1_line": false,
+      "bpfix_top1_span": false,
+      "bpfix_top1_vs_loss": false,
+      "bpfix_distance_error": 38,
+      "bpfix_set_recall_message": true,
+      "bpfix_loss_mentioned": true,
+      "log": "fixtures/logs/captured/PB-pad32.20260801T181331Z.log",
+      "raw": "results/rq1_bpfix_cli_raw/PB-pad32.txt"
+    },
+    {
       "obligation": "PointerProvenance",
       "case_id": "PP-pad0",
       "pad": 0,
@@ -108,6 +111,7 @@
       "d_true_src": 3,
       "bpfix_error_id": "BPFIX-E005",
       "bpfix_error_msg": "scalar range at the rejected use is still verifier-unsafe",
+      "bpfix_upstream_obligation": "ScalarRange",
       "bpfix_primary_src": 15,
       "bpfix_related_src": [
         11
@@ -124,33 +128,6 @@
     },
     {
       "obligation": "PointerProvenance",
-      "case_id": "PP-pad32",
-      "pad": 32,
-      "oracle_loss_code": 14,
-      "oracle_reject_code": 52,
-      "oracle_loss_span": [
-        14,
-        15
-      ],
-      "d_true_src": 38,
-      "bpfix_error_id": "BPFIX-E005",
-      "bpfix_error_msg": "scalar range at the rejected use is still verifier-unsafe",
-      "bpfix_primary_src": 15,
-      "bpfix_related_src": [
-        11
-      ],
-      "bpfix_nearest_pc": 7,
-      "bpfix_top1_line": false,
-      "bpfix_top1_span": true,
-      "bpfix_top1_vs_loss": false,
-      "bpfix_distance_error": 1,
-      "bpfix_set_recall_message": false,
-      "bpfix_loss_mentioned": false,
-      "log": "fixtures/logs/captured/PP-pad32.20260801T181331Z.log",
-      "raw": "results/rq1_bpfix_cli_raw/PP-pad32.txt"
-    },
-    {
-      "obligation": "PointerProvenance",
       "case_id": "PP-pad8",
       "pad": 8,
       "oracle_loss_code": 14,
@@ -162,6 +139,7 @@
       "d_true_src": 14,
       "bpfix_error_id": "BPFIX-E005",
       "bpfix_error_msg": "scalar range at the rejected use is still verifier-unsafe",
+      "bpfix_upstream_obligation": "ScalarRange",
       "bpfix_primary_src": 15,
       "bpfix_related_src": [
         11
@@ -177,6 +155,34 @@
       "raw": "results/rq1_bpfix_cli_raw/PP-pad8.txt"
     },
     {
+      "obligation": "PointerProvenance",
+      "case_id": "PP-pad32",
+      "pad": 32,
+      "oracle_loss_code": 14,
+      "oracle_reject_code": 52,
+      "oracle_loss_span": [
+        14,
+        15
+      ],
+      "d_true_src": 38,
+      "bpfix_error_id": "BPFIX-E005",
+      "bpfix_error_msg": "scalar range at the rejected use is still verifier-unsafe",
+      "bpfix_upstream_obligation": "ScalarRange",
+      "bpfix_primary_src": 15,
+      "bpfix_related_src": [
+        11
+      ],
+      "bpfix_nearest_pc": 7,
+      "bpfix_top1_line": false,
+      "bpfix_top1_span": true,
+      "bpfix_top1_vs_loss": false,
+      "bpfix_distance_error": 1,
+      "bpfix_set_recall_message": false,
+      "bpfix_loss_mentioned": false,
+      "log": "fixtures/logs/captured/PP-pad32.20260801T181331Z.log",
+      "raw": "results/rq1_bpfix_cli_raw/PP-pad32.txt"
+    },
+    {
       "obligation": "ScalarRange",
       "case_id": "SR-pad0",
       "pad": 0,
@@ -188,6 +194,7 @@
       "d_true_src": 2,
       "bpfix_error_id": "BPFIX-E005",
       "bpfix_error_msg": "scalar range at the rejected use is still verifier-unsafe",
+      "bpfix_upstream_obligation": "ScalarRange",
       "bpfix_primary_src": 13,
       "bpfix_related_src": [],
       "bpfix_nearest_pc": 7,
@@ -202,30 +209,6 @@
     },
     {
       "obligation": "ScalarRange",
-      "case_id": "SR-pad32",
-      "pad": 32,
-      "oracle_loss_code": 11,
-      "oracle_reject_code": 48,
-      "oracle_loss_span": [
-        11
-      ],
-      "d_true_src": 37,
-      "bpfix_error_id": "BPFIX-E005",
-      "bpfix_error_msg": "scalar range at the rejected use is still verifier-unsafe",
-      "bpfix_primary_src": 48,
-      "bpfix_related_src": [],
-      "bpfix_nearest_pc": 7,
-      "bpfix_top1_line": false,
-      "bpfix_top1_span": false,
-      "bpfix_top1_vs_loss": false,
-      "bpfix_distance_error": 37,
-      "bpfix_set_recall_message": false,
-      "bpfix_loss_mentioned": false,
-      "log": "fixtures/logs/captured/SR-pad32.20260801T181331Z.log",
-      "raw": "results/rq1_bpfix_cli_raw/SR-pad32.txt"
-    },
-    {
-      "obligation": "ScalarRange",
       "case_id": "SR-pad8",
       "pad": 8,
       "oracle_loss_code": 11,
@@ -236,6 +219,7 @@
       "d_true_src": 13,
       "bpfix_error_id": "BPFIX-E005",
       "bpfix_error_msg": "scalar range at the rejected use is still verifier-unsafe",
+      "bpfix_upstream_obligation": "ScalarRange",
       "bpfix_primary_src": 24,
       "bpfix_related_src": [],
       "bpfix_nearest_pc": 7,
@@ -247,6 +231,31 @@
       "bpfix_loss_mentioned": false,
       "log": "fixtures/logs/captured/SR-pad8.20260801T181331Z.log",
       "raw": "results/rq1_bpfix_cli_raw/SR-pad8.txt"
+    },
+    {
+      "obligation": "ScalarRange",
+      "case_id": "SR-pad32",
+      "pad": 32,
+      "oracle_loss_code": 11,
+      "oracle_reject_code": 48,
+      "oracle_loss_span": [
+        11
+      ],
+      "d_true_src": 37,
+      "bpfix_error_id": "BPFIX-E005",
+      "bpfix_error_msg": "scalar range at the rejected use is still verifier-unsafe",
+      "bpfix_upstream_obligation": "ScalarRange",
+      "bpfix_primary_src": 48,
+      "bpfix_related_src": [],
+      "bpfix_nearest_pc": 7,
+      "bpfix_top1_line": false,
+      "bpfix_top1_span": false,
+      "bpfix_top1_vs_loss": false,
+      "bpfix_distance_error": 37,
+      "bpfix_set_recall_message": false,
+      "bpfix_loss_mentioned": false,
+      "log": "fixtures/logs/captured/SR-pad32.20260801T181331Z.log",
+      "raw": "results/rq1_bpfix_cli_raw/SR-pad32.txt"
     }
   ]
 }

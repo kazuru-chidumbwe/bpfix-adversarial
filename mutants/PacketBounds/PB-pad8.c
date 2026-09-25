@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Lab-only adversarial mutant, not for production.
+// Lab-only adversarial mutant — not for production.
 #include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
 
@@ -8,7 +8,7 @@ int pb_pad8(struct xdp_md *ctx)
 {
 	void *data = (void *)(long)ctx->data;
 	void *data_end = (void *)(long)ctx->data_end;
-	/* ORACLE_LOSS_LINE: under-check, only 1 byte proven */
+	/* ORACLE_LOSS_LINE: under-check — only 1 byte proven */
 	if (data + 1 > data_end)
 		return XDP_DROP;
 	/* distance pad: 8 scalar ops */

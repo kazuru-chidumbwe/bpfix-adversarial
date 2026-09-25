@@ -89,7 +89,7 @@ def main() -> None:
     lines = [
         "# Pad and rename invariance at the verifier",
         "",
-        f"stamped captures `{STAMP}`. Compared: verdict, processed-instruction "
+        f"Stamped captures `{STAMP}`. Compared: verdict, processed-instruction "
         "count, reject message, and the verifier-listed instruction sequence (the "
         "load-time kernel address in `ld_imm64` map references is masked).",
         "",

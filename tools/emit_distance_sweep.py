@@ -80,10 +80,10 @@ def main() -> None:
     out_dir = ROOT / "results"
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "distance_sweep.json").write_text(
-        json.dumps(payload, indent=2) + "\n", encoding="utf-8"
+        json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n"
     )
     md = markdown(payload)
-    (out_dir / "distance_sweep.md").write_text(md + "\n", encoding="utf-8")
+    (out_dir / "distance_sweep.md").write_text(md + "\n", encoding="utf-8", newline="\n")
     print(md)
     print(f"Wrote {out_dir / 'distance_sweep.json'}")
 

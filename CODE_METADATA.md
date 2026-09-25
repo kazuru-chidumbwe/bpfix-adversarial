@@ -8,7 +8,7 @@ Same table as the manuscript Code metadata section.
 | Nr | Code metadata description | Metadata |
 | --- | --- | --- |
 | C1 | Current code version | `v1.0.2` |
-| C2 | Permanent link to code/repository used for this code version | https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2 (immutable equivalent: `.../tree/61c07b0f3b21fe2153c0d9c76442e105e748a3b5`) |
+| C2 | Permanent link to code/repository used for this code version | https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2 |
 | C3 | Legal code license | MIT License (`LICENSE` / `LICENSE.txt`) |
 | C4 | Code versioning system used | Git |
 | C5 | Software code languages, tools, and services used | Python 3.10+; Clang with BPF target; bpftool/libbpf; Linux kernel eBPF verifier; Python unittest; optional Rust-built upstream bpfix CLI for offline log replay |
@@ -20,4 +20,4 @@ Exact host labels, kernel/clang/bpftool version strings, cite stamps, and the up
 
 Also see: `CITATION.cff`, `codemeta.json`, [`docs/ZENODO.md`](docs/ZENODO.md).
 
-**Note:** C2 is the **GitHub tree for tag `v1.0.2`** (current venue requirement). Release: https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.2. The Zenodo archive for this version is `10.5281/zenodo.22763331`; the concept DOI for all versions is `10.5281/zenodo.21859726`. Zenodo `10.5281/zenodo.21860453` is the **v1.0.1** archive. Do not put any Zenodo DOI in C2, and do not label 21860453 as this version.
+**Note:** C2 is the **GitHub tree for tag `v1.0.2`** (current venue requirement). The tag's commit SHA is in the GitHub release notes and `docs/TAGS.md`; a tree cannot contain its own hash. Release: https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.2. The Zenodo archive for this version is `10.5281/zenodo.22763331`; the concept DOI for all versions is `10.5281/zenodo.21859726`. Zenodo `10.5281/zenodo.21860453` is the **v1.0.1** archive. Do not put any Zenodo DOI in C2, and do not label 21860453 as this version.

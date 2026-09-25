@@ -15,7 +15,7 @@ https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2
 | v1.0.1 | https://doi.org/10.5281/zenodo.21860453 | `v1.0.1` |
 | v1.0.2 | https://doi.org/10.5281/zenodo.22763331 | `v1.0.2` |
 
-The v1.0.2 archive was minted by hand on 15 Sep 2026 (Zenodo's API was unavailable at tag time) as a **new version** under the existing concept, so the concept DOI is unchanged. Its DOI is recorded in C7, `CITATION.cff` and `codemeta.json`. The file on the record is `git archive` of the cited tag. Do not relabel 21860453.
+The v1.0.2 archive was minted by hand on 15 Sep 2026 (Zenodo's API was unavailable at tag time) as a **new version** under the existing concept, so the concept DOI is unchanged. Its DOI is recorded in C7, `CITATION.cff` and `codemeta.json`. The record was first published with `git archive` of the tag as it stood on 15 Sep 2026 (`899f112`). After the final re-cut its file is replaced with `git archive --format=zip --prefix=bpfix-adversarial-v1.0.2/ v1.0.2` of the final tag, whose commit SHA is in the GitHub release notes. Do not relabel 21860453.
 
 ## Cite
 

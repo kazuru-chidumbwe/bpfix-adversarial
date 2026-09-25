@@ -68,7 +68,7 @@ def main() -> None:
             }
         )
 
-    OUT_JSON.write_text(json.dumps({"n": len(out_rows), "rows": out_rows}, indent=2) + "\n", encoding="utf-8")
+    OUT_JSON.write_text(json.dumps({"n": len(out_rows), "rows": out_rows}, indent=2) + "\n", encoding="utf-8", newline="\n")
 
     lines = [
         "# Lab distance vs construction oracle (template pads)",
@@ -101,7 +101,7 @@ def main() -> None:
             f"{r['vs_distance_error'] if r['vs_distance_error'] is not None else 'n/a'} |"
         )
 
-    OUT_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    OUT_MD.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print(f"Wrote {OUT_JSON}")
     print(f"Wrote {OUT_MD}")
     print(f"rows={len(out_rows)}")

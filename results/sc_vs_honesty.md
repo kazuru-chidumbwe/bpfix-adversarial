@@ -21,20 +21,20 @@ SC = bpfix SourceComment heuristic port on mutant source. VS = last source-mappe
 | PointerProvenance | `PP-pad0` | 14,15 | n/a | n/a | n/a | 15 | no | yes | yes | n/a |
 | PointerProvenance | `PP-pad32` | 14,15 | n/a | n/a | n/a | 15 | no | yes | yes | n/a |
 | PointerProvenance | `PP-pad8` | 14,15 | n/a | n/a | n/a | 15 | no | yes | yes | n/a |
-| ScalarRange | `SR-pad0` | 11 | n/a | no | no | 13 | no | no | yes | no |
-| ScalarRange | `SR-pad32` | 11 | n/a | no | no | 48 | no | no | yes | no |
-| ScalarRange | `SR-pad8` | 11 | n/a | no | no | 24 | no | no | yes | no |
+| ScalarRange | `SR-pad0` | 11 | none | no | no | 13 | no | no | yes | no |
+| ScalarRange | `SR-pad32` | 11 | none | no | no | 48 | no | no | yes | no |
+| ScalarRange | `SR-pad8` | 11 | none | no | no | 24 | no | no | yes | no |
 
 ## PointerProvenance + ScalarRange
 
 | case_id | SC line/span | VS line/span | note |
 | --- | --- | --- | --- |
-| `PP-pad0` | n/a | no/yes | SC N/A (no upstream PP predicate); VS terminal map hits XOR wash (coincides with author injection span; not a semantic proof-loss claim) |
-| `PP-pad32` | n/a | no/yes | SC N/A (no upstream PP predicate); VS terminal map hits XOR wash (coincides with author injection span; not a semantic proof-loss claim) |
-| `PP-pad8` | n/a | no/yes | SC N/A (no upstream PP predicate); VS terminal map hits XOR wash (coincides with author injection span; not a semantic proof-loss claim) |
-| `SR-pad0` | no/no | no/no | VS near-reject (stack load); no scalar-guard line present to match → both miss loss |
-| `SR-pad32` | no/no | no/no | VS near-reject (stack load); no scalar-guard line present to match → both miss loss |
-| `SR-pad8` | no/no | no/no | VS near-reject (stack load); no scalar-guard line present to match → both miss loss |
+| `PP-pad0` | n/a | no/yes | SC N/A (no upstream PP predicate); verifier rejects the pointer XOR inside the injection span, so VS lands in the span by construction; the marked dereference is never reached |
+| `PP-pad32` | n/a | no/yes | SC N/A (no upstream PP predicate); verifier rejects the pointer XOR inside the injection span, so VS lands in the span by construction; the marked dereference is never reached |
+| `PP-pad8` | n/a | no/yes | SC N/A (no upstream PP predicate); verifier rejects the pointer XOR inside the injection span, so VS lands in the span by construction; the marked dereference is never reached |
+| `SR-pad0` | no/no | no/no | VS at the indexed load (reject/use); no scalar-guard line present to match → both miss loss |
+| `SR-pad32` | no/no | no/no | VS at the indexed load (reject/use); no scalar-guard line present to match → both miss loss |
+| `SR-pad8` | no/no | no/no | VS at the indexed load (reject/use); no scalar-guard line present to match → both miss loss |
 
 ## Summary by obligation (rejecting cases only)
 
@@ -47,8 +47,8 @@ SC = bpfix SourceComment heuristic port on mutant source. VS = last source-mappe
 
 ## Takeaways
 
-- **PP:** SC is N/A (no upstream provenance heuristic). VS **top1_span** hits the XOR wash (coincides with author injection span; **top1_line** may miss if the map is not the first executable line). This is not a semantic proof-loss claim.
-- **SR:** No scalar-guard `if` line is present to match on unbound-index templates (SC miss by construction). VS reports the stack load (reject/use), not the unbound `idx` assignment (loss).
+- **PP:** SC is N/A (no upstream provenance heuristic). The verifier rejects the pointer XOR itself (`math between pkt pointer and register with unbounded min value`), inside the injection span, and never reaches the marked dereference; upstream bpfix labels these captures E005 (ScalarRange). VS **top1_span** therefore hits by construction and **top1_line** misses because the stop site is the XOR, not the first span line. PP rows carry no stop-site distance evidence and make no semantic proof-loss claim.
+- **SR:** No scalar-guard `if` line is present to match on unbound-index templates (SC miss by construction). VS reports the indexed load (reject/use), not the unbound `idx` assignment (loss). clang places the constant array in `.rodata`, so the verifier sees a map-value access.
 - **PB:** SC **top1_line** hits the under-check; VS hits the wide load (reject). The SC hit is construction-determined: the only line matching `looks_like_packet_bounds_check` is the injection line, which a first-match reporter cannot miss.
 - **NP-nocheck:** SC **top1_line** hits the lookup (empty-span fallback + nullable-return nocheck predicate, construction-determined); VS reports the reject deref (miss).
 - All 10 rejecting rows have construction-determined SC outcomes (PP N/A×3 + SR absent-guard×3 + NP fallback×1 + PB first-match×3): the inset exercises the scoring pipeline rather than discriminating among candidates. The evidence that is not fixed by construction is the VS stop site and the upstream CLI output (`rq1_bpfix_cli.*`).

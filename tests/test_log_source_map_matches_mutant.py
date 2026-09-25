@@ -2,15 +2,11 @@
 # SPDX-License-Identifier: MIT
 """Captured verifier source maps must agree with the committed mutant sources.
 
-The capture manifests record a `src_sha256` taken at capture time (2026-08-01).
-The generators were touched afterwards, so those hashes no longer match the
-mutants in the tree and cannot be used as a freshness check.
-
-What actually matters for scoring is weaker and more useful: every `path:LINE`
-the verifier printed must still name the same source text in the committed
-mutant. That is the property the scores depend on, and unlike a file hash it
-survives whitespace-level regeneration of the generators. This test asserts it
-directly.
+tests/test_capture_provenance.py checks the capture-manifest hashes themselves.
+This test checks the property the scores depend on: every `path:LINE` the
+verifier printed still names the same source text in the committed mutant.
+It covers NP-idiomatic-nocheck, whose capture-time copy was never committed
+and so has no matching manifest hash.
 """
 
 from __future__ import annotations

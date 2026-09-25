@@ -17,4 +17,4 @@ pip install -e ".[all]"
 | `lab` | `paramiko>=3.5,<4` | `tools/lab_*.py` remote capture | Not required for Docker offline |
 | `dev` | `coverage>=7.16,<8` | `tools/measure_coverage.py` | Coverage measurement only |
 
-**Host binaries (not pip):** clang, bpftool/libbpf, Linux kernel eBPF verifier. Versions are recorded in code metadata C6 and [`docs/LAB-PIN.md`](LAB-PIN.md) / `results/env_pins/`.
+**Host binaries (not pip):** clang, bpftool/libbpf, Linux kernel eBPF verifier. Versions are recorded in [`docs/LAB-PIN.md`](LAB-PIN.md) and `results/env_pins/` (C6 names the tools, not their versions).

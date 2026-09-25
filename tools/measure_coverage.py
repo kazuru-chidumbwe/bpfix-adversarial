@@ -56,6 +56,7 @@ def main() -> int:
         "[report]\n"
         "show_missing = False\n",
         encoding="utf-8",
+        newline="\n",
     )
     def cleanup() -> None:
         RCFILE.unlink(missing_ok=True)

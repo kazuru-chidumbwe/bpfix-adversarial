@@ -21,9 +21,14 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from bpfix_adversarial.upstream_corpus import UPSTREAM_ERROR_OBLIGATION  # noqa: E402
+
 HONESTY = ROOT / "results" / "sc_vs_honesty.json"
 RAW_DIR = ROOT / "results" / "rq1_bpfix_cli_raw"
 OUT_MD = ROOT / "results" / "rq1_bpfix_cli.md"
@@ -148,6 +153,10 @@ def main() -> None:
                 "d_true_src": d_true,
                 "bpfix_error_id": parsed["error_id"],
                 "bpfix_error_msg": parsed["error_msg"],
+                # Obligation upstream classifier.rs declares for this error ID.
+                "bpfix_upstream_obligation": UPSTREAM_ERROR_OBLIGATION.get(
+                    (parsed["error_id"] or "").removeprefix("BPFIX-")
+                ),
                 "bpfix_primary_src": primary,
                 "bpfix_related_src": parsed["related_src_lines"],
                 "bpfix_nearest_pc": parsed["nearest_bpf_pc"],
@@ -163,6 +172,7 @@ def main() -> None:
             }
         )
 
+    rows.sort(key=lambda x: (x["obligation"], x["pad"]))
     meta = {
         "n": len(rows),
         "excluded": excluded,
@@ -179,7 +189,7 @@ def main() -> None:
         "pad_note": "scalar __pad chains DCE under clang; nearest_bpf_pc stable across pads for these templates",
         "rows": rows,
     }
-    OUT_JSON.write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
+    OUT_JSON.write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8", newline="\n")
 
     def yn(v: bool | None) -> str:
         if v is True:
@@ -195,13 +205,15 @@ def main() -> None:
         "Primary report = rustc-style `--> file:LINE`. **top1_line** = exact `oracle_loss_code`; **top1_span** = span membership (`docs/METRICS.md`).",
         f"Pad note: {meta['pad_note']}.",
         "",
-        "| Obligation | case_id | pad | d_true | primary | PC | top1_line | top1_span | d_err | set_recall |",
-        "| --- | --- | ---: | ---: | ---: | ---: | --- | --- | ---: | --- |",
+        "| Obligation | case_id | pad | bpfix error (upstream obligation) | d_true | primary | PC | top1_line | top1_span | d_err | set_recall |",
+        "| --- | --- | ---: | --- | ---: | ---: | ---: | --- | --- | ---: | --- |",
     ]
     for r in rows:
         derr = r["bpfix_distance_error"]
         lines.append(
-            f"| {r['obligation']} | `{r['case_id']}` | {r['pad']} | {r['d_true_src']} | "
+            f"| {r['obligation']} | `{r['case_id']}` | {r['pad']} | "
+            f"{(r['bpfix_error_id'] or 'n/a').removeprefix('BPFIX-')} ({r['bpfix_upstream_obligation'] or 'n/a'}) | "
+            f"{r['d_true_src']} | "
             f"{r['bpfix_primary_src']} | {r['bpfix_nearest_pc']} | {yn(r['bpfix_top1_line'])} | "
             f"{yn(r['bpfix_top1_span'])} | {derr if derr is not None else 'n/a'} | "
             f"{yn(r['bpfix_set_recall_message'])} |"
@@ -212,7 +224,7 @@ def main() -> None:
     sr = [r for r in rows if r["obligation"] == "ScalarRange"]
     lines += [
         "",
-        "## Reading ",
+        "## Reading",
         "",
         "- **PacketBounds:** primary `-->` tracks the wide load (reject). Under **top1_line** "
         "this is a miss; `d_err` tracks pad "
@@ -222,11 +234,18 @@ def main() -> None:
         "(SC port: PB **top1_line** hit, construction-determined): SC keys on contextual loss "
         "pickup; CLI primary is the headline location. Both are correct measurements of "
         "different things (headline vs full message).",
-        "- **PointerProvenance:** primary lands on a later XOR-wash line in the loss **span** "
+        "- **PointerProvenance:** the verifier rejects the pointer XOR itself (`math between pkt "
+        "pointer and register with unbounded min value`), which is inside the injection span, and "
+        "never reaches the marked dereference. bpfix labels all three captures "
+        f"{', '.join(sorted({(r['bpfix_error_id'] or 'n/a').removeprefix('BPFIX-') for r in pp}))}, which "
+        "upstream `classifier.rs` maps to "
+        f"{', '.join(sorted({r['bpfix_upstream_obligation'] or 'n/a' for r in pp}))}, not PointerProvenance. "
+        "The primary lands on the XOR line "
         f"(top1_line={yn(all(r['bpfix_top1_line'] for r in pp))}; "
-        f"top1_span={yn(all(r['bpfix_top1_span'] for r in pp))}); nearest PC stable (DCE). "
-        "span hit without exact first-line hit.",
-        "- **ScalarRange:** primary stays on the unbound stack load (reject); loss (`prandom` idx) "
+        f"top1_span={yn(all(r['bpfix_top1_span'] for r in pp))}); `d_err` is "
+        f"{', '.join(str(r['bpfix_distance_error']) for r in pp)} at every pad because padding sits "
+        "after the reject site. These rows are not evidence about stop-site distance.",
+        "- **ScalarRange:** primary stays on the indexed load (reject); loss (`prandom` idx) "
         f"not in snippet, so a miss (top1_line={yn(any(r['bpfix_top1_line'] for r in sr))}), matching lab SC/VS.",
         "- Offline WSL replay of stamped lab logs (not lab-server): bpfix diagnoses log text and does "
         "not re-verify, so the offline host is not a kernel-version confound.",
@@ -237,7 +256,7 @@ def main() -> None:
         f"Artifacts: `{OUT_MD.relative_to(ROOT).as_posix()}` · `{OUT_JSON.relative_to(ROOT).as_posix()}`.",
         "",
     ]
-    OUT_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    OUT_MD.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print(f"Wrote {OUT_MD} n={len(rows)}")
 
 

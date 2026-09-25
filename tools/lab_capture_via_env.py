@@ -9,8 +9,6 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-import paramiko
-
 ROOT = Path(__file__).resolve().parents[1]
 # Override with BPFIX_LAB_ENV_FILE to point at a lab .env outside the repo
 # (e.g. a notes/ checkout); defaults to a gitignored lab/.env next to this tool.
@@ -49,7 +47,19 @@ def normalize_lab_env(cfg: dict[str, str]) -> dict[str, str]:
     return out
 
 
+def _skip_secrets(info: tarfile.TarInfo) -> tarfile.TarInfo | None:
+    """Keep credential files (lab/.env and the like) out of the upload tarball."""
+    name = Path(info.name).name
+    if name == ".env" or name.endswith(".env"):
+        return None
+    return info
+
+
 def connect(cfg: dict[str, str]) -> paramiko.SSHClient:
+    # Imported here so the offline rescore path (tools/lab_marker_isolation_ab.py
+    # --rescore, run by tools/check_results_fresh.py) works on a stdlib-only install.
+    import paramiko
+
     host = (cfg.get("LAB_TEST_HOST") or "").strip()
     user = (cfg.get("LAB_TEST_USER") or "").strip()
     password = (cfg.get("LAB_TEST_PASSWORD") or "").strip() or None
@@ -114,16 +124,18 @@ def main() -> None:
         ):
             p = ROOT / rel
             if p.exists():
-                tar.add(p, arcname=rel)
+                tar.add(p, arcname=rel, filter=_skip_secrets)
 
     sftp = client.open_sftp()
     home = f"/home/{cfg['LAB_TEST_USER'].strip()}"
     sftp.put(str(pack), f"{home}/bpfix-adv-lab.tgz")
     print(f"uploaded {pack.name} ({pack.stat().st_size} bytes)")
+    pack.unlink(missing_ok=True)
 
     _rc, out, err = run(
         f"rm -rf {home}/bpfix-adversarial-work && mkdir -p {home}/bpfix-adversarial-work && "
         f"tar -xzf {home}/bpfix-adv-lab.tgz -C {home}/bpfix-adversarial-work && "
+        f"rm -f {home}/bpfix-adv-lab.tgz && "
         f"cd {home}/bpfix-adversarial-work && mkdir -p fixtures/logs/captured results/env_pins && "
         "ls mutants/*/*.c | wc -l"
     )
@@ -132,6 +144,7 @@ def main() -> None:
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     if sudo_pw:
         with sftp.file(f"{home}/.bpfix_sudo_pw", "w") as f:
+            f.chmod(0o600)  # before the password is written
             f.write(sudo_pw + "\n")
         run(f"chmod 600 {home}/.bpfix_sudo_pw")
         sudo_bpf = 'printf \'%s\\n\' "$PW" | sudo -S bpftool'

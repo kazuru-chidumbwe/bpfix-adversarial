@@ -72,10 +72,22 @@ git clone https://github.com/kazuru-chidumbwe/bpfix-adversarial.git
 cd bpfix-adversarial
 git checkout v1.0.2   # cite tag
 python3 -m venv .venv && . .venv/bin/activate
-pip install -U pip && pip install -e .
-# LAB_TEST_HOST / LAB_TEST_SSH_KEY or PASSWORD; see docs/TAGS.md
+pip install -U pip && pip install -e ".[lab]"
 python tools/lab_capture_via_env.py
 ```
+
+`lab/.env` (or the file named by `BPFIX_LAB_ENV_FILE`), one `KEY=value` per line:
+
+| Variable | Required | Meaning |
+| --- | --- | --- |
+| `LAB_TEST_HOST` | yes | lab host name or address |
+| `LAB_TEST_USER` | yes | SSH user (no default) |
+| `LAB_TEST_SSH_KEY` | key or password | path to an Ed25519 private key; used for SSH when set |
+| `LAB_TEST_PASSWORD` | key or password | SSH password when no key is set; when present it is also piped to `sudo -S`, otherwise the helpers use `sudo -n` |
+
+`LAB_HOST2` / `LAB_HOST2_HOST`, `LAB_HOST2_USER`, `LAB_HOST2_PASSWORD` and
+`LAB_HOST2_SSH_KEY` are accepted as aliases. `lab/.env` is gitignored and is not
+included in the upload tarball.
 
 ## Privilege and failure notes
 

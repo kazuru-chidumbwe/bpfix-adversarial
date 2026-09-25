@@ -11,8 +11,6 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-import paramiko
-
 ROOT = Path(__file__).resolve().parents[1]
 # Override with BPFIX_LAB_ENV_FILE to point at a lab .env outside the repo
 # (e.g. a notes/ checkout); defaults to a gitignored lab/.env next to this tool.
@@ -49,6 +47,8 @@ def normalize_lab_env(cfg: dict[str, str]) -> dict[str, str]:
 
 
 def main() -> int:
+    import paramiko
+
     if len(sys.argv) < 2:
         print("usage: lab_load_one.py <relative-or-abs.c> [prog_type]")
         return 2
@@ -97,6 +97,7 @@ def main() -> int:
     if password:
         pw_file = f"/tmp/.bpfix_one_pw_{stamp}"
         with sftp.file(pw_file, "w") as f:
+            f.chmod(0o600)  # before the password is written
             f.write(password + "\n")
         c.exec_command(f"chmod 600 {pw_file}", timeout=10)
         sudo_bpf = f'PW=$(cat {pw_file}); printf "%s\\n" "$PW" | sudo -S -p "" /usr/sbin/bpftool'
@@ -128,7 +129,8 @@ def main() -> int:
     local_dir = ROOT / "fixtures" / "logs" / "captured"
     local_dir.mkdir(parents=True, exist_ok=True)
     local_log = local_dir / f"{src.stem}.{stamp}.log"
-    local_log.write_text(out, encoding="utf-8")
+    # get_pty=True returns CRLF; fixture logs must stay LF (tools/check_lf_logs.py).
+    local_log.write_text(out.replace("\r\n", "\n"), encoding="utf-8", newline="\n")
     verdict = "ACCEPT" if any(line.strip() == "ACCEPT" for line in out.splitlines()) else "REJECT"
     if any(line.strip() == "COMPILE_FAIL" for line in out.splitlines()):
         verdict = "COMPILE_FAIL"

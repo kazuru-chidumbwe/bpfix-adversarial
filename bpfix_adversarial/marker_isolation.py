@@ -35,7 +35,7 @@ def strip_oracle_markers(text: str, *, preserve_lines: bool = True) -> str:
 def strip_oracle_markers_path(src: Path, dest: Path, *, preserve_lines: bool = True) -> None:
     text = src.read_text(encoding="utf-8")
     dest.parent.mkdir(parents=True, exist_ok=True)
-    dest.write_text(strip_oracle_markers(text, preserve_lines=preserve_lines), encoding="utf-8")
+    dest.write_text(strip_oracle_markers(text, preserve_lines=preserve_lines), encoding="utf-8", newline="\n")
 
 
 def oracle_tokens_in_text(text: str) -> list[str]:

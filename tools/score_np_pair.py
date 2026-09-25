@@ -96,7 +96,7 @@ def main() -> None:
     }
     out_path = ROOT / "results" / "np_pair_score.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(out, indent=2) + "\n", encoding="utf-8")
+    out_path.write_text(json.dumps(out, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(json.dumps(out, indent=2))
     print(f"Wrote {out_path}")
 

@@ -1,6 +1,6 @@
 # Four-obligation stratified mutant matrix
 
-Construction-time oracle markers scanned from mutant sources. The marker columns give the line of the ORACLE_* comment; the code columns give the first executable line after it, which is what scoring uses (`oracle_loss_code`). Score against the code columns, never the marker columns.
+Construction-time oracle markers scanned from mutant sources. The marker columns give the line of the ORACLE_* comment; the code columns give the line scoring uses: the first executable line of the injection span (`oracle_loss_code`), or for an empty span the last executable line before the marker (`NP-idiomatic-nocheck`). Score against the code columns, never the marker columns.
 Log tier: `captured` = lab bpftool; `synthetic` = fixture; `missing` = no log yet.
 
 ## NullablePointer (n=7)
@@ -10,7 +10,7 @@ Log tier: `captured` = lab bpftool; `synthetic` = fixture; `missing` = no log ye
 | `NP-brittle-pad0` | 0 | 18 | 19 | 21 | 22 | captured | `6ef5414b7cec…` | SC name-list hit expected (!ptr) |
 | `NP-brittle-pad32` | 32 | 18 | 19 | 56 | 57 | captured | `7b81929baf37…` | SC name-list hit expected (!ptr) |
 | `NP-brittle-pad8` | 8 | 18 | 19 | 32 | 33 | captured | `ecc7c7d84085…` | SC name-list hit expected (!ptr) |
-| `NP-idiomatic-nocheck` | None | 22 | 21 | 35 | 36 | captured | `84584b7274c9…` | rejecting NP template (missing check) |
+| `NP-idiomatic-nocheck` | n/a | 22 | 21 | 35 | 36 | captured | `84584b7274c9…` | rejecting NP template (missing check) |
 | `NP-idiomatic-pad0` | 0 | 18 | 19 | 21 | 22 | captured | `a579a464e6ee…` | SC name-list miss expected (!entry) |
 | `NP-idiomatic-pad32` | 32 | 18 | 19 | 56 | 57 | captured | `d25136325d9a…` | SC name-list miss expected (!entry) |
 | `NP-idiomatic-pad8` | 8 | 18 | 19 | 32 | 33 | captured | `c7a70e2eb136…` | SC name-list miss expected (!entry) |
@@ -41,4 +41,4 @@ Log tier: `captured` = lab bpftool; `synthetic` = fixture; `missing` = no log ye
 
 **Summary:** 16 mutants · 16 lab-captured logs · 0 synthetic · 0 missing.
 
-Honesty scores vs construction oracle for SC/VS remain in `rename_honesty.*`, `np_pair_score.json`, `tier_disagreement.*`; this matrix is the stratified coverage table for the four-obligation review.
+SC/VS scores on the lab captures are in `sc_vs_honesty.*`; the rename boundary is in `rename_honesty.*`; `np_pair_score.json` and `tier_disagreement.*` are synthetic-fixture illustrations. This matrix is the stratified coverage table for the four families.

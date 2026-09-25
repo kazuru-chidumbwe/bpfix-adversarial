@@ -7,10 +7,11 @@ Stamp filter `20260801T181331Z`. Offline only, no new lab captures.
 | negative (markers + ACCEPT) | 6 | 6 | 6/6 |
 | positive (PB stop ≠ injection) | 3 | 3 | 3/3 |
 | compiler-preservation (source map) | 10 | 10 | 10/10 |
+| verdict = construction (all templates) | 16 | 16 | 16/16 |
 
 ## Negative control
 
-Injection markers present; lab load **ACCEPT**s.
+Templates built to be well-formed (selected by construction, not by the observed verdict); markers present; lab load **ACCEPT**s.
 
 | case_id | obligation | loss_code |
 | --- | --- | ---: |

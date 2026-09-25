@@ -98,8 +98,8 @@ def check_one(rel: str, script_argv: list[str]) -> None:
         with tempfile.TemporaryDirectory() as td:
             a = Path(td) / "committed.json"
             b = Path(td) / "fresh.json"
-            a.write_text(_dump_canonical(committed), encoding="utf-8")
-            b.write_text(_dump_canonical(fresh), encoding="utf-8")
+            a.write_text(_dump_canonical(committed), encoding="utf-8", newline="\n")
+            b.write_text(_dump_canonical(fresh), encoding="utf-8", newline="\n")
         raise SystemExit(
             f"STALE: {rel} does not match fresh run of {' '.join(script_argv)}\n"
             f"Re-run: python {' '.join(script_argv)} && git add {rel}"
