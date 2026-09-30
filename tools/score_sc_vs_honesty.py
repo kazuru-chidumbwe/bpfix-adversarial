@@ -3,7 +3,7 @@
 """SC vs VS honesty on lab-captured mutants (loss-anchored scoring).
 
 General rule (locked): top-1 and distance are measured against the construction-time
-**loss** site whenever loss and reject markers diverge — not against the marked
+**loss** site whenever loss and reject markers diverge, not against the marked
 reject/use line.
 
 SourceComment (SC): bpfix heuristic port on mutant source.
@@ -44,6 +44,16 @@ REJECT_HINTS = (
     "r1 offset",
 )
 
+# Rejecting rows whose SC outcome is fixed by construction, in takeaway order.
+# The takeaway counts are derived from the scored rows via this table, and
+# check_construction() verifies each row's reason before the prose is emitted.
+SC_CONSTRUCTION_REASONS = (
+    ("PointerProvenance", "PP N/A"),
+    ("ScalarRange", "SR absent-guard"),
+    ("NullablePointer", "NP fallback"),
+    ("PacketBounds", "PB first-match"),
+)
+
 
 def sha256_file(p: Path) -> str:
     # Normalize CRLF→LF so Windows/Linux checkouts yield the same src_sha256.
@@ -57,7 +67,7 @@ def latest_captured_log(case_id: str) -> Path | None:
         for p in cap.glob(f"{case_id}.*.log")
         if not p.name.endswith(".compile")
     )
-    # Prefer SoftwareX template-oracle stamp when present; else newest stamp.
+    # Prefer the paper's template-oracle stamp when present; else newest stamp.
     preferred = [p for p in hits if "20260801T181331Z" in p.name]
     if preferred:
         return preferred[-1]
@@ -135,7 +145,7 @@ def sc_report(src: Path, obligation: str, case_id: str) -> tuple[int | None, str
         return None, "SC: no scalar-guard line present to match (expected on unbound-index templates)"
 
     if obligation == "PointerProvenance":
-        return None, "SC: N/A — no PP-specific SourceComment heuristic (upstream coverage gap)"
+        return None, "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
 
     return None, f"SC: unknown obligation ({obligation})"
 
@@ -200,13 +210,35 @@ def score_reported(
         "applicable": True,
         "top1_line": top1_line if reported is not None else False,
         "top1_span": top1_span,
-        "top1_vs_loss": top1_span,  # legacy alias — lab inset used span membership
+        "top1_vs_loss": top1_span,  # legacy alias; the lab inset used span membership
         "distance_true": h["distance_true"],
         "distance_error": h["distance_error"],
         "signed_offset": h.get("signed_offset"),
         "reported": reported,
         "detail": h,
     }
+
+
+def check_construction(row: dict, src: Path) -> str | None:
+    """Return why a rejecting row's SC outcome is not construction-determined, else None."""
+    texts = [ln.strip() for ln in src.read_text(encoding="utf-8").splitlines()]
+    ob = row["obligation"]
+    if ob == "PointerProvenance":
+        return None if row["sc_applicable"] is False else "PP row scored as applicable"
+    if ob == "ScalarRange":
+        guards = [t for t in texts if looks_like_scalar_guard(t) and "data_end" not in t]
+        return None if not guards and row["sc_reported_line"] is None else "SR source has a scalar guard"
+    if ob == "NullablePointer":
+        ok = (
+            not row["oracle_loss_span"]
+            and not any(looks_like_null_check(t) for t in texts)
+            and row["sc_reported_line"] == row["oracle_loss_code"]
+        )
+        return None if ok else "NP row is not an empty-span nullable-return fallback"
+    if ob == "PacketBounds":
+        hits = [i for i, t in enumerate(texts, 1) if looks_like_packet_bounds_check(t)]
+        return None if hits == [row["oracle_loss_code"]] else "PB data_end check is not exactly the injection line"
+    return f"no construction rule for {ob}"
 
 
 def main() -> None:
@@ -231,7 +263,7 @@ def main() -> None:
             rejected = lab_rejected(text)
             vs_line, vs_txt, vs_note = vs_stop_line(text)
             if not rejected:
-                vs_note = "VS: load accepted — stop-site N/A for reject honesty"
+                vs_note = "VS: load accepted; stop-site N/A for reject honesty"
                 # still record last map for transparency but don't claim honesty
             log_rel = str(log.relative_to(ROOT)).replace("\\", "/")
             log_sha = sha256_file(log)
@@ -304,15 +336,16 @@ def main() -> None:
             "top1_span = predicted in oracle_loss_span; "
             "distance_error = |predicted-oracle_loss_code|; "
             "legacy top1_vs_loss aliases top1_span; "
-            "SC PointerProvenance is N/A (sc_applicable=false; not scored as 0)"
+            "SC PointerProvenance is N/A (sc_applicable=false; not scored as 0); "
+            "SC-vs-VS span disagreement is N/A when SC is N/A"
         ),
         "n": len(rows),
         "rows": rows,
     }
-    out_json.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    out_json.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n")
 
     lines = [
-        "# SC vs VS injection-site agreement — lab stamp family `20260801T181331Z`",
+        "# SC vs VS injection-site agreement, lab stamp family `20260801T181331Z`",
         "",
         "Scoring: **top1_line** (`predicted == oracle_loss_code`); **top1_span**",
         "(membership in injection span); **distance_error** `|predicted − oracle_loss_code|`.",
@@ -335,12 +368,12 @@ def main() -> None:
 
     for r in rows:
         span = r["oracle_loss_span"]
-        span_s = ",".join(str(x) for x in span) if span else "—"
-        sc_line_s = "—" if not r.get("sc_applicable", True) else (r["sc_reported_line"] or "—")
+        span_s = ",".join(str(x) for x in span) if span else "n/a"
+        sc_line_s = "n/a" if not r.get("sc_applicable", True) else (r["sc_reported_line"] or "none")
         lines.append(
             f"| {r['obligation']} | `{r['case_id']}` | {span_s} | "
             f"{sc_line_s} | {yn(r['sc_top1_line'])} | {yn(r['sc_top1_span'])} | "
-            f"{r['vs_reported_line'] or '—'} | {yn(r['vs_top1_line'])} | {yn(r['vs_top1_span'])} | "
+            f"{r['vs_reported_line'] or 'n/a'} | {yn(r['vs_top1_line'])} | {yn(r['vs_top1_span'])} | "
             f"{yn(r['lab_rejected'])} | {yn(r['disagreement'])} |"
         )
 
@@ -354,16 +387,17 @@ def main() -> None:
         note = r["sc_note"] if r["sc_top1_span"] is False else r["vs_note"]
         if r["obligation"] == "PointerProvenance":
             note = (
-                "SC N/A (no upstream PP predicate); VS terminal map hits XOR wash "
-                "(coincides with author injection span; not a semantic proof-loss claim)"
+                "SC N/A (no upstream PP predicate); verifier rejects the pointer XOR inside "
+                "the injection span, so VS lands in the span by construction; the marked "
+                "dereference is never reached"
             )
             sc_cell = "n/a"
         else:
             sc_cell = f"{yn(r['sc_top1_line'])}/{yn(r['sc_top1_span'])}"
         if r["obligation"] == "ScalarRange" and r["vs_top1_span"] is False:
             note = (
-                "VS near-reject (stack load); no scalar-guard line present to match "
-                "→ both miss loss"
+                "VS at the indexed load (reject/use); no scalar-guard line present to "
+                "match → both miss loss"
             )
         lines.append(
             f"| `{r['case_id']}` | {sc_cell} | "
@@ -391,33 +425,72 @@ def main() -> None:
             sc_s_s = f"{sc_s}/{n}"
         vs_l = sum(1 for r in rej if r["vs_top1_line"] is True)
         vs_s = sum(1 for r in rej if r["vs_top1_span"] is True)
-        dis = sum(1 for r in rej if r["disagreement"] is True)
+        # SC-vs-VS span disagreement is undefined when SC is N/A (e.g. PP).
+        if ob == "PointerProvenance" or any(not r.get("sc_applicable", True) for r in rej):
+            dis_s = "n/a"
+        else:
+            dis = sum(1 for r in rej if r["disagreement"] is True)
+            dis_s = f"{dis}/{n}"
         lines.append(
             f"| {ob} | {n} | {sc_l_s} | {sc_s_s} | "
-            f"{vs_l}/{n} | {vs_s}/{n} | {dis}/{n} |"
+            f"{vs_l}/{n} | {vs_s}/{n} | {dis_s} |"
         )
+
+    rej_by = {ob: [r for r in rs if r["lab_rejected"]] for ob, rs in by.items()}
+    n_rej = sum(len(v) for v in rej_by.values())
+    bad = [
+        (r["case_id"], why)
+        for rs in rej_by.values()
+        for r in rs
+        if (why := check_construction(r, ROOT / r["src"])) is not None
+    ]
+    if bad:
+        raise SystemExit(f"score_sc_vs_honesty: SC outcome not construction-determined: {bad}")
+    covered = sum(len(rej_by.get(ob, ())) for ob, _ in SC_CONSTRUCTION_REASONS)
+    if covered != n_rej:
+        raise SystemExit(
+            f"score_sc_vs_honesty: {n_rej - covered} rejecting row(s) outside "
+            "SC_CONSTRUCTION_REASONS; classify them before emitting the takeaway."
+        )
+    sc_breakdown = " + ".join(
+        f"{label}×{len(rej_by[ob])}"
+        for ob, label in SC_CONSTRUCTION_REASONS
+        if rej_by.get(ob)
+    )
 
     lines += [
         "",
         "## Takeaways",
         "",
-        "- **PP:** SC is N/A (no upstream provenance heuristic). VS **top1_span** hits "
-        "the XOR wash (coincides with author injection span; **top1_line** may miss if "
-        "the map is not the first executable line) — not a semantic proof-loss claim.",
+        "- **PP:** SC is N/A (no upstream provenance heuristic). The verifier rejects the "
+        "pointer XOR itself (`math between pkt pointer and register with unbounded min "
+        "value`), inside the injection span, and never reaches the marked dereference; "
+        "upstream bpfix labels these captures E005 (ScalarRange). VS **top1_span** "
+        "therefore hits by construction and **top1_line** misses because the stop site is "
+        "the XOR, not the first span line. PP rows carry no stop-site distance evidence and "
+        "make no semantic proof-loss claim.",
         "- **SR:** No scalar-guard `if` line is present to match on unbound-index templates "
-        "(SC miss by construction). VS reports the stack load (reject/use), not the unbound "
-        "`idx` assignment (loss).",
-        "- **PB:** SC **top1_line** hits the under-check; VS hits the wide load (reject).",
-        "- **NP-nocheck:** SC reports lookup (before injection); VS reports reject deref — "
-        "both miss line and span; still the RQ4 separation seed.",
-        "- Of 10 rejecting rows, six have construction-determined SC outcomes "
-        "(PP N/A×3 + SR absent-guard×3); informative SC sample is 4 rows (3 PB + 1 NP).",
+        "(SC miss by construction). VS reports the indexed load (reject/use), not the "
+        "unbound `idx` assignment (loss). clang places the constant array in `.rodata`, so "
+        "the verifier sees a map-value access.",
+        "- **PB:** SC **top1_line** hits the under-check; VS hits the wide load (reject). "
+        "The SC hit is construction-determined: the only line matching "
+        "`looks_like_packet_bounds_check` is the injection line, which a first-match "
+        "reporter cannot miss.",
+        "- **NP-nocheck:** SC **top1_line** hits the lookup (empty-span fallback + "
+        "nullable-return nocheck predicate, construction-determined); VS reports the "
+        "reject deref (miss).",
+        f"- All {n_rej} rejecting rows have construction-determined SC outcomes "
+        f"({sc_breakdown}): the inset "
+        "exercises the scoring pipeline rather than discriminating among candidates. "
+        "The evidence that is not fixed by construction is the VS stop site and the "
+        "upstream CLI output (`rq1_bpfix_cli.*`).",
         "- Accepting NP-with-check rows: VS score n/a (no reject); SC rename story unchanged.",
         "",
         f"Artifacts: `{out_json.relative_to(ROOT).as_posix()}` · `{out_md.relative_to(ROOT).as_posix()}`",
         "",
     ]
-    out_md.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    out_md.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print(f"Wrote {out_json}")
     print(f"Wrote {out_md}")
     print(f"rows={len(rows)}")

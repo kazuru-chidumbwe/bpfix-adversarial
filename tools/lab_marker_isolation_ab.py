@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Lab A/B: marker-bearing vs marker-neutral mutants (Gates marker isolation).
+"""Lab A/B: marker-bearing vs marker-neutral mutants (marker isolation).
 
-For each SoftwareX-stamp case in results/sc_vs_honesty.json, compile+load the
+For each stamped case in results/sc_vs_honesty.json, compile+load the
 original source and a line-preserving marker-stripped twin on the same lab host
 in one SSH session. Compare verdict, VerifierState stop line, and normalized
 source-map sets.
@@ -21,8 +21,10 @@ import sys
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import paramiko
+if TYPE_CHECKING:  # pragma: no cover - typing only
+    import paramiko
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -30,7 +32,7 @@ sys.path.insert(0, str(ROOT))
 from bpfix_adversarial.marker_isolation import strip_oracle_markers  # noqa: E402
 from tools.score_sc_vs_honesty import lab_rejected, vs_stop_line  # noqa: E402
 
-# Reuse lab env helpers without treating tools/ as a package.
+# Reuse lab env helpers by path.
 import importlib.util
 
 def _load_mod(name: str, path: Path):
@@ -40,6 +42,7 @@ def _load_mod(name: str, path: Path):
     spec.loader.exec_module(mod)
     return mod
 
+# Safe to load offline: lab_capture_via_env imports paramiko on demand.
 _cap = _load_mod("lab_capture_via_env", ROOT / "tools" / "lab_capture_via_env.py")
 load_env = _cap.load_env
 connect = _cap.connect
@@ -48,6 +51,18 @@ normalize_lab_env = _cap.normalize_lab_env
 STAMP_FILTER = "20260801T181331Z"
 SOURCE_AT_RE = re.compile(r";\s*(.*?)\s*@\s*([^:]+):(\d+)\s*$")
 ENV = Path(os.environ.get("BPFIX_LAB_ENV_FILE", str(ROOT / "lab" / ".env")))
+
+# Written into marker_isolation_lab.json by both the capture path and --rescore,
+# so the committed note always states the criterion pair_match() applies.
+PASS_NOTE = (
+    "Marker-neutral = ORACLE_* comments replaced with /* */ (line-preserving). "
+    "pass = identical verdict + normalized -O2 -g load log (timing/ASLR stripped) + "
+    "source-comment texts + same-path -O2 (no -g) ELF sha256 identity, and no "
+    "ORACLE_ token in either log. The -O2 -g object, llvm-objdump -d and BTF section "
+    "hashes are reported but are not part of pass: the two arms compile under "
+    "variant-specific file names and llvm-objdump output embeds the object path, so "
+    "those hashes differ for reasons that do not isolate marker text (dbg_obj_match)."
+)
 
 
 def prog_type_for(text: str) -> str:
@@ -77,6 +92,13 @@ def normalize_log_body(text: str) -> str:
             continue
         # Collapse absolute tmp paths / stamps / variant ids
         ln = re.sub(r"/tmp/bpfix-iso-[A-Za-z0-9_.-]+", "/tmp/bpfix-iso-STAMP", ln)
+        # Debian 6.12 bpftool source maps use bare tmp basenames
+        # (`...-bearing.c` vs `...-neutral.c`); Ubuntu 6.8 often omitted @file:line.
+        ln = re.sub(
+            r"bpfix-iso-[A-Za-z0-9_.-]+-(bearing|neutral)",
+            "bpfix-iso-STAMP-VARIANT",
+            ln,
+        )
         ln = re.sub(r"bpfix_iso_[A-Za-z0-9_]+", "bpfix_iso_ID", ln)
         ln = re.sub(r"markeriso-(bearing|neutral)", "markeriso-VARIANT", ln)
         # ASLR / map allocation addresses differ per load; not marker-dependent
@@ -167,12 +189,15 @@ def analyze_captured_log(
         "disasm_sha256": meta.get("disasm_sha256"),
         "btf_sha256": meta.get("btf_sha256"),
         "btf_ext_sha256": meta.get("btf_ext_sha256"),
+        # Present when carried from a previous capture (see carried_object_meta);
+        # a fresh capture fills this in after the no-debug object build step.
+        "nodbg_obj_sha256": meta.get("nodbg_obj_sha256"),
     }
 
 
 def nodbg_object_sha(
-    client: paramiko.SSHClient,
-    sftp: paramiko.SFTPClient,
+    client: "paramiko.SSHClient",
+    sftp: "paramiko.SFTPClient",
     src_text: str,
 ) -> str:
     """Compile without -g under a fixed remote path; return ELF sha256."""
@@ -206,8 +231,11 @@ def pair_match(b: dict, n: dict) -> dict:
         and n.get("nodbg_obj_sha256")
         and b["nodbg_obj_sha256"] == n["nodbg_obj_sha256"]
     )
-    # -g ELF often differs: debug/source metadata retains authored source text
-    # (.BTF and .BTF.ext dumps differ on the Ubuntu A/B campaign). Reported, not required for pass.
+    # -g ELF often differs (.BTF and .BTF.ext dumps differ on the Ubuntu A/B
+    # campaign), but this does not isolate an effect of marker text: the two
+    # arms compile under variant-specific file names and the section hashes
+    # are taken over llvm-objdump -s output, which embeds the object path.
+    # Reported, not required for pass.
     same_dbg = (
         b.get("obj_sha256")
         and n.get("obj_sha256")
@@ -221,6 +249,8 @@ def pair_match(b: dict, n: dict) -> dict:
         "source_comment_texts": same_comments,
         "normalized_log": same_norm,
         "nodbg_obj_sha256": bool(same_nodbg),
+        # Derived from obj_sha256 (the -O2 -g object), not from a field of
+        # this name; there is no dbg_obj_sha256 entry field.
         "dbg_obj_sha256": bool(same_dbg),
         "no_oracle_in_logs": no_oracle,
         "pass": bool(
@@ -234,8 +264,8 @@ def pair_match(b: dict, n: dict) -> dict:
 
 
 def load_pair(
-    client: paramiko.SSHClient,
-    sftp: paramiko.SFTPClient,
+    client: "paramiko.SSHClient",
+    sftp: "paramiko.SFTPClient",
     *,
     case_id: str,
     variant: str,
@@ -284,7 +314,7 @@ def load_pair(
     local_dir = ROOT / "fixtures" / "logs" / "captured"
     local_dir.mkdir(parents=True, exist_ok=True)
     local_log = local_dir / f"{case_id}.markeriso-{variant}.{run_stamp}.log"
-    # Always LF — Windows captures must not commit CRLF (CI: tools/check_lf_logs.py).
+    # Always LF; Windows captures must not commit CRLF (CI: tools/check_lf_logs.py).
     text = out.replace("\r\n", "\n").replace("\r", "\n")
     with local_log.open("w", encoding="utf-8", newline="\n") as fh:
         fh.write(text)
@@ -296,6 +326,25 @@ def load_pair(
         src_sha256=hashlib.sha256(src_text.encode()).hexdigest(),
         log_rel=str(local_log.relative_to(ROOT)).replace("\\", "/"),
     )
+
+
+OBJECT_META_KEYS = (
+    "obj_sha256",
+    "disasm_sha256",
+    "btf_sha256",
+    "btf_ext_sha256",
+    "nodbg_obj_sha256",
+)
+
+
+def carried_object_meta(entry: dict) -> dict:
+    """Object hashes from a previous capture.
+
+    They are computed on the lab host from compiled objects, so a rescore that
+    only re-reads log text cannot recompute them. Carrying them forward keeps
+    --rescore idempotent; recomputing without them scored every pair as a miss.
+    """
+    return {k: entry[k] for k in OBJECT_META_KEYS if entry.get(k) is not None}
 
 
 def rescore_existing(lab_path: Path) -> dict:
@@ -311,6 +360,7 @@ def rescore_existing(lab_path: Path) -> dict:
             prog_type=p["bearing"]["prog_type"],
             src_sha256=p["bearing"]["src_sha256"],
             log_rel=p["bearing"]["log"],
+            object_meta=carried_object_meta(p["bearing"]),
         )
         n = analyze_captured_log(
             n_text,
@@ -318,6 +368,7 @@ def rescore_existing(lab_path: Path) -> dict:
             prog_type=p["neutral"]["prog_type"],
             src_sha256=p["neutral"]["src_sha256"],
             log_rel=p["neutral"]["log"],
+            object_meta=carried_object_meta(p["neutral"]),
         )
         pairs.append(
             {
@@ -342,22 +393,35 @@ def rescore_existing(lab_path: Path) -> dict:
         "source_map_match": sum(1 for p in pairs if p["match"]["source_map_pairs"]),
         "source_comment_match": sum(1 for p in pairs if p["match"]["source_comment_texts"]),
         "normalized_log_match": sum(1 for p in pairs if p["match"]["normalized_log"]),
-        "obj_sha_match": sum(1 for p in pairs if p["match"].get("obj_sha256")),
-        "disasm_sha_match": sum(1 for p in pairs if p["match"].get("disasm_sha256")),
-        "btf_sha_match": sum(1 for p in pairs if p["match"].get("btf_sha256")),
-        "btf_ext_sha_match": sum(1 for p in pairs if p["match"].get("btf_ext_sha256")),
+        "nodbg_obj_match": sum(1 for p in pairs if p["match"].get("nodbg_obj_sha256")),
+        "dbg_obj_match": sum(1 for p in pairs if p["match"].get("dbg_obj_sha256")),
     }
-    lab["note"] = (
-        "Marker-neutral = ORACLE_* comments replaced with /* */ (line-preserving). "
-        "pass = identical verdict + normalized verifier log body (timing/ASLR stripped) + "
-        "source-comment texts + ELF object SHA-256 + llvm-objdump -d SHA-256, "
-        "and no ORACLE_ token in either log. BTF section hashes reported when available."
-    )
-    lab_path.write_text(json.dumps(lab, indent=2) + "\n", encoding="utf-8")
+    lab["note"] = PASS_NOTE
+    lab_path.write_text(json.dumps(lab, indent=2) + "\n", encoding="utf-8", newline="\n")
     return lab
 
 
-def main() -> int:
+def parse_args(argv: list[str] | None = None):
+    import argparse
+
+    p = argparse.ArgumentParser(description="Lab A/B marker isolation")
+    p.add_argument(
+        "--out",
+        type=Path,
+        default=ROOT / "results" / "marker_isolation_lab.json",
+        help="Output JSON. Use a different path to avoid overwriting an existing host inset.",
+    )
+    p.add_argument("--rescore", action="store_true")
+    return p.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv)
+    if args.rescore:
+        lab = rescore_existing(args.out)
+        print(json.dumps(lab["summary"], indent=2))
+        return 0 if lab["summary"]["pass"] == lab["summary"]["n"] else 1
+
     sc = json.loads((ROOT / "results" / "sc_vs_honesty.json").read_text(encoding="utf-8"))
     rows = [
         r
@@ -365,7 +429,6 @@ def main() -> int:
         if STAMP_FILTER in (r.get("log") or "")
         and r.get("src")
         and Path(ROOT / r["src"]).is_file()
-        and "repaired" not in r["case_id"]
     ]
     cfg = normalize_lab_env(load_env(ENV))
     password = (cfg.get("LAB_TEST_PASSWORD") or "").strip() or None
@@ -385,6 +448,7 @@ def main() -> int:
     if password:
         pw_file = f"/tmp/.bpfix_iso_pw_{run_stamp}"
         with sftp.file(pw_file, "w") as f:
+            f.chmod(0o600)  # before the password is written
             f.write(password + "\n")
         client.exec_command(f"chmod 600 {pw_file}", timeout=10)
 
@@ -417,7 +481,7 @@ def main() -> int:
                 password=password,
                 run_stamp=run_stamp,
             )
-            # Same-path -O2 (no -g) ELF identity — path embedding cannot confound.
+            # Same-path -O2 (no -g) ELF identity; path embedding cannot confound.
             b["nodbg_obj_sha256"] = nodbg_object_sha(client, sftp, bearing)
             n["nodbg_obj_sha256"] = nodbg_object_sha(client, sftp, neutral)
             pairs.append(
@@ -448,7 +512,7 @@ def main() -> int:
     payload = {
         "generator": "tools/lab_marker_isolation_ab.py",
         "run_stamp": run_stamp,
-        "softwarex_stamp_filter": STAMP_FILTER,
+        "stamp_filter": STAMP_FILTER,
         "host_probe": host_probe,
         "n_pairs": n,
         "summary": {
@@ -466,23 +530,15 @@ def main() -> int:
             "dbg_obj_match": sum(1 for p in pairs if p["match"].get("dbg_obj_sha256")),
         },
         "pairs": pairs,
-        "note": (
-            "Marker-neutral = ORACLE_* → /* */ (line-preserving). "
-            "pass = verdict + normalized -g load log (timing/ASLR stripped) + "
-            "source-comment texts + same-path -O2 (no -g) ELF sha256 identity. "
-            "Lab -O2 -g objects often differ (debug/source metadata; .BTF and .BTF.ext dumps); reported as dbg_obj_match."
-        ),
+        "note": PASS_NOTE,
     }
-    out = ROOT / "results" / "marker_isolation_lab.json"
-    out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    out = args.out if args.out.is_absolute() else (ROOT / args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(json.dumps(payload["summary"], indent=2))
     print(f"Wrote {out}")
     return 0 if hits == n and n > 0 else 1
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1] == "--rescore":
-        lab = rescore_existing(ROOT / "results" / "marker_isolation_lab.json")
-        print(json.dumps(lab["summary"], indent=2))
-        raise SystemExit(0 if lab["summary"]["pass"] == lab["summary"]["n"] else 1)
     raise SystemExit(main())

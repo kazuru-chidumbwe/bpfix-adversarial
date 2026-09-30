@@ -1,14 +1,20 @@
 # SPDX-License-Identifier: MIT
-"""Emit §6.5 four-obligation stratified score table from mutants + available logs."""
+"""Emit the four-obligation stratified mutant table from mutants + available logs."""
 
 from __future__ import annotations
 
 import hashlib
 import json
 import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from bpfix_adversarial.oracle import oracle_sites  # noqa: E402
+from tools.score_sc_vs_honesty import lab_rejected  # noqa: E402
+
 MUT = ROOT / "mutants"
 CAP = ROOT / "fixtures" / "logs" / "captured"
 SYN = ROOT / "fixtures" / "logs" / "synthetic"
@@ -27,7 +33,15 @@ def sha256_file(p: Path) -> str:
     return h.hexdigest()
 
 
-def oracle_lines(src: Path) -> tuple[int | None, int | None]:
+def marker_lines(src: Path) -> tuple[int | None, int | None]:
+    """Line numbers of the ORACLE_* marker comments themselves.
+
+    These are not oracle_loss_code / oracle_reject_code, which
+    bpfix_adversarial.oracle derives from the executable lines around each
+    marker (first line of the injection span; for an empty span, the last
+    executable line before the LOSS marker). The two differ on every committed
+    mutant.
+    """
     loss = reject = None
     for i, line in enumerate(src.read_text(encoding="utf-8").splitlines(), 1):
         if "ORACLE_LOSS_LINE" in line:
@@ -38,11 +52,7 @@ def oracle_lines(src: Path) -> tuple[int | None, int | None]:
 
 
 def latest_log(case_id: str) -> Path | None:
-    caps = sorted(
-        p
-        for p in CAP.glob(f"{case_id}.*.log")
-        if not p.name.endswith(".compile")
-    )
+    caps = sorted(CAP.glob(f"{case_id}.*.log"))
     preferred = [p for p in caps if "20260801T181331Z" in p.name]
     if preferred:
         return preferred[-1]
@@ -62,23 +72,14 @@ def log_status(log: Path | None) -> dict:
         }
     text = log.read_text(encoding="utf-8", errors="replace")
     tier = "captured" if log.parent.name == "captured" else "synthetic"
-    rejected = any(
-        s in text.lower()
-        for s in (
-            "permission denied",
-            "invalid",
-            "r0",
-            "fail",
-            "error",
-            "rejected",
-            "cannot",
-        )
-    ) or "COMPILE_FAIL" in text
-    # empty successful load often has little text
-    nonempty = len(text.strip()) > 0
+    # Same libbpf program-load-failure detector as tools/score_sc_vs_honesty.py
+    # (requires a "BEGIN PROG LOAD LOG" marker, not a substring match): a naive
+    # substring scan false-positives on "r0" (the verifier's return register,
+    # present in nearly every log regardless of verdict).
+    rejected = lab_rejected(text)
     return {
         "log_tier": tier,
-        "rejected_or_error": rejected if nonempty else False,
+        "rejected_or_error": rejected,
         "log_bytes": len(text.encode("utf-8")),
         "log_sha256": sha256_file(log),
         "log_path": str(log.relative_to(ROOT)).replace("\\", "/"),
@@ -87,14 +88,12 @@ def log_status(log: Path | None) -> dict:
 
 
 def rename_honesty_note(case_id: str) -> str:
-    if "repaired" in case_id:
-        return "RQ4 repaired program (wrong-tip protocol)"
     if "idiomatic" in case_id and "nocheck" not in case_id:
         return "SC name-list miss expected (!entry)"
     if "brittle" in case_id:
         return "SC name-list hit expected (!ptr)"
     if "nocheck" in case_id:
-        return "RQ4 failing seed (missing check)"
+        return "rejecting NP template (missing check)"
     if case_id.startswith("PB-"):
         return "packet under-check template"
     if case_id.startswith("PP-"):
@@ -109,7 +108,8 @@ def main() -> None:
     for src in sorted(MUT.glob("*/*.c")):
         obligation = src.parent.name
         case_id = src.stem
-        loss, reject = oracle_lines(src)
+        loss, reject = marker_lines(src)
+        sites = oracle_sites(src)
         log = latest_log(case_id)
         st = log_status(log)
         rows.append(
@@ -119,8 +119,10 @@ def main() -> None:
                 "pad": int(re.search(r"pad(\d+)", case_id).group(1))
                 if re.search(r"pad(\d+)", case_id)
                 else None,
-                "oracle_loss_line": loss,
-                "oracle_reject_line": reject,
+                "oracle_loss_marker": loss,
+                "oracle_reject_marker": reject,
+                "oracle_loss_code": sites.get("oracle_loss_code"),
+                "oracle_reject_code": sites.get("oracle_reject_code"),
                 "src_sha256": sha256_file(src),
                 "note": rename_honesty_note(case_id),
                 **st,
@@ -132,9 +134,14 @@ def main() -> None:
         by_ob.setdefault(r["obligation"], []).append(r)
 
     lines = [
-        "# Four-obligation stratified mutant matrix (§6.5)",
+        "# Four-obligation stratified mutant matrix",
         "",
-        "Construction-time oracle markers scanned from mutant sources.",
+        "Construction-time oracle markers scanned from mutant sources. The marker "
+            "columns give the line of the ORACLE_* comment; the code columns give the "
+            "line scoring uses: the first executable line of the injection span "
+            "(`oracle_loss_code`), or for an empty span the last executable line before "
+            "the marker (`NP-idiomatic-nocheck`). Score against the code columns, never "
+            "the marker columns.",
         "Log tier: `captured` = lab bpftool; `synthetic` = fixture; `missing` = no log yet.",
         "",
     ]
@@ -142,16 +149,19 @@ def main() -> None:
         lines.append(f"## {ob} (n={len(items)})")
         lines.append("")
         lines.append(
-            "| case_id | pad | loss | reject | log_tier | log_sha256 | note |"
+            "| case_id | pad | loss marker | loss code | reject marker | "
+            "reject code | log_tier | log_sha256 | note |"
         )
-        lines.append("| --- | ---: | ---: | ---: | --- | --- | --- |")
+        lines.append("| --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |")
         for r in items:
-            h = (r.get("log_sha256") or "—")[:12]
+            h = (r.get("log_sha256") or "n/a")[:12]
             if r.get("log_sha256"):
                 h = r["log_sha256"][:12] + "…"
             lines.append(
-                f"| `{r['case_id']}` | {r['pad']} | {r['oracle_loss_line']} | "
-                f"{r['oracle_reject_line']} | {r['log_tier']} | `{h}` | {r['note']} |"
+                f"| `{r['case_id']}` | {r['pad'] if r['pad'] is not None else 'n/a'} | "
+                f"{r['oracle_loss_marker']} | "
+                f"{r['oracle_loss_code']} | {r['oracle_reject_marker']} | "
+                f"{r['oracle_reject_code']} | {r['log_tier']} | `{h}` | {r['note']} |"
             )
         lines.append("")
 
@@ -163,13 +173,14 @@ def main() -> None:
     )
     lines.append("")
     lines.append(
-        "Honesty scores vs construction oracle for SC/VS remain in "
-        "`rename_honesty.*`, `np_pair_score.json`, `tier_disagreement.*`; "
-        "this matrix is the stratified coverage table for the four-obligation review."
+        "SC/VS scores on the lab captures are in `sc_vs_honesty.*`; the rename "
+        "boundary is in `rename_honesty.*`; `np_pair_score.json` and "
+        "`tier_disagreement.*` are synthetic-fixture illustrations. This matrix is the "
+        "stratified coverage table for the four families."
     )
 
-    OUT_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    OUT_JSON.write_text(json.dumps({"rows": rows}, indent=2) + "\n", encoding="utf-8")
+    OUT_MD.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+    OUT_JSON.write_text(json.dumps({"rows": rows}, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"wrote {OUT_MD}")
     print(f"wrote {OUT_JSON}")
     print(f"mutants={len(rows)} captured={captured_n}")

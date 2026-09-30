@@ -1,7 +1,7 @@
-# Offline SoftwareX inset replay (Python tooling only)
+# Offline inset replay (Python tooling only)
 #
 # Purpose: one-command regeneration of committed results/ tables from frozen
-# fixtures and logs — what a SoftwareX reviewer typically tries first.
+# fixtures and logs, which is what a reviewer typically tries first.
 #
 # NOT in scope: eBPF verifier behavior. Containers share the host kernel;
 # clang/bpftool/lab capture are separate from this image. Do not treat this
@@ -17,6 +17,7 @@ COPY tests ./tests
 COPY fixtures ./fixtures
 COPY mutants ./mutants
 COPY results ./results
+COPY figures ./figures
 COPY schemas ./schemas
 COPY docs ./docs
 COPY Makefile ./

@@ -1,5 +1,6 @@
 {
   "figure": "NP rename pair end-to-end (fixture logs + SourceComment port)",
+  "basis": "Synthetic fixture logs with their own line numbering. Oracle read from each fixture's ORACLE_* annotation. Not a capture of the committed mutants and not comparable to results/sc_vs_honesty.json line numbers.",
   "results": [
     {
       "fixture": "fixtures/logs/synthetic/NP-brittle-pad8.log",
@@ -13,7 +14,7 @@
           "detail": "nullable return without visible non-null proof",
           "pc": null,
           "source": {
-            "path": "mutants/NullablePointer/NP-brittle-pad8.c",
+            "path": "synthetic/NP-brittle-pad8.fixture.c",
             "line": 12,
             "text": "__u64 *ptr = bpf_map_lookup_elem(&m, &key);"
           },
@@ -26,7 +27,7 @@
           "detail": "non-null proof established (looks_like_null_check)",
           "pc": null,
           "source": {
-            "path": "mutants/NullablePointer/NP-brittle-pad8.c",
+            "path": "synthetic/NP-brittle-pad8.fixture.c",
             "line": 14,
             "text": "if (!ptr)"
           },
@@ -66,7 +67,7 @@
           "detail": "nullable return without visible non-null proof",
           "pc": null,
           "source": {
-            "path": "mutants/NullablePointer/NP-idiomatic-pad8.c",
+            "path": "synthetic/NP-idiomatic-pad8.fixture.c",
             "line": 12,
             "text": "__u64 *entry = bpf_map_lookup_elem(&m, &key);"
           },
@@ -95,5 +96,5 @@
       ]
     }
   ],
-  "paper_takeaway": "Brittle `if (!ptr)` is recognized as ProofEstablished; idiomatic `if (!entry)` is not \u2014 SourceComment honesty break under rename."
+  "paper_takeaway": "Brittle `if (!ptr)` is recognized as ProofEstablished; idiomatic `if (!entry)` is not. SourceComment recognition breaks under rename."
 }

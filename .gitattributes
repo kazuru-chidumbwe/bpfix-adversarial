@@ -2,9 +2,30 @@
 mutants/**/*.c text eol=lf
 fixtures/**/*.log text eol=lf
 fixtures/**/*.c text eol=lf
+fixtures/**/*.compile text eol=lf
+results/rq1_bpfix_cli_raw/*.err text eol=lf
 *.py text eol=lf
 *.md text eol=lf
 *.json text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
 *.sh text eol=lf
+*.rs text eol=lf
+**/vendor/**/*.rs text eol=lf
+
+# Figures and metadata are compared byte-for-byte by tools/check_results_fresh.py,
+# so they must stay LF on Windows checkouts too (default core.autocrlf=true).
+*.svg text eol=lf
+*.txt text eol=lf
+*.cff text eol=lf
+*.toml text eol=lf
+*.jsonl text eol=lf
+fixtures/upstream/NOTICE text eol=lf
+Makefile text eol=lf
+Dockerfile text eol=lf
+Vagrantfile text eol=lf
+.dockerignore text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+LICENSE text eol=lf
+.githooks/* text eol=lf

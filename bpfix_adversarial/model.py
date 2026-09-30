@@ -33,7 +33,7 @@ class ProofObligation(str, Enum):
     UNKNOWN = "Unknown"
 
 
-# Adversarial v0 scope (sponsor lock)
+# Adversarial v0 scope
 ADVERSARIAL_SCOPE = (
     ProofObligation.POINTER_PROVENANCE,
     ProofObligation.SCALAR_RANGE,
@@ -43,7 +43,7 @@ ADVERSARIAL_SCOPE = (
 
 
 class ProofEventEvidence(str, Enum):
-    """Evidence tier — load-bearing shared design with adjacent eBPF work."""
+    """Evidence tier; load-bearing shared design with adjacent eBPF work."""
 
     SOURCE_COMMENT = "SourceComment"
     VERIFIER_STATE = "VerifierState"

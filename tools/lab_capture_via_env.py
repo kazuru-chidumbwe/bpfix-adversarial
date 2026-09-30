@@ -9,8 +9,6 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-import paramiko
-
 ROOT = Path(__file__).resolve().parents[1]
 # Override with BPFIX_LAB_ENV_FILE to point at a lab .env outside the repo
 # (e.g. a notes/ checkout); defaults to a gitignored lab/.env next to this tool.
@@ -49,15 +47,47 @@ def normalize_lab_env(cfg: dict[str, str]) -> dict[str, str]:
     return out
 
 
-def connect(cfg: dict[str, str]) -> paramiko.SSHClient:
+def _require_paramiko():
+    """Import paramiko on demand.
+
+    The offline paths (rescoring, emitters, unit tests) must run on the
+    stdlib-only install that README and docs/DEPENDENCIES.md promise, so the
+    SSH dependency is imported where it is used rather than at module scope.
+    """
+    try:
+        import paramiko
+    except ModuleNotFoundError as exc:  # pragma: no cover - environment
+        raise SystemExit(
+            "this path needs SSH support: pip install -e \".[lab]\""
+        ) from exc
+    return paramiko
+
+
+def _skip_secrets(info: tarfile.TarInfo) -> tarfile.TarInfo | None:
+    """Keep credential files (lab/.env and the like) out of the upload tarball."""
+    name = Path(info.name).name
+    if name == ".env" or name.endswith(".env"):
+        return None
+    return info
+
+
+def connect(cfg: dict[str, str]) -> "paramiko.SSHClient":
+    paramiko = _require_paramiko()
     host = (cfg.get("LAB_TEST_HOST") or "").strip()
-    user = (cfg.get("LAB_TEST_USER") or "boma").strip()
+    user = (cfg.get("LAB_TEST_USER") or "").strip()
     password = (cfg.get("LAB_TEST_PASSWORD") or "").strip() or None
     key_path = (cfg.get("LAB_TEST_SSH_KEY") or "").strip()
     if not host:
         raise SystemExit("Set LAB_TEST_HOST (or LAB_HOST2) in lab/.env (or BPFIX_LAB_ENV_FILE)")
+    if not user:
+        raise SystemExit("Set LAB_TEST_USER in lab/.env (or BPFIX_LAB_ENV_FILE)")
     client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    # Verify the host key: ~/.ssh/known_hosts, plus LAB_TEST_KNOWN_HOSTS if set.
+    client.load_system_host_keys()
+    known_hosts = (cfg.get("LAB_TEST_KNOWN_HOSTS") or "").strip()
+    if known_hosts:
+        client.load_host_keys(str(Path(known_hosts).expanduser()))
+    client.set_missing_host_key_policy(paramiko.RejectPolicy())
     kwargs: dict = {
         "hostname": host,
         "username": user,
@@ -112,16 +142,18 @@ def main() -> None:
         ):
             p = ROOT / rel
             if p.exists():
-                tar.add(p, arcname=rel)
+                tar.add(p, arcname=rel, filter=_skip_secrets)
 
     sftp = client.open_sftp()
-    home = f"/home/{cfg.get('LAB_TEST_USER', 'boma').strip()}"
+    home = f"/home/{cfg['LAB_TEST_USER'].strip()}"
     sftp.put(str(pack), f"{home}/bpfix-adv-lab.tgz")
     print(f"uploaded {pack.name} ({pack.stat().st_size} bytes)")
+    pack.unlink(missing_ok=True)
 
     _rc, out, err = run(
         f"rm -rf {home}/bpfix-adversarial-work && mkdir -p {home}/bpfix-adversarial-work && "
         f"tar -xzf {home}/bpfix-adv-lab.tgz -C {home}/bpfix-adversarial-work && "
+        f"rm -f {home}/bpfix-adv-lab.tgz && "
         f"cd {home}/bpfix-adversarial-work && mkdir -p fixtures/logs/captured results/env_pins && "
         "ls mutants/*/*.c | wc -l"
     )
@@ -130,6 +162,7 @@ def main() -> None:
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     if sudo_pw:
         with sftp.file(f"{home}/.bpfix_sudo_pw", "w") as f:
+            f.chmod(0o600)  # before the password is written
             f.write(sudo_pw + "\n")
         run(f"chmod 600 {home}/.bpfix_sudo_pw")
         sudo_bpf = 'printf \'%s\\n\' "$PW" | sudo -S bpftool'

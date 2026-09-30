@@ -46,6 +46,11 @@ def _check_line(var: str) -> str:
 
 
 def _helper_line() -> str:
+    """Fixed helper call shared by every case.
+
+    Renaming never touches the helper name, so helper_anchored_stable is true by
+    construction; it records the boundary, it does not measure a rename effect.
+    """
     return "entry = bpf_map_lookup_elem(&m, &key);"
 
 
@@ -85,11 +90,13 @@ def summary(cases: list[RenameCase] | None = None) -> dict:
     return {
         "n_cases": len(cases),
         "n_honesty_breaks": len(breaks),
-        "break_rate": (len(breaks) / len(cases)) if cases else 0.0,
         "brittle_names": list(BRITTLE_NAMES),
         "safe_renames": list(SAFE_RENAMES),
         "note": (
-            "looks_like_null_check flips under idiomatic rename of !tmp/!val/!ptr/!value; "
-            "looks_like_nullable_return stays helper-anchored"
+            "Exhaustive 4x8 combinatorial enumeration (all brittle names x all "
+            "idiomatic renames), not a sampled rate over an empirical population: "
+            "looks_like_null_check flips on all cases under idiomatic rename of "
+            "!tmp/!val/!ptr/!value; looks_like_nullable_return stays helper-anchored "
+            "on all cases"
         ),
     }

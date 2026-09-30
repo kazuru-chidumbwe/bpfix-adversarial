@@ -1,9 +1,9 @@
-# Vagrant — Debian 13 userspace for SoftwareX lab helpers
+# Vagrant: Debian 13 userspace for the lab helpers
 #
 # This provisions a Debian 13 (trixie) x86_64 VM with clang/bpftool/python.
-# It does NOT guarantee SoftwareX cite kernel 6.12.86+deb13-amd64 — that comes
+# It does NOT guarantee cite-pin kernel 6.12.86+deb13-amd64; that comes
 # from Debian's linux-image package after install/reboot. Always record
-# `uname -r` into results/env_pins/ before treating captures as SoftwareX-cite.
+# `uname -r` into results/env_pins/ before treating captures as cite-pin evidence.
 #
 # Usage:
 #   vagrant up
@@ -23,7 +23,7 @@ Vagrant.configure("2") do |config|
     apt-get update
     apt-get install -y build-essential clang llvm libbpf-dev bpftool \
       python3 python3-venv python3-pip git make linux-headers-$(uname -r) || true
-    echo "=== SoftwareX lab pin check ==="
+    echo "=== lab pin check ==="
     uname -a
     clang --version | head -n1 || true
     bpftool version || true

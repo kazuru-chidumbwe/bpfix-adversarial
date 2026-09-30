@@ -43,6 +43,27 @@ class OracleMarkerTests(unittest.TestCase):
         self.assertEqual(sites["oracle_reject_code"], 7)
         self.assertEqual(sites["injection_code"], 3)
 
+    def _sites(self, text: str) -> dict:
+        with tempfile.TemporaryDirectory() as td:
+            p = Path(td) / "m.c"
+            p.write_text(text, encoding="utf-8")
+            return oracle_sites(p)
+
+    def test_pointer_store_is_code(self) -> None:
+        # A leading `*` is a comment continuation only inside /* ... */.
+        sites = self._sites(
+            "/* ORACLE_LOSS_LINE */\n*p = 0;\nx = 1;\n/* ORACLE_REJECT_LINE */\nreturn x;\n"
+        )
+        self.assertEqual(sites["oracle_loss_span"], [2, 3])
+        self.assertEqual(sites["oracle_loss_code"], 2)
+
+    def test_multiline_comment_interior_is_not_code(self) -> None:
+        sites = self._sites(
+            "/* ORACLE_LOSS_LINE */\n/* a\n   b */\nx = 1; /* tail */\n"
+            "/* ORACLE_REJECT_LINE */\nreturn x;\n"
+        )
+        self.assertEqual(sites["oracle_loss_span"], [4])
+
     def test_real_mutant_has_markers(self) -> None:
         src = ROOT / "mutants" / "NullablePointer" / "NP-idiomatic-nocheck.c"
         if not src.is_file():
@@ -52,6 +73,51 @@ class OracleMarkerTests(unittest.TestCase):
         self.assertIsNotNone(sites["oracle_reject_marker"])
         self.assertIsNotNone(sites["oracle_loss_code"])
         self.assertLess(sites["oracle_loss_marker"], sites["oracle_reject_marker"])
+        # Empty executable span → prior lookup/assignment, not the comment after LOSS.
+        self.assertEqual(sites["oracle_loss_span"], [])
+        self.assertEqual(sites["oracle_loss_code"], 21)
+        self.assertTrue(
+            __import__("bpfix_adversarial.oracle", fromlist=["is_code_line"]).is_code_line(
+                src.read_text(encoding="utf-8").splitlines()[sites["oracle_loss_code"] - 1]
+            )
+        )
+
+    def test_np_idiomatic_nocheck_oracle_loss_code_is_executable(self) -> None:
+        """NP-idiomatic-nocheck oracle_loss_code must be an executable line."""
+        from bpfix_adversarial.oracle import is_code_line
+
+        src = ROOT / "mutants" / "NullablePointer" / "NP-idiomatic-nocheck.c"
+        if not src.is_file():
+            self.skipTest("mutant fixture missing")
+        lines = src.read_text(encoding="utf-8").splitlines()
+        sites = oracle_sites(src)
+        code = sites["oracle_loss_code"]
+        self.assertIsNotNone(code)
+        assert code is not None
+        raw = lines[code - 1]
+        self.assertTrue(is_code_line(raw), f"oracle_loss_code={code} not executable: {raw!r}")
+        self.assertIn("bpf_map_lookup_elem", raw)
+        self.assertNotIn("ORACLE_", raw)
+        # Must not fall through to the comment immediately after the LOSS marker.
+        self.assertNotEqual(code, sites["oracle_loss_marker"] + 1)
+
+    def test_every_marked_mutant_oracle_loss_code_is_executable(self) -> None:
+        from bpfix_adversarial.oracle import is_code_line
+
+        checked = 0
+        for src in sorted((ROOT / "mutants").rglob("*.c")):
+            sites = oracle_sites(src)
+            if sites["oracle_loss_marker"] is None:
+                continue
+            code = sites["oracle_loss_code"]
+            with self.subTest(mutant=src.relative_to(ROOT).as_posix()):
+                self.assertIsNotNone(code)
+                raw = src.read_text(encoding="utf-8").splitlines()[code - 1]
+                self.assertTrue(is_code_line(raw), f"oracle_loss_code={code}: {raw!r}")
+                self.assertNotIn("ORACLE_", raw)
+            checked += 1
+        if checked == 0:
+            self.skipTest("no marked mutants")
 
 
 class LogParseTests(unittest.TestCase):
@@ -108,13 +174,13 @@ class ScoreDistanceTests(unittest.TestCase):
 
 
 class OracleControlsInsetTests(unittest.TestCase):
-    """Minimal Gates construct-validity controls over SoftwareX-stamp captures."""
+    """Construct-validity controls over the stamped captures."""
 
     @classmethod
     def setUpClass(cls) -> None:
         path = ROOT / "results" / "oracle_controls.json"
         if not path.is_file():
-            raise unittest.SkipTest("oracle_controls.json missing — run emit_oracle_controls.py")
+            raise unittest.SkipTest("oracle_controls.json missing; run emit_oracle_controls.py")
         cls.payload = json.loads(path.read_text(encoding="utf-8"))
 
     def test_negative_control_all_accept_with_markers(self) -> None:
@@ -164,6 +230,30 @@ class MarkerIsolationTests(unittest.TestCase):
         self.assertNotIn("ORACLE_", neut)
         self.assertEqual(src.count("\n"), neut.count("\n"))
         self.assertIn("x = 1;", neut)
+
+    def test_strip_keeps_code_sharing_a_line_and_multiline_markers(self) -> None:
+        from bpfix_adversarial.marker_isolation import strip_oracle_markers
+
+        src = "x = 1; /* ORACLE_LOSS_LINE */\n/* ORACLE_REJECT_LINE: a\n   b */\nreturn x;\n"
+        neut = strip_oracle_markers(src, preserve_lines=True)
+        self.assertEqual(neut, "x = 1; /* */\n/* */\n\nreturn x;\n")
+
+    def test_strip_reproduces_lab_ab_neutral_sources(self) -> None:
+        # The Ubuntu A/B compiled these exact neutral bytes; the stripper must
+        # keep producing them.
+        import hashlib
+
+        from bpfix_adversarial.marker_isolation import strip_oracle_markers
+
+        lab = json.loads((ROOT / "results" / "marker_isolation_lab.json").read_text(encoding="utf-8"))
+        for pair in lab["pairs"]:
+            with self.subTest(case=pair["case_id"]):
+                bearing = (ROOT / pair["src"]).read_bytes().replace(b"\r\n", b"\n").decode("utf-8")
+                neutral = strip_oracle_markers(bearing, preserve_lines=True)
+                self.assertEqual(
+                    hashlib.sha256(neutral.encode("utf-8")).hexdigest(),
+                    pair["neutral"]["src_sha256"],
+                )
 
     def test_marker_isolation_inset_lab_ab_passes(self) -> None:
         path = ROOT / "results" / "marker_isolation.json"

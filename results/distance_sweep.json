@@ -1,5 +1,5 @@
 {
-  "metric": "accuracy / distance_error vs pad",
+  "metric": "top1_line and distance_error vs pad (synthetic unit check)",
   "near_reject_bias_model": [
     {
       "pad": 0,
@@ -172,7 +172,8 @@
       "reported_reject_line": null
     }
   ],
-  "top1_accuracy_biased": 0.0,
-  "top1_accuracy_honest": 1.0,
-  "note": "Replace near_reject_bias_model with real bpfix loss PCs once lab captures are pinned; metric definitions stay fixed."
+  "top1_line_hits_biased": 0,
+  "top1_line_hits_honest": 6,
+  "n_pads": 6,
+  "note": "Synthetic reporter models exercise the distance contract; this is a unit check of the scoring rules, not an empirical finding."
 }

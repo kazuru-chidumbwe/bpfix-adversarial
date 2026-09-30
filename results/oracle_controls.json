@@ -16,6 +16,11 @@
       "hits": 10,
       "n": 10,
       "pass_rate": 1.0
+    },
+    "verdict_matches_construction": {
+      "hits": 16,
+      "n": 16,
+      "pass_rate": 1.0
     }
   },
   "negative_control": [
@@ -23,49 +28,55 @@
       "case_id": "NP-brittle-pad0",
       "obligation": "NullablePointer",
       "oracle_loss_code": 19,
+      "expected_verdict": "ACCEPT",
       "lab_rejected": false,
       "pass": true,
-      "note": "markers present; lab ACCEPT \u2014 injection did not induce reject"
+      "note": "markers present; lab ACCEPT, injection did not induce reject"
     },
     {
       "case_id": "NP-brittle-pad32",
       "obligation": "NullablePointer",
       "oracle_loss_code": 19,
+      "expected_verdict": "ACCEPT",
       "lab_rejected": false,
       "pass": true,
-      "note": "markers present; lab ACCEPT \u2014 injection did not induce reject"
+      "note": "markers present; lab ACCEPT, injection did not induce reject"
     },
     {
       "case_id": "NP-brittle-pad8",
       "obligation": "NullablePointer",
       "oracle_loss_code": 19,
+      "expected_verdict": "ACCEPT",
       "lab_rejected": false,
       "pass": true,
-      "note": "markers present; lab ACCEPT \u2014 injection did not induce reject"
+      "note": "markers present; lab ACCEPT, injection did not induce reject"
     },
     {
       "case_id": "NP-idiomatic-pad0",
       "obligation": "NullablePointer",
       "oracle_loss_code": 19,
+      "expected_verdict": "ACCEPT",
       "lab_rejected": false,
       "pass": true,
-      "note": "markers present; lab ACCEPT \u2014 injection did not induce reject"
+      "note": "markers present; lab ACCEPT, injection did not induce reject"
     },
     {
       "case_id": "NP-idiomatic-pad32",
       "obligation": "NullablePointer",
       "oracle_loss_code": 19,
+      "expected_verdict": "ACCEPT",
       "lab_rejected": false,
       "pass": true,
-      "note": "markers present; lab ACCEPT \u2014 injection did not induce reject"
+      "note": "markers present; lab ACCEPT, injection did not induce reject"
     },
     {
       "case_id": "NP-idiomatic-pad8",
       "obligation": "NullablePointer",
       "oracle_loss_code": 19,
+      "expected_verdict": "ACCEPT",
       "lab_rejected": false,
       "pass": true,
-      "note": "markers present; lab ACCEPT \u2014 injection did not induce reject"
+      "note": "markers present; lab ACCEPT, injection did not induce reject"
     }
   ],
   "positive_control_pb_stop_vs_injection": [
@@ -119,7 +130,7 @@
     {
       "case_id": "NP-idiomatic-nocheck",
       "obligation": "NullablePointer",
-      "oracle_loss_code": 23,
+      "oracle_loss_code": 21,
       "oracle_loss_span": [],
       "oracle_reject_code": 36,
       "mapped_source_lines": [
@@ -128,10 +139,10 @@
         21,
         36
       ],
-      "injection_line_in_map": false,
+      "injection_span_in_map": true,
       "reject_line_in_map": true,
       "pass": true,
-      "note": "injection span absent from map; reject/use line present (pad DCE / wash may collapse)"
+      "note": "verifier ; @path:LINE map covers injection span"
     },
     {
       "case_id": "PB-pad0",
@@ -149,7 +160,7 @@
         12,
         15
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": true,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"
@@ -170,7 +181,7 @@
         12,
         50
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": true,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"
@@ -191,7 +202,7 @@
         12,
         26
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": true,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"
@@ -212,7 +223,7 @@
         11,
         15
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": false,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"
@@ -233,7 +244,7 @@
         11,
         15
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": false,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"
@@ -254,7 +265,7 @@
         11,
         15
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": false,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"
@@ -271,7 +282,7 @@
         11,
         13
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": true,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"
@@ -288,7 +299,7 @@
         11,
         48
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": true,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"
@@ -305,11 +316,109 @@
         11,
         24
       ],
-      "injection_line_in_map": true,
+      "injection_span_in_map": true,
       "reject_line_in_map": true,
       "pass": true,
       "note": "verifier ; @path:LINE map covers injection span"
     }
   ],
-  "note": "Minimal offline controls over SoftwareX-stamp captures. Not a verified semantic proof-loss oracle; not negative controls that mutate away the reject while keeping the same marker text."
+  "verdict_matches_construction": [
+    {
+      "case_id": "NP-brittle-pad0",
+      "expected_verdict": "ACCEPT",
+      "observed_verdict": "ACCEPT",
+      "pass": true
+    },
+    {
+      "case_id": "NP-brittle-pad32",
+      "expected_verdict": "ACCEPT",
+      "observed_verdict": "ACCEPT",
+      "pass": true
+    },
+    {
+      "case_id": "NP-brittle-pad8",
+      "expected_verdict": "ACCEPT",
+      "observed_verdict": "ACCEPT",
+      "pass": true
+    },
+    {
+      "case_id": "NP-idiomatic-nocheck",
+      "expected_verdict": "REJECT",
+      "observed_verdict": "REJECT",
+      "pass": true
+    },
+    {
+      "case_id": "NP-idiomatic-pad0",
+      "expected_verdict": "ACCEPT",
+      "observed_verdict": "ACCEPT",
+      "pass": true
+    },
+    {
+      "case_id": "NP-idiomatic-pad32",
+      "expected_verdict": "ACCEPT",
+      "observed_verdict": "ACCEPT",
+      "pass": true
+    },
+    {
+      "case_id": "NP-idiomatic-pad8",
+      "expected_verdict": "ACCEPT",
+      "observed_verdict": "ACCEPT",
+      "pass": true
+    },
+    {
+      "case_id": "PB-pad0",
+      "expected_verdict": "REJECT",
+      "observed_verdict": "REJECT",
+      "pass": true
+    },
+    {
+      "case_id": "PB-pad32",
+      "expected_verdict": "REJECT",
+      "observed_verdict": "REJECT",
+      "pass": true
+    },
+    {
+      "case_id": "PB-pad8",
+      "expected_verdict": "REJECT",
+      "observed_verdict": "REJECT",
+      "pass": true
+    },
+    {
+      "case_id": "PP-pad0",
+      "expected_verdict": "REJECT",
+      "observed_verdict": "REJECT",
+      "pass": true
+    },
+    {
+      "case_id": "PP-pad32",
+      "expected_verdict": "REJECT",
+      "observed_verdict": "REJECT",
+      "pass": true
+    },
+    {
+      "case_id": "PP-pad8",
+      "expected_verdict": "REJECT",
+      "observed_verdict": "REJECT",
+      "pass": true
+    },
+    {
+      "case_id": "SR-pad0",
+      "expected_verdict": "REJECT",
+      "observed_verdict": "REJECT",
+      "pass": true
+    },
+    {
+      "case_id": "SR-pad32",
+      "expected_verdict": "REJECT",
+      "observed_verdict": "REJECT",
+      "pass": true
+    },
+    {
+      "case_id": "SR-pad8",
+      "expected_verdict": "REJECT",
+      "observed_verdict": "REJECT",
+      "pass": true
+    }
+  ],
+  "note": "Minimal offline controls over stamped captures. Not a verified semantic proof-loss oracle; not negative controls that mutate away the reject while keeping the same marker text."
 }

@@ -1,4 +1,4 @@
-# RQ1 — distance vs honesty (synthetic models)
+# Distance under padding (synthetic reporter models)
 
 | pad | d_true | d_err (near-reject bias) | top1 bias | d_err (honest) | top1 honest |
 | ---: | ---: | ---: | --- | ---: | --- |
@@ -9,4 +9,4 @@
 | 32 | 34 | 33 | no | 0 | yes |
 | 64 | 66 | 65 | no | 0 | yes |
 
-Biased top-1 accuracy: **0%**; honest model: **100%**.
+Unit check of the distance contract, not an empirical finding: the near-reject-bias model hits top1_line on 0/6 pads and the injection-line model on 6/6.

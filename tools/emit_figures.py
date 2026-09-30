@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Emit SoftwareX Figs 2–4 as SVG from committed results/*.json (stdlib only).
+"""Emit three of the paper's figure SVGs from committed results/*.json (stdlib only).
 
-Fig. 1 (architecture) is hand-authored outside this emitter.
-Rename boundary is prose-only (no rate figure).
+File names match the paper's figure numbers: fig3-sc-vs-honesty.svg,
+fig4-lab-distance.svg and fig5-scoring-modes-cli.svg are Figs. 3, 4 and 5.
+Figs. 1 (architecture) and 2 (synthetic/rename) are hand-authored and are not
+generated here. The rename boundary is prose-only (no rate figure).
 """
 
 from __future__ import annotations
@@ -30,7 +32,7 @@ def svg_header(w: int, h: int, title: str) -> list[str]:
 def bar_chart(
     title: str,
     labels: list[str],
-    series: list[tuple[str, list[float], str]],
+    series: list[tuple[str, list[float | None], str]],
     outfile: Path,
     *,
     ymax: float | None = None,
@@ -40,7 +42,7 @@ def bar_chart(
     plot_w = w - left - right
     plot_h = h - top - bottom
     mx = ymax if ymax is not None else max(
-        (v for _, vals, _ in series for v in vals), default=1.0
+        (v for _, vals, _ in series for v in vals if v is not None), default=1.0
     )
     mx = max(mx, 1e-6)
     n = max(len(labels), 1)
@@ -61,8 +63,15 @@ def bar_chart(
             if i >= len(vals):
                 continue
             v = vals[i]
-            bh = (v / mx) * plot_h
             x = gx + (j + 0.5) * bar_w
+            if v is None:
+                lines.append(
+                    f'<text x="{x + bar_w*0.425:.1f}" y="{top+plot_h-6}" text-anchor="middle" '
+                    f'font-family="Segoe UI, Arial, sans-serif" font-size="11" '
+                    f'fill="{color}">N/A</text>'
+                )
+                continue
+            bh = (v / mx) * plot_h
             y = top + plot_h - bh
             lines.append(
                 f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_w*0.85:.1f}" '
@@ -81,10 +90,10 @@ def bar_chart(
         )
         lx += 18 + 8 * len(name)
     lines.append("</svg>")
-    outfile.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    outfile.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
 
-def emit_fig2_sc_vs() -> None:
+def emit_fig3_sc_vs() -> None:
     data = json.loads((RESULTS / "sc_vs_honesty.json").read_text(encoding="utf-8"))
     fams = ["PacketBounds", "PointerProvenance", "ScalarRange"]
     sc_line, vs_span = [], []
@@ -96,43 +105,44 @@ def emit_fig2_sc_vs() -> None:
         ]
         n = len(rows) or 1
         if fam == "PointerProvenance":
-            sc_line.append(0.0)  # N/A — plotted as 0 with label PP*
+            sc_line.append(None)  # no upstream PointerProvenance predicate
         else:
             sc_line.append(sum(1 for r in rows if r.get("sc_top1_line") is True) / n)
         vs_span.append(sum(1 for r in rows if r.get("vs_top1_span") is True) / n)
     bar_chart(
-        "Fig. 2 — SC top1_line vs VS top1_span (rejecting templates; PP SC = N/A)",
-        ["PB", "PP*", "SR"],
+        "SC top1_line vs VS top1_span (rejecting templates)",
+        ["PB", "PP", "SR"],
         [
             ("SC top1_line", sc_line, "#2a6f97"),
             ("VS top1_span", vs_span, "#ee6c4d"),
         ],
-        OUT / "fig2-sc-vs-honesty.svg",
+        OUT / "fig3-sc-vs-honesty.svg",
         ymax=1.0,
     )
 
 
-def emit_fig3_lab_distance() -> None:
+def emit_fig4_lab_distance() -> None:
     data = json.loads((RESULTS / "rq1_lab_distance.json").read_text(encoding="utf-8"))
     pb = sorted(
         (r for r in data["rows"] if r["obligation"] == "PacketBounds"),
         key=lambda r: r["pad"],
     )
     labels = [str(r["pad"]) for r in pb]
-    sc_d = [float(r["sc_distance_error"] or 0) for r in pb]
-    vs_d = [float(r["vs_distance_error"] or 0) for r in pb]
+    # Undefined distance (no prediction) is drawn N/A, never as 0 (docs/METRICS.md).
+    sc_d = [None if r["sc_distance_error"] is None else float(r["sc_distance_error"]) for r in pb]
+    vs_d = [None if r["vs_distance_error"] is None else float(r["vs_distance_error"]) for r in pb]
     bar_chart(
-        "Fig. 3 — PB lab distance vs pad (SC stays 0; VS grows with pad)",
+        "PB lab distance vs pad (SC stays 0; VS grows with pad)",
         labels,
         [
             ("SC d", sc_d, "#2a9d8f"),
             ("VS d", vs_d, "#e76f51"),
         ],
-        OUT / "fig3-lab-distance.svg",
+        OUT / "fig4-lab-distance.svg",
     )
 
 
-def emit_fig4_set_recall() -> None:
+def emit_fig5_set_recall() -> None:
     data = json.loads((RESULTS / "rq1_bpfix_cli.json").read_text(encoding="utf-8"))
     rows = sorted(
         (r for r in data["rows"] if r.get("obligation") == "PacketBounds"),
@@ -145,39 +155,29 @@ def emit_fig4_set_recall() -> None:
     ]
     recall = [1.0 if r.get("bpfix_loss_mentioned") else 0.0 for r in rows]
     bar_chart(
-        "Fig. 4 — PacketBounds CLI: top1_line vs set_recall_message",
+        "PacketBounds CLI: top1_line vs set_recall_message",
         labels,
         [
             ("top1_line", top1, "#264653"),
             ("set_recall_message", recall, "#f4a261"),
         ],
-        OUT / "fig4-scoring-modes-cli.svg",
+        OUT / "fig5-scoring-modes-cli.svg",
         ymax=1.0,
     )
 
 
 FIGURE_OUTPUTS = (
-    "figures/fig2-sc-vs-honesty.svg",
-    "figures/fig3-lab-distance.svg",
-    "figures/fig4-scoring-modes-cli.svg",
+    "figures/fig3-sc-vs-honesty.svg",
+    "figures/fig4-lab-distance.svg",
+    "figures/fig5-scoring-modes-cli.svg",
 )
 
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    emit_fig2_sc_vs()
-    emit_fig3_lab_distance()
-    emit_fig4_set_recall()
-    # Remove retired rename-rate figure if present
-    stale = OUT / "fig3-rename-boundary.svg"
-    if stale.is_file():
-        stale.unlink()
-    stale5 = OUT / "fig5-scoring-modes-cli.svg"
-    if stale5.is_file():
-        stale5.unlink()
-    stale4old = OUT / "fig4-lab-distance.svg"
-    if stale4old.is_file():
-        stale4old.unlink()
+    emit_fig3_sc_vs()
+    emit_fig4_lab_distance()
+    emit_fig5_set_recall()
     print(f"Wrote SVGs under {OUT}")
 
 

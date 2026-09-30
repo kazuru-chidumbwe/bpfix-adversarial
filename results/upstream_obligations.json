@@ -1,0 +1,595 @@
+{
+  "upstream_commit": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
+  "method": "error ID from each case's upstream diagnostic.txt, mapped to the ProofObligation upstream classifier.rs declares for that ID",
+  "n": 75,
+  "by_upstream_obligation": {
+    "NullablePointer": 20,
+    "PacketBounds": 11,
+    "PointerProvenance": 9,
+    "ScalarRange": 7,
+    "ContextAccess": 6,
+    "ReferenceLifecycle": 5,
+    "StackInitialized": 5,
+    "EnvironmentCapability": 4,
+    "TypeContract": 4,
+    "DynptrSafety": 2,
+    "HelperArgument": 2
+  },
+  "templated_families": [
+    "NullablePointer",
+    "PacketBounds",
+    "PointerProvenance",
+    "ScalarRange"
+  ],
+  "templated_family_cases": 47,
+  "keyword_label_agreement": 16,
+  "keyword_vs_upstream": [
+    {
+      "keyword_label": "NullablePointer",
+      "upstream_obligation": "ContextAccess",
+      "n": 1
+    },
+    {
+      "keyword_label": "NullablePointer",
+      "upstream_obligation": "NullablePointer",
+      "n": 8
+    },
+    {
+      "keyword_label": "NullablePointer",
+      "upstream_obligation": "PointerProvenance",
+      "n": 4
+    },
+    {
+      "keyword_label": "NullablePointer",
+      "upstream_obligation": "ReferenceLifecycle",
+      "n": 3
+    },
+    {
+      "keyword_label": "NullablePointer",
+      "upstream_obligation": "TypeContract",
+      "n": 3
+    },
+    {
+      "keyword_label": "PacketBounds",
+      "upstream_obligation": "ContextAccess",
+      "n": 3
+    },
+    {
+      "keyword_label": "PacketBounds",
+      "upstream_obligation": "EnvironmentCapability",
+      "n": 2
+    },
+    {
+      "keyword_label": "PacketBounds",
+      "upstream_obligation": "HelperArgument",
+      "n": 1
+    },
+    {
+      "keyword_label": "PacketBounds",
+      "upstream_obligation": "PacketBounds",
+      "n": 6
+    },
+    {
+      "keyword_label": "PacketBounds",
+      "upstream_obligation": "PointerProvenance",
+      "n": 4
+    },
+    {
+      "keyword_label": "PacketBounds",
+      "upstream_obligation": "StackInitialized",
+      "n": 1
+    },
+    {
+      "keyword_label": "PointerProvenance",
+      "upstream_obligation": "ContextAccess",
+      "n": 2
+    },
+    {
+      "keyword_label": "PointerProvenance",
+      "upstream_obligation": "DynptrSafety",
+      "n": 2
+    },
+    {
+      "keyword_label": "PointerProvenance",
+      "upstream_obligation": "EnvironmentCapability",
+      "n": 2
+    },
+    {
+      "keyword_label": "PointerProvenance",
+      "upstream_obligation": "HelperArgument",
+      "n": 1
+    },
+    {
+      "keyword_label": "PointerProvenance",
+      "upstream_obligation": "NullablePointer",
+      "n": 12
+    },
+    {
+      "keyword_label": "PointerProvenance",
+      "upstream_obligation": "PacketBounds",
+      "n": 5
+    },
+    {
+      "keyword_label": "PointerProvenance",
+      "upstream_obligation": "ReferenceLifecycle",
+      "n": 2
+    },
+    {
+      "keyword_label": "PointerProvenance",
+      "upstream_obligation": "ScalarRange",
+      "n": 5
+    },
+    {
+      "keyword_label": "PointerProvenance",
+      "upstream_obligation": "StackInitialized",
+      "n": 4
+    },
+    {
+      "keyword_label": "PointerProvenance",
+      "upstream_obligation": "TypeContract",
+      "n": 1
+    },
+    {
+      "keyword_label": "ScalarRange",
+      "upstream_obligation": "PointerProvenance",
+      "n": 1
+    },
+    {
+      "keyword_label": "ScalarRange",
+      "upstream_obligation": "ScalarRange",
+      "n": 2
+    }
+  ],
+  "rows": [
+    {
+      "upstream_case_id": "alu32_pointer_cookie_001",
+      "error_id": "E006",
+      "upstream_obligation": "PointerProvenance",
+      "keyword_label": "ScalarRange"
+    },
+    {
+      "upstream_case_id": "dynptr_slice_missing_null_check_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "dynptr_slice_short_mem_001",
+      "error_id": "E005",
+      "upstream_obligation": "ScalarRange",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "dynptr_slice_stack_buffer_001",
+      "error_id": "E003",
+      "upstream_obligation": "StackInitialized",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "dynptr_stack_copy_001",
+      "error_id": "E012",
+      "upstream_obligation": "DynptrSafety",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "dynptr_uninitialized_slice_arg_001",
+      "error_id": "E012",
+      "upstream_obligation": "DynptrSafety",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "helper_csum_diff_stack_len_001",
+      "error_id": "E003",
+      "upstream_obligation": "StackInitialized",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "helper_map_arg_stack_001",
+      "error_id": "E008",
+      "upstream_obligation": "TypeContract",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "map_value_branch_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "map_value_index_guard_oob_001",
+      "error_id": "E005",
+      "upstream_obligation": "ScalarRange",
+      "keyword_label": "ScalarRange"
+    },
+    {
+      "upstream_case_id": "map_value_inline_cookie_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "map_value_pointer_cookie_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "map_value_signed_index_001",
+      "error_id": "E005",
+      "upstream_obligation": "ScalarRange",
+      "keyword_label": "ScalarRange"
+    },
+    {
+      "upstream_case_id": "map_value_spill_cookie_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "packet_checked_wrong_base_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "keyword_label": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "packet_eth_off_by_one_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "keyword_label": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "packet_ihl_udp_undercheck_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "keyword_label": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "packet_inline_return_cookie_001",
+      "error_id": "E006",
+      "upstream_obligation": "PointerProvenance",
+      "keyword_label": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "packet_l4_branch_cookie_001",
+      "error_id": "E006",
+      "upstream_obligation": "PointerProvenance",
+      "keyword_label": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "packet_macro_cookie_001",
+      "error_id": "E006",
+      "upstream_obligation": "PointerProvenance",
+      "keyword_label": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "packet_macro_payload_undercheck_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "keyword_label": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "packet_vlan_cookie_001",
+      "error_id": "E006",
+      "upstream_obligation": "PointerProvenance",
+      "keyword_label": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "perf_event_packet_payload_001",
+      "error_id": "E010",
+      "upstream_obligation": "HelperArgument",
+      "keyword_label": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "ringbuf_branch_cookie_001",
+      "error_id": "E006",
+      "upstream_obligation": "PointerProvenance",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_double_submit_001",
+      "error_id": "E006",
+      "upstream_obligation": "PointerProvenance",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_missing_null_check_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_nested_missing_null_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_nested_reserve_leak_001",
+      "error_id": "E004",
+      "upstream_obligation": "ReferenceLifecycle",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_pointer_cookie_001",
+      "error_id": "E006",
+      "upstream_obligation": "PointerProvenance",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_ref_leak_001",
+      "error_id": "E004",
+      "upstream_obligation": "ReferenceLifecycle",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_stack_discard_001",
+      "error_id": "E008",
+      "upstream_obligation": "TypeContract",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_stack_submit_001",
+      "error_id": "E008",
+      "upstream_obligation": "TypeContract",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_submit_after_discard_001",
+      "error_id": "E008",
+      "upstream_obligation": "TypeContract",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "ringbuf_two_record_cookie_001",
+      "error_id": "E006",
+      "upstream_obligation": "PointerProvenance",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "rs_actplane_cap_dynptr_payload_null_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "rs_actplane_lsm_bpf_ringbuf_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "rs_actplane_mmap_pending_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_actplane_policy_map_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_actplane_taint_loop_count_bound_001",
+      "error_id": "E005",
+      "upstream_obligation": "ScalarRange",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_agentsight_fs_overflow_counter_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_agentsight_process_ringbuf_null_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "rs_agentsight_stdiocap_user_copy_len_001",
+      "error_id": "E005",
+      "upstream_obligation": "ScalarRange",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_agentsight_write_ctx_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_bpftime_opensnoop_ringbuf_filter_ref_001",
+      "error_id": "E004",
+      "upstream_obligation": "ReferenceLifecycle",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "rs_bpftime_opensnoop_stack_wrong_prog_type_001",
+      "error_id": "E009",
+      "upstream_obligation": "EnvironmentCapability",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_bpftime_sslsniff_perf_copy_len_001",
+      "error_id": "E005",
+      "upstream_obligation": "ScalarRange",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_cilium_change_proto_stale_001",
+      "error_id": "E011",
+      "upstream_obligation": "ContextAccess",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_cilium_fib_lookup_param_len_001",
+      "error_id": "E003",
+      "upstream_obligation": "StackInitialized",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_cilium_ip_options_traceid_payload_bound_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_cilium_ipv6_exthdr_l4_offset_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_cilium_mcast_igmpv3_grec_bound_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_cilium_proxy_skc_assign_ref_leak_001",
+      "error_id": "E004",
+      "upstream_obligation": "ReferenceLifecycle",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_cilium_srv6_segment_bound_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_datrail_browsertrace_start_ns_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_datrail_cgroup_filter_key_width_001",
+      "error_id": "E003",
+      "upstream_obligation": "StackInitialized",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_eunomia_energy_runtime_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_eunomia_http_doff_copy_bound_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_eunomia_wq_container_map_001",
+      "error_id": "E010",
+      "upstream_obligation": "HelperArgument",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_nccl_cpu_observer_slot_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_tetragon_data_event_size_guard_001",
+      "error_id": "E005",
+      "upstream_obligation": "ScalarRange",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_tutorial_dynptr_tc_ref_leak_001",
+      "error_id": "E004",
+      "upstream_obligation": "ReferenceLifecycle",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_tutorial_memleak_free_info_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_tutorial_pidhide_tailcall_map_type_001",
+      "error_id": "E009",
+      "upstream_obligation": "EnvironmentCapability",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "rs_tutorial_user_ringbuf_dynptr_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "rs_xdp_tools_ihl_macro_wrong_base_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "keyword_label": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "rs_xdp_tools_load_bytes_stack_len_001",
+      "error_id": "E003",
+      "upstream_obligation": "StackInitialized",
+      "keyword_label": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "rs_xdp_tools_xdpdump_perf_map_type_001",
+      "error_id": "E009",
+      "upstream_obligation": "EnvironmentCapability",
+      "keyword_label": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "rs_xdp_tools_xdpfilt_udp_macro_bound_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "keyword_label": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "rs_xdp_tools_xdpsock_redirect_map_type_001",
+      "error_id": "E009",
+      "upstream_obligation": "EnvironmentCapability",
+      "keyword_label": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "subprog_adjust_tail_stale_001",
+      "error_id": "E011",
+      "upstream_obligation": "ContextAccess",
+      "keyword_label": "PointerProvenance"
+    },
+    {
+      "upstream_case_id": "subprog_map_value_null_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "xdp_adjust_head_map_value_001",
+      "error_id": "E011",
+      "upstream_obligation": "ContextAccess",
+      "keyword_label": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "xdp_adjust_head_ringbuf_001",
+      "error_id": "E011",
+      "upstream_obligation": "ContextAccess",
+      "keyword_label": "NullablePointer"
+    },
+    {
+      "upstream_case_id": "xdp_adjust_head_stale_001",
+      "error_id": "E011",
+      "upstream_obligation": "ContextAccess",
+      "keyword_label": "PacketBounds"
+    },
+    {
+      "upstream_case_id": "xdp_adjust_tail_stale_001",
+      "error_id": "E011",
+      "upstream_obligation": "ContextAccess",
+      "keyword_label": "PacketBounds"
+    }
+  ]
+}

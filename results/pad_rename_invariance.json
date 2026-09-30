@@ -1,0 +1,185 @@
+{
+  "stamp": "20260801T181331Z",
+  "compared": [
+    "verdict",
+    "processed_insns",
+    "reject_message",
+    "insn_sequence_sha256"
+  ],
+  "masked": "kernel address patched into ld_imm64 map references (0xffff...)",
+  "pad_invariance": [
+    {
+      "family": "PacketBounds",
+      "identical": true,
+      "rows": [
+        {
+          "case_id": "PB-pad0",
+          "log": "fixtures/logs/captured/PB-pad0.20260801T181331Z.log",
+          "verdict": "REJECT",
+          "processed_insns": 7,
+          "reject_message": "R1 offset is outside of the packet",
+          "insn_lines": 7,
+          "insn_sequence_sha256": "785a56bfbb94f83980a12468fec8a6b27ca52e6734919d39f96cf2c6fe53f821"
+        },
+        {
+          "case_id": "PB-pad8",
+          "log": "fixtures/logs/captured/PB-pad8.20260801T181331Z.log",
+          "verdict": "REJECT",
+          "processed_insns": 7,
+          "reject_message": "R1 offset is outside of the packet",
+          "insn_lines": 7,
+          "insn_sequence_sha256": "785a56bfbb94f83980a12468fec8a6b27ca52e6734919d39f96cf2c6fe53f821"
+        },
+        {
+          "case_id": "PB-pad32",
+          "log": "fixtures/logs/captured/PB-pad32.20260801T181331Z.log",
+          "verdict": "REJECT",
+          "processed_insns": 7,
+          "reject_message": "R1 offset is outside of the packet",
+          "insn_lines": 7,
+          "insn_sequence_sha256": "785a56bfbb94f83980a12468fec8a6b27ca52e6734919d39f96cf2c6fe53f821"
+        }
+      ]
+    },
+    {
+      "family": "PointerProvenance",
+      "identical": true,
+      "rows": [
+        {
+          "case_id": "PP-pad0",
+          "log": "fixtures/logs/captured/PP-pad0.20260801T181331Z.log",
+          "verdict": "REJECT",
+          "processed_insns": 8,
+          "reject_message": "math between pkt pointer and register with unbounded min value is not allowed",
+          "insn_lines": 8,
+          "insn_sequence_sha256": "220c6d4a7861485709ff7bff8b5f3bf050c217d9bbdb4cdfef89adf95033d8b1"
+        },
+        {
+          "case_id": "PP-pad8",
+          "log": "fixtures/logs/captured/PP-pad8.20260801T181331Z.log",
+          "verdict": "REJECT",
+          "processed_insns": 8,
+          "reject_message": "math between pkt pointer and register with unbounded min value is not allowed",
+          "insn_lines": 8,
+          "insn_sequence_sha256": "220c6d4a7861485709ff7bff8b5f3bf050c217d9bbdb4cdfef89adf95033d8b1"
+        },
+        {
+          "case_id": "PP-pad32",
+          "log": "fixtures/logs/captured/PP-pad32.20260801T181331Z.log",
+          "verdict": "REJECT",
+          "processed_insns": 8,
+          "reject_message": "math between pkt pointer and register with unbounded min value is not allowed",
+          "insn_lines": 8,
+          "insn_sequence_sha256": "220c6d4a7861485709ff7bff8b5f3bf050c217d9bbdb4cdfef89adf95033d8b1"
+        }
+      ]
+    },
+    {
+      "family": "ScalarRange",
+      "identical": true,
+      "rows": [
+        {
+          "case_id": "SR-pad0",
+          "log": "fixtures/logs/captured/SR-pad0.20260801T181331Z.log",
+          "verdict": "REJECT",
+          "processed_insns": 7,
+          "reject_message": "R1 unbounded memory access, make sure to bounds check any such access",
+          "insn_lines": 7,
+          "insn_sequence_sha256": "87c39a082004f47a2da36fd67951eefe19b30ee3d5c257be641a2ccd08f2b2c4"
+        },
+        {
+          "case_id": "SR-pad8",
+          "log": "fixtures/logs/captured/SR-pad8.20260801T181331Z.log",
+          "verdict": "REJECT",
+          "processed_insns": 7,
+          "reject_message": "R1 unbounded memory access, make sure to bounds check any such access",
+          "insn_lines": 7,
+          "insn_sequence_sha256": "87c39a082004f47a2da36fd67951eefe19b30ee3d5c257be641a2ccd08f2b2c4"
+        },
+        {
+          "case_id": "SR-pad32",
+          "log": "fixtures/logs/captured/SR-pad32.20260801T181331Z.log",
+          "verdict": "REJECT",
+          "processed_insns": 7,
+          "reject_message": "R1 unbounded memory access, make sure to bounds check any such access",
+          "insn_lines": 7,
+          "insn_sequence_sha256": "87c39a082004f47a2da36fd67951eefe19b30ee3d5c257be641a2ccd08f2b2c4"
+        }
+      ]
+    }
+  ],
+  "rename_invariance": [
+    {
+      "pad": 0,
+      "identical": true,
+      "rows": [
+        {
+          "case_id": "NP-brittle-pad0",
+          "log": "fixtures/logs/captured/NP-brittle-pad0.20260801T181331Z.log",
+          "verdict": "ACCEPT",
+          "processed_insns": 11,
+          "reject_message": null,
+          "insn_lines": 10,
+          "insn_sequence_sha256": "bb6a34c7fe6cabeb6dcfb616cc283e77313b7dd12e12a26bbe910e0bf8b2ad23"
+        },
+        {
+          "case_id": "NP-idiomatic-pad0",
+          "log": "fixtures/logs/captured/NP-idiomatic-pad0.20260801T181331Z.log",
+          "verdict": "ACCEPT",
+          "processed_insns": 11,
+          "reject_message": null,
+          "insn_lines": 10,
+          "insn_sequence_sha256": "bb6a34c7fe6cabeb6dcfb616cc283e77313b7dd12e12a26bbe910e0bf8b2ad23"
+        }
+      ]
+    },
+    {
+      "pad": 8,
+      "identical": true,
+      "rows": [
+        {
+          "case_id": "NP-brittle-pad8",
+          "log": "fixtures/logs/captured/NP-brittle-pad8.20260801T181331Z.log",
+          "verdict": "ACCEPT",
+          "processed_insns": 11,
+          "reject_message": null,
+          "insn_lines": 10,
+          "insn_sequence_sha256": "bb6a34c7fe6cabeb6dcfb616cc283e77313b7dd12e12a26bbe910e0bf8b2ad23"
+        },
+        {
+          "case_id": "NP-idiomatic-pad8",
+          "log": "fixtures/logs/captured/NP-idiomatic-pad8.20260801T181331Z.log",
+          "verdict": "ACCEPT",
+          "processed_insns": 11,
+          "reject_message": null,
+          "insn_lines": 10,
+          "insn_sequence_sha256": "bb6a34c7fe6cabeb6dcfb616cc283e77313b7dd12e12a26bbe910e0bf8b2ad23"
+        }
+      ]
+    },
+    {
+      "pad": 32,
+      "identical": true,
+      "rows": [
+        {
+          "case_id": "NP-brittle-pad32",
+          "log": "fixtures/logs/captured/NP-brittle-pad32.20260801T181331Z.log",
+          "verdict": "ACCEPT",
+          "processed_insns": 11,
+          "reject_message": null,
+          "insn_lines": 10,
+          "insn_sequence_sha256": "bb6a34c7fe6cabeb6dcfb616cc283e77313b7dd12e12a26bbe910e0bf8b2ad23"
+        },
+        {
+          "case_id": "NP-idiomatic-pad32",
+          "log": "fixtures/logs/captured/NP-idiomatic-pad32.20260801T181331Z.log",
+          "verdict": "ACCEPT",
+          "processed_insns": 11,
+          "reject_message": null,
+          "insn_lines": 10,
+          "insn_sequence_sha256": "bb6a34c7fe6cabeb6dcfb616cc283e77313b7dd12e12a26bbe910e0bf8b2ad23"
+        }
+      ]
+    }
+  ]
+}

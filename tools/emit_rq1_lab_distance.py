@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""RQ1 lab distance table from sc_vs_honesty (pad 0/8/32 reject-oracles).
+"""Lab distance table from sc_vs_honesty (pad 0/8/32 reject-oracles).
 
 Uses loss-anchored scoring on lab-captured templates. This is SC-port + VerifierState
 stop-site distance. Full upstream bpfix CLI localizations: `tools/emit_rq1_bpfix_cli.py`.
@@ -38,7 +38,7 @@ def main() -> None:
             continue
         pad = pad_of(r["case_id"])
         if pad is None and "nocheck" in r["case_id"]:
-            continue  # RQ4 seed — not a distance-pad arm
+            continue  # nocheck template, not a distance-pad arm
         loss = r.get("oracle_loss_code")
         reject = r.get("oracle_reject_code")
         sc = r.get("sc_reported_line")
@@ -68,10 +68,10 @@ def main() -> None:
             }
         )
 
-    OUT_JSON.write_text(json.dumps({"n": len(out_rows), "rows": out_rows}, indent=2) + "\n", encoding="utf-8")
+    OUT_JSON.write_text(json.dumps({"n": len(out_rows), "rows": out_rows}, indent=2) + "\n", encoding="utf-8", newline="\n")
 
     lines = [
-        "# RQ1 — Lab distance vs construction oracle (template pads)",
+        "# Lab distance vs construction oracle (template pads)",
         "",
         "Source: `results/sc_vs_honesty.json` · stamp family `20260801T181331Z`.",
         "Distance error: `d = |predicted − oracle_loss_code|` (absolute source-line error).",
@@ -93,15 +93,15 @@ def main() -> None:
     for r in sorted(out_rows, key=lambda x: (x["obligation"], x["pad"] or -1, x["case_id"])):
         lines.append(
             f"| {r['obligation']} | `{r['case_id']}` | {r['pad']} | {r['oracle_loss_code']} | "
-            f"{r['oracle_reject_code']} | {r['sc_reported'] if r['sc_reported'] is not None else '—'} | "
+            f"{r['oracle_reject_code']} | {r['sc_reported'] if r['sc_reported'] is not None else 'n/a'} | "
             f"{yn(r['sc_top1_line'])} | {yn(r['sc_top1_span'])} | "
-            f"{r['sc_distance_error'] if r['sc_distance_error'] is not None else '—'} | "
-            f"{r['vs_reported'] if r['vs_reported'] is not None else '—'} | "
+            f"{r['sc_distance_error'] if r['sc_distance_error'] is not None else 'n/a'} | "
+            f"{r['vs_reported'] if r['vs_reported'] is not None else 'n/a'} | "
             f"{yn(r['vs_top1_line'])} | {yn(r['vs_top1_span'])} | "
-            f"{r['vs_distance_error'] if r['vs_distance_error'] is not None else '—'} |"
+            f"{r['vs_distance_error'] if r['vs_distance_error'] is not None else 'n/a'} |"
         )
 
-    OUT_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    OUT_MD.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print(f"Wrote {OUT_JSON}")
     print(f"Wrote {OUT_MD}")
     print(f"rows={len(out_rows)}")

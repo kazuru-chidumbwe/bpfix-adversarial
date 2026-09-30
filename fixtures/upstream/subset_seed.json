@@ -6,87 +6,87 @@
   "cases": [
     {
       "upstream_case_id": "dynptr_slice_short_mem_001",
-      "upstream_proof_obligation": "PointerProvenance"
+      "keyword_label": "PointerProvenance"
     },
     {
       "upstream_case_id": "dynptr_slice_stack_buffer_001",
-      "upstream_proof_obligation": "PointerProvenance"
+      "keyword_label": "PointerProvenance"
     },
     {
       "upstream_case_id": "dynptr_stack_copy_001",
-      "upstream_proof_obligation": "PointerProvenance"
+      "keyword_label": "PointerProvenance"
     },
     {
       "upstream_case_id": "dynptr_uninitialized_slice_arg_001",
-      "upstream_proof_obligation": "PointerProvenance"
+      "keyword_label": "PointerProvenance"
     },
     {
       "upstream_case_id": "helper_csum_diff_stack_len_001",
-      "upstream_proof_obligation": "PointerProvenance"
+      "keyword_label": "PointerProvenance"
     },
     {
       "upstream_case_id": "helper_map_arg_stack_001",
-      "upstream_proof_obligation": "PointerProvenance"
+      "keyword_label": "PointerProvenance"
     },
     {
       "upstream_case_id": "alu32_pointer_cookie_001",
-      "upstream_proof_obligation": "ScalarRange"
+      "keyword_label": "ScalarRange"
     },
     {
       "upstream_case_id": "map_value_index_guard_oob_001",
-      "upstream_proof_obligation": "ScalarRange"
+      "keyword_label": "ScalarRange"
     },
     {
       "upstream_case_id": "map_value_signed_index_001",
-      "upstream_proof_obligation": "ScalarRange"
+      "keyword_label": "ScalarRange"
     },
     {
       "upstream_case_id": "dynptr_slice_missing_null_check_001",
-      "upstream_proof_obligation": "NullablePointer"
+      "keyword_label": "NullablePointer"
     },
     {
       "upstream_case_id": "ringbuf_branch_cookie_001",
-      "upstream_proof_obligation": "NullablePointer"
+      "keyword_label": "NullablePointer"
     },
     {
       "upstream_case_id": "ringbuf_double_submit_001",
-      "upstream_proof_obligation": "NullablePointer"
+      "keyword_label": "NullablePointer"
     },
     {
       "upstream_case_id": "ringbuf_missing_null_check_001",
-      "upstream_proof_obligation": "NullablePointer"
+      "keyword_label": "NullablePointer"
     },
     {
       "upstream_case_id": "ringbuf_nested_missing_null_001",
-      "upstream_proof_obligation": "NullablePointer"
+      "keyword_label": "NullablePointer"
     },
     {
       "upstream_case_id": "ringbuf_nested_reserve_leak_001",
-      "upstream_proof_obligation": "NullablePointer"
+      "keyword_label": "NullablePointer"
     },
     {
       "upstream_case_id": "packet_checked_wrong_base_001",
-      "upstream_proof_obligation": "PacketBounds"
+      "keyword_label": "PacketBounds"
     },
     {
       "upstream_case_id": "packet_eth_off_by_one_001",
-      "upstream_proof_obligation": "PacketBounds"
+      "keyword_label": "PacketBounds"
     },
     {
       "upstream_case_id": "packet_ihl_udp_undercheck_001",
-      "upstream_proof_obligation": "PacketBounds"
+      "keyword_label": "PacketBounds"
     },
     {
       "upstream_case_id": "packet_inline_return_cookie_001",
-      "upstream_proof_obligation": "PacketBounds"
+      "keyword_label": "PacketBounds"
     },
     {
       "upstream_case_id": "packet_l4_branch_cookie_001",
-      "upstream_proof_obligation": "PacketBounds"
+      "keyword_label": "PacketBounds"
     },
     {
       "upstream_case_id": "packet_macro_cookie_001",
-      "upstream_proof_obligation": "PacketBounds"
+      "keyword_label": "PacketBounds"
     }
   ]
 }

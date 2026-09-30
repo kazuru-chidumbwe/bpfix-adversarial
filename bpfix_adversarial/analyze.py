@@ -67,8 +67,11 @@ def analyze_file(path: Path) -> list[dict]:
         text = raw.strip()
         if not text:
             continue
-        # Skip pure comments / preprocessor unless they look like checks
-        if text.startswith("#") and "if" not in text:
-            continue
+        # Skip preprocessor lines unless they are a conditional. Matching on a
+        # bare "if" also matched inside "endif", so #endif lines survived.
+        if text.startswith("#"):
+            directive = text[1:].lstrip().split(None, 1)[0] if text[1:].strip() else ""
+            if directive not in {"if", "ifdef", "ifndef", "elif"}:
+                continue
         out.append(analyze_text_line(text, path=str(path), line=i))
     return out

@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Fail if committed results/*.json drift from a fresh offline emitter run.
+"""Fail if committed results/* drift from a fresh offline emitter run.
 
-Lab / network / Ollama-backed artifacts are listed as SKIP with a reason so every
+Covers the .md tables as well as the .json. The .md files are what the
+manuscript reproduces, so leaving them outside the guard meant a hand-edited
+table could survive a green CI run.
+
+Lab-capture artifacts are listed as SKIP with a reason so every
 results/*.json is accounted for (closes the “forgot to recommit” hole).
 """
 
@@ -24,6 +28,8 @@ OFFLINE_EMITTERS: list[tuple[str, list[str]]] = [
     ("results/rename_honesty.json", ["tools/emit_rename_table.py"]),
     ("results/tier_disagreement.json", ["tools/emit_tier_table.py"]),
     ("results/four_obligation_matrix.json", ["tools/emit_four_obligation_matrix.py"]),
+    ("results/upstream_obligations.json", ["tools/emit_upstream_obligations.py"]),
+    ("results/pad_rename_invariance.json", ["tools/emit_pad_rename_invariance.py"]),
     ("results/depth21_selection.json", ["tools/emit_depth21_selection.py"]),
     ("results/sc_vs_honesty.json", ["tools/score_sc_vs_honesty.py"]),
     ("results/rq1_lab_distance.json", ["tools/emit_rq1_lab_distance.py"]),
@@ -31,17 +37,27 @@ OFFLINE_EMITTERS: list[tuple[str, list[str]]] = [
     ("results/oracle_controls.json", ["tools/emit_oracle_controls.py"]),
     ("results/marker_isolation.json", ["tools/emit_marker_isolation.py"]),
     ("results/rq1_bpfix_cli.json", ["tools/emit_rq1_bpfix_cli.py"]),
+    # Rescored from the committed capture logs, not re-captured: the lab host is
+    # not needed and the object hashes are carried from the original capture.
+    ("results/marker_isolation_lab.json",
+     ["tools/lab_marker_isolation_ab.py", "--rescore"]),
 ]
 
-# Must exist under results/; not re-run in CI (lab / Ollama / capture-only).
-SKIP_RESULTS: dict[str, str] = {
-    "results/marker_isolation_lab.json": (
-        "Ubuntu lab A/B capture (tools/lab_marker_isolation_ab.py); requires SSH host"
-    ),
-    "results/honesty_utility_rq4.json": (
-        "Pinned Ollama separation demonstration (tools/rq4_llm_repair.py); not offline"
-    ),
-}
+# Every results/*.json is now covered by an emitter above. Kept as an explicit
+# empty registry so an unaccounted-for file still fails the check.
+SKIP_RESULTS: dict[str, str] = {}
+
+
+_CRLF = bytes((13, 10))
+_CR = bytes((13,))
+_LF = bytes((10,))
+
+
+def _normalize_newlines(data):
+    """Collapse CRLF and CR to LF so a comparison is not line-ending sensitive."""
+    if data is None:
+        return None
+    return data.replace(_CRLF, _LF).replace(_CR, _LF)
 
 
 def _load(path: Path) -> object:
@@ -57,8 +73,10 @@ def check_one(rel: str, script_argv: list[str]) -> None:
     if not path.is_file():
         raise SystemExit(f"missing committed artifact: {rel}")
     committed = _load(path)
+    sidecars = [p for p in (path.with_suffix(".md"),) if p.is_file()]
     # Run emitter in a copy of the tree's CWD so it writes the real path, then restore.
     backup = path.read_bytes()
+    sidecar_backup = {p: p.read_bytes() for p in sidecars}
     try:
         cmd = [sys.executable, *script_argv]
         proc = subprocess.run(
@@ -74,29 +92,45 @@ def check_one(rel: str, script_argv: list[str]) -> None:
                 f"stdout:\n{proc.stdout}\nstderr:\n{proc.stderr}"
             )
         fresh = _load(path)
+        fresh_sidecars = {p: p.read_bytes() for p in sidecars}
     finally:
         path.write_bytes(backup)
+        for p, data in sidecar_backup.items():
+            p.write_bytes(data)
+
+    for p, data in sidecar_backup.items():
+        # Compare newline-normalised. The .md files are committed eol=lf, but an
+        # emitter run writes through Python's default newline translation, so a
+        # byte comparison fails on Windows for content that is identical.
+        if _normalize_newlines(fresh_sidecars.get(p)) != _normalize_newlines(data):
+            raise SystemExit(
+                f"committed {p.relative_to(ROOT).as_posix()} does not match its emitter; "
+                f"re-run {' '.join(script_argv)} and commit the result"
+            )
 
     if committed != fresh:
         # Write a temp diff aid for humans
         with tempfile.TemporaryDirectory() as td:
             a = Path(td) / "committed.json"
             b = Path(td) / "fresh.json"
-            a.write_text(_dump_canonical(committed), encoding="utf-8")
-            b.write_text(_dump_canonical(fresh), encoding="utf-8")
+            a.write_text(_dump_canonical(committed), encoding="utf-8", newline="\n")
+            b.write_text(_dump_canonical(fresh), encoding="utf-8", newline="\n")
         raise SystemExit(
             f"STALE: {rel} does not match fresh run of {' '.join(script_argv)}\n"
             f"Re-run: python {' '.join(script_argv)} && git add {rel}"
         )
 
 
+FIGURE_OUTPUTS = (
+    "figures/fig3-sc-vs-honesty.svg",
+    "figures/fig4-lab-distance.svg",
+    "figures/fig5-scoring-modes-cli.svg",
+)
+
+
 def check_figures() -> None:
     """Regenerate SVGs and require byte-identical committed figures/."""
-    figure_outputs = (
-        "figures/fig2-sc-vs-honesty.svg",
-        "figures/fig3-lab-distance.svg",
-        "figures/fig4-scoring-modes-cli.svg",
-    )
+    figure_outputs = FIGURE_OUTPUTS
     backups: dict[Path, bytes] = {}
     for rel in figure_outputs:
         path = ROOT / rel
@@ -145,6 +179,23 @@ def main() -> int:
         raise SystemExit(
             "registry entries missing on disk:\n  " + "\n  ".join(extra_registry)
         )
+    # A .md is checked only as the sidecar of a registered .json, and figures
+    # only by name, so an orphan of either would otherwise pass unchecked.
+    orphan_md = sorted(
+        f"results/{p.name}"
+        for p in (ROOT / "results").glob("*.md")
+        if f"results/{p.with_suffix('.json').name}" not in covered
+    )
+    orphan_svg = sorted(
+        f"figures/{p.name}"
+        for p in (ROOT / "figures").glob("*.svg")
+        if f"figures/{p.name}" not in FIGURE_OUTPUTS
+    )
+    if orphan_md or orphan_svg:
+        raise SystemExit(
+            "files not produced by any checked emitter:\n  "
+            + "\n  ".join(orphan_md + orphan_svg)
+        )
 
     for rel, argv in OFFLINE_EMITTERS:
         check_one(rel, argv)
@@ -155,7 +206,7 @@ def main() -> int:
 
     check_figures()
 
-    print("All offline results/*.json and figures/*.svg match their emitters.")
+    print("All offline results/*.json, results/*.md and figures/*.svg match their emitters.")
     return 0
 
 

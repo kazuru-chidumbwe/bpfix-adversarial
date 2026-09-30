@@ -48,6 +48,7 @@ def write_nullable_pair(out_dir: Path, pad: int = 8) -> list[Path]:
         p.write_text(
             nullable_pointer_src(var_name=var, pad=pad, case_id=case_id),
             encoding="utf-8",
+            newline="\n",
         )
         paths.append(p)
     return paths

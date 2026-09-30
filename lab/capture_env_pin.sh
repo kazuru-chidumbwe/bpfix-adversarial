@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Phase 3 — env-pin + dual-tier capture (do NOT overwrite fixtures/logs/synthetic/).
+# Environment pin and dual-tier capture. Does not overwrite fixtures/logs/synthetic/.
 # Usage on lab host after syncing repo:
 #   ./lab/capture_env_pin.sh NP-idiomatic-pad8 mutants/NullablePointer/NP-idiomatic-pad8.c
 set -euo pipefail
@@ -23,8 +23,10 @@ META="${META_DIR}/${CASE_ID}.${STAMP}.json"
   echo "=== kernel ==="; uname -r
 } > "${META%.json}.env.txt"
 
-# Placeholder compile/load hook — wire to lab/Makefile targets.
-echo "; captured stub — replace with real verifier -l2 reject log" > "$RAW_LOG"
+# This script records the environment pin only. The log written here is a
+# marker that tools/lab_capture_via_env.py overwrites with real bpftool -d
+# output when it runs against the pinned host.
+echo "; environment-pin marker; replaced by tools/lab_capture_via_env.py" > "$RAW_LOG"
 echo "; CASE_ID=${CASE_ID}" >> "$RAW_LOG"
 echo "; SRC=${SRC}" >> "$RAW_LOG"
 

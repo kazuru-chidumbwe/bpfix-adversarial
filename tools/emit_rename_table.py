@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Emit RQ2 rename-honesty table (JSON + Markdown) for the paper inset."""
+"""Emit the rename-boundary table (JSON + Markdown) for the paper inset."""
 
 from __future__ import annotations
 
@@ -34,9 +34,11 @@ def markdown_table(cases) -> str:
         )
     lines.append("")
     lines.append(
-        f"Full combinatorial matrix: **{len(breaks)}/{len(cases)}** "
-        f"({100.0 * len(breaks) / len(cases):.1f}%) honesty breaks "
-        f"(SourceComment null-check flips under idiomatic rename)."
+        f"Full combinatorial matrix: all **{len(breaks)}** brittle-name x "
+        f"idiomatic-rename pairs (of {len(cases)}) flip the SourceComment "
+        f"null-check recognition boundary under idiomatic rename. Exhaustive "
+        f"enumeration of the 4x8 grid, not a sampled rate over an empirical "
+        f"population."
     )
     lines.append("")
     lines.append(
@@ -62,12 +64,12 @@ def main() -> None:
         },
     }
     (out_dir / "rename_honesty.json").write_text(
-        json.dumps(payload, indent=2) + "\n", encoding="utf-8"
+        json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n"
     )
-    md = "# RQ2 inset — rename honesty of `looks_like_null_check`\n\n" + markdown_table(
+    md = "# Rename boundary of `looks_like_null_check`\n\n" + markdown_table(
         cases
     )
-    (out_dir / "rename_honesty.md").write_text(md + "\n", encoding="utf-8")
+    (out_dir / "rename_honesty.md").write_text(md + "\n", encoding="utf-8", newline="\n")
     print(md)
     print(f"\nWrote {out_dir / 'rename_honesty.json'}")
 

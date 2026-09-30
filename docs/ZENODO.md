@@ -1,27 +1,22 @@
-# Zenodo archive for SoftwareX cite pin `v1.0.1`
+# Zenodo archive companion for cite pin `v1.0.2`
 
-**Version DOI (C2):** https://doi.org/10.5281/zenodo.21860453  
+**C2:** public GitHub tree, **not** Zenodo:
 
-**Concept DOI (all versions):** https://doi.org/10.5281/zenodo.21859726  
+https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2
 
-SoftwareX will also copy the accepted code to the journal GitHub org after acceptance.
-This Zenodo record is the DOI-backed permanent link for Code metadata **C2**.
+**Version lock:** code metadata C1 and package version fields are **`v1.0.2` / `1.0.2`**.
 
-**Version lock:** SoftwareX C1 and package version fields are **`v1.0.1` / `1.0.1`**.
+**Do not reuse** `10.5281/zenodo.21860453` as “this version.” That DOI is the published **v1.0.1** archive.
+
+| Record | DOI | Tag |
+| --- | --- | --- |
+| Concept (all versions) | https://doi.org/10.5281/zenodo.21859726 | series |
+| v1.0.0 | https://doi.org/10.5281/zenodo.21859746 | `v1.0.0` |
+| v1.0.1 | https://doi.org/10.5281/zenodo.21860453 | `v1.0.1` |
+| v1.0.2 | https://doi.org/10.5281/zenodo.22763331 | `v1.0.2` |
+
+The v1.0.2 archive was minted by hand on 15 Sep 2026 (Zenodo's API was unavailable at tag time) as a **new version** under the existing concept, so the concept DOI is unchanged. Its DOI is recorded in C7, `CITATION.cff` and `codemeta.json`. The file on the record is `git archive --format=zip --prefix=bpfix-adversarial-v1.0.2/ v1.0.2` of the cited tag. Do not relabel 21860453.
 
 ## Cite
 
-```
-Kazuru, S. (2026). bpfix-adversarial (v1.0.1). Zenodo. https://doi.org/10.5281/zenodo.21860453
-```
-
-Browsable GitHub tree (also C7): https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.1  
-
-## How this DOI was minted
-
-1. Zenodo ↔ GitHub connected; repo enabled.
-2. Reserved DOI `10.5281/zenodo.21860453` on a new Zenodo version draft of the concept record.
-3. Wrote that DOI into C2 / CITATION / codemeta **before** publishing the deposit (avoids chicken-egg lag).
-4. Published the deposit from the `v1.0.1` tree; GitHub Release `v1.0.1` matches the same tag.
-
-Prior version DOIs under the same concept (`21859727`, `21859746`, `21860256`) remain published; cite **`21860453`** for this SoftwareX pin.
+Kazuru, S. (2026). bpfix-adversarial (v1.0.2). GitHub. https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2

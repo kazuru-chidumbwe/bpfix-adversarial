@@ -1,55 +1,42 @@
 # bpfix-adversarial
 
-Check whether eBPF reject diagnostics still name the line where a fault was
-injected after pad and rename stress.
+Does an eBPF reject log still point at the line where a fault was injected after padding and renaming?
 
-When the verifier rejects a program, the stop site in the log is often not where
-the missing check belongs. This repo builds small failing programs with known
-injection markers. It captures verifier logs on a pinned lab. It scores whether
-a diagnostic still points at that marker. Scoring covers bpfix SourceComment
-heuristics, thin baselines, and upstream CLI replay.
+When the verifier rejects a program, the stop site in the log is often not where the missing check belongs. This tree builds small eBPF programs with known injection markers (rejecting mutants plus accepting controls), captures verifier logs on a pinned lab host, and scores whether a diagnostic still names that marker. Scoring covers bpfix SourceComment heuristics, thin baselines, and upstream CLI replay.
 
-Object under test is [bpfix](https://github.com/eunomia-bpf/bpfix) and Zheng et al.
-See [arXiv:2607.02748](https://arxiv.org/abs/2607.02748).
-This does **not** test verifier soundness, bypasses, or kernel CVEs.
+Target: [bpfix](https://github.com/eunomia-bpf/bpfix) / Zheng et al. ([arXiv:2607.02748](https://arxiv.org/abs/2607.02748)). Not a verifier-soundness, bypass, or CVE study.
 
 [![CI](https://github.com/kazuru-chidumbwe/bpfix-adversarial/actions/workflows/ci.yml/badge.svg)](https://github.com/kazuru-chidumbwe/bpfix-adversarial/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Cite pin [`v1.0.1`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.1).
-Permanent archive: [doi:10.5281/zenodo.21860453](https://doi.org/10.5281/zenodo.21860453).
-See [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff), and [codemeta.json](codemeta.json).
-Cite the release tag / Zenodo version, not floating `master`.
-Upstream bpfix pin is `81d97e4a528456e0082a77f4fb6edd13fa092b7b`.
+**Frozen tree for published numbers:** [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2). Metadata: [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff), [codemeta.json](codemeta.json). Prefer that tag over floating `master`. Upstream bpfix pin: `81d97e4a528456e0082a77f4fb6edd13fa092b7b`.
 
-## Quick Start (offline insets)
-
-No lab SSH required. After install:
+## Offline insets (no lab SSH)
 
 ```bash
 git clone https://github.com/kazuru-chidumbwe/bpfix-adversarial.git
 cd bpfix-adversarial
-git checkout v1.0.1
+git checkout v1.0.2
 python -m venv .venv
 source .venv/bin/activate    # Windows: .venv\Scripts\activate
-pip install -U pip && pip install -e .   # stdlib-only core; optional: pip install -e ".[lab,openai]"
+pip install -U pip && pip install -e .   # stdlib-only core; optional: pip install -e ".[lab]"
 make smoke                   # version + unittest + rename-demo
 python tools/emit_rename_table.py
 python tools/emit_four_obligation_matrix.py
 python tools/score_sc_vs_honesty.py
-make figures                 # regenerate SoftwareX Figs 2–5 SVGs from results/*.json
+make figures                 # regenerate figures/fig3-fig5 SVGs from results/*.json
+pip install -e ".[dev]"
+python tools/measure_coverage.py   # single-command repro of the coverage figures quoted in the paper
 ```
 
-Or one-command offline smoke plus inset emitters. This path is Python tooling only.
-It does **not** pin or emulate the eBPF verifier. Containers share the host kernel.
+One-command offline path (Python tooling only; does not emulate the verifier; containers share the host kernel):
 
 ```bash
 docker build -t bpfix-adversarial:offline .
 docker run --rm bpfix-adversarial:offline
 ```
 
-Committed paper tables live under [`results/`](results/).
-Docs index: [`docs/README.md`](docs/README.md) (metrics, lab pin, deps, upstream, tags, Zenodo).
+Committed tables: [`results/`](results/). Docs index: [`docs/README.md`](docs/README.md).
 
 ## What it does
 
@@ -57,10 +44,10 @@ Docs index: [`docs/README.md`](docs/README.md) (metrics, lab pin, deps, upstream
 | --- | --- |
 | Mutant generators | Obligation-scoped C under `mutants/` with `ORACLE_LOSS_LINE` / `ORACLE_REJECT_LINE` |
 | Lab capture | clang + `bpftool -d` on a pinned Debian 13 host (`tools/lab_*.py`) |
-| Scoring | SourceComment port + VerifierState + upstream bpfix CLI replay; top-1 / set-recall |
+| Scoring | SourceComment port + VerifierState + upstream bpfix CLI replay; `top1_line` / `top1_span` / `set_recall_message` |
 | Paper insets | Committed tables under `results/` |
 
-Four stress families. NullablePointer, PointerProvenance, ScalarRange, PacketBounds.
+Four template families: NullablePointer, PointerProvenance, ScalarRange, PacketBounds. On the cite pin the PointerProvenance templates are rejected at the pointer XOR itself, inside the injection span, and upstream bpfix labels them E005 (ScalarRange); they are not a stop-site distance test (see `results/rq1_bpfix_cli.md`). The only rejecting NullablePointer row, `NP-idiomatic-nocheck`, has no committed capture-time copy of its source; line-text agreement with the captured log covers it (see `mutants/README.md`).
 
 ## Install
 
@@ -69,17 +56,14 @@ Requires Python 3.10+.
 ```bash
 git clone https://github.com/kazuru-chidumbwe/bpfix-adversarial.git
 cd bpfix-adversarial
-git checkout v1.0.1          # package cite pin
+git checkout v1.0.2
 python -m venv .venv
 source .venv/bin/activate    # Windows: .venv\Scripts\activate
 pip install -U pip
 pip install -e .
 ```
 
-Optional. The OpenAI separation path needs `OPENAI_API_KEY`.
-The paper separation demonstration used **Ollama** with `--backend ollama`. No cloud key.
-Model digest and seed are pinned. See `tools/rq4_llm_repair.py` and `results/rq4_ollama/`.
-Lab SSH helpers need `paramiko` and a `lab/.env`. See [`docs/LAB-PIN.md`](docs/LAB-PIN.md) and [`docs/TAGS.md`](docs/TAGS.md).
+Lab SSH helpers need `pip install -e ".[lab]"` (paramiko) and a `lab/.env`; the variables are listed in [`docs/LAB-PIN.md`](docs/LAB-PIN.md).
 To add a reporter: map a log to a primary line, then call `bpfix_adversarial.score.score_honesty` (see `docs/METRICS.md`).
 
 ## Minimal demo
@@ -89,16 +73,16 @@ while helper-anchored recognition stays stable.
 
 ```bash
 python -c "import bpfix_adversarial as m; print(m.__version__)"
-# → 1.0.1 on the v1.0.1 pin
+# → 1.0.2 on the v1.0.2 pin
 
 python -m bpfix_adversarial rename-demo --breaks-only --limit 2
 ```
 
-Example excerpt.
+Example excerpt. `helper_anchored_stable` is true by construction: the helper line is the same fixed `bpf_map_lookup_elem` call in every case, because renaming never touches the helper name.
 
 ```json
 {
-  "summary": { "n_honesty_breaks": 32, "break_rate": 1.0 },
+  "summary": { "n_cases": 32, "n_honesty_breaks": 32 },
   "cases": [
     {
       "original_line": "if (!tmp)",
@@ -110,8 +94,11 @@ Example excerpt.
 }
 ```
 
-Full combinatorial matrix. **32/32** top-1 breaks for the SourceComment name-list
-heuristic. See `results/rename_honesty.md`.
+Full combinatorial **4x8** matrix of brittle x idiomatic name pairs: all 32 pairs flip
+the SourceComment null-check predicate. This draws the recognition boundary of a
+name-list heuristic; it is **not** scored as `top1_line` and is **not** an empirical
+localization rate over n=32. Helper-anchored `bpf_map_lookup_elem` recognition is
+rename-insensitive by construction. See `results/rename_honesty.md`.
 
 ## Tests
 
@@ -120,7 +107,7 @@ make smoke          # version + unittest + rename-demo
 # or: python -m unittest discover -s tests -v
 ```
 
-CI runs the same suite on Python 3.10 and 3.12. See `.github/workflows/ci.yml`.
+CI runs the same suite on Python 3.10 and 3.12 on Linux, and on Python 3.12 on Windows with `core.autocrlf=true`, so the committed line endings are exercised on both. See `.github/workflows/ci.yml`.
 
 ## Reproduce paper insets
 
@@ -139,9 +126,6 @@ python tools/emit_depth21_selection.py       # depth-21 curated join table (unsc
 # Optional lab / CLI:
 #   python tools/lab_capture_via_env.py
 #   tools/run_rq1_bpfix_cli.sh && python tools/emit_rq1_bpfix_cli.py
-#   python tools/rq4_llm_repair.py --backend ollama   # separation demonstration
-#   python tools/rq4_llm_repair.py --backend openai   # optional; needs OPENAI_API_KEY
-#   # Do not use tools/honesty_utility_rq4.py to regenerate cite insets (legacy; refuses by default).
 ```
 
 | Campaign | Focus | Primary inset |
@@ -149,23 +133,22 @@ python tools/emit_depth21_selection.py       # depth-21 curated join table (unsc
 | Distance | Injection-site distance under padding | `distance_sweep.*`, `rq1_lab_distance.*`, `rq1_bpfix_cli.*` |
 | Rename | Null-check name-list brittleness | `rename_honesty.*` |
 | Tiers | SourceComment vs VerifierState | `tier_disagreement.*`, `sc_vs_honesty.*` |
-| Separation | Localization is not repair. n=1 demo | `honesty_utility_rq4.*` via `rq4_llm_repair.py --backend ollama` |
 
 ## Layout
 
 ```
 bpfix_adversarial/   heuristic port, generators, logparse, score
-mutants/              NP + PP/SR/PB C templates (+ repaired seeds)
+mutants/              NP + PP/SR/PB C templates
 fixtures/logs/        synthetic/ + captured/ (lab bpftool logs)
 fixtures/upstream/    depth-21 sparse bpfix-bench cases (curated target)
 lab/                  Linux capture helpers
 tools/                emit tables, lab capture, generate mutants
 results/              committed paper insets (md/json)
-docs/                 metrics, lab pin, deps, upstream, tags, Zenodo (see docs/README.md)
+docs/                 metrics, lab pin, deps, upstream, tags (see docs/README.md)
 schemas/              optional JSON Schema contracts
 tests/                unittest suite
-Makefile              smoke / insets (peer-harness shape)
-CODE_METADATA.md      SoftwareX C1–C8 table
+Makefile              smoke / insets
+CODE_METADATA.md      code-metadata table (C1–C8)
 ```
 
 ## Scope note
@@ -173,8 +156,7 @@ CODE_METADATA.md      SoftwareX C1–C8 table
 Validated paper evidence is the **template** four-obligation reject-oracles,
 SC/VS injection-site agreement, and the upstream bpfix CLI primary-arrow table
 on the Debian pin. Depth-21 under `fixtures/upstream/` is a **curated validation
-target**, not independently scored results. Cite tag `v1.0.1` records the Ollama
-separation demonstration with n=1. The scored construct is injection-site
+target**, not independently scored results. The scored construct is injection-site
 agreement. It is not a verified semantic proof-loss oracle. See [`docs/METRICS.md`](docs/METRICS.md).
 
 ## License

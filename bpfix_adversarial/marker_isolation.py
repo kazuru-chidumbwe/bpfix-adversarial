@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-"""Marker isolation helpers — strip ORACLE_* comments without shifting code lines."""
+"""Marker isolation helpers: strip ORACLE_* comments without shifting code lines."""
 
 from __future__ import annotations
 
@@ -16,10 +16,14 @@ ORACLE_LINE_RE = re.compile(r"ORACLE_(?:LOSS|REJECT)_LINE")
 def strip_oracle_markers(text: str, *, preserve_lines: bool = True) -> str:
     """Return marker-neutral source.
 
-    When ``preserve_lines`` is True (default), each ORACLE comment line is
-    replaced with an inert ``/* */`` so subsequent code keeps the same line
-    numbers — required for fair SC/VS line comparisons.
+    When ``preserve_lines`` is True (default), each ORACLE block comment is
+    replaced with an inert ``/* */`` followed by as many newlines as the comment
+    spanned, so code on the same line survives and subsequent code keeps the same
+    line numbers, required for fair SC/VS line comparisons. Any remaining line
+    that still names a marker (e.g. a ``//`` comment) is replaced whole.
     """
+    if preserve_lines:
+        text = ORACLE_COMMENT_RE.sub(lambda m: "/* */" + "\n" * m.group(0).count("\n"), text)
     out_lines: list[str] = []
     for raw in text.splitlines():
         if ORACLE_LINE_RE.search(raw):
@@ -35,7 +39,7 @@ def strip_oracle_markers(text: str, *, preserve_lines: bool = True) -> str:
 def strip_oracle_markers_path(src: Path, dest: Path, *, preserve_lines: bool = True) -> None:
     text = src.read_text(encoding="utf-8")
     dest.parent.mkdir(parents=True, exist_ok=True)
-    dest.write_text(strip_oracle_markers(text, preserve_lines=preserve_lines), encoding="utf-8")
+    dest.write_text(strip_oracle_markers(text, preserve_lines=preserve_lines), encoding="utf-8", newline="\n")
 
 
 def oracle_tokens_in_text(text: str) -> list[str]:

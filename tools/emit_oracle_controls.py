@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Minimal offline oracle-independence controls (SoftwareX punch-list).
+"""Minimal offline oracle-independence controls .
 
-Uses already-captured SoftwareX-stamp rows in results/sc_vs_honesty.json —
+Uses already-captured stamped rows in results/sc_vs_honesty.json,
 no new lab work.
 
 Controls
 --------
 1. negative_control
-   Injection markers present on programs that ACCEPT under the lab pin.
-   Shows markers alone do not induce the claimed reject/loss.
+   Templates built to be well-formed (NullablePointer with the null check in
+   its injection span) carry the same markers. Selected by construction, so a
+   marker-bearing template that rejected would count as a failure rather than
+   drop out. Shows markers alone do not induce the claimed reject/loss.
+   verdict_matches_construction extends the same test to all templates. It is
+   not an independent prediction: the ScalarRange template was retuned once
+   after an earlier version was accepted (see gen_obligations.scalar_range_src).
 
 2. positive_control
    Rejecting PacketBounds templates where VerifierState stop-site is *outside*
@@ -17,7 +22,7 @@ Controls
    Shows scoring still anchors on injection while the stop can diverge.
 
 3. compiler_preservation
-   For rejecting SoftwareX-stamp logs, assert at least one injection-span line
+   For rejecting stamped logs, assert at least one injection-span line
    (else reject/use code line) appears in verifier ``; … @ path:LINE`` maps.
    Links authored source lines to emitted debug maps without claiming a
    full semantic proof-loss oracle.
@@ -47,24 +52,56 @@ def in_span(line: int | None, span: list[int] | None, primary: int | None) -> bo
     return line in (span or [])
 
 
+def expected_verdict(r: dict) -> str:
+    """Verdict each template is built to produce.
+
+    The ScalarRange template was retuned once after an earlier version was
+    accepted, so a match here confirms the committed templates rather than
+    predicting lab verdicts independently.
+
+    gen_nullable places `if (!var) return 0;` between the NullablePointer markers,
+    so those programs are well-formed; every other template omits or breaks the
+    proof its family needs (NP-idiomatic-nocheck has an empty injection span).
+    """
+    if r["obligation"] == "NullablePointer" and r.get("oracle_loss_span"):
+        return "ACCEPT"
+    return "REJECT"
+
+
 def main() -> None:
     sc = json.loads((ROOT / "results" / "sc_vs_honesty.json").read_text(encoding="utf-8"))
     stamp_rows = [r for r in sc["rows"] if STAMP in (r.get("log") or "")]
 
     negatives = []
     for r in stamp_rows:
-        if r.get("lab_rejected") is not False:
+        if expected_verdict(r) != "ACCEPT" or r.get("oracle_loss_marker") is None:
             continue
-        if r.get("oracle_loss_marker") is None:
-            continue
+        accepted = r.get("lab_rejected") is False
         negatives.append(
             {
                 "case_id": r["case_id"],
                 "obligation": r["obligation"],
                 "oracle_loss_code": r.get("oracle_loss_code"),
-                "lab_rejected": False,
-                "pass": True,
-                "note": "markers present; lab ACCEPT — injection did not induce reject",
+                "expected_verdict": "ACCEPT",
+                "lab_rejected": r.get("lab_rejected"),
+                "pass": accepted,
+                "note": (
+                    "markers present; lab ACCEPT, injection did not induce reject"
+                    if accepted
+                    else "markers present on a well-formed template but lab REJECT"
+                ),
+            }
+        )
+
+    verdicts = []
+    for r in stamp_rows:
+        observed = "REJECT" if r.get("lab_rejected") else "ACCEPT"
+        verdicts.append(
+            {
+                "case_id": r["case_id"],
+                "expected_verdict": expected_verdict(r),
+                "observed_verdict": observed,
+                "pass": observed == expected_verdict(r),
             }
         )
 
@@ -123,7 +160,7 @@ def main() -> None:
                 "oracle_loss_span": span,
                 "oracle_reject_code": reject,
                 "mapped_source_lines": mapped,
-                "injection_line_in_map": hit_injection,
+                "injection_span_in_map": hit_injection,
                 "reject_line_in_map": hit_reject,
                 "pass": ok,
                 "note": (
@@ -148,6 +185,7 @@ def main() -> None:
         "negative_control": rate(negatives),
         "positive_control_pb_stop_vs_injection": rate(positives),
         "compiler_preservation_source_map": rate(preservations),
+        "verdict_matches_construction": rate(verdicts),
     }
 
     payload = {
@@ -157,35 +195,44 @@ def main() -> None:
         "negative_control": negatives,
         "positive_control_pb_stop_vs_injection": positives,
         "compiler_preservation_source_map": preservations,
+        "verdict_matches_construction": verdicts,
         "note": (
-            "Minimal offline controls over SoftwareX-stamp captures. "
+            "Minimal offline controls over stamped captures. "
             "Not a verified semantic proof-loss oracle; not negative controls "
             "that mutate away the reject while keeping the same marker text."
         ),
     }
-    OUT_JSON.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    OUT_JSON.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n")
 
     lines = [
-        "# Oracle-independence controls (minimal, SoftwareX-stamp)",
+        "# Oracle-independence controls (offline, stamped lab family)",
         "",
-        f"Stamp filter `{STAMP}`. Offline only — no new lab captures.",
+        f"Stamp filter `{STAMP}`. Offline only, no new lab captures.",
         "",
-        "| Control | Pass | n | Rate |",
+        "| Control | Pass | n | Row tally |",
         "| --- | ---: | ---: | ---: |",
     ]
     labels = [
         ("negative_control", "negative (markers + ACCEPT)"),
         ("positive_control_pb_stop_vs_injection", "positive (PB stop ≠ injection)"),
         ("compiler_preservation_source_map", "compiler-preservation (source map)"),
+        ("verdict_matches_construction", "verdict = construction (all templates)"),
     ]
     for key, label in labels:
         s = summary[key]
-        lines.append(f"| {label} | {s['hits']} | {s['n']} | {s['pass_rate']:.0%} |")
+        lines.append(f"| {label} | {s['hits']} | {s['n']} | {s['hits']}/{s['n']} |")
+    lines += [
+        "",
+        "`verdict = construction` confirms the committed templates; it is not an "
+        "independent prediction, because the ScalarRange template was retuned once "
+        "after an earlier version was accepted.",
+    ]
     lines += [
         "",
         "## Negative control",
         "",
-        "Injection markers present; lab load **ACCEPT**s.",
+        "Templates built to be well-formed (selected by construction, not by the "
+        "observed verdict); markers present; lab load **ACCEPT**s.",
         "",
         "| case_id | obligation | loss_code |",
         "| --- | --- | ---: |",
@@ -198,7 +245,7 @@ def main() -> None:
         "",
         "VerifierState stop-site outside injection span.",
         "",
-        "| case_id | loss | VS | SC top-1 | VS top-1 | diverge |",
+        "| case_id | loss | VS | SC top1_span | VS top1_span | diverge |",
         "| --- | ---: | ---: | --- | --- | --- |",
     ]
     for r in positives:
@@ -212,17 +259,17 @@ def main() -> None:
         "",
         "## Compiler-preservation (verifier source map)",
         "",
-        "| case_id | injection in map | reject in map | pass |",
+        "| case_id | injection span in map | reject line in map | pass |",
         "| --- | --- | --- | --- |",
     ]
     for r in preservations:
         lines.append(
-            f"| `{r['case_id']}` | {'yes' if r['injection_line_in_map'] else 'no'} | "
+            f"| `{r['case_id']}` | {'yes' if r['injection_span_in_map'] else 'no'} | "
             f"{'yes' if r['reject_line_in_map'] else 'no'} | "
             f"{'yes' if r['pass'] else 'no'} |"
         )
     lines += ["", "JSON: `oracle_controls.json`.", ""]
-    OUT_MD.write_text("\n".join(lines), encoding="utf-8")
+    OUT_MD.write_text("\n".join(lines), encoding="utf-8", newline="\n")
     print(f"Wrote {OUT_JSON.relative_to(ROOT)} and {OUT_MD.relative_to(ROOT)}")
     print(json.dumps(summary, indent=2))
 

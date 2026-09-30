@@ -11,12 +11,26 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-import paramiko
-
 ROOT = Path(__file__).resolve().parents[1]
 # Override with BPFIX_LAB_ENV_FILE to point at a lab .env outside the repo
 # (e.g. a notes/ checkout); defaults to a gitignored lab/.env next to this tool.
 ENV = Path(os.environ.get("BPFIX_LAB_ENV_FILE", str(ROOT / "lab" / ".env")))
+
+
+def _require_paramiko():
+    """Import paramiko on demand.
+
+    The offline paths must run on the stdlib-only install that README and
+    docs/DEPENDENCIES.md promise, so the SSH dependency is imported where it is
+    used rather than at module scope.
+    """
+    try:
+        import paramiko
+    except ModuleNotFoundError as exc:  # pragma: no cover - environment
+        raise SystemExit(
+            "this path needs SSH support: pip install -e \".[lab]\""
+        ) from exc
+    return paramiko
 
 
 def load_env(path: Path) -> dict[str, str]:
@@ -61,13 +75,21 @@ def main() -> int:
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     cfg = load_env(ENV)
     host = (cfg.get("LAB_TEST_HOST") or "").strip()
-    user = (cfg.get("LAB_TEST_USER") or "boma").strip()
+    user = (cfg.get("LAB_TEST_USER") or "").strip()
     key_path = (cfg.get("LAB_TEST_SSH_KEY") or "").strip()
     password = (cfg.get("LAB_TEST_PASSWORD") or "").strip() or None
     if not host:
         raise SystemExit("Set LAB_TEST_HOST (or LAB_HOST2) in lab/.env / BPFIX_LAB_ENV_FILE")
+    if not user:
+        raise SystemExit("Set LAB_TEST_USER in lab/.env / BPFIX_LAB_ENV_FILE")
+    paramiko = _require_paramiko()
     c = paramiko.SSHClient()
-    c.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    # Verify the host key: ~/.ssh/known_hosts, plus LAB_TEST_KNOWN_HOSTS if set.
+    c.load_system_host_keys()
+    known_hosts = (cfg.get("LAB_TEST_KNOWN_HOSTS") or "").strip()
+    if known_hosts:
+        c.load_host_keys(str(Path(known_hosts).expanduser()))
+    c.set_missing_host_key_policy(paramiko.RejectPolicy())
     kwargs: dict = {
         "hostname": host,
         "username": user,
@@ -91,10 +113,11 @@ def main() -> int:
     with sftp.file(remote_c, "w") as f:
         f.write(text)
     # Prefer passworded sudo when LAB_TEST_PASSWORD is set (app-test-server);
-    # fall back to passwordless sudo -n (SoftwareX pin / lab-test).
+    # fall back to passwordless sudo -n (cite pin host).
     if password:
         pw_file = f"/tmp/.bpfix_one_pw_{stamp}"
         with sftp.file(pw_file, "w") as f:
+            f.chmod(0o600)  # before the password is written
             f.write(password + "\n")
         c.exec_command(f"chmod 600 {pw_file}", timeout=10)
         sudo_bpf = f'PW=$(cat {pw_file}); printf "%s\\n" "$PW" | sudo -S -p "" /usr/sbin/bpftool'
@@ -126,7 +149,8 @@ def main() -> int:
     local_dir = ROOT / "fixtures" / "logs" / "captured"
     local_dir.mkdir(parents=True, exist_ok=True)
     local_log = local_dir / f"{src.stem}.{stamp}.log"
-    local_log.write_text(out, encoding="utf-8")
+    # get_pty=True returns CRLF; fixture logs must stay LF (tools/check_lf_logs.py).
+    local_log.write_text(out.replace("\r\n", "\n"), encoding="utf-8", newline="\n")
     verdict = "ACCEPT" if any(line.strip() == "ACCEPT" for line in out.splitlines()) else "REJECT"
     if any(line.strip() == "COMPILE_FAIL" for line in out.splitlines()):
         verdict = "COMPILE_FAIL"

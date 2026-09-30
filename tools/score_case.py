@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Score one adversarial case result against its oracle (stub)."""
+"""Score one adversarial case result against its oracle.
+
+Instruction-index distance, kept for exploratory use. The scoring the paper
+reports is source-line based; see docs/METRICS.md and bpfix_adversarial/score.py.
+"""
 
 from __future__ import annotations
 

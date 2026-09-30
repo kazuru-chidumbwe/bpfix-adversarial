@@ -31,7 +31,7 @@ def main() -> None:
     rows = []
     for c in cases:
         cid = c["upstream_case_id"]
-        ob = c["upstream_proof_obligation"]
+        ob = c["keyword_label"]
         dest = OUT_DIR / cid
         dest.mkdir(parents=True, exist_ok=True)
         got = []
@@ -46,14 +46,14 @@ def main() -> None:
             got.append(name)
         meta = {
             "upstream_case_id": cid,
-            "upstream_proof_obligation": ob,
+            "keyword_label": ob,
             "upstream_commit": COMMIT,
             "campaign_label": "20260728",
             "selection_method": subset.get("selection_method"),
             "files": got,
             "local_path": str(dest.relative_to(ROOT)).replace("\\", "/"),
         }
-        (dest / "case_meta.json").write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
+        (dest / "case_meta.json").write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8", newline="\n")
         rows.append(meta)
         print(f"OK {cid} ({len(got)} files)")
 
@@ -64,7 +64,7 @@ def main() -> None:
         "cases": rows,
     }
     out_m = ROOT / "fixtures" / "upstream" / "depth21_manifest.json"
-    out_m.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    out_m.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"Wrote {out_m} n={len(rows)}")
 
 

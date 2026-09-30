@@ -1,13 +1,13 @@
-# Lab pin — SoftwareX template-oracle host
+# Lab pin: template-oracle host
 
-**Purpose:** Reproduce the SoftwareX **template-oracle** capture environment (not
-cross-kernel portability). SoftwareX cite evidence uses this pin; offline inset
+**Purpose:** Reproduce the **template-oracle** capture environment (not
+cross-kernel portability). Cite evidence uses this pin; offline inset
 emitters do **not** need it.
 
 **Cite stamp:** `20260801T181331Z`  
 **Recorded pin:** [`results/env_pins/lab-test.20260801T181331Z.env.txt`](../results/env_pins/lab-test.20260801T181331Z.env.txt)
 
-| Field | SoftwareX template-oracle value |
+| Field | template-oracle value |
 | --- | --- |
 | Host label | `lab-server` |
 | Distro | Debian 13 (trixie) |
@@ -17,24 +17,22 @@ emitters do **not** need it.
 | bpftool | v7.5.0 (libbpf v1.5) |
 | Capture | `bpftool prog load … -d` |
 
-Separation demonstration (not template-oracle scores): Ubuntu 24.04
-`app-test-server`, kernel `6.8.0-136-generic`, clang 18.1.3, bpftool v7.4.0 —
-see `results/env_pins/app-test-server.20260807T112233Z.env.txt`. The SoftwareX
-Ollama localization–repair separation capture on that host recorded ACCEPT on
-2026-08-07 (stdlib `urllib` HTTP client; no `ollama` PyPI package).
+Marker A/B (not template-oracle scores): Ubuntu 24.04 `app-test-server`,
+kernel `6.8.0-136-generic`, clang 18.1.3, bpftool v7.4.0; see
+`results/env_pins/app-test-server.20260807T112233Z.env.txt`.
 
 | Role | Host | Notes |
 | --- | --- | --- |
-| Template-oracle scores | `lab-server` (Debian 13 / `6.12.86+deb13-amd64`) | SoftwareX cite pin |
-| Separation + marker A/B | `app-test-server` (Ubuntu 24.04 / `6.8.0-136-generic`) | Not portability claim |
+| Template-oracle scores | `lab-server` (Debian 13 / `6.12.86+deb13-amd64`) | cite pin |
+| Marker A/B | `app-test-server` (Ubuntu 24.04 / `6.8.0-136-generic`) | Not portability claim |
 | Offline bpfix CLI replay | WSL/Linux developer host | Reads stamped logs only; does not re-verify |
 
-Optional RQ1 offline CLI replay uses upstream bpfix at immutable commit
+Optional offline CLI replay uses upstream bpfix at immutable commit
 `81d97e4a528456e0082a77f4fb6edd13fa092b7b` (see `docs/UPSTREAM.md`).
 
 ## What reviewers must match
 
-SoftwareX template-oracle **scores** depend on verifier text from this kernel.
+Template-oracle **scores** depend on verifier text from this kernel.
 Matching userspace (clang/bpftool) without matching `uname -r` is **not** the
 cite pin. Exact bit-identical kernel rebuild from source is **not** required if
 you install Debian 13’s published `linux-image-6.12.86+deb13-amd64` (or the
@@ -43,7 +41,7 @@ when the string differs.
 
 ## Bootstrap (Debian 13 / x86_64)
 
-Run on a fresh Debian 13 VM (Hyper-V, QEMU, Vagrant — see `Vagrantfile`):
+Run on a fresh Debian 13 VM (Hyper-V, QEMU, Vagrant; see `Vagrantfile`):
 
 ```bash
 sudo apt-get update
@@ -54,14 +52,14 @@ sudo apt-get install -y \
   python3 python3-venv python3-pip \
   git make
 
-# Prefer the SoftwareX-recorded kernel package when available:
+# Prefer the recorded kernel package when available:
 #   apt-cache search linux-image | grep 6.12.86
 #   sudo apt-get install -y linux-image-6.12.86+deb13-amd64
 # then reboot into that image.
 
-clang --version          # expect 19.x on SoftwareX pin
+clang --version          # expect 19.x on the cite pin
 bpftool version          # expect v7.5.0 class
-uname -r                 # SoftwareX cite: 6.12.86+deb13-amd64
+uname -r                 # cite pin: 6.12.86+deb13-amd64
 uname -m                 # x86_64
 
 # Passwordless sudo recommended for bpftool prog load on the lab account.
@@ -72,19 +70,32 @@ Clone and capture (credentials in gitignored `lab/.env`):
 ```bash
 git clone https://github.com/kazuru-chidumbwe/bpfix-adversarial.git
 cd bpfix-adversarial
-git checkout v1.0.1   # SoftwareX cite tag
+git checkout v1.0.2   # cite tag
 python3 -m venv .venv && . .venv/bin/activate
-pip install -U pip && pip install -e .
-# LAB_TEST_HOST / LAB_TEST_SSH_KEY or PASSWORD — see docs/TAGS.md
+pip install -U pip && pip install -e ".[lab]"
 python tools/lab_capture_via_env.py
 ```
+
+`lab/.env` (or the file named by `BPFIX_LAB_ENV_FILE`), one `KEY=value` per line:
+
+| Variable | Required | Meaning |
+| --- | --- | --- |
+| `LAB_TEST_HOST` | yes | lab host name or address |
+| `LAB_TEST_USER` | yes | SSH user (no default) |
+| `LAB_TEST_SSH_KEY` | key or password | path to an Ed25519 private key; used for SSH when set |
+| `LAB_TEST_KNOWN_HOSTS` | no | extra known_hosts file; the helpers always read `~/.ssh/known_hosts` and refuse hosts whose key is not listed |
+| `LAB_TEST_PASSWORD` | key or password | SSH password when no key is set; when present it is also piped to `sudo -S`, otherwise the helpers use `sudo -n` |
+
+`LAB_HOST2` / `LAB_HOST2_HOST`, `LAB_HOST2_USER`, `LAB_HOST2_PASSWORD` and
+`LAB_HOST2_SSH_KEY` are accepted as aliases. `lab/.env` is gitignored and is not
+included in the upload tarball.
 
 ## Privilege and failure notes
 
 - Loading programs needs CAP_BPF / CAP_PERFMON or root via sudo.
 - Missing clang → compile fails before load.
 - Missing bpftool → no verifier log.
-- Nested virt / Hyper-V: used by the author for SoftwareX; not required if you
+- Nested virt / Hyper-V: used by the author; not required if you
   have a bare-metal or cloud Debian 13 host with the pin.
 
 ## Offline path (no lab)
