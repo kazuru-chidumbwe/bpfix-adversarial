@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: tp/syscalls/sys_exit_read/rs_agentsight_stdiocap_user_copy_len
+
+; /home/test/bpfix-v2-git/campaigns/n3/rs_agentsight_stdiocap_user_copy_len_001/VPAD.buggy.bpf.c:65
+;     bpf_probe_read_user(event->buf, copy_size, (const void *)args->buf);
+
+63: Invalid type (r1.type in {number, ctx, stack, packet, shared})
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

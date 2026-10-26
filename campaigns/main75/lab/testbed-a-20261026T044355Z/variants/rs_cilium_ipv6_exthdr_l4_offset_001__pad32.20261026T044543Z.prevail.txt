@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/rs_cilium_ipv6_exthdr_l4_offset
+
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/rs_cilium_ipv6_exthdr_l4_offset_001/pad32.bpf.c:121
+;     return bpf_ntohs(udp->dest) == 53 ? XDP_DROP : XDP_PASS;
+
+122: Upper bound must be at most packet_size (valid_access(r1.offset+2, width=2) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

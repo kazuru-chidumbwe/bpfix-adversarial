@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: tc/rs_agentsight_process_ringbuf_null
+
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/rs_agentsight_process_ringbuf_null_001/pad8.bpf.c:55
+;     e->type = 1;
+
+39: Possible null access (valid_access(r0.offset, width=4) for write)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

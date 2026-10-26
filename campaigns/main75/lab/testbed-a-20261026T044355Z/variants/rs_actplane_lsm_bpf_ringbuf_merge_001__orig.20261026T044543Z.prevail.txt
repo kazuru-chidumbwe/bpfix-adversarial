@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: lsm/bpf/rs_actplane_lsm_bpf_ringbuf_merge
+
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/rs_actplane_lsm_bpf_ringbuf_merge_001/orig.bpf.c:54
+;     event->cmd = (__u32)cmd;
+
+27: Possible null access (valid_access(r1.offset+4, width=4) for write)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

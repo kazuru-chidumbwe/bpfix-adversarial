@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/rs_agentsight_fs_overflow_counter_merge
+
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/rs_agentsight_fs_overflow_counter_merge_001/orig.bpf.c:123
+;         __sync_fetch_and_add(overflow, 1);
+
+136: Possible null access (valid_access(r1.offset, width=8) for write)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

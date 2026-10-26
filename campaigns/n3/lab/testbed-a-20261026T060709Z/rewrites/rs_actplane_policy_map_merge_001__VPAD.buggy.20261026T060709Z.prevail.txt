@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: tc/rs_actplane_policy_map_merge
+
+; /home/test/bpfix-v2-git/campaigns/n3/rs_actplane_policy_map_merge_001/VPAD.buggy.bpf.c:65
+;     return policy->drop_proto == proto ? TC_ACT_SHOT : TC_ACT_OK;
+
+60: Possible null access (valid_access(r0.offset, width=4) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

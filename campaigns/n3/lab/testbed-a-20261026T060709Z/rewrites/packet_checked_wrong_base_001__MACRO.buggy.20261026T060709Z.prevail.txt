@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/packet_checked_wrong_base
+
+; /home/test/bpfix-v2-git/campaigns/n3/packet_checked_wrong_base_001/MACRO.buggy.bpf.c:33
+;     ADV_STMT(proto = *(__u16 *)(shifted + 12));
+
+6: Upper bound must be at most packet_size (valid_access(r1.offset+13, width=2) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

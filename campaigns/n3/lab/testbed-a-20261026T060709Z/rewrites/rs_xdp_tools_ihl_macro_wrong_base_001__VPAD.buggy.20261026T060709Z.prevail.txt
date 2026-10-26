@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/rs_xdp_tools_ihl_macro_wrong_base
+
+; /home/test/bpfix-v2-git/campaigns/n3/rs_xdp_tools_ihl_macro_wrong_base_001/VPAD.buggy.bpf.c:38
+;     return bpf_ntohs(udp->dest) == 53 ? XDP_DROP : XDP_PASS;
+
+52: Upper bound must be at most packet_size (valid_access(r1.offset+2, width=2) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

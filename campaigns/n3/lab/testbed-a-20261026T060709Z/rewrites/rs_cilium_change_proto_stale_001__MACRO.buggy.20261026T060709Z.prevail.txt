@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: tc/rs_cilium_change_proto_stale
+
+; /home/test/bpfix-v2-git/campaigns/n3/rs_cilium_change_proto_stale_001/MACRO.buggy.bpf.c:45
+;     ADV_STMT(eth->h_proto = bpf_htons(ETH_P_IP));
+
+22: Invalid type (r6.type in {ctx, stack, packet, shared, socket, alloc_mem})
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

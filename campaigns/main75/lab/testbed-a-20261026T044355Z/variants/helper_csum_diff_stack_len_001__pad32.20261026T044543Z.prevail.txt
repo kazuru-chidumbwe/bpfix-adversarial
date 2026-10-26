@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/helper_csum_diff_stack_len
+
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/helper_csum_diff_stack_len_001/pad32.bpf.c:95
+;     sum = bpf_csum_diff(0, 0, (__be32 *)&pseudo, 12, 0);
+
+132: Upper bound must be at most total_stack_size ((r3.type == number and r3.value == 0) or valid_access(r3.offset, width=r4) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

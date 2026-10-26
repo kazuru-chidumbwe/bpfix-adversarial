@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/xdp_adjust_head_map_value
+
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/xdp_adjust_head_map_value_001/pad32.bpf.c:93
+;     return cfg->drop_proto == iph->protocol ? XDP_DROP : XDP_PASS;
+
+130: Invalid type (r7.type in {ctx, stack, packet, shared, socket, alloc_mem})
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

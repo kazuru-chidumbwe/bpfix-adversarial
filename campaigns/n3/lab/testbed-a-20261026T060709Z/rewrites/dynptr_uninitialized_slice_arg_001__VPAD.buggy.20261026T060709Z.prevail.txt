@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/dynptr_uninitialized_slice_arg
+
+; /home/test/bpfix-v2-git/campaigns/n3/dynptr_uninitialized_slice_arg_001/VPAD.buggy.bpf.c:35
+;     eth = bpf_dynptr_slice(&ptr, 0, 0, sizeof(*eth));
+
+38: Invalid type (r1.type == number)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

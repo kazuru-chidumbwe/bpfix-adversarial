@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/dynptr_slice_short_mem
+
+; /home/test/bpfix-v2-git/campaigns/n3/dynptr_slice_short_mem_001/VPADC.buggy.bpf.c:29
+;     if (bpf_dynptr_from_xdp(ctx, 0, &ptr))
+
+3: Invalid type (r1.type == number)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

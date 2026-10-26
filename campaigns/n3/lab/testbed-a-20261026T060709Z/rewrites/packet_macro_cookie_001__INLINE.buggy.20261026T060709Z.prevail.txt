@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/packet_macro_cookie
+
+; /home/test/bpfix-v2-git/campaigns/n3/packet_macro_cookie_001/INLINE.buggy.bpf.c:41
+;     asm volatile("%[cookie] <<= 32; %[cookie] >>= 32" : [cookie] "+r"(cookie));
+
+15: Invalid type (r3.type == number)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

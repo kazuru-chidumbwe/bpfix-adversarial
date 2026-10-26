@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/ringbuf_branch_cookie
+
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/ringbuf_branch_cookie_001/orig.bpf.c:59
+;     asm volatile("%[cookie] <<= 32; %[cookie] >>= 32" : [cookie] "+r"(cookie));
+
+25: Invalid type (r1.type == number)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/rs_xdp_tools_xdpdump_perf_map_type
+
+; /home/test/bpfix-v2-git/campaigns/n3/rs_xdp_tools_xdpdump_perf_map_type_001/VPAD.buggy.bpf.c:70
+;     bpf_perf_event_output(ctx, &xdpdump_perf_map, flags,
+
+61: map type 2 is not allowed for perf_event_output (valid_map_type(r2, perf_event_output))
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

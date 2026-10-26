@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: tp/syscalls/sys_exit_read/rs_datrail_browsertrace_start_ns_merge
+
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/rs_datrail_browsertrace_start_ns_merge_001/orig.bpf.c:69
+;     event->delta_ns = ts - *tsp;
+
+38: Possible null access (valid_access(r1.offset, width=8) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

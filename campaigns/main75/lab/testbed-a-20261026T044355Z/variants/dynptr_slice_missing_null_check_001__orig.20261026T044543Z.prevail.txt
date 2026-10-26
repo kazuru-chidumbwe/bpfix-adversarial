@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/dynptr_slice_missing_null_check
+
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/dynptr_slice_missing_null_check_001/orig.bpf.c:29
+;     if (bpf_dynptr_from_xdp(ctx, 0, &ptr))
+
+3: Invalid type (r1.type == number)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

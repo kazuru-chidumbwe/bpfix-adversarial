@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/map_value_signed_index
+
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/map_value_signed_index_001/orig.bpf.c:47
+;     return cfg->slots[idx] ? XDP_DROP : XDP_PASS;
+
+24: Lower bound must be at least 0 (valid_access(r1.offset, width=4) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

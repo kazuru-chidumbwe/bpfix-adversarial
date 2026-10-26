@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/map_value_inline_cookie
+
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/map_value_inline_cookie_001/rename.bpf.c:67
+;     return ptr->drop_proto == proto ? XDP_DROP : XDP_PASS;
+
+30: Possible null access (valid_access(r1.offset, width=4) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

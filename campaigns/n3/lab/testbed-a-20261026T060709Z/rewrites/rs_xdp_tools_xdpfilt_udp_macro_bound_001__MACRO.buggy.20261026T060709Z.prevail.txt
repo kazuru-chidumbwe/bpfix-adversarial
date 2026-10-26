@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/rs_xdp_tools_xdpfilt_udp_macro_bound
+
+; /home/test/bpfix-v2-git/campaigns/n3/rs_xdp_tools_xdpfilt_udp_macro_bound_001/MACRO.buggy.bpf.c:94
+;     ADV_STMT(DROP_DNS_UDP(udp));
+
+18: Upper bound must be at most packet_size (valid_access(r3.offset+2, width=2) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

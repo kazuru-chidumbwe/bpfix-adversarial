@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/ringbuf_nested_missing_null
+
+; /home/test/bpfix-v2-git/fixtures/upstream/bpfix-bench-cases/ringbuf_nested_missing_null_001/buggy.bpf.c:48
+;     rec->mark = is_ip ? 7 : 11;
+
+25: Possible null access (valid_access(r6.offset, width=4) for write)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

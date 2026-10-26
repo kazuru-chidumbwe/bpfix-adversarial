@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/map_value_branch_merge
+
+; /home/test/bpfix-v2-git/campaigns/n3/map_value_branch_merge_001/VPADC.buggy.bpf.c:73
+;     return cfg->drop_proto == proto ? XDP_DROP : XDP_PASS;
+
+73: Possible null access (valid_access(r0.offset, width=4) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

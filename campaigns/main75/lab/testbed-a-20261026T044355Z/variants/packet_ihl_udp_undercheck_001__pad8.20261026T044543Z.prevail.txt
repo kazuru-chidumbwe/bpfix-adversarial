@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/packet_ihl_udp_undercheck
+
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/packet_ihl_udp_undercheck_001/pad8.bpf.c:82
+;     if (bpf_ntohs(dport) != 53)
+
+54: Upper bound must be at most packet_size (valid_access(r1.offset+8, width=1) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

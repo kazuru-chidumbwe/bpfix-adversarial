@@ -337,79 +337,79 @@
    "PREVAIL": {
     "R0": {
      "primary_on_site": {
-      "hits": 0,
+      "hits": 27,
       "n": 74,
       "wilson95": [
-       0.0,
-       0.0493
+       0.2644,
+       0.4787
       ]
      },
      "label_on_site": {
-      "hits": 0,
+      "hits": 27,
       "n": 74,
       "wilson95": [
-       0.0,
-       0.0493
+       0.2644,
+       0.4787
       ]
      },
      "primary_within_3": {
-      "hits": 0,
+      "hits": 44,
       "n": 74,
       "wilson95": [
-       0.0,
-       0.0493
+       0.4808,
+       0.6991
       ]
      }
     },
     "R1": {
      "primary_on_site": {
-      "hits": 0,
+      "hits": 36,
       "n": 74,
       "wilson95": [
-       0.0,
-       0.0493
+       0.3761,
+       0.5982
       ]
      },
      "label_on_site": {
-      "hits": 0,
+      "hits": 36,
       "n": 74,
       "wilson95": [
-       0.0,
-       0.0493
+       0.3761,
+       0.5982
       ]
      },
      "primary_within_3": {
-      "hits": 0,
+      "hits": 47,
       "n": 74,
       "wilson95": [
-       0.0,
-       0.0493
+       0.5213,
+       0.7356
       ]
      }
     },
     "R2": {
      "primary_on_site": {
-      "hits": 0,
+      "hits": 32,
       "n": 74,
       "wilson95": [
-       0.0,
-       0.0493
+       0.3257,
+       0.5459
       ]
      },
      "label_on_site": {
-      "hits": 0,
+      "hits": 32,
       "n": 74,
       "wilson95": [
-       0.0,
-       0.0493
+       0.3257,
+       0.5459
       ]
      },
      "primary_within_3": {
-      "hits": 0,
+      "hits": 44,
       "n": 74,
       "wilson95": [
-       0.0,
-       0.0493
+       0.4808,
+       0.6991
       ]
      }
     }
@@ -744,79 +744,79 @@
    "PREVAIL": {
     "R0": {
      "primary_on_site": {
-      "hits": 0,
+      "hits": 26,
       "n": 69,
       "wilson95": [
-       0.0,
-       0.0527
+       0.2718,
+       0.4948
       ]
      },
      "label_on_site": {
-      "hits": 0,
+      "hits": 26,
       "n": 69,
       "wilson95": [
-       0.0,
-       0.0527
+       0.2718,
+       0.4948
       ]
      },
      "primary_within_3": {
-      "hits": 0,
+      "hits": 39,
       "n": 69,
       "wilson95": [
-       0.0,
-       0.0527
+       0.4479,
+       0.6757
       ]
      }
     },
     "R1": {
      "primary_on_site": {
-      "hits": 0,
+      "hits": 31,
       "n": 69,
       "wilson95": [
-       0.0,
-       0.0527
+       0.3377,
+       0.5662
       ]
      },
      "label_on_site": {
-      "hits": 0,
+      "hits": 31,
       "n": 69,
       "wilson95": [
-       0.0,
-       0.0527
+       0.3377,
+       0.5662
       ]
      },
      "primary_within_3": {
-      "hits": 0,
+      "hits": 42,
       "n": 69,
       "wilson95": [
-       0.0,
-       0.0527
+       0.4907,
+       0.7152
       ]
      }
     },
     "R2": {
      "primary_on_site": {
-      "hits": 0,
+      "hits": 28,
       "n": 69,
       "wilson95": [
-       0.0,
-       0.0527
+       0.2979,
+       0.5236
       ]
      },
      "label_on_site": {
-      "hits": 0,
+      "hits": 28,
       "n": 69,
       "wilson95": [
-       0.0,
-       0.0527
+       0.2979,
+       0.5236
       ]
      },
      "primary_within_3": {
-      "hits": 0,
+      "hits": 39,
       "n": 69,
       "wilson95": [
-       0.0,
-       0.0527
+       0.4479,
+       0.6757
       ]
      }
     }
@@ -864,11 +864,11 @@
      ]
     },
     "PREVAIL": {
-     "hits": 0,
+     "hits": 1,
      "n": 6,
      "wilson95": [
-      0.0,
-      0.3903
+      0.0301,
+      0.5635
      ]
     },
     "bpfix_any_label": {
@@ -1064,11 +1064,11 @@
      ]
     },
     "PREVAIL": {
-     "hits": 0,
+     "hits": 4,
      "n": 20,
      "wilson95": [
-      0.0,
-      0.1611
+      0.0807,
+      0.416
      ]
     },
     "bpfix_any_label": {
@@ -1114,11 +1114,11 @@
      ]
     },
     "PREVAIL": {
-     "hits": 0,
+     "hits": 4,
      "n": 11,
      "wilson95": [
-      0.0,
-      0.2588
+      0.1517,
+      0.6462
      ]
     },
     "bpfix_any_label": {
@@ -1164,11 +1164,11 @@
      ]
     },
     "PREVAIL": {
-     "hits": 0,
+     "hits": 8,
      "n": 9,
      "wilson95": [
-      0.0,
-      0.2991
+      0.565,
+      0.9801
      ]
     },
     "bpfix_any_label": {
@@ -1264,11 +1264,11 @@
      ]
     },
     "PREVAIL": {
-     "hits": 0,
+     "hits": 4,
      "n": 6,
      "wilson95": [
-      0.0,
-      0.3903
+      0.3,
+      0.9032
      ]
     },
     "bpfix_any_label": {
@@ -1314,11 +1314,11 @@
      ]
     },
     "PREVAIL": {
-     "hits": 0,
+     "hits": 3,
      "n": 4,
      "wilson95": [
-      0.0,
-      0.4899
+      0.3006,
+      0.9544
      ]
     },
     "bpfix_any_label": {
@@ -1364,11 +1364,11 @@
      ]
     },
     "PREVAIL": {
-     "hits": 0,
+     "hits": 3,
      "n": 4,
      "wilson95": [
-      0.0,
-      0.4899
+      0.3006,
+      0.9544
      ]
     },
     "bpfix_any_label": {
@@ -1416,11 +1416,11 @@
      ]
     },
     "PREVAIL": {
-     "hits": 0,
+     "hits": 18,
      "n": 40,
      "wilson95": [
-      0.0,
-      0.0876
+      0.3071,
+      0.6017
      ]
     },
     "bpfix_any_label": {
@@ -1466,11 +1466,11 @@
      ]
     },
     "PREVAIL": {
-     "hits": 0,
+     "hits": 9,
      "n": 34,
      "wilson95": [
-      0.0,
-      0.1015
+      0.146,
+      0.4312
      ]
     },
     "bpfix_any_label": {
@@ -1538,19 +1538,19 @@
   },
   "bpfix_vs_PREVAIL": {
    "R0": {
-    "bpfix_only": 34,
-    "PREVAIL_only": 0,
-    "p": 0.0
+    "bpfix_only": 8,
+    "PREVAIL_only": 1,
+    "p": 0.039062
    },
    "R1": {
-    "bpfix_only": 44,
-    "PREVAIL_only": 0,
-    "p": 0.0
+    "bpfix_only": 10,
+    "PREVAIL_only": 2,
+    "p": 0.038574
    },
    "R2": {
-    "bpfix_only": 38,
+    "bpfix_only": 6,
     "PREVAIL_only": 0,
-    "p": 0.0
+    "p": 0.03125
    }
   },
   "VerifierState_vs_SourceComment": {
@@ -1589,19 +1589,19 @@
   },
   "VerifierState_vs_PREVAIL": {
    "R0": {
-    "VerifierState_only": 34,
-    "PREVAIL_only": 0,
-    "p": 0.0
+    "VerifierState_only": 8,
+    "PREVAIL_only": 1,
+    "p": 0.039062
    },
    "R1": {
-    "VerifierState_only": 44,
-    "PREVAIL_only": 0,
-    "p": 0.0
+    "VerifierState_only": 10,
+    "PREVAIL_only": 2,
+    "p": 0.038574
    },
    "R2": {
-    "VerifierState_only": 38,
+    "VerifierState_only": 6,
     "PREVAIL_only": 0,
-    "p": 0.0
+    "p": 0.03125
    }
   },
   "SourceComment_vs_PrettyVerifier": {
@@ -1623,36 +1623,36 @@
   },
   "SourceComment_vs_PREVAIL": {
    "R0": {
-    "SourceComment_only": 9,
-    "PREVAIL_only": 0,
-    "p": 0.003906
+    "SourceComment_only": 5,
+    "PREVAIL_only": 23,
+    "p": 0.000912
    },
    "R1": {
-    "SourceComment_only": 11,
-    "PREVAIL_only": 0,
-    "p": 0.000977
+    "SourceComment_only": 6,
+    "PREVAIL_only": 31,
+    "p": 4.1e-05
    },
    "R2": {
-    "SourceComment_only": 10,
-    "PREVAIL_only": 0,
-    "p": 0.001953
+    "SourceComment_only": 5,
+    "PREVAIL_only": 27,
+    "p": 0.000113
    }
   },
   "PrettyVerifier_vs_PREVAIL": {
    "R0": {
-    "PrettyVerifier_only": 27,
-    "PREVAIL_only": 0,
-    "p": 0.0
+    "PrettyVerifier_only": 5,
+    "PREVAIL_only": 5,
+    "p": 1.0
    },
    "R1": {
-    "PrettyVerifier_only": 35,
-    "PREVAIL_only": 0,
-    "p": 0.0
+    "PrettyVerifier_only": 7,
+    "PREVAIL_only": 8,
+    "p": 1.0
    },
    "R2": {
-    "PrettyVerifier_only": 31,
-    "PREVAIL_only": 0,
-    "p": 0.0
+    "PrettyVerifier_only": 5,
+    "PREVAIL_only": 6,
+    "p": 1.0
    }
   }
  },
@@ -1716,15 +1716,15 @@
    },
    "PREVAIL": {
     "pairs": 65,
-    "orig_on_site": 0,
-    "variant_on_site": 0,
+    "orig_on_site": 25,
+    "variant_on_site": 25,
     "lost": 0,
     "gained": 0,
     "mcnemar_p": null,
-    "primary_moved": 0,
+    "primary_moved": 4,
     "primary_moved_wilson95": [
-     0.0,
-     0.0558
+     0.0242,
+     0.1478
     ],
     "excluded": []
    },
@@ -1802,15 +1802,15 @@
    },
    "PREVAIL": {
     "pairs": 65,
-    "orig_on_site": 0,
-    "variant_on_site": 0,
+    "orig_on_site": 25,
+    "variant_on_site": 25,
     "lost": 0,
     "gained": 0,
     "mcnemar_p": null,
-    "primary_moved": 0,
+    "primary_moved": 4,
     "primary_moved_wilson95": [
-     0.0,
-     0.0558
+     0.0242,
+     0.1478
     ],
     "excluded": []
    },
@@ -1908,8 +1908,8 @@
    },
    "PREVAIL": {
     "pairs": 35,
-    "orig_on_site": 0,
-    "variant_on_site": 0,
+    "orig_on_site": 12,
+    "variant_on_site": 12,
     "lost": 0,
     "gained": 0,
     "mcnemar_p": null,
@@ -2014,9 +2014,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 42,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -2102,22 +2102,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -2205,9 +2205,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 29,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -2295,20 +2295,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -2394,9 +2394,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 29,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -2482,22 +2482,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -2584,9 +2584,9 @@
      "note": "error not managed"
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 27,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -2674,20 +2674,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -2776,9 +2776,9 @@
      "note": "error not managed"
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 33,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -2866,20 +2866,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -2953,9 +2953,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 27,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -3043,20 +3043,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      }
     }
    }
@@ -3139,9 +3139,9 @@
      "note": "error not managed"
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 61,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -3227,22 +3227,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -3309,9 +3309,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 57,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -3397,22 +3397,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -3489,9 +3489,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 65,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -3580,19 +3580,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 5
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 4
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 5
      }
     }
    }
@@ -3681,9 +3681,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 48,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -3769,22 +3769,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -3847,9 +3847,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 67,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -3937,20 +3937,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -4013,9 +4013,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 67,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -4104,19 +4104,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 4
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 4
      }
     }
    }
@@ -4191,9 +4191,9 @@
      "note": "error not managed"
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 47,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -4279,22 +4279,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -4354,9 +4354,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 62,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -4444,20 +4444,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      }
     }
    }
@@ -4529,9 +4529,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 31,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -4617,22 +4617,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -4694,9 +4694,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 36,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -4784,20 +4784,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 2
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      }
     }
    }
@@ -4882,9 +4882,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 72,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -4972,20 +4972,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -5043,9 +5043,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 54,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -5131,22 +5131,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -5214,9 +5214,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 61,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -5302,22 +5302,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -5387,9 +5387,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 39,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -5475,22 +5475,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -5547,9 +5547,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 52,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -5637,20 +5637,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 2
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 2
      }
     }
    }
@@ -5720,9 +5720,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 67,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -5808,22 +5808,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -5889,7 +5889,7 @@
     "PREVAIL": {
      "primary": null,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL PASS, no source location"
     }
    },
    "outcomes": {
@@ -6052,9 +6052,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 59,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -6140,22 +6140,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -6221,7 +6221,7 @@
     "PREVAIL": {
      "primary": null,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL PASS, no source location"
     }
    },
    "outcomes": {
@@ -6403,9 +6403,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 35,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -6491,22 +6491,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -6563,9 +6563,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 48,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -6651,22 +6651,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -6729,7 +6729,7 @@
     "PREVAIL": {
      "primary": null,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL PASS, no source location"
     }
    },
    "outcomes": {
@@ -6911,9 +6911,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 72,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -6999,22 +6999,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -7078,7 +7078,7 @@
     "PREVAIL": {
      "primary": null,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL PASS, no source location"
     }
    },
    "outcomes": {
@@ -7249,9 +7249,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 33,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -7337,22 +7337,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -7430,9 +7430,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 37,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -7518,22 +7518,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -7612,7 +7612,7 @@
     "PREVAIL": {
      "primary": null,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL PASS, no source location"
     }
    },
    "outcomes": {
@@ -7781,9 +7781,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 63,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -7869,22 +7869,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -7960,7 +7960,7 @@
     "PREVAIL": {
      "primary": null,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL other, no source location"
     }
    },
    "outcomes": {
@@ -8130,9 +8130,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 54,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -8221,19 +8221,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 4
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 4
      }
     }
    }
@@ -8327,7 +8327,7 @@
     "PREVAIL": {
      "primary": null,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL other, no source location"
     }
    },
    "outcomes": {
@@ -8494,9 +8494,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 57,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -8584,20 +8584,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 2
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      }
     }
    }
@@ -8657,7 +8657,7 @@
     "PREVAIL": {
      "primary": null,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL other, no source location"
     }
    },
    "outcomes": {
@@ -8822,9 +8822,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 123,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -8912,20 +8912,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 2
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      }
     }
    }
@@ -8985,9 +8985,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 45,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -9073,22 +9073,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -9149,9 +9149,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 57,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -9237,22 +9237,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -9325,9 +9325,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 132,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -9415,20 +9415,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      }
     }
    }
@@ -9502,7 +9502,7 @@
     "PREVAIL": {
      "primary": null,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL other, no source location"
     }
    },
    "outcomes": {
@@ -9673,7 +9673,7 @@
     "PREVAIL": {
      "primary": null,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL PASS, no source location"
     }
    },
    "outcomes": {
@@ -9840,9 +9840,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 43,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -9928,22 +9928,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -9997,9 +9997,9 @@
      "note": "error not managed"
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 46,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -10085,22 +10085,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -10160,9 +10160,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 37,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -10248,22 +10248,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -10354,9 +10354,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 87,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -10444,20 +10444,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      }
     }
    }
@@ -10517,9 +10517,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 86,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -10605,22 +10605,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -10689,7 +10689,7 @@
     "PREVAIL": {
      "primary": null,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL PASS, no source location"
     }
    },
    "outcomes": {
@@ -10847,9 +10847,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 60,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -10938,19 +10938,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 10
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 9
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 10
      }
     }
    }
@@ -11017,9 +11017,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 69,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -11108,19 +11108,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 6
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 4
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 6
      }
     }
    }
@@ -11176,7 +11176,7 @@
     "PREVAIL": {
      "primary": null,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL PASS, no source location"
     }
    },
    "outcomes": {
@@ -11349,9 +11349,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 130,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -11439,20 +11439,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      }
     }
    }
@@ -11512,9 +11512,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 131,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -11603,19 +11603,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 14
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 13
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 14
      }
     }
    }
@@ -11676,7 +11676,7 @@
     "PREVAIL": {
      "primary": null,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL other, no source location"
     }
    },
    "outcomes": {
@@ -11846,9 +11846,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 102,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -11937,19 +11937,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 4
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 4
      }
     }
    }
@@ -12005,9 +12005,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 51,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -12096,19 +12096,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 45
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 44
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 45
      }
     }
    }
@@ -12183,7 +12183,7 @@
     "PREVAIL": {
      "primary": null,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL other, no source location"
     }
    },
    "outcomes": {
@@ -12356,9 +12356,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 73,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -12444,22 +12444,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -12517,7 +12517,7 @@
     "PREVAIL": {
      "primary": null,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL other, no source location"
     }
    },
    "outcomes": {
@@ -12693,7 +12693,7 @@
     "PREVAIL": {
      "primary": null,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL other, no source location"
     }
    },
    "outcomes": {
@@ -12860,9 +12860,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 30,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -12951,19 +12951,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 11
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 10
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 11
      }
     }
    }
@@ -13017,9 +13017,9 @@
      "note": "error not managed"
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 30,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -13105,22 +13105,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -13181,9 +13181,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 62,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -13272,19 +13272,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 31
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 30
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 31
      }
     }
    }
@@ -13344,9 +13344,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 92,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -13432,22 +13432,22 @@
     },
     "PREVAIL": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -13503,9 +13503,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 38,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -13594,19 +13594,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 20
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 19
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 20
      }
     }
    }
@@ -13669,7 +13669,7 @@
     "PREVAIL": {
      "primary": null,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL other, no source location"
     }
    },
    "outcomes": {
@@ -13832,7 +13832,7 @@
     "PREVAIL": {
      "primary": null,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL other, no source location"
     }
    },
    "outcomes": {
@@ -14004,9 +14004,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 59,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -14095,19 +14095,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 6
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 4
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 6
      }
     }
    }
@@ -14169,9 +14169,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 59,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -14259,20 +14259,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 2
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      }
     }
    }
@@ -14330,9 +14330,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 45,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -14420,20 +14420,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      }
     }
    }
@@ -14494,9 +14494,9 @@
      "note": ""
     },
     "PREVAIL": {
-     "primary": null,
+     "primary": 37,
      "labels": [],
-     "note": "PREVAIL output missing"
+     "note": "PREVAIL FAIL"
     }
    },
    "outcomes": {
@@ -14584,20 +14584,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 2
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 2
      }
     }
    }
@@ -16176,8 +16176,8 @@
    "PREVAIL": [
     {
      "case_id": "alu32_pointer_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16188,8 +16188,8 @@
     },
     {
      "case_id": "dynptr_slice_short_mem_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16212,14 +16212,14 @@
     },
     {
      "case_id": "helper_csum_diff_stack_len_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "helper_map_arg_stack_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16230,38 +16230,38 @@
     },
     {
      "case_id": "map_value_index_guard_oob_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "map_value_inline_cookie_001",
      "orig_on_site": false,
      "variant_on_site": false,
-     "primary_moved": false
+     "primary_moved": true
     },
     {
      "case_id": "map_value_pointer_cookie_001",
      "orig_on_site": false,
      "variant_on_site": false,
-     "primary_moved": false
+     "primary_moved": true
     },
     {
      "case_id": "map_value_signed_index_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "map_value_spill_cookie_001",
      "orig_on_site": false,
      "variant_on_site": false,
-     "primary_moved": false
+     "primary_moved": true
     },
     {
      "case_id": "packet_checked_wrong_base_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16278,20 +16278,20 @@
     },
     {
      "case_id": "packet_inline_return_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "packet_l4_branch_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "packet_macro_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16302,8 +16302,8 @@
     },
     {
      "case_id": "packet_vlan_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16314,8 +16314,8 @@
     },
     {
      "case_id": "ringbuf_branch_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16326,26 +16326,26 @@
     },
     {
      "case_id": "ringbuf_missing_null_check_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_nested_missing_null_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_stack_discard_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_stack_submit_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16356,8 +16356,8 @@
     },
     {
      "case_id": "ringbuf_two_record_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16370,7 +16370,7 @@
      "case_id": "rs_actplane_lsm_bpf_ringbuf_merge_001",
      "orig_on_site": false,
      "variant_on_site": false,
-     "primary_moved": false
+     "primary_moved": true
     },
     {
      "case_id": "rs_actplane_mmap_pending_merge_001",
@@ -16398,14 +16398,14 @@
     },
     {
      "case_id": "rs_agentsight_process_ringbuf_null_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "rs_agentsight_stdiocap_user_copy_len_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16428,14 +16428,14 @@
     },
     {
      "case_id": "rs_cilium_fib_lookup_param_len_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "rs_cilium_ip_options_traceid_payload_bound_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16446,8 +16446,8 @@
     },
     {
      "case_id": "rs_cilium_mcast_igmpv3_grec_bound_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16494,8 +16494,8 @@
     },
     {
      "case_id": "rs_tutorial_memleak_free_info_merge_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16512,8 +16512,8 @@
     },
     {
      "case_id": "rs_xdp_tools_load_bytes_stack_len_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16524,8 +16524,8 @@
     },
     {
      "case_id": "rs_xdp_tools_xdpfilt_udp_macro_bound_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -18530,8 +18530,8 @@
    "PREVAIL": [
     {
      "case_id": "alu32_pointer_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -18542,8 +18542,8 @@
     },
     {
      "case_id": "dynptr_slice_short_mem_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -18566,14 +18566,14 @@
     },
     {
      "case_id": "helper_csum_diff_stack_len_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "helper_map_arg_stack_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -18584,38 +18584,38 @@
     },
     {
      "case_id": "map_value_index_guard_oob_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "map_value_inline_cookie_001",
      "orig_on_site": false,
      "variant_on_site": false,
-     "primary_moved": false
+     "primary_moved": true
     },
     {
      "case_id": "map_value_pointer_cookie_001",
      "orig_on_site": false,
      "variant_on_site": false,
-     "primary_moved": false
+     "primary_moved": true
     },
     {
      "case_id": "map_value_signed_index_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "map_value_spill_cookie_001",
      "orig_on_site": false,
      "variant_on_site": false,
-     "primary_moved": false
+     "primary_moved": true
     },
     {
      "case_id": "packet_checked_wrong_base_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -18632,20 +18632,20 @@
     },
     {
      "case_id": "packet_inline_return_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "packet_l4_branch_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "packet_macro_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -18656,8 +18656,8 @@
     },
     {
      "case_id": "packet_vlan_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -18668,8 +18668,8 @@
     },
     {
      "case_id": "ringbuf_branch_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -18680,26 +18680,26 @@
     },
     {
      "case_id": "ringbuf_missing_null_check_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_nested_missing_null_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_stack_discard_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_stack_submit_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -18710,8 +18710,8 @@
     },
     {
      "case_id": "ringbuf_two_record_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -18724,7 +18724,7 @@
      "case_id": "rs_actplane_lsm_bpf_ringbuf_merge_001",
      "orig_on_site": false,
      "variant_on_site": false,
-     "primary_moved": false
+     "primary_moved": true
     },
     {
      "case_id": "rs_actplane_mmap_pending_merge_001",
@@ -18752,14 +18752,14 @@
     },
     {
      "case_id": "rs_agentsight_process_ringbuf_null_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "rs_agentsight_stdiocap_user_copy_len_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -18782,14 +18782,14 @@
     },
     {
      "case_id": "rs_cilium_fib_lookup_param_len_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "rs_cilium_ip_options_traceid_payload_bound_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -18800,8 +18800,8 @@
     },
     {
      "case_id": "rs_cilium_mcast_igmpv3_grec_bound_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -18848,8 +18848,8 @@
     },
     {
      "case_id": "rs_tutorial_memleak_free_info_merge_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -18866,8 +18866,8 @@
     },
     {
      "case_id": "rs_xdp_tools_load_bytes_stack_len_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -18878,8 +18878,8 @@
     },
     {
      "case_id": "rs_xdp_tools_xdpfilt_udp_macro_bound_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -20170,8 +20170,8 @@
     },
     {
      "case_id": "map_value_index_guard_oob_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -20188,8 +20188,8 @@
     },
     {
      "case_id": "map_value_signed_index_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -20200,14 +20200,14 @@
     },
     {
      "case_id": "packet_inline_return_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_branch_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -20218,14 +20218,14 @@
     },
     {
      "case_id": "ringbuf_missing_null_check_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_nested_missing_null_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -20236,8 +20236,8 @@
     },
     {
      "case_id": "ringbuf_pointer_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -20248,8 +20248,8 @@
     },
     {
      "case_id": "ringbuf_stack_submit_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -20260,8 +20260,8 @@
     },
     {
      "case_id": "ringbuf_two_record_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -20284,8 +20284,8 @@
     },
     {
      "case_id": "rs_agentsight_stdiocap_user_copy_len_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -20308,8 +20308,8 @@
     },
     {
      "case_id": "rs_cilium_proxy_skc_assign_ref_leak_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -20350,8 +20350,8 @@
     },
     {
      "case_id": "rs_tutorial_memleak_free_info_merge_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {

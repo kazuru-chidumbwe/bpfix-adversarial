@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/rs_xdp_tools_xdpsock_redirect_map_type
+
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/rs_xdp_tools_xdpsock_redirect_map_type_001/pad8.bpf.c:48
+;     return bpf_redirect_map(&xsks_map, rr, XDP_DROP);
+
+43: map type 2 is not allowed for redirect_map (valid_map_type(r1, redirect_map))
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

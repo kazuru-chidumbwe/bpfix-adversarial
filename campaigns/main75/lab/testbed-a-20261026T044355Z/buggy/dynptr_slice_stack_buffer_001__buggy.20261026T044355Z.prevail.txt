@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/dynptr_slice_stack_buffer
+
+; /home/test/bpfix-v2-git/fixtures/upstream/bpfix-bench-cases/dynptr_slice_stack_buffer_001/buggy.bpf.c:27
+;     if (bpf_dynptr_from_xdp(ctx, 0, &ptr))
+
+5: Invalid type (r1.type == number)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/rs_cilium_srv6_segment_bound
+
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/rs_cilium_srv6_segment_bound_001/pad8.bpf.c:70
+;     *tag = bpf_ntohl(sid->in6_u.u6_addr32[3]);
+
+46: Upper bound must be at most packet_size (valid_access(r1.offset+12, width=4) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

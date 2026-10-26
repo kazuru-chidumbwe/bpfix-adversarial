@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: tc/rs_cilium_proxy_skc_assign_ref_leak
+
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/rs_cilium_proxy_skc_assign_ref_leak_001/rename.bpf.c:29
+;     if (result == 0 && skb->mark == PROXY_MARK)
+
+31: Invalid type (r1.type == number)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

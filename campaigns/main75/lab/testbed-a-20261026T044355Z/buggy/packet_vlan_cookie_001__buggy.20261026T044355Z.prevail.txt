@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/packet_vlan_cookie
+
+; /home/test/bpfix-v2-git/fixtures/upstream/bpfix-bench-cases/packet_vlan_cookie_001/buggy.bpf.c:67
+;     asm volatile("%[cookie] <<= 32; %[cookie] >>= 32" : [cookie] "+r"(cookie));
+
+23: Invalid type (r3.type == number)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

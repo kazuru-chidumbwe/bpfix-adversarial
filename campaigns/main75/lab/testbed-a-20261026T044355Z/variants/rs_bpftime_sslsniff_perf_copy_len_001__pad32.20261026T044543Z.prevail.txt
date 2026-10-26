@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: uretprobe/SSL_read/rs_bpftime_sslsniff_perf_copy_len
+
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/rs_bpftime_sslsniff_perf_copy_len_001/pad32.bpf.c:70
+;     int len = PT_REGS_RC(ctx);
+
+13: Invalid type (r1.type == number)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/dynptr_stack_copy
+
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/dynptr_stack_copy_001/pad8.bpf.c:33
+;     if (bpf_dynptr_from_xdp(ctx, 0, &ptr))
+
+4: Invalid type (r1.type == number)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.
