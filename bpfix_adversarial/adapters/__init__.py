@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from .prevail import Prevail
 from .pretty_verifier import PrettyVerifier
 
-ADAPTERS: tuple = (PrettyVerifier,)
+ADAPTERS: tuple = (PrettyVerifier, Prevail)
