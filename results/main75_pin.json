@@ -254,6 +254,86 @@
      }
     }
    },
+   "PrettyVerifier": {
+    "R0": {
+     "primary_on_site": {
+      "hits": 0,
+      "n": 74,
+      "wilson95": [
+       0.0,
+       0.0493
+      ]
+     },
+     "label_on_site": {
+      "hits": 0,
+      "n": 74,
+      "wilson95": [
+       0.0,
+       0.0493
+      ]
+     },
+     "primary_within_3": {
+      "hits": 0,
+      "n": 74,
+      "wilson95": [
+       0.0,
+       0.0493
+      ]
+     }
+    },
+    "R1": {
+     "primary_on_site": {
+      "hits": 0,
+      "n": 74,
+      "wilson95": [
+       0.0,
+       0.0493
+      ]
+     },
+     "label_on_site": {
+      "hits": 0,
+      "n": 74,
+      "wilson95": [
+       0.0,
+       0.0493
+      ]
+     },
+     "primary_within_3": {
+      "hits": 0,
+      "n": 74,
+      "wilson95": [
+       0.0,
+       0.0493
+      ]
+     }
+    },
+    "R2": {
+     "primary_on_site": {
+      "hits": 0,
+      "n": 74,
+      "wilson95": [
+       0.0,
+       0.0493
+      ]
+     },
+     "label_on_site": {
+      "hits": 0,
+      "n": 74,
+      "wilson95": [
+       0.0,
+       0.0493
+      ]
+     },
+     "primary_within_3": {
+      "hits": 0,
+      "n": 74,
+      "wilson95": [
+       0.0,
+       0.0493
+      ]
+     }
+    }
+   },
    "random_expected": {
     "R0": 7.0,
     "R1": 14.67,
@@ -501,6 +581,86 @@
      }
     }
    },
+   "PrettyVerifier": {
+    "R0": {
+     "primary_on_site": {
+      "hits": 0,
+      "n": 69,
+      "wilson95": [
+       0.0,
+       0.0527
+      ]
+     },
+     "label_on_site": {
+      "hits": 0,
+      "n": 69,
+      "wilson95": [
+       0.0,
+       0.0527
+      ]
+     },
+     "primary_within_3": {
+      "hits": 0,
+      "n": 69,
+      "wilson95": [
+       0.0,
+       0.0527
+      ]
+     }
+    },
+    "R1": {
+     "primary_on_site": {
+      "hits": 0,
+      "n": 69,
+      "wilson95": [
+       0.0,
+       0.0527
+      ]
+     },
+     "label_on_site": {
+      "hits": 0,
+      "n": 69,
+      "wilson95": [
+       0.0,
+       0.0527
+      ]
+     },
+     "primary_within_3": {
+      "hits": 0,
+      "n": 69,
+      "wilson95": [
+       0.0,
+       0.0527
+      ]
+     }
+    },
+    "R2": {
+     "primary_on_site": {
+      "hits": 0,
+      "n": 69,
+      "wilson95": [
+       0.0,
+       0.0527
+      ]
+     },
+     "label_on_site": {
+      "hits": 0,
+      "n": 69,
+      "wilson95": [
+       0.0,
+       0.0527
+      ]
+     },
+     "primary_within_3": {
+      "hits": 0,
+      "n": 69,
+      "wilson95": [
+       0.0,
+       0.0527
+      ]
+     }
+    }
+   },
    "random_expected": {
     "R0": 5.33,
     "R1": 11.47,
@@ -528,6 +688,14 @@
      ]
     },
     "SourceComment": {
+     "hits": 0,
+     "n": 6,
+     "wilson95": [
+      0.0,
+      0.3903
+     ]
+    },
+    "PrettyVerifier": {
      "hits": 0,
      "n": 6,
      "wilson95": [
@@ -569,6 +737,14 @@
       0.6576
      ]
     },
+    "PrettyVerifier": {
+     "hits": 0,
+     "n": 2,
+     "wilson95": [
+      0.0,
+      0.6576
+     ]
+    },
     "bpfix_any_label": {
      "hits": 1,
      "n": 2,
@@ -596,6 +772,14 @@
      ]
     },
     "SourceComment": {
+     "hits": 0,
+     "n": 4,
+     "wilson95": [
+      0.0,
+      0.4899
+     ]
+    },
+    "PrettyVerifier": {
      "hits": 0,
      "n": 4,
      "wilson95": [
@@ -637,6 +821,14 @@
       0.5615
      ]
     },
+    "PrettyVerifier": {
+     "hits": 0,
+     "n": 3,
+     "wilson95": [
+      0.0,
+      0.5615
+     ]
+    },
     "bpfix_any_label": {
      "hits": 2,
      "n": 3,
@@ -669,6 +861,14 @@
      "wilson95": [
       0.1119,
       0.4687
+     ]
+    },
+    "PrettyVerifier": {
+     "hits": 0,
+     "n": 20,
+     "wilson95": [
+      0.0,
+      0.1611
      ]
     },
     "bpfix_any_label": {
@@ -705,6 +905,14 @@
       0.5656
      ]
     },
+    "PrettyVerifier": {
+     "hits": 0,
+     "n": 11,
+     "wilson95": [
+      0.0,
+      0.2588
+     ]
+    },
     "bpfix_any_label": {
      "hits": 7,
      "n": 11,
@@ -732,6 +940,14 @@
      ]
     },
     "SourceComment": {
+     "hits": 0,
+     "n": 9,
+     "wilson95": [
+      0.0,
+      0.2991
+     ]
+    },
+    "PrettyVerifier": {
      "hits": 0,
      "n": 9,
      "wilson95": [
@@ -773,6 +989,14 @@
       0.4345
      ]
     },
+    "PrettyVerifier": {
+     "hits": 0,
+     "n": 5,
+     "wilson95": [
+      0.0,
+      0.4345
+     ]
+    },
     "bpfix_any_label": {
      "hits": 2,
      "n": 5,
@@ -805,6 +1029,14 @@
      "wilson95": [
       0.0301,
       0.5635
+     ]
+    },
+    "PrettyVerifier": {
+     "hits": 0,
+     "n": 6,
+     "wilson95": [
+      0.0,
+      0.3903
      ]
     },
     "bpfix_any_label": {
@@ -841,6 +1073,14 @@
       0.4899
      ]
     },
+    "PrettyVerifier": {
+     "hits": 0,
+     "n": 4,
+     "wilson95": [
+      0.0,
+      0.4899
+     ]
+    },
     "bpfix_any_label": {
      "hits": 3,
      "n": 4,
@@ -868,6 +1108,14 @@
      ]
     },
     "SourceComment": {
+     "hits": 0,
+     "n": 4,
+     "wilson95": [
+      0.0,
+      0.4899
+     ]
+    },
+    "PrettyVerifier": {
      "hits": 0,
      "n": 4,
      "wilson95": [
@@ -911,6 +1159,14 @@
       0.2611
      ]
     },
+    "PrettyVerifier": {
+     "hits": 0,
+     "n": 40,
+     "wilson95": [
+      0.0,
+      0.0876
+     ]
+    },
     "bpfix_any_label": {
      "hits": 29,
      "n": 40,
@@ -943,6 +1199,14 @@
      "wilson95": [
       0.0467,
       0.2662
+     ]
+    },
+    "PrettyVerifier": {
+     "hits": 0,
+     "n": 34,
+     "wilson95": [
+      0.0,
+      0.1015
      ]
     },
     "bpfix_any_label": {
@@ -1053,6 +1317,20 @@
     ],
     "excluded": []
    },
+   "PrettyVerifier": {
+    "pairs": 65,
+    "orig_on_site": 0,
+    "variant_on_site": 0,
+    "lost": 0,
+    "gained": 0,
+    "mcnemar_p": null,
+    "primary_moved": 0,
+    "primary_moved_wilson95": [
+     0.0,
+     0.0558
+    ],
+    "excluded": []
+   },
    "StaleLine (control)": {
     "pairs": 65,
     "orig_on_site": 33,
@@ -1101,6 +1379,20 @@
     "pairs": 65,
     "orig_on_site": 9,
     "variant_on_site": 9,
+    "lost": 0,
+    "gained": 0,
+    "mcnemar_p": null,
+    "primary_moved": 0,
+    "primary_moved_wilson95": [
+     0.0,
+     0.0558
+    ],
+    "excluded": []
+   },
+   "PrettyVerifier": {
+    "pairs": 65,
+    "orig_on_site": 0,
+    "variant_on_site": 0,
     "lost": 0,
     "gained": 0,
     "mcnemar_p": null,
@@ -1176,6 +1468,25 @@
     "primary_moved_wilson95": [
      0.2555,
      0.5643
+    ],
+    "excluded": [
+     {
+      "case_id": "rs_actplane_mmap_pending_merge_001",
+      "reason": "orig REJECT / rename COMPILE_FAIL"
+     }
+    ]
+   },
+   "PrettyVerifier": {
+    "pairs": 35,
+    "orig_on_site": 0,
+    "variant_on_site": 0,
+    "lost": 0,
+    "gained": 0,
+    "mcnemar_p": null,
+    "primary_moved": 0,
+    "primary_moved_wilson95": [
+     0.0,
+     0.0989
     ],
     "excluded": [
      {
@@ -1264,6 +1575,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -1308,6 +1624,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -1403,6 +1739,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: no NP heuristic hit"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -1447,6 +1788,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -1540,6 +1901,11 @@
      "primary": 35,
      "labels": [],
      "note": "SC: scalar-guard establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -1601,6 +1967,26 @@
       "label_on_site": true,
       "primary_within_3": true,
       "distance": 0
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
      }
     }
    }
@@ -1680,6 +2066,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (HelperArgument)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -1724,6 +2115,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -1822,6 +2233,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (DynptrSafety)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -1866,6 +2282,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -1947,6 +2383,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (DynptrSafety)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -1991,6 +2432,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -2083,6 +2544,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: no obligation label"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -2127,6 +2593,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -2201,6 +2687,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (TypeContract)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -2245,6 +2736,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -2329,6 +2840,11 @@
      "primary": 39,
      "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -2390,6 +2906,26 @@
       "label_on_site": true,
       "primary_within_3": true,
       "distance": 0
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
      }
     }
    }
@@ -2469,6 +3005,11 @@
      "primary": 41,
      "labels": [],
      "note": "SC: scalar-guard establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -2531,6 +3072,26 @@
       "primary_within_3": true,
       "distance": 0
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -2583,6 +3144,11 @@
      "primary": 39,
      "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -2645,6 +3211,26 @@
       "primary_within_3": false,
       "distance": 24
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -2697,6 +3283,11 @@
      "primary": 57,
      "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -2758,6 +3349,26 @@
       "label_on_site": false,
       "primary_within_3": false,
       "distance": 4
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
      }
     }
    }
@@ -2825,6 +3436,11 @@
      "primary": 40,
      "labels": [],
      "note": "SC: scalar-guard establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -2887,6 +3503,26 @@
       "primary_within_3": true,
       "distance": 1
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -2936,6 +3572,11 @@
      "primary": 38,
      "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -2998,6 +3639,26 @@
       "primary_within_3": false,
       "distance": 20
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -3059,6 +3720,11 @@
      "primary": 27,
      "labels": [],
      "note": "SC: data_end establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -3120,6 +3786,26 @@
       "label_on_site": true,
       "primary_within_3": true,
       "distance": 0
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
      }
     }
    }
@@ -3172,6 +3858,11 @@
      "primary": 33,
      "labels": [],
      "note": "SC: data_end establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -3233,6 +3924,26 @@
       "label_on_site": true,
       "primary_within_3": true,
       "distance": 0
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
      }
     }
    }
@@ -3308,6 +4019,11 @@
      "primary": 47,
      "labels": [],
      "note": "SC: data_end establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -3370,6 +4086,26 @@
       "primary_within_3": false,
       "distance": 16
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -3417,6 +4153,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -3461,6 +4202,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -3536,6 +4297,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -3580,6 +4346,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -3657,6 +4443,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -3701,6 +4492,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -3765,6 +4576,11 @@
      "primary": 21,
      "labels": [],
      "note": "SC: data_end establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -3827,6 +4643,26 @@
       "primary_within_3": false,
       "distance": 29
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -3886,6 +4722,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -3930,6 +4771,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -4001,6 +4862,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (HelperArgument)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -4045,6 +4911,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -4114,6 +5000,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -4158,6 +5049,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -4229,6 +5140,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -4273,6 +5189,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -4361,6 +5297,11 @@
      "primary": 29,
      "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -4423,6 +5364,26 @@
       "primary_within_3": true,
       "distance": 0
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -4469,6 +5430,11 @@
      "primary": 42,
      "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -4530,6 +5496,26 @@
       "label_on_site": false,
       "primary_within_3": false,
       "distance": 6
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
      }
     }
    }
@@ -4583,6 +5569,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (ReferenceLifecycle)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -4627,6 +5618,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -4715,6 +5726,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -4759,6 +5775,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -4830,6 +5866,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (ReferenceLifecycle)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -4874,6 +5915,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -4951,6 +6012,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (TypeContract)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -4995,6 +6061,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -5080,6 +6166,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (TypeContract)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -5124,6 +6215,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -5208,6 +6319,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (TypeContract)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -5252,6 +6368,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -5327,6 +6463,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -5371,6 +6512,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -5452,6 +6613,11 @@
      "primary": 64,
      "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -5514,6 +6680,26 @@
       "primary_within_3": false,
       "distance": 26
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -5572,6 +6758,11 @@
      "primary": 32,
      "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -5633,6 +6824,26 @@
       "label_on_site": false,
       "primary_within_3": false,
       "distance": 12
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
      }
     }
    }
@@ -5715,6 +6926,11 @@
      "primary": 118,
      "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -5777,6 +6993,26 @@
       "primary_within_3": false,
       "distance": 77
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -5832,6 +7068,11 @@
      "primary": 45,
      "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -5894,6 +7135,26 @@
       "primary_within_3": false,
       "distance": 6
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -5943,6 +7204,11 @@
      "primary": 31,
      "labels": [],
      "note": "SC: scalar-guard establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -6005,6 +7271,26 @@
       "primary_within_3": true,
       "distance": 2
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -6058,6 +7344,11 @@
      "primary": 84,
      "labels": [],
      "note": "SC: null-check establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -6120,6 +7411,26 @@
       "primary_within_3": false,
       "distance": 34
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -6169,6 +7480,11 @@
      "primary": 44,
      "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -6231,6 +7547,26 @@
       "primary_within_3": true,
       "distance": 0
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -6281,6 +7617,11 @@
      "primary": 46,
      "labels": [],
      "note": "SC: scalar-guard establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -6342,6 +7683,26 @@
       "label_on_site": false,
       "primary_within_3": false,
       "distance": 10
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
      }
     }
    }
@@ -6405,6 +7766,11 @@
      "primary": 119,
      "labels": [],
      "note": "SC: null-check establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -6466,6 +7832,26 @@
       "label_on_site": false,
       "primary_within_3": false,
       "distance": 7
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
      }
     }
    }
@@ -6530,6 +7916,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (ReferenceLifecycle)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -6574,6 +7965,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -6651,6 +8062,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (EnvironmentCapability)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -6695,6 +8111,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -6768,6 +8204,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (ContextAccess)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -6812,6 +8253,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -6875,6 +8336,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: no obligation label"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -6919,6 +8385,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -6986,6 +8472,11 @@
      "primary": 44,
      "labels": [],
      "note": "SC: data_end establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -7047,6 +8538,26 @@
       "label_on_site": false,
       "primary_within_3": false,
       "distance": 7
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
      }
     }
    }
@@ -7128,6 +8639,11 @@
      "primary": 43,
      "labels": [],
      "note": "SC: data_end establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -7190,6 +8706,26 @@
       "primary_within_3": false,
       "distance": 15
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -7239,6 +8775,11 @@
      "primary": 60,
      "labels": [],
      "note": "SC: data_end establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -7301,6 +8842,26 @@
       "primary_within_3": false,
       "distance": 25
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -7357,6 +8918,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (ReferenceLifecycle)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -7401,6 +8967,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -7465,6 +9051,11 @@
      "primary": 50,
      "labels": [],
      "note": "SC: data_end establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -7526,6 +9117,26 @@
       "label_on_site": true,
       "primary_within_3": true,
       "distance": 0
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
      }
     }
    }
@@ -7583,6 +9194,11 @@
      "primary": 60,
      "labels": [],
      "note": "SC: null-check establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -7644,6 +9260,26 @@
       "label_on_site": true,
       "primary_within_3": true,
       "distance": 0
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
      }
     }
    }
@@ -7690,6 +9326,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: no obligation label"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -7734,6 +9375,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -7813,6 +9474,11 @@
      "primary": 71,
      "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -7875,6 +9541,26 @@
       "primary_within_3": false,
       "distance": 53
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -7924,6 +9610,11 @@
      "primary": 77,
      "labels": [],
      "note": "SC: data_end establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -7986,6 +9677,26 @@
       "primary_within_3": false,
       "distance": 39
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -8036,6 +9747,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (HelperArgument)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -8080,6 +9796,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -8156,6 +9892,11 @@
      "primary": 77,
      "labels": [],
      "note": "SC: null-check establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -8218,6 +9959,26 @@
       "primary_within_3": false,
       "distance": 17
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -8263,6 +10024,11 @@
      "primary": 52,
      "labels": [],
      "note": "SC: scalar-guard establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -8324,6 +10090,26 @@
       "label_on_site": false,
       "primary_within_3": false,
       "distance": 44
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
      }
     }
    }
@@ -8389,6 +10175,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (ReferenceLifecycle)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -8433,6 +10224,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -8512,6 +10323,11 @@
      "primary": 45,
      "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -8574,6 +10390,26 @@
       "primary_within_3": false,
       "distance": 22
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -8619,6 +10455,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (EnvironmentCapability)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -8663,6 +10504,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -8743,6 +10604,11 @@
      "primary": 40,
      "labels": [],
      "note": "SC: null-check establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -8805,6 +10671,26 @@
       "primary_within_3": true,
       "distance": 0
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -8860,6 +10746,11 @@
      "primary": 24,
      "labels": [],
      "note": "SC: data_end establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -8922,6 +10813,26 @@
       "primary_within_3": false,
       "distance": 17
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -8967,6 +10878,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: no obligation label"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -9011,6 +10927,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -9079,6 +11015,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (EnvironmentCapability)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -9123,6 +11064,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -9190,6 +11151,11 @@
      "primary": 43,
      "labels": [],
      "note": "SC: data_end establish"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -9252,6 +11218,26 @@
       "primary_within_3": false,
       "distance": 48
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -9297,6 +11283,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (EnvironmentCapability)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -9341,6 +11332,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -9409,6 +11420,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (ContextAccess)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -9453,6 +11469,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -9520,6 +11556,11 @@
      "primary": 35,
      "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -9582,6 +11623,26 @@
       "primary_within_3": false,
       "distance": 18
      }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
     }
    }
   },
@@ -9642,6 +11703,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (ContextAccess)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -9686,6 +11752,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -9755,6 +11841,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (ContextAccess)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -9799,6 +11890,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -9864,6 +11975,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (ContextAccess)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -9908,6 +12024,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -9976,6 +12112,11 @@
      "primary": null,
      "labels": [],
      "note": "SC: unknown obligation (ContextAccess)"
+    },
+    "PrettyVerifier": {
+     "primary": null,
+     "labels": [],
+     "note": "PrettyVerifier output missing"
     }
    },
    "outcomes": {
@@ -10020,6 +12161,26 @@
      }
     },
     "SourceComment": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
@@ -11220,6 +13381,398 @@
      "primary_moved": false
     }
    ],
+   "PrettyVerifier": [
+    {
+     "case_id": "alu32_pointer_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_slice_missing_null_check_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_slice_short_mem_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_slice_stack_buffer_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_stack_copy_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_uninitialized_slice_arg_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "helper_csum_diff_stack_len_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "helper_map_arg_stack_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_branch_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_index_guard_oob_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_inline_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_pointer_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_signed_index_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_spill_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_checked_wrong_base_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_eth_off_by_one_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_ihl_udp_undercheck_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_inline_return_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_l4_branch_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_macro_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_macro_payload_undercheck_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_vlan_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "perf_event_packet_payload_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_branch_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_double_submit_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_missing_null_check_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_nested_missing_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_stack_discard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_stack_submit_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_submit_after_discard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_two_record_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_cap_dynptr_payload_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_lsm_bpf_ringbuf_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_mmap_pending_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_policy_map_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_taint_loop_count_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_fs_overflow_counter_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_process_ringbuf_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_stdiocap_user_copy_len_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_write_ctx_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_bpftime_opensnoop_stack_wrong_prog_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_change_proto_stale_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_fib_lookup_param_len_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_ip_options_traceid_payload_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_ipv6_exthdr_l4_offset_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_mcast_igmpv3_grec_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_srv6_segment_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_datrail_browsertrace_start_ns_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_datrail_cgroup_filter_key_width_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_eunomia_energy_runtime_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_eunomia_wq_container_map_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_nccl_cpu_observer_slot_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_tetragon_data_event_size_guard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_tutorial_memleak_free_info_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_tutorial_user_ringbuf_dynptr_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_ihl_macro_wrong_base_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_load_bytes_stack_len_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_xdpdump_perf_map_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_xdpfilt_udp_macro_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_xdpsock_redirect_map_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "subprog_adjust_tail_stale_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "subprog_map_value_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "xdp_adjust_head_map_value_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "xdp_adjust_head_ringbuf_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "xdp_adjust_tail_stale_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    }
+   ],
    "StaleLine (control)": [
     {
      "case_id": "alu32_pointer_cookie_001",
@@ -12790,6 +15343,398 @@
      "primary_moved": false
     }
    ],
+   "PrettyVerifier": [
+    {
+     "case_id": "alu32_pointer_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_slice_missing_null_check_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_slice_short_mem_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_slice_stack_buffer_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_stack_copy_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_uninitialized_slice_arg_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "helper_csum_diff_stack_len_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "helper_map_arg_stack_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_branch_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_index_guard_oob_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_inline_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_pointer_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_signed_index_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_spill_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_checked_wrong_base_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_eth_off_by_one_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_ihl_udp_undercheck_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_inline_return_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_l4_branch_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_macro_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_macro_payload_undercheck_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_vlan_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "perf_event_packet_payload_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_branch_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_double_submit_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_missing_null_check_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_nested_missing_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_stack_discard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_stack_submit_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_submit_after_discard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_two_record_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_cap_dynptr_payload_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_lsm_bpf_ringbuf_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_mmap_pending_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_policy_map_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_taint_loop_count_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_fs_overflow_counter_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_process_ringbuf_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_stdiocap_user_copy_len_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_write_ctx_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_bpftime_opensnoop_stack_wrong_prog_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_change_proto_stale_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_fib_lookup_param_len_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_ip_options_traceid_payload_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_ipv6_exthdr_l4_offset_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_mcast_igmpv3_grec_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_srv6_segment_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_datrail_browsertrace_start_ns_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_datrail_cgroup_filter_key_width_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_eunomia_energy_runtime_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_eunomia_wq_container_map_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_nccl_cpu_observer_slot_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_tetragon_data_event_size_guard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_tutorial_memleak_free_info_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_tutorial_user_ringbuf_dynptr_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_ihl_macro_wrong_base_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_load_bytes_stack_len_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_xdpdump_perf_map_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_xdpfilt_udp_macro_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_xdpsock_redirect_map_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "subprog_adjust_tail_stale_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "subprog_map_value_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "xdp_adjust_head_map_value_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "xdp_adjust_head_ringbuf_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "xdp_adjust_tail_stale_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    }
+   ],
    "StaleLine (control)": [
     {
      "case_id": "alu32_pointer_cookie_001",
@@ -13806,6 +16751,218 @@
      "orig_on_site": true,
      "variant_on_site": false,
      "primary_moved": true
+    },
+    {
+     "case_id": "xdp_adjust_head_map_value_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "xdp_adjust_head_ringbuf_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    }
+   ],
+   "PrettyVerifier": [
+    {
+     "case_id": "map_value_branch_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_index_guard_oob_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_inline_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_pointer_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_signed_index_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_spill_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_inline_return_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_branch_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_double_submit_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_missing_null_check_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_nested_missing_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_nested_reserve_leak_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_pointer_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_ref_leak_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_stack_submit_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_submit_after_discard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_two_record_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_cap_dynptr_payload_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_policy_map_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_fs_overflow_counter_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_stdiocap_user_copy_len_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_write_ctx_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_bpftime_opensnoop_ringbuf_filter_ref_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_bpftime_opensnoop_stack_wrong_prog_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_proxy_skc_assign_ref_leak_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_datrail_browsertrace_start_ns_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_datrail_cgroup_filter_key_width_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_eunomia_energy_runtime_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_eunomia_http_doff_copy_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_eunomia_wq_container_map_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_nccl_cpu_observer_slot_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_tutorial_memleak_free_info_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_tutorial_user_ringbuf_dynptr_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
     },
     {
      "case_id": "xdp_adjust_head_map_value_001",

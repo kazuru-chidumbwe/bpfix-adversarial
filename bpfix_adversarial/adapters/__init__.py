@@ -3,4 +3,6 @@
 
 from __future__ import annotations
 
-ADAPTERS: tuple = ()
+from .pretty_verifier import PrettyVerifier
+
+ADAPTERS: tuple = (PrettyVerifier,)

@@ -13,6 +13,7 @@ Excluded: `rs_bpftime_sslsniff_perf_copy_len_001` (no-semantic-hunk)
 | bpfix | 34/74 (0.35–0.57) | 44/74 (0.48–0.70) | 38/74 (0.40–0.62) |
 | VerifierState | 34/74 (0.35–0.57) | 44/74 (0.48–0.70) | 38/74 (0.40–0.62) |
 | SourceComment | 9/74 (0.07–0.22) | 11/74 (0.09–0.25) | 10/74 (0.08–0.23) |
+| PrettyVerifier | 0/74 (0.00–0.05) | 0/74 (0.00–0.05) | 0/74 (0.00–0.05) |
 | uniform random (expected hits) | 7.0 | 14.7 | 10.2 |
 
 bpfix, any label on a repair site (all): R0 50/74 (0.56–0.77), R1 64/74 (0.77–0.92), R2 54/74 (0.62–0.82); primary within 3 lines: R0 55/74 (0.63–0.83), R1 59/74 (0.69–0.87), R2 55/74 (0.63–0.83)
@@ -24,6 +25,7 @@ bpfix, any label on a repair site (all): R0 50/74 (0.56–0.77), R1 64/74 (0.77�
 | bpfix | 30/69 (0.32–0.55) | 39/69 (0.45–0.68) | 34/69 (0.38–0.61) |
 | VerifierState | 30/69 (0.32–0.55) | 39/69 (0.45–0.68) | 34/69 (0.38–0.61) |
 | SourceComment | 8/69 (0.06–0.21) | 10/69 (0.08–0.25) | 9/69 (0.07–0.23) |
+| PrettyVerifier | 0/69 (0.00–0.05) | 0/69 (0.00–0.05) | 0/69 (0.00–0.05) |
 | uniform random (expected hits) | 5.3 | 11.5 | 7.5 |
 
 bpfix, any label on a repair site (informative): R0 46/69 (0.55–0.77), R1 59/69 (0.75–0.92), R2 50/69 (0.61–0.82); primary within 3 lines: R0 50/69 (0.61–0.82), R1 54/69 (0.67–0.86), R2 50/69 (0.61–0.82)
@@ -72,14 +74,17 @@ bpfix, any label on a repair site (informative): R0 46/69 (0.55–0.77), R1 59/6
 | pad8 | bpfix | 65 | 33 | 33 | 0 | 0 | n/a | 4/65 (0.02–0.15) |
 | pad8 | VerifierState | 65 | 33 | 33 | 0 | 0 | n/a | 4/65 (0.02–0.15) |
 | pad8 | SourceComment | 65 | 9 | 9 | 0 | 0 | n/a | 0/65 (0.00–0.06) |
+| pad8 | PrettyVerifier | 65 | 0 | 0 | 0 | 0 | n/a | 0/65 (0.00–0.06) |
 | pad8 | StaleLine (control) | 65 | 33 | 0 | 33 | 0 | 0.0000 | 65/65 (0.94–1.00) |
 | pad32 | bpfix | 65 | 33 | 33 | 0 | 0 | n/a | 4/65 (0.02–0.15) |
 | pad32 | VerifierState | 65 | 33 | 33 | 0 | 0 | n/a | 4/65 (0.02–0.15) |
 | pad32 | SourceComment | 65 | 9 | 9 | 0 | 0 | n/a | 0/65 (0.00–0.06) |
+| pad32 | PrettyVerifier | 65 | 0 | 0 | 0 | 0 | n/a | 0/65 (0.00–0.06) |
 | pad32 | StaleLine (control) | 65 | 33 | 0 | 33 | 0 | 0.0000 | 65/65 (0.94–1.00) |
 | rename | bpfix | 35 | 12 | 12 | 0 | 0 | n/a | 0/35 (0.00–0.10) |
 | rename | VerifierState | 35 | 12 | 12 | 0 | 0 | n/a | 0/35 (0.00–0.10) |
 | rename | SourceComment | 35 | 5 | 1 | 4 | 0 | 0.1250 | 14/35 (0.26–0.56) |
+| rename | PrettyVerifier | 35 | 0 | 0 | 0 | 0 | n/a | 0/35 (0.00–0.10) |
 | rename | StaleLine (control) | 35 | 12 | 12 | 0 | 0 | n/a | 0/35 (0.00–0.10) |
 
 Metamorphic pairs excluded: `rs_actplane_mmap_pending_merge_001` rename (orig REJECT / rename COMPILE_FAIL)
