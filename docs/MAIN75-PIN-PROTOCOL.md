@@ -46,4 +46,4 @@ A case is informative for the primary-location metric when a uniformly random ex
 
 ## Changes after the freeze
 
-None yet.
+- **26 Oct 2026, before any pin result was scored. R2 clarified.** As first written, R2 ("every buggy line from the first to the last line of each semantic hunk") is identical to R0, because each difflib hunk is already a contiguous run of changed lines. R2 now uses the unified-diff hunk, as `git diff` groups it: changes within 3 lines of each other form one hunk (`difflib.SequenceMatcher.get_grouped_opcodes(3)`), and R2 covers every buggy line from the first to the last changed line of each hunk that contains a semantic change. Insertions mark both neighbours, as in R0.
