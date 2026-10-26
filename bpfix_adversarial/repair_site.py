@@ -65,6 +65,47 @@ def repair_sites(hunks: list[Hunk]) -> list[int]:
     return sorted({s for h in hunks if h.semantic for s in h.sites})
 
 
+def repair_sites_r1(buggy: str, hunks: list[Hunk]) -> list[int]:
+    """R1: R0 plus the nearest executable line above and below each R0 site."""
+    mask = code_line_mask(_norm(buggy.replace("\r\n", "\n").splitlines()))
+    code = [i for i, c in enumerate(mask, 1) if c]
+    out = set(repair_sites(hunks))
+    for s in list(out):
+        above = [c for c in code if c < s]
+        below = [c for c in code if c > s]
+        if above:
+            out.add(above[-1])
+        if below:
+            out.add(below[0])
+    return sorted(out)
+
+
+def repair_sites_r2(buggy: str, fixed: str, context: int = 3) -> list[int]:
+    """R2: span of each unified-diff hunk (git grouping, ``context`` lines) with a semantic change.
+
+    Covers every buggy line from the first to the last changed line of the hunk;
+    an insertion marks both neighbours, as in R0.
+    """
+    b = _norm(buggy.replace("\r\n", "\n").splitlines())
+    f = _norm(fixed.replace("\r\n", "\n").splitlines())
+    bmask = code_line_mask(b)
+    fmask = code_line_mask(f)
+    out: set[int] = set()
+    sm = difflib.SequenceMatcher(a=b, b=f, autojunk=False)
+    for group in sm.get_grouped_opcodes(context):
+        changed = [op for op in group if op[0] != "equal"]
+        if not any(any(bmask[i1:i2]) or any(fmask[j1:j2]) for _, i1, i2, j1, j2 in changed):
+            continue
+        lines: set[int] = set()
+        for tag, i1, i2, _j1, _j2 in changed:
+            if tag == "insert":
+                lines.update(x for x in (i1, i1 + 1) if 1 <= x <= len(b))
+            else:
+                lines.update(range(i1 + 1, i2 + 1))
+        out.update(range(min(lines), max(lines) + 1))
+    return sorted(out)
+
+
 def min_distance(line: int | None, sites: list[int]) -> int | None:
     if line is None or not sites:
         return None
