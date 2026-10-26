@@ -76,7 +76,7 @@ Each included case is captured once on the pin and replayed through every regist
 
 Codes used in the decision files: `E1`–`E5` as in Section 4; `C` complexity or resource limit (inclusion 4: instruction, program-size or stack budget); `I4` environment or capability (inclusion 4: unsupported feature or helper, loader or map-creation failure, error code without a verifier message); `N0` not a fix for a verifier rejection (see the changes below). A later duplicate of an earlier-ranked patch is `E3`.
 
-## Pass 3 procedure (`tools/wild_pass3.py`, written before any candidate was built)
+## Pass 3 procedure (`tools/wild_pass3.py`; written after one trial build of rank 6's parent, before any candidate was loaded or decided)
 
 1. Worktrees of the parent (first parent) and the fix commit.
 2. **Build.** *Project build* where a recipe exists (cilium/tetragon and cilium/cilium: `make -C bpf V=1`), with the pin's clang. Otherwise *direct compile*: each BPF compilation unit that is changed, or that includes a changed header, compiled unchanged with `clang -g -O2 -target bpf -D__TARGET_ARCH_x86`, its own directory and the repository's BPF include directories on the include path, and the pin kernel's `vmlinux.h`. The build type is recorded per case. A build that fails at either commit is E5.

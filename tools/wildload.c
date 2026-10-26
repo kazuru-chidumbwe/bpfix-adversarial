@@ -13,6 +13,9 @@
  * REJECT = the kernel returned EACCES/EINVAL with a non-empty verifier log;
  * ERROR = anything else (open, BTF, attach-target or map creation failures).
  *
+ * Maps with pinning are pinned under $WILDLOAD_PIN_ROOT (default
+ * /sys/fs/bpf/wildload), which the caller removes afterwards.
+ *
  * Build: cc -O2 -o wildload tools/wildload.c -lbpf -lelf -lz
  * Usage: sudo ./wildload <object.o> <outdir>
  */
@@ -36,7 +39,12 @@ static int print_all(enum libbpf_print_level level, const char *fmt, va_list arg
 static int load_one(const char *path, const char *want, const char *outdir, char *section, size_t seclen,
 		    int *err_out, int *log_nonempty)
 {
-	struct bpf_object_open_opts opts = { .sz = sizeof(opts), .kernel_log_level = 1 | 2 | 4 };
+	const char *pin_root = getenv("WILDLOAD_PIN_ROOT");
+	struct bpf_object_open_opts opts = {
+		.sz = sizeof(opts),
+		.kernel_log_level = 1 | 2 | 4,
+		.pin_root_path = pin_root ? pin_root : "/sys/fs/bpf/wildload",
+	};
 	struct bpf_object *obj = bpf_object__open_file(path, &opts);
 	struct bpf_program *p;
 	char logpath[4096];
