@@ -38,6 +38,10 @@ class TestPrevailAdapter(unittest.TestCase):
     def test_location_in_other_file_is_ignored(self):
         self.assertIsNone(self._predict(FAIL, "other.bpf.c").primary)
 
+    def test_program_pick_line_is_not_a_location(self):
+        p = self._predict("PREVAIL exit=1\n(program xdp/prog)\n" + FAIL.split("\n", 1)[1])
+        self.assertEqual(p.primary, 35)
+
     def test_pass_is_a_miss(self):
         p = self._predict("PREVAIL exit=0\nPASS: xdp/prog\n")
         self.assertIsNone(p.primary)

@@ -40,10 +40,23 @@ class Prevail:
         return {"binary": self.bin, "version": version, "source_commit": commit,
                 "input": "compiled object only; the kernel log is not read"}
 
+    def _run(self, args: list[str]) -> subprocess.CompletedProcess:
+        return subprocess.run([self.bin, *args, "--line-info"], capture_output=True, text=True, timeout=600,
+                              check=False)
+
     def replay(self, ctx: CaseContext, obj: Path) -> str:
-        p = subprocess.run([self.bin, str(obj), "--line-info"], capture_output=True, text=True, timeout=600,
-                           check=False)
-        return f"{HEADER} exit={p.returncode}\n{p.stdout}{p.stderr}"
+        p = self._run([str(obj)])
+        out = p.stdout + p.stderr
+        if "please specify a program" in out:
+            # Several programs in the object: analyse the one the kernel failed to load.
+            progs = re.findall(r"section=(\S+) function=(\S+)", out)
+            failed = re.search(r"prog '([^']+)': BPF program load failed", ctx.log_text())
+            pick = next((sf for sf in progs if failed and sf[1] == failed.group(1)), None) or \
+                next((sf for sf in progs if sf[0] != ".text"), None)
+            if pick:
+                p = self._run([str(obj), pick[0], pick[1]])
+                out = f"(program {pick[0]}/{pick[1]})\n{p.stdout}{p.stderr}"
+        return f"{HEADER} exit={p.returncode}\n{out}"
 
     def predict(self, ctx: CaseContext) -> Prediction:
         p = ctx.artifact(self.needs_artifact)
