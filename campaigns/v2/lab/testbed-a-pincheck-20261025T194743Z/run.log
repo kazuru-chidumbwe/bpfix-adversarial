@@ -1,0 +1,37 @@
+kernel=6.12.86+deb13-amd64
+ACCEPT       NP-brittle-pad0
+ACCEPT       NP-brittle-pad32
+ACCEPT       NP-brittle-pad8
+REJECT       NP-idiomatic-nocheck
+ACCEPT       NP-idiomatic-pad0
+ACCEPT       NP-idiomatic-pad32
+ACCEPT       NP-idiomatic-pad8
+REJECT       PB-pad0
+REJECT       PB-pad32
+REJECT       PB-pad8
+REJECT       PP-pad0
+REJECT       PP-pad32
+REJECT       PP-pad8
+REJECT       SR-pad0
+REJECT       SR-pad32
+REJECT       SR-pad8
+stamp=20261025T194743Z n=16 out=/home/test/bpfix-v2/campaigns/v2/lab/testbed-a-pincheck-20261025T194743Z/v1-recapture
+capture_rc=0
+identical        NP-brittle-pad0
+identical        NP-brittle-pad32
+identical        NP-brittle-pad8
+identical        NP-idiomatic-nocheck
+identical        NP-idiomatic-pad0
+identical        NP-idiomatic-pad32
+identical        NP-idiomatic-pad8
+identical        PB-pad0
+identical        PB-pad32
+identical        PB-pad8
+identical        PP-pad0
+identical        PP-pad32
+identical        PP-pad8
+identical        SR-pad0
+identical        SR-pad32
+identical        SR-pad8
+identical 16/16 (normalized program-load logs vs committed 20260801T181331Z)
+compare_rc=0
