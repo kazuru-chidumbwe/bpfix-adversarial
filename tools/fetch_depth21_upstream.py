@@ -25,7 +25,17 @@ def fetch(url: str) -> bytes:
 
 
 def main() -> None:
-    subset = json.loads(SUBSET.read_text(encoding="utf-8"))
+    import argparse
+
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--subset", type=Path, default=SUBSET,
+                    help="case list (default: depth-21 seed; fixtures/upstream/main75_case_index.json for all 75)")
+    ap.add_argument("--manifest", type=Path, default=ROOT / "fixtures" / "upstream" / "depth21_manifest.json")
+    ap.add_argument("--label", default="20260728", help="campaign label written into case_meta.json")
+    ap.add_argument("--keep-existing", action="store_true",
+                    help="leave cases that already have a case_meta.json untouched")
+    args = ap.parse_args()
+    subset = json.loads(args.subset.read_text(encoding="utf-8"))
     cases = subset["cases"]
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     rows = []
@@ -33,6 +43,10 @@ def main() -> None:
         cid = c["upstream_case_id"]
         ob = c["keyword_label"]
         dest = OUT_DIR / cid
+        if args.keep_existing and (dest / "case_meta.json").is_file():
+            rows.append(json.loads((dest / "case_meta.json").read_text(encoding="utf-8")))
+            print(f"KEEP {cid}")
+            continue
         dest.mkdir(parents=True, exist_ok=True)
         got = []
         for name in FILES:
@@ -48,8 +62,8 @@ def main() -> None:
             "upstream_case_id": cid,
             "keyword_label": ob,
             "upstream_commit": COMMIT,
-            "campaign_label": "20260728",
-            "selection_method": subset.get("selection_method"),
+            "campaign_label": args.label,
+            "selection_method": subset.get("selection_method") or f"full {subset.get('split', 'list')}",
             "files": got,
             "local_path": str(dest.relative_to(ROOT)).replace("\\", "/"),
         }
@@ -59,11 +73,11 @@ def main() -> None:
 
     manifest = {
         "upstream_commit": COMMIT,
-        "campaign_label": "20260728",
+        "campaign_label": args.label,
         "n": len(rows),
         "cases": rows,
     }
-    out_m = ROOT / "fixtures" / "upstream" / "depth21_manifest.json"
+    out_m = args.manifest
     out_m.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"Wrote {out_m} n={len(rows)}")
 

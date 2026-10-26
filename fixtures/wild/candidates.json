@@ -1,0 +1,4045 @@
+{
+ "protocol": "docs/WILD-CORPUS-PROTOCOL.md",
+ "cutoff": "2026-10-26",
+ "seed": 20261026,
+ "repos": [
+  "iovisor/bcc",
+  "cilium/cilium",
+  "cilium/tetragon",
+  "cilium/pwru",
+  "cilium/ebpf",
+  "falcosecurity/libs",
+  "aquasecurity/tracee",
+  "inspektor-gadget/inspektor-gadget",
+  "facebookincubator/katran",
+  "parca-dev/parca-agent",
+  "open-telemetry/opentelemetry-ebpf-profiler",
+  "netobserv/netobserv-ebpf-agent",
+  "elastic/ebpf",
+  "kubearmor/KubeArmor",
+  "libbpf/libbpf-bootstrap",
+  "DataDog/datadog-agent"
+ ],
+ "phrases": [
+  "verifier error",
+  "verifier reject",
+  "verifier fail",
+  "fix verifier",
+  "make verifier happy",
+  "please the verifier",
+  "satisfy the verifier",
+  "invalid mem access",
+  "invalid access to packet",
+  "unbounded memory access",
+  "min value is negative",
+  "math between",
+  "!read_ok",
+  "unreleased reference",
+  "R1 type=",
+  "R2 type=",
+  "expected=map_ptr",
+  "fails to load"
+ ],
+ "n": 280,
+ "candidates": [
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "f8a86d4f6f224447e0b93217a58fd7f2c67ae01c",
+   "parents": [
+    "c88f72e2c7b5c5ef34a5f3b35d83a2c5d65432af"
+   ],
+   "title": "Migrate more Go packages to bazel (#50363)",
+   "committer_date": "2026-05-06T18:42:23.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/f8a86d4f6f224447e0b93217a58fd7f2c67ae01c",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 0
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "cf88cad9bbdbaf6704219559ece9be20e3ec9e45",
+   "parents": [
+    "2bd0850dd9dea844432e504b9a923180e614d275"
+   ],
+   "title": "VXLAN Tunnel Endpoint (VTEP) Integration",
+   "committer_date": "2022-02-08T14:38:27.000+01:00",
+   "html_url": "https://github.com/cilium/cilium/commit/cf88cad9bbdbaf6704219559ece9be20e3ec9e45",
+   "matched": [
+    "invalid mem access"
+   ],
+   "screen_rank": 1
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "849d794592c0b846ccbcdadd811d424b48e9798a",
+   "parents": [
+    "b9e2131f0bfbd02e05b985b12f132bd0ecbfbc01"
+   ],
+   "title": "Update dependency toolchains_llvm to v1.7.0 (#50454)",
+   "committer_date": "2026-05-07T01:12:09.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/849d794592c0b846ccbcdadd811d424b48e9798a",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 2
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "3f356b0156d86016695f97a0d8e747ca8f3f2ee0",
+   "parents": [
+    "3b8dbd9ad3a33f4856185df1bda3422eb5ff27fb"
+   ],
+   "title": "bpf: Split handle_ipv4 in bpf_host.c after ct_lookup4",
+   "committer_date": "2023-04-27T21:58:38.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/3f356b0156d86016695f97a0d8e747ca8f3f2ee0",
+   "matched": [
+    "verifier error",
+    "invalid mem access"
+   ],
+   "screen_rank": 3
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "b021b64dcf13047082b96c3d6060d52ac1d74a88",
+   "parents": [
+    "da153a2a38b9de99d177c249cb7b3701a18ab523"
+   ],
+   "title": "datapath: write full verifier log to stderr and endpoint directory",
+   "committer_date": "2023-03-30T09:59:07.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/b021b64dcf13047082b96c3d6060d52ac1d74a88",
+   "matched": [
+    "verifier error",
+    "fails to load"
+   ],
+   "screen_rank": 4
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "65922c6d0f8a27abae61b200e83214357d334b19",
+   "parents": [
+    "c3172718b7192f17d7f68f0bf8544643fc79e1e3"
+   ],
+   "title": "bpf: add raw probes for verifier capabilities",
+   "committer_date": "2017-03-21T08:00:40.000-07:00",
+   "html_url": "https://github.com/cilium/cilium/commit/65922c6d0f8a27abae61b200e83214357d334b19",
+   "matched": [
+    "invalid mem access"
+   ],
+   "screen_rank": 5
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "b4d901f005e290f282eb04c7ddf56dcac3233b1e",
+   "parents": [
+    "a92fddb59d9eabd8c2d188c8fed8632acd34f6bb"
+   ],
+   "title": "fix: Bound arg metadata index with an unconditional mask",
+   "committer_date": "2026-09-11T17:00:13.000+10:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/b4d901f005e290f282eb04c7ddf56dcac3233b1e",
+   "matched": [
+    "unbounded memory access"
+   ],
+   "screen_rank": 6
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "2f2bc2afc279689b04da091d43eeafe785f39937",
+   "parents": [
+    "a933c6fa61e13b2dad9446982df4868b4f102db7"
+   ],
+   "title": "bpf: preserve Instruction Metadata in inlineGlobalData",
+   "committer_date": "2022-11-02T10:35:14.000+01:00",
+   "html_url": "https://github.com/cilium/cilium/commit/2f2bc2afc279689b04da091d43eeafe785f39937",
+   "matched": [
+    "verifier error",
+    "verifier reject"
+   ],
+   "screen_rank": 7
+  },
+  {
+   "repo": "cilium/ebpf",
+   "commit": "7bbc7384cbe1fec7c7e281786cdb789b5e36f21d",
+   "parents": [
+    "9014db4ffb206443cde9f2af7340706f02c6aa5a"
+   ],
+   "title": "prog: default-enable verifier retries, document log options, allow disabling",
+   "committer_date": "2022-08-16T11:49:14.000+02:00",
+   "html_url": "https://github.com/cilium/ebpf/commit/7bbc7384cbe1fec7c7e281786cdb789b5e36f21d",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 8
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "0aa0f68b0765ad4a1ddd6f7502055742612cb358",
+   "parents": [
+    "ff440c209a7f63b7de70a89a91c16a283d861928"
+   ],
+   "title": "Load balancer changes. (go side addressing changes in next commit)",
+   "committer_date": "2016-08-10T16:09:11.000-07:00",
+   "html_url": "https://github.com/cilium/cilium/commit/0aa0f68b0765ad4a1ddd6f7502055742612cb358",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 9
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "22263bb74b4904a5a8166997a8447712915e42d2",
+   "parents": [
+    "fe4692f3da0941677c6245d05f8dd724999c423a"
+   ],
+   "title": "Update module github.com/pulumi/pulumi/sdk/v3 to v3.268.0 (#58130)",
+   "committer_date": "2026-10-15T12:07:28.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/22263bb74b4904a5a8166997a8447712915e42d2",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 10
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "4bb6b56b5c2276045efdfadae7452d6d85bf7e6f",
+   "parents": [
+    "5d1c15ea1a5016e6194ee64c0fb3aa914ae20b09"
+   ],
+   "title": "bpf: unbreak verifier after uapi header update",
+   "committer_date": "2020-03-09T18:03:48.000+01:00",
+   "html_url": "https://github.com/cilium/cilium/commit/4bb6b56b5c2276045efdfadae7452d6d85bf7e6f",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 11
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "2616d106ef4c9b2e9b53ad8da480741ff1371951",
+   "parents": [
+    "a6f3598004104652236507ebbacf3ab07e22356f"
+   ],
+   "title": "Update module github.com/gosnmp/gosnmp to v1.43.2 (#52528)",
+   "committer_date": "2026-06-20T22:05:37.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/2616d106ef4c9b2e9b53ad8da480741ff1371951",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 12
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "9100ffbef97968f8bf27edc1e489829a73129f99",
+   "parents": [
+    "b22b49d63d9cc7bf8670dcee1fe3bee4b1167ca7"
+   ],
+   "title": "bpf: Fix stack alignment in sock6_xlate_fwd to prevent verifier errors",
+   "committer_date": "2025-12-02T19:17:22.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/9100ffbef97968f8bf27edc1e489829a73129f99",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 13
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "847014aa62f94e5a53178670cad1eacea455b227",
+   "parents": [
+    "74f7fd1d40bc62dd294efce61da905867e390603"
+   ],
+   "title": "bpf: Avoid 32bit assignment of packet pointer",
+   "committer_date": "2023-05-10T11:08:58.000+01:00",
+   "html_url": "https://github.com/cilium/cilium/commit/847014aa62f94e5a53178670cad1eacea455b227",
+   "matched": [
+    "verifier error",
+    "invalid mem access"
+   ],
+   "screen_rank": 14
+  },
+  {
+   "repo": "parca-dev/parca-agent",
+   "commit": "2566c58614c7a5e69654a7228dcf03f17ee77699",
+   "parents": [
+    "dd23bfb047c6914e1bf39b1bc4d0c1f230c3f19e",
+    "5aa6b3544311d12d608378739e7d37e0181e26fe"
+   ],
+   "title": "spam opaquify in more places to fix verifier issues on 6.8 (#2781)",
+   "committer_date": "2024-05-13T18:23:54.000+02:00",
+   "html_url": "https://github.com/parca-dev/parca-agent/commit/2566c58614c7a5e69654a7228dcf03f17ee77699",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 15
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "17389126010cbc3737654437fa2f5ef19b6bd12d",
+   "parents": [
+    "30e510f72b674383285a7691d2b767e1b38605b5"
+   ],
+   "title": "ebpf: support LIBBPF_PIN_BY_NAME in gadget maps",
+   "committer_date": "2026-07-14T11:27:44.000+02:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/17389126010cbc3737654437fa2f5ef19b6bd12d",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 16
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "a44076f68e3d305ed7c3174f9a50efe146537c7a",
+   "parents": [
+    "a812ae8295ede33aa6a456d7417f77ae22cee6c9"
+   ],
+   "title": "[procmgr] add Windows e2e coverage for the system-probe cutover (#57159)",
+   "committer_date": "2026-10-01T21:24:52.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/a44076f68e3d305ed7c3174f9a50efe146537c7a",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 17
+  },
+  {
+   "repo": "falcosecurity/libs",
+   "commit": "347edcbd60448c0ca60c25d6e2db3a76826a7449",
+   "parents": [
+    "b6886f4eee846e6f0e277939fdb8112ca5d4f995"
+   ],
+   "title": "fix(modern_bpf): bpf_loop the sendmmsg/recvmmsg iovec data store",
+   "committer_date": "2026-09-07T15:11:16.000+02:00",
+   "html_url": "https://github.com/falcosecurity/libs/commit/347edcbd60448c0ca60c25d6e2db3a76826a7449",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 18
+  },
+  {
+   "repo": "parca-dev/parca-agent",
+   "commit": "8e9f580a79f4cfdabc74688b10ed259bf88b4a81",
+   "parents": [
+    "05b590e7c37e69ac4039dfc0a39874ddd0fad6f3"
+   ],
+   "title": ".eh_frame: Adaptively size unwind info shard count",
+   "committer_date": "2023-02-21T10:56:49.000Z",
+   "html_url": "https://github.com/parca-dev/parca-agent/commit/8e9f580a79f4cfdabc74688b10ed259bf88b4a81",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 19
+  },
+  {
+   "repo": "parca-dev/parca-agent",
+   "commit": "7413b22c70580891f286d56478e345823eeca008",
+   "parents": [
+    "0b6e7b99da4aef3f3e35312f99b70d13f9f6418e"
+   ],
+   "title": "Refix 5.4 verifier error",
+   "committer_date": "2024-05-31T11:22:48.000-04:00",
+   "html_url": "https://github.com/parca-dev/parca-agent/commit/7413b22c70580891f286d56478e345823eeca008",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 20
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "f09b5b8acdd5123ba4101a80c87eaa4b8a687c4c",
+   "parents": [
+    "63a880061692cdf37e819ef8127686286b12b599"
+   ],
+   "title": "get rid of version checks",
+   "committer_date": "2016-03-31T13:37:04.000-07:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/f09b5b8acdd5123ba4101a80c87eaa4b8a687c4c",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 21
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "4a411d7385bae94bb132b17feea2daf1d270b7be",
+   "parents": [
+    "a8bb8ff1329ee60b1fcac27f97e22a639329d95d"
+   ],
+   "title": "docs: document kernel compatibility for filename access monitoring",
+   "committer_date": "2026-03-09T10:34:17.000+01:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/4a411d7385bae94bb132b17feea2daf1d270b7be",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 22
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "1d679b6c96768acbdcbd9be8def89a9a01fe3f6b",
+   "parents": [
+    "4dc7d8047cafc9661ff07bc784a20da1e0f617e3"
+   ],
+   "title": "bpf: complexity-tests: Test DEBUG and LB_DEBUG configurations",
+   "committer_date": "2024-05-07T20:09:39.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/1d679b6c96768acbdcbd9be8def89a9a01fe3f6b",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 23
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "784ab66328b6e712f810c4cdfe04f0033dab9fc4",
+   "parents": [
+    "b96552c63091831912daa78658e48486630f5f6c"
+   ],
+   "title": "Fix panic when rules failed to load (#14069)",
+   "committer_date": "2022-10-27T19:15:25.000+02:00",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/784ab66328b6e712f810c4cdfe04f0033dab9fc4",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 24
+  },
+  {
+   "repo": "cilium/pwru",
+   "commit": "286623e3d93dfdf6f0baa18330315a1eaaaac3b6",
+   "parents": [
+    "7afe5d84ce702f1a3052fea98f55f96f8e6312a4"
+   ],
+   "title": "Bump cilium/ebpf to latest",
+   "committer_date": "2022-11-22T06:07:26.000+01:00",
+   "html_url": "https://github.com/cilium/pwru/commit/286623e3d93dfdf6f0baa18330315a1eaaaac3b6",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 25
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "89c7f409b4a683abc5524057dfb6d2047ba1a827",
+   "parents": [
+    "bd301e1bcb163fa38b2cdc6793d6681a4fa16ff2"
+   ],
+   "title": "ksnoop: fix verification failures on 5.15 kernel",
+   "committer_date": "2021-10-19T08:24:21.000-07:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/89c7f409b4a683abc5524057dfb6d2047ba1a827",
+   "matched": [
+    "fix verifier",
+    "fails to load"
+   ],
+   "screen_rank": 26
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "fa85ba5057903d77e37902f26a8f1cd82fffad0d",
+   "parents": [
+    "33a33f85272b85c055ff20a6929226353f50b354",
+    "646f5f180f01312562da1213e42193099d018ff7"
+   ],
+   "title": "Merge pull request #2711 from inspektor-gadget/mauricio/fix-verify-instructions",
+   "committer_date": "2024-04-12T09:28:37.000-05:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/fa85ba5057903d77e37902f26a8f1cd82fffad0d",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 27
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "c11a0ab6622597b98a91e7cb64fdf65d5528819b",
+   "parents": [
+    "f70e98c00c0a55146bd7c3d51934bc59c9084d54"
+   ],
+   "title": "bpf: Pass snat_v6_needs_masquerade args by map",
+   "committer_date": "2026-03-12T21:37:03.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/c11a0ab6622597b98a91e7cb64fdf65d5528819b",
+   "matched": [
+    "verifier reject",
+    "R2 type="
+   ],
+   "screen_rank": 28
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "ef2203d05daac30e9a70fcd6506ae7188785b6f4",
+   "parents": [
+    "1ec99a08fc7a62147a8bfbc5046037cdb0348aed"
+   ],
+   "title": "btf: Use user-provided KernelTypes if the btfSpec is nil",
+   "committer_date": "2025-06-02T08:54:09.000+03:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/ef2203d05daac30e9a70fcd6506ae7188785b6f4",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 29
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "a7205fc9a9022d99c8fcedb99a9472011c6f0058",
+   "parents": [
+    "8d27aec379cabd2dc81c0ad21155bb7288fa7f66"
+   ],
+   "title": "bpf: fix verification error in bpf_execve_event",
+   "committer_date": "2023-09-12T17:42:31.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/a7205fc9a9022d99c8fcedb99a9472011c6f0058",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 30
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "8319d52dc8834daa0766f61487f75ed3c3c731fe",
+   "parents": [
+    "5fed2a94da19501c3088161db0c412b5623050ca"
+   ],
+   "title": "turn off x86 jump table optimization during jit compilation",
+   "committer_date": "2020-06-04T08:17:00.000-07:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/8319d52dc8834daa0766f61487f75ed3c3c731fe",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 31
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "aa7706192a3c85103c391928e6ef11bc20f0d697",
+   "parents": [
+    "00be3c88d2eed75ca90c23a533ade1abe940ff89",
+    "281a7ffa903faf79e8fe6631303fc3774cbf9161"
+   ],
+   "title": "Merge pull request #1718 from inspektor-gadget/francis/log-verifier-error-gadget-result",
+   "committer_date": "2023-06-08T11:49:59.000+01:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/aa7706192a3c85103c391928e6ef11bc20f0d697",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 32
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "fee8d33831f0c9e76861f0098cffc193261b9a64",
+   "parents": [
+    "f69bb3db2814f590f97dd4d30d5563e126b752b7"
+   ],
+   "title": "tetragon: Factor getUprobeHeapMap into getHeapMaps",
+   "committer_date": "2026-10-16T17:20:21.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/fee8d33831f0c9e76861f0098cffc193261b9a64",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 33
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "290fe79c75bc757966ee6c5332012868d10e9584",
+   "parents": [
+    "87a4726de12bb9d8515e11a89e4ab4a055752c1f"
+   ],
+   "title": "Fix verifier rejects.",
+   "committer_date": "2016-01-19T16:50:58.000-08:00",
+   "html_url": "https://github.com/cilium/cilium/commit/290fe79c75bc757966ee6c5332012868d10e9584",
+   "matched": [
+    "verifier reject",
+    "fix verifier"
+   ],
+   "screen_rank": 34
+  },
+  {
+   "repo": "libbpf/libbpf-bootstrap",
+   "commit": "a4169a2108fe1ab812e33471e0fcab214fde73a9",
+   "parents": [
+    "b3e64d3888bac692b10d03ed3c1da7307f7252c6"
+   ],
+   "title": "Update libbpf",
+   "committer_date": "2021-07-13T11:21:34.000-07:00",
+   "html_url": "https://github.com/libbpf/libbpf-bootstrap/commit/a4169a2108fe1ab812e33471e0fcab214fde73a9",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 35
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "9bb7aa0481f3837257153a21d947aecc48c760d1",
+   "parents": [
+    "8d96999e9e2acbce622f0e868837469e1af2c8bc"
+   ],
+   "title": "bpf: Force-align IPv4 CT tuples used by revSNAT memcpy()",
+   "committer_date": "2026-08-27T17:25:04.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/9bb7aa0481f3837257153a21d947aecc48c760d1",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 36
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "c67afc5d9c81833d4853ea18b8665e30f0a7552b",
+   "parents": [
+    "da444f1220f741c347bbe7c6cacc2fb974d9d485"
+   ],
+   "title": "Merge my temporary feature branch into main (#17771)",
+   "committer_date": "2023-06-26T20:42:23.000-04:00",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/c67afc5d9c81833d4853ea18b8665e30f0a7552b",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 37
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "db0e2c287bb2f50d951d8b118aae79f6755d4032",
+   "parents": [
+    "8038486db44c18774c438a066f1c05a680a017f1"
+   ],
+   "title": "test: print logical instruction count per program",
+   "committer_date": "2023-07-19T15:48:54.000-07:00",
+   "html_url": "https://github.com/cilium/cilium/commit/db0e2c287bb2f50d951d8b118aae79f6755d4032",
+   "matched": [
+    "verifier error",
+    "fails to load"
+   ],
+   "screen_rank": 38
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "62c0e9c761b4acce478133264f4e48aca9327cc9",
+   "parents": [
+    "014826b8555b307b03a21630ecc1537834e0846c"
+   ],
+   "title": "[USM] Support HTTP/2 path by value (#44188)",
+   "committer_date": "2026-01-26T09:08:17.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/62c0e9c761b4acce478133264f4e48aca9327cc9",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 39
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "077f23dbd7cbeb6ed5d7f469c4251b989af3bcd8",
+   "parents": [
+    "0d1e8b2cc368d21451c320f6ec577a6eecb95605"
+   ],
+   "title": "[USMON-712] usm: tls: Fix connection directions in TLS (#21943)",
+   "committer_date": "2024-01-23T22:02:13.000+02:00",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/077f23dbd7cbeb6ed5d7f469c4251b989af3bcd8",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 40
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "933c80c51b59606558517c0e83fcaa4f45261876",
+   "parents": [
+    "df028d34bac1fc32183634247a5b75c733f86873"
+   ],
+   "title": "fix(pkg/sensors): account for `shared` maps referenced but not declared",
+   "committer_date": "2026-10-02T17:37:27.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/933c80c51b59606558517c0e83fcaa4f45261876",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 41
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "be23b74a5027f9175fdafb6dc677e207e19d8f92",
+   "parents": [
+    "492fae97898450ab5d9d1796a26d81830332d6b5"
+   ],
+   "title": "sensors: cleanup on error",
+   "committer_date": "2026-07-01T09:53:00.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/be23b74a5027f9175fdafb6dc677e207e19d8f92",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 42
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "a0310db565b03130a52a8dfff8e701f8255f4726",
+   "parents": [
+    "a5f7a7f62437561b6ab67f2a79a2fc357945b17c"
+   ],
+   "title": "[USMON-358] postgres monitoring (#25416)",
+   "committer_date": "2024-05-13T14:42:55.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/a0310db565b03130a52a8dfff8e701f8255f4726",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 43
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "0ed915a5970dd3f499831577da96b9e832dd00ee",
+   "parents": [
+    "57314f7ebbf5af58d77c110538ee115610fe16c8"
+   ],
+   "title": "bpf: satisfy the verifier on v5.3 generic programs",
+   "committer_date": "2024-08-16T16:59:27.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/0ed915a5970dd3f499831577da96b9e832dd00ee",
+   "matched": [
+    "satisfy the verifier"
+   ],
+   "screen_rank": 44
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "fff8fee13a825a90e537036383b8022dfab2c9f3",
+   "parents": [
+    "3a7572a92844147cc79dc226b27a39b0729819cb"
+   ],
+   "title": "tests/kprobe: remove mixed indentation in yaml",
+   "committer_date": "2023-04-21T15:15:35.000-04:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/fff8fee13a825a90e537036383b8022dfab2c9f3",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 45
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "3740e9db8fef9adc382f9dfecb5c404bda278afb",
+   "parents": [
+    "33dfaa1c9d0aa0a7ea8be4d52d8ebfdac2fddda9"
+   ],
+   "title": "bpf: Fix \"R2 !read_ok\" verifier error with LLVM 17",
+   "committer_date": "2024-03-25T06:55:37.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/3740e9db8fef9adc382f9dfecb5c404bda278afb",
+   "matched": [
+    "verifier error",
+    "!read_ok"
+   ],
+   "screen_rank": 46
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "d5f91364209ed3c5c2e3ce77744c3086062d7f70",
+   "parents": [
+    "de50402681eda839df1e26dc82d51ed7be6644d9"
+   ],
+   "title": "test/bpf: Fix verifier verbose failures",
+   "committer_date": "2018-08-14T22:23:45.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/d5f91364209ed3c5c2e3ce77744c3086062d7f70",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 47
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "0f86e1db662e5c0713206e9d48ff3e04dc6b9f9c",
+   "parents": [
+    "44666a4cd60fe498e9607a2d6fa4f10474499078"
+   ],
+   "title": "usm: Fix verifier error on kernel 4.14 with debug enabled (#38561)",
+   "committer_date": "2025-07-08T19:08:04.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/0f86e1db662e5c0713206e9d48ff3e04dc6b9f9c",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 48
+  },
+  {
+   "repo": "cilium/ebpf",
+   "commit": "83897f7e3f73a8a5b4168289c0e63b9bb3b6ce38",
+   "parents": [
+    "8b37f6d4490af13f42d06f01ddcde497359c3a65"
+   ],
+   "title": "fix(elf): set attach_type to BPF_XDP for XDP section",
+   "committer_date": "2026-01-13T17:34:38.000+01:00",
+   "html_url": "https://github.com/cilium/ebpf/commit/83897f7e3f73a8a5b4168289c0e63b9bb3b6ce38",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 49
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "89b73a6b398c8332a2be13d5b17f49ff868a8f7a",
+   "parents": [
+    "39d0561a02a99e2371202b1ee332a543fdd98a94"
+   ],
+   "title": "kprobe: pre-validate the attach call of kprobes",
+   "committer_date": "2023-03-29T23:25:53.000+01:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/89b73a6b398c8332a2be13d5b17f49ff868a8f7a",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 50
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "3801c14ef454a426a74b2e49d6d3ea3e1be69fb9",
+   "parents": [
+    "2b47cfdf7c8b3c6a5ee2aa2dd2ccc20b4029962a"
+   ],
+   "title": "bpf/tests: Add __FINE__:__LINE__ prefix for test_log",
+   "committer_date": "2025-04-23T13:41:21.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/3801c14ef454a426a74b2e49d6d3ea3e1be69fb9",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 51
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "8c0f4fa0003823d45153a959551e580977140516",
+   "parents": [
+    "5ec42773cd4cbb9d4c152a818dfe3bf135edc0b9"
+   ],
+   "title": "[USMON-621] Add HTTP/2 kernel metrics (#21035)",
+   "committer_date": "2023-12-01T00:58:47.000+02:00",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/8c0f4fa0003823d45153a959551e580977140516",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 52
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "47502c2350b5de01dbcd35170e5542f2bc91118f",
+   "parents": [
+    "c929d1ce9c401c7e40285167f985ce332b0d12ee"
+   ],
+   "title": "tools/nfsslower.py: Fix uninitialized struct pad error",
+   "committer_date": "2023-02-11T09:46:38.000+08:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/47502c2350b5de01dbcd35170e5542f2bc91118f",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 53
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "38ac0da6f60ea755ebe33ee629e2dc757350acc1",
+   "parents": [
+    "c358ac75a45a136695c2ef256db4363c9020f9c9"
+   ],
+   "title": "perf(dyninst): free up BPF stack on the swiss-map AES chain and guard it with a test (#58160)",
+   "committer_date": "2026-10-20T21:28:55.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/38ac0da6f60ea755ebe33ee629e2dc757350acc1",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 54
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "df8c91f0845221d83c8f6068526dd55495dfe715",
+   "parents": [
+    "e9438c20e7d1000e5c9f4bf0641bf3b07f13b1ac"
+   ],
+   "title": "loader: refactor loadDatapath into bpf.LoadAndAssign",
+   "committer_date": "2024-08-11T13:43:00.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/df8c91f0845221d83c8f6068526dd55495dfe715",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 55
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "0ae562c8862f4aa7a028a3f9bc561636a63a507d",
+   "parents": [
+    "789e923fc9fda909c74d25025dc5411e2819f75f"
+   ],
+   "title": "libbpf-tools: ksnoop: Fix two invalid access to map value (#5361)",
+   "committer_date": "2025-07-12T21:26:14.000-07:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/0ae562c8862f4aa7a028a3f9bc561636a63a507d",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 56
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "4f88e74d9225bf483d48f0cee3e658ad178c56a0",
+   "parents": [
+    "1428b4ead4b57fa1a94e597e656c3b1960227460",
+    "9dc9ea874cd2f240b530389e407e7b0ed29a3e1d"
+   ],
+   "title": "Merge pull request #3529 from patrickpichler/feature/3462/full-verifier-error-when-running-gadget",
+   "committer_date": "2024-10-01T07:34:25.000-05:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/4f88e74d9225bf483d48f0cee3e658ad178c56a0",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 57
+  },
+  {
+   "repo": "cilium/ebpf",
+   "commit": "cc4947e88a916cf69b368982cfd524451f50eccd",
+   "parents": [
+    "bf2befcf7af8f398035098c7b58e0ac4f13106c9"
+   ],
+   "title": "asm: conditionally set ins.Offset when marshaling Movs",
+   "committer_date": "2026-10-08T16:05:20.000+02:00",
+   "html_url": "https://github.com/cilium/ebpf/commit/cc4947e88a916cf69b368982cfd524451f50eccd",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 58
+  },
+  {
+   "repo": "aquasecurity/tracee",
+   "commit": "e3b085df63f4888bc6a46bcbf78a5421963b74ca",
+   "parents": [
+    "c416dffb83f552108eee6615c8ed68026cce356f"
+   ],
+   "title": "fix(ebpf): read sockaddr_un members individually",
+   "committer_date": "2025-04-17T13:33:37.000-03:00",
+   "html_url": "https://github.com/aquasecurity/tracee/commit/e3b085df63f4888bc6a46bcbf78a5421963b74ca",
+   "matched": [
+    "satisfy the verifier"
+   ],
+   "screen_rank": 59
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "c7886a68ebeec13a9e52bd38a3977eaa9f8b3e1e",
+   "parents": [
+    "64611e063f7abfa35aef6e7ed20000d7533f9ccb"
+   ],
+   "title": "hubble-fgs: Fix verifier error on non-upstreeam, non-LTS kernels",
+   "committer_date": "2022-09-26T12:21:48.000-07:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/c7886a68ebeec13a9e52bd38a3977eaa9f8b3e1e",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 60
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "a07c4f78dfbc04dc5da0fdd28a0ab52cb0c9cf70",
+   "parents": [
+    "62648d4e83050bda148b5a429c268ea194536cd0"
+   ],
+   "title": "fix evtnext timeout issue (#42331)",
+   "committer_date": "2025-11-03T19:01:07.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/a07c4f78dfbc04dc5da0fdd28a0ab52cb0c9cf70",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 61
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "2ac55a06821e3c346b8ece10d6283ca50d524dc3",
+   "parents": [
+    "563ac9ff40cb5755a71728f4bd768a738d6c8f97"
+   ],
+   "title": "Use sealed memfd file for runtime compilation (#15726)",
+   "committer_date": "2023-03-03T12:32:33.000+01:00",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/2ac55a06821e3c346b8ece10d6283ca50d524dc3",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 62
+  },
+  {
+   "repo": "parca-dev/parca-agent",
+   "commit": "3422ad75ba067ffce4f9d02483bc1edce3811422",
+   "parents": [
+    "8dd5ccaeef0f023104ed0ce9edb82bd37bc7676a"
+   ],
+   "title": "bpf: Fix odd verifier issue in CI for 5.4",
+   "committer_date": "2023-02-16T14:34:12.000Z",
+   "html_url": "https://github.com/parca-dev/parca-agent/commit/3422ad75ba067ffce4f9d02483bc1edce3811422",
+   "matched": [
+    "math between",
+    "fails to load"
+   ],
+   "screen_rank": 63
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "4a7400a0aaa3ddff7bd94809e67fa4958429db32",
+   "parents": [
+    "0e5aae811cfd23591b094a3dad16beafb779d490"
+   ],
+   "title": "[CNM-5355] Improve protocol_classifier_entrypoint performance (#56780)",
+   "committer_date": "2026-10-01T20:48:07.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/4a7400a0aaa3ddff7bd94809e67fa4958429db32",
+   "matched": [
+    "invalid mem access"
+   ],
+   "screen_rank": 64
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "c550d9f35a4175452345fe6db1c50680540c2d35",
+   "parents": [
+    "a17a01f6131ed3b021ccaa63ec8fd9319b21f4b7"
+   ],
+   "title": "bpf: Fix verifier issue",
+   "committer_date": "2025-03-20T08:07:25.000-07:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/c550d9f35a4175452345fe6db1c50680540c2d35",
+   "matched": [
+    "fix verifier",
+    "unbounded memory access"
+   ],
+   "screen_rank": 65
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "7c4cf38828638a976da9e20a2cb737772536839e",
+   "parents": [
+    "6291ff5241e75cabb925bb023746ba389dc69120"
+   ],
+   "title": "Bcc: mptcpify: add the NULL check for variable 'mode' (#5336)",
+   "committer_date": "2025-06-18T14:05:26.000-07:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/7c4cf38828638a976da9e20a2cb737772536839e",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 66
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "6b8a89673dbba9b9203a6555735e451dd9477836",
+   "parents": [
+    "35c9940ee7297eafa7d8bcc8d9cda29a3b17a25b"
+   ],
+   "title": "tools: fix alignment of ipv6_key_t in tcptop",
+   "committer_date": "2020-03-23T08:47:04.000-07:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/6b8a89673dbba9b9203a6555735e451dd9477836",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 67
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "f51f4dfac5421dcf01b95bf682419b939f91995e",
+   "parents": [
+    "b46ebf8c77ba1a436606346837506579affdc755"
+   ],
+   "title": "bpf: Add check for null state in snat_v6_nat",
+   "committer_date": "2025-08-08T05:15:29.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/f51f4dfac5421dcf01b95bf682419b939f91995e",
+   "matched": [
+    "invalid mem access"
+   ],
+   "screen_rank": 68
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "b61c034503fba7be82ea458cfb0b8e66a086a1df",
+   "parents": [
+    "e984f68ede4ff94e77840d8e8c417a399b10f724",
+    "829717b6a68d664ba3fc9c919638decc2495fd9f"
+   ],
+   "title": "Merge pull request #1621 from inspektor-gadget/francis/log-verifier-error-top-level",
+   "committer_date": "2023-05-25T13:06:09.000+01:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/b61c034503fba7be82ea458cfb0b8e66a086a1df",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 69
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "2070a2aefb0bb30f675d0ebdfb804b5873bb0200",
+   "parents": [
+    "1179ac8724062d74ce44ab8c9922c1b0ffd55286"
+   ],
+   "title": "cc: Work around verifier error when reading USDT probe arguments",
+   "committer_date": "2017-05-03T07:07:23.000-04:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/2070a2aefb0bb30f675d0ebdfb804b5873bb0200",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 70
+  },
+  {
+   "repo": "parca-dev/parca-agent",
+   "commit": "d03d8648ac90517f5a5e556d4f7f6aa36a8aea32",
+   "parents": [
+    "8855204b2f1df55f1a58be48b202caaf2e5ce12f"
+   ],
+   "title": "unwinder/native: Accomodate larger program due to rate limits",
+   "committer_date": "2023-09-25T08:00:03.000+01:00",
+   "html_url": "https://github.com/parca-dev/parca-agent/commit/d03d8648ac90517f5a5e556d4f7f6aa36a8aea32",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 71
+  },
+  {
+   "repo": "falcosecurity/libs",
+   "commit": "2b71e52bb642dbda4dab32215d5a4aa53babbfed",
+   "parents": [
+    "03d3ba1276d27012292d099985c61faaf5e7695a"
+   ],
+   "title": "fix(driver/modern_bpf): fix verifier and recvmmsg/sendmmsg on kernel 6.19+",
+   "committer_date": "2026-03-18T14:17:40.000+01:00",
+   "html_url": "https://github.com/falcosecurity/libs/commit/2b71e52bb642dbda4dab32215d5a4aa53babbfed",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 72
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "6759b3cb6ba79d053e4dad6e42b1b2848af2f70e",
+   "parents": [
+    "d53133494ef9dfda0b517175b98c86afbd4fc7b1"
+   ],
+   "title": "rtloader: preserve LC_RPATH for `datadog-agent-three` install on mac (#5738)",
+   "committer_date": "2020-12-02T15:49:07.000-05:00",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/6759b3cb6ba79d053e4dad6e42b1b2848af2f70e",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 73
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "af55dd8cf522cf9e8c495a4c815e32f85e6532fa",
+   "parents": [
+    "eb50bc7fed98e6fce20785e7873ba300cd7715cc",
+    "6a2c5e949cbfc464b40d7b61196c9f2e1cffffaf"
+   ],
+   "title": "Merge pull request #4273 from inspektor-gadget/alban_fix_discard_data_by_skb",
+   "committer_date": "2025-04-01T18:06:38.000+02:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/af55dd8cf522cf9e8c495a4c815e32f85e6532fa",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 74
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "c65352e0bddcfc0e2cf40920ebc959f83c092688",
+   "parents": [
+    "996795d580be0e559d76820914a4bf2c8a6f06ab"
+   ],
+   "title": "fix(datastreams): keep numeric Kafka action fields as numbers after yaml v3 bump (#58306)",
+   "committer_date": "2026-10-19T21:55:00.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/c65352e0bddcfc0e2cf40920ebc959f83c092688",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 75
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "2a5a8e34859ed05a641cd700fd6b252753f11356",
+   "parents": [
+    "9e390e97d5f28695d809120e8cfaeb7f2fb95a31"
+   ],
+   "title": "examples/networking: sockmap.py: Fix invalid bpf_context access off=24 size=8 (#5169)",
+   "committer_date": "2024-12-17T15:51:28.000-08:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/2a5a8e34859ed05a641cd700fd6b252753f11356",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 76
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "80a3023ddb743a259e6a37a8bdd38ee57e4c54da",
+   "parents": [
+    "416456de42531235840fdd79ebfb3f53d017c9f1"
+   ],
+   "title": "bpf: Fix misaligned access in bpf_xdp with prefilter and IPv6",
+   "committer_date": "2020-12-21T13:42:39.000+01:00",
+   "html_url": "https://github.com/cilium/cilium/commit/80a3023ddb743a259e6a37a8bdd38ee57e4c54da",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 77
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "bd1235c609da5d4ce03c12143a54ad57d3e2a53c",
+   "parents": [
+    "8ec4f160f5656c1bf7ffaea1280da10c3e7f68b5"
+   ],
+   "title": "types: add Ignore for uprobe spec",
+   "committer_date": "2026-07-29T18:04:37.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/bd1235c609da5d4ce03c12143a54ad57d3e2a53c",
+   "matched": [
+    "verifier fail"
+   ],
+   "screen_rank": 78
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "c8c8b2b77689266502e7b78106ddc2ba3b2b7bc0",
+   "parents": [
+    "b4d901f005e290f282eb04c7ddf56dcac3233b1e"
+   ],
+   "title": "fix: Mask file type offset in the same asm block as the add",
+   "committer_date": "2026-09-11T17:00:13.000+10:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/c8c8b2b77689266502e7b78106ddc2ba3b2b7bc0",
+   "matched": [
+    "unbounded memory access"
+   ],
+   "screen_rank": 79
+  },
+  {
+   "repo": "cilium/pwru",
+   "commit": "9824afb57dc06a7c0d82c86b145ac5d629038d89",
+   "parents": [
+    "5b5cdc3c85230e03f23bbc0f1faa435cb1ee77ec"
+   ],
+   "title": "bpf: Do not cache xdp to avoid verifier failure",
+   "committer_date": "2025-08-15T12:25:01.000+02:00",
+   "html_url": "https://github.com/cilium/pwru/commit/9824afb57dc06a7c0d82c86b145ac5d629038d89",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 80
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "609919a17bd6c95d2b2050e82420994936f7bfc2",
+   "parents": [
+    "248cf86ad00808754d174f11b8ac9dd245f5629a"
+   ],
+   "title": "install/kubernetes: Fix experimental-install.yaml for Hubble",
+   "committer_date": "2020-10-28T05:13:48.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/609919a17bd6c95d2b2050e82420994936f7bfc2",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 81
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "61484e17ee6d05604fe2890d1396b6c17e3bf29d",
+   "parents": [
+    "0cae0dd3ad34738259a8843dca788f41e8dfa634"
+   ],
+   "title": "fix a trace.py problem (#1973)",
+   "committer_date": "2018-09-17T22:24:31.000-07:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/61484e17ee6d05604fe2890d1396b6c17e3bf29d",
+   "matched": [
+    "invalid mem access"
+   ],
+   "screen_rank": 82
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "7aae9ea2ebbbeef1ead1dfda1c9f8d5218f02e36",
+   "parents": [
+    "29c6fbf1c22bfd78965645da8cd299d6892a8623"
+   ],
+   "title": "Add .size in arm64 assembly tests",
+   "committer_date": "2026-03-23T19:57:30.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/7aae9ea2ebbbeef1ead1dfda1c9f8d5218f02e36",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 83
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "e3e1a299678c775fc1364f038506d313bcd975b0",
+   "parents": [
+    "522da61dd9ea3928dc813a2dc874491f9840a110"
+   ],
+   "title": "test: Update test-verifier image",
+   "committer_date": "2022-07-15T23:07:04.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/e3e1a299678c775fc1364f038506d313bcd975b0",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 84
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "17907af1898b5115ca6025c64adc773f7c5f2df1",
+   "parents": [
+    "1d5c253b4e955f72f1e94cdbc3a0f64fe1fe33d6"
+   ],
+   "title": "trace_selinux: decode permission names from the running kernel",
+   "committer_date": "2026-10-15T08:33:16.000Z",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/17907af1898b5115ca6025c64adc773f7c5f2df1",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 85
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "6178e7372dd47a061e884ceb69d4fa43f9c16e64",
+   "parents": [
+    "9383e87eaec082241b02580b056c23105098f680"
+   ],
+   "title": "gadgets: add gpu_top gadget consuming gpu-ebpf-bridge maps",
+   "committer_date": "2026-07-30T12:17:12.000+02:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/6178e7372dd47a061e884ceb69d4fa43f9c16e64",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 86
+  },
+  {
+   "repo": "kubearmor/KubeArmor",
+   "commit": "15d146bcda3db9c67c9bdfea217aa070a0d9a360",
+   "parents": [
+    "8525ec65c27740749b46e3b61673ac6514691c60",
+    "d164813b824c1ceda181ff2b6207bde00978adbb"
+   ],
+   "title": "Merge pull request #1856 from Aryan-sharma11/fix--bpflsm",
+   "committer_date": "2024-09-03T12:02:27.000+05:30",
+   "html_url": "https://github.com/kubearmor/KubeArmor/commit/15d146bcda3db9c67c9bdfea217aa070a0d9a360",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 87
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "4fa2ed7d052921dec3a0d8624f06215feee928c7",
+   "parents": [
+    "291ec6e99a103953806aa9bf09f18461e3a9e83b"
+   ],
+   "title": "src/python: fix filtering by containers when kfunc are supported",
+   "committer_date": "2021-09-13T19:03:07.000-07:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/4fa2ed7d052921dec3a0d8624f06215feee928c7",
+   "matched": [
+    "invalid mem access"
+   ],
+   "screen_rank": 88
+  },
+  {
+   "repo": "open-telemetry/opentelemetry-ebpf-profiler",
+   "commit": "ed2e5eee80cd7484af1226215e019d24da5669fd",
+   "parents": [
+    "c96e12686646b106e9cc88a42d7551018062250c"
+   ],
+   "title": "Print full verifier error logs (#140)",
+   "committer_date": "2024-09-03T14:37:37.000+02:00",
+   "html_url": "https://github.com/open-telemetry/opentelemetry-ebpf-profiler/commit/ed2e5eee80cd7484af1226215e019d24da5669fd",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 89
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "0ed817c78b54f9b1d6b0ef184e1670354768993b",
+   "parents": [
+    "14331816e9b748cdd6ca8d5ab247e9e357eea64f"
+   ],
+   "title": "test: Basic e2e test for egress gateway",
+   "committer_date": "2021-10-12T12:54:55.000+01:00",
+   "html_url": "https://github.com/cilium/cilium/commit/0ed817c78b54f9b1d6b0ef184e1670354768993b",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 90
+  },
+  {
+   "repo": "parca-dev/parca-agent",
+   "commit": "5aa6b3544311d12d608378739e7d37e0181e26fe",
+   "parents": [
+    "eb12b3a8da949e26a1a386d8df8b225c0c3cac62"
+   ],
+   "title": "spam opaquify in more places to fix verifier issues on `6.8`",
+   "committer_date": "2024-05-13T11:30:03.000-04:00",
+   "html_url": "https://github.com/parca-dev/parca-agent/commit/5aa6b3544311d12d608378739e7d37e0181e26fe",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 91
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "3ee33ed73024842a5f8a2c048b8f3709a039bded",
+   "parents": [
+    "6b0ff05bae84f623413d0563e002e9a779146411"
+   ],
+   "title": "celbpf: deal with multiple kernels",
+   "committer_date": "2026-02-16T12:01:15.000+01:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/3ee33ed73024842a5f8a2c048b8f3709a039bded",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 92
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "95bfe306cf5cb74301f9b61ffba3053f90bc9f27",
+   "parents": [
+    "f3525caeda190f8af0418f11cbf8e754cbe7b32e"
+   ],
+   "title": "gadgets/traceloop: Unroll loop to make verifier happy",
+   "committer_date": "2023-03-21T16:19:35.000-05:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/95bfe306cf5cb74301f9b61ffba3053f90bc9f27",
+   "matched": [
+    "verifier reject",
+    "make verifier happy",
+    "math between"
+   ],
+   "screen_rank": 93
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "c137f9bc6cfa4d5ae9413df09422e71358b4982e",
+   "parents": [
+    "9a3fd7f3299fef98c168ffb09996ba8b57fbf831"
+   ],
+   "title": "sensors: release policyfilter IDs of failed policy collections",
+   "committer_date": "2026-10-15T18:52:19.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/c137f9bc6cfa4d5ae9413df09422e71358b4982e",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 94
+  },
+  {
+   "repo": "netobserv/netobserv-ebpf-agent",
+   "commit": "528ec8c1eb421c2a21e86709e056b145d8baada1",
+   "parents": [
+    "dd5826d24173808a6f84b83075a88e200221ddf9",
+    "ecdb483078033445e60bf3e9fc0fa670f2be542d"
+   ],
+   "title": "Merge pull request #534 from msherif1234/fix_4.15_verifier_err",
+   "committer_date": "2025-01-28T07:04:38.000-05:00",
+   "html_url": "https://github.com/netobserv/netobserv-ebpf-agent/commit/528ec8c1eb421c2a21e86709e056b145d8baada1",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 95
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "44e743560b590dc650c9706f33d1e8655348abbf",
+   "parents": [
+    "2be9bc4f62da4209b82ec45c7102408451505cd8"
+   ],
+   "title": "[DATASEC-331] Add Error translation (#56931)",
+   "committer_date": "2026-09-26T11:17:14.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/44e743560b590dc650c9706f33d1e8655348abbf",
+   "matched": [
+    "verifier fail"
+   ],
+   "screen_rank": 96
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "ce5c8938c494eb03f0784c6e4ae81507139ca779",
+   "parents": [
+    "a53e3612d846168d064374ded99209bad5578e6d"
+   ],
+   "title": "Fix ttysnoop.py with newer kernels (#4888)",
+   "committer_date": "2024-01-30T09:13:04.000-08:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/ce5c8938c494eb03f0784c6e4ae81507139ca779",
+   "matched": [
+    "invalid mem access"
+   ],
+   "screen_rank": 97
+  },
+  {
+   "repo": "cilium/ebpf",
+   "commit": "64d4fa2f8940358f62ebc6237084d55db5b5d538",
+   "parents": [
+    "793c64549b016b82dc29ad8e1dc4d3ffe37a32cd"
+   ],
+   "title": "prog: parse and split 7.3 verifier errors",
+   "committer_date": "2026-10-16T12:14:50.000+02:00",
+   "html_url": "https://github.com/cilium/ebpf/commit/64d4fa2f8940358f62ebc6237084d55db5b5d538",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 98
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "bee777f19c0bd046bf7fe854b6abf0bf1e70e137",
+   "parents": [
+    "aebd819f645c2f8cf7faf8028a7337c7e1cab167"
+   ],
+   "title": "libbpf: Fix kernel BTF detection logic",
+   "committer_date": "2022-01-14T08:10:53.000-08:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/bee777f19c0bd046bf7fe854b6abf0bf1e70e137",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 99
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "dcf2bb0705301b26ed18012c2ad2e843d6ee2efd",
+   "parents": [
+    "4ac9175b1fe85b64ca261ff7fc1c2605c7acb8c5"
+   ],
+   "title": "bpf: Add packet generation helper for bpf tests",
+   "committer_date": "2022-07-18T10:47:22.000-04:00",
+   "html_url": "https://github.com/cilium/cilium/commit/dcf2bb0705301b26ed18012c2ad2e843d6ee2efd",
+   "matched": [
+    "satisfy the verifier"
+   ],
+   "screen_rank": 100
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "6ce82ee268116ecc76b98ddc51208e46f166dca6",
+   "parents": [
+    "17a0d316ae8f657920bd97b8f279856474523758"
+   ],
+   "title": "Optimizing read_into_buffer helper (#12617)",
+   "committer_date": "2022-08-01T17:51:11.000+02:00",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/6ce82ee268116ecc76b98ddc51208e46f166dca6",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 101
+  },
+  {
+   "repo": "cilium/ebpf",
+   "commit": "f0c26fdbbd63a426177b343ebade714519ee1641",
+   "parents": [
+    "af1262bbbe7810bddbfa7e4f8ef5b0853c2ffc35"
+   ],
+   "title": "internal: remove arbitrary <=2 line heuristic in VerifierError.Error()",
+   "committer_date": "2022-06-14T10:01:14.000+01:00",
+   "html_url": "https://github.com/cilium/ebpf/commit/f0c26fdbbd63a426177b343ebade714519ee1641",
+   "matched": [
+    "!read_ok"
+   ],
+   "screen_rank": 102
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "fd4f9d29cfbc484d87de947c389865c86786ec8e",
+   "parents": [
+    "3697d5ea4f6333458a1eb5ae5ca5c98691659895"
+   ],
+   "title": "packaging/aix: bundle libiconv and suppress libintl dependency in Python (#50191)",
+   "committer_date": "2026-05-04T15:22:18.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/fd4f9d29cfbc484d87de947c389865c86786ec8e",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 103
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "e5924a651bdb993ea6bfaaabde684c718d93fde9",
+   "parents": [
+    "07f188100daa746e324a295487d2b45b0df6f5ed"
+   ],
+   "title": "examples: add support for security_bpf_map_create (Linux 6.9+)",
+   "committer_date": "2026-04-02T10:02:52.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/e5924a651bdb993ea6bfaaabde684c718d93fde9",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 104
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "564095260aab156782128ea1d04b1eca66167fd1",
+   "parents": [
+    "0ae562c8862f4aa7a028a3f9bc561636a63a507d"
+   ],
+   "title": "Fix potential verification failure for opensnoop.py (#5364)",
+   "committer_date": "2025-07-13T09:14:32.000-07:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/564095260aab156782128ea1d04b1eca66167fd1",
+   "matched": [
+    "fix verifier",
+    "unreleased reference"
+   ],
+   "screen_rank": 105
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "142c0f7128c7fac22eb18b2c21a56433f19a5ef8",
+   "parents": [
+    "8d6fc824983b11c605b40f738a067c2291cc9a83"
+   ],
+   "title": "datapath: Use inline function to keep policy and l4policy checks separate",
+   "committer_date": "2023-04-24T22:40:00.000-07:00",
+   "html_url": "https://github.com/cilium/cilium/commit/142c0f7128c7fac22eb18b2c21a56433f19a5ef8",
+   "matched": [
+    "verifier error",
+    "invalid mem access"
+   ],
+   "screen_rank": 106
+  },
+  {
+   "repo": "aquasecurity/tracee",
+   "commit": "9f013c2766df380b6462975a5198a2bc275c01a4",
+   "parents": [
+    "99bc47ed5c389380581d2fd52f55f4189f606194"
+   ],
+   "title": "fix(events): hidden_kernel_module - change history scan behaviour (#4015)",
+   "committer_date": "2024-05-05T14:26:56.000+03:00",
+   "html_url": "https://github.com/aquasecurity/tracee/commit/9f013c2766df380b6462975a5198a2bc275c01a4",
+   "matched": [
+    "verifier fail"
+   ],
+   "screen_rank": 107
+  },
+  {
+   "repo": "cilium/pwru",
+   "commit": "1de15ffe7b50c8897ef0e5f981099b879dc2e08b",
+   "parents": [
+    "759fc7a50646eb5fa409513143fa525258ea8933"
+   ],
+   "title": "Fix broken --filter-trace-xdp",
+   "committer_date": "2024-09-26T10:33:04.000+03:00",
+   "html_url": "https://github.com/cilium/pwru/commit/1de15ffe7b50c8897ef0e5f981099b879dc2e08b",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 108
+  },
+  {
+   "repo": "facebookincubator/katran",
+   "commit": "c46afd52ed6a471ec2b1785cecb4acde5c20339a",
+   "parents": [
+    "6d5ae3efac1e909809aa4e745bf4da52925086de"
+   ],
+   "title": "Let cargo handle its own git fetches",
+   "committer_date": "2023-03-15T12:09:12.000-07:00",
+   "html_url": "https://github.com/facebookincubator/katran/commit/c46afd52ed6a471ec2b1785cecb4acde5c20339a",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 109
+  },
+  {
+   "repo": "parca-dev/parca-agent",
+   "commit": "ebd9e307dcee0e914e73c532cd658c14046e4a15",
+   "parents": [
+    "f2e1871d845f8fed2a36a667e6fd030cdbbb9cf0"
+   ],
+   "title": "Rewrite eBPF profiler in Rust (#377)",
+   "committer_date": "2022-05-15T17:40:42.000+02:00",
+   "html_url": "https://github.com/parca-dev/parca-agent/commit/ebd9e307dcee0e914e73c532cd658c14046e4a15",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 110
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "02daf8d84ecd23d4b8c55ccf5b4a0246abe38765",
+   "parents": [
+    "6ef0f0dd2c8d315e2b6dda26e63d014a49ca9ec1"
+   ],
+   "title": "libbpf-tools/biosnoop: Fix out-of-bounds accessing of rq",
+   "committer_date": "2023-06-28T11:37:27.000-07:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/02daf8d84ecd23d4b8c55ccf5b4a0246abe38765",
+   "matched": [
+    "invalid mem access",
+    "fails to load"
+   ],
+   "screen_rank": 111
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "442003456364a4a38974bbf4627dfd8b8454737a",
+   "parents": [
+    "26e15dc50bc6c4590342e13ba54bc3578696da69"
+   ],
+   "title": "Remove the unused LPM_LOOKUP_FN macro",
+   "committer_date": "2024-06-07T09:33:31.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/442003456364a4a38974bbf4627dfd8b8454737a",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 112
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "1c0808dead7379d6deeeb2bbd6c0135584a3c757",
+   "parents": [
+    "e34554215b3abb8951d5fe4f13e03574354731f1"
+   ],
+   "title": "Fix: Failed to load BPF program b'trace_read_return': Permission denied",
+   "committer_date": "2022-06-15T22:55:08.000-07:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/1c0808dead7379d6deeeb2bbd6c0135584a3c757",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 113
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "968227de9cc5c447d64fc266b14e55856ee60e4f",
+   "parents": [
+    "4a044bfbeaebe1e487062b566c8b2955e13189c7"
+   ],
+   "title": "bpf: nat: NULL-initialize the NAT entry in snat_v6_rev_nat()",
+   "committer_date": "2023-08-17T16:25:45.000+03:00",
+   "html_url": "https://github.com/cilium/cilium/commit/968227de9cc5c447d64fc266b14e55856ee60e4f",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 114
+  },
+  {
+   "repo": "cilium/ebpf",
+   "commit": "22cc87b898238a2bebcf11968161788c619b506e",
+   "parents": [
+    "e37e6348fa41880b11f0d41297cff818d0b43dff"
+   ],
+   "title": "errors: remove verifier truncation heuristic, rely on ENOSPC",
+   "committer_date": "2022-08-23T21:01:07.000+02:00",
+   "html_url": "https://github.com/cilium/ebpf/commit/22cc87b898238a2bebcf11968161788c619b506e",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 115
+  },
+  {
+   "repo": "aquasecurity/tracee",
+   "commit": "719d6ae0419e83ba42fca856dcac4725a88ec278",
+   "parents": [
+    "f878b1973b4450d0c517be23d39951046a932964"
+   ],
+   "title": "tracee-ebpf: fix verifier issue on kernel 4.19",
+   "committer_date": "2021-10-18T18:33:04.000+03:00",
+   "html_url": "https://github.com/aquasecurity/tracee/commit/719d6ae0419e83ba42fca856dcac4725a88ec278",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 116
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "ab79e3998917de942b764aa6da3d7a4fff59e039",
+   "parents": [
+    "4e98b69c005fd58d566c785fe19d42b90623fa62"
+   ],
+   "title": "tetragon: deal with duplicated tcpmon_map issue",
+   "committer_date": "2023-04-19T13:43:41.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/ab79e3998917de942b764aa6da3d7a4fff59e039",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 117
+  },
+  {
+   "repo": "parca-dev/parca-agent",
+   "commit": "7a2a3e76a9fcdc5a87806f20ba49c1896f5820f9",
+   "parents": [
+    "38b1fcaa7f838f1a15bcc246802203b18f95a6d1"
+   ],
+   "title": ".eh_frame: Read user stacks from kernel context",
+   "committer_date": "2023-02-14T18:14:36.000Z",
+   "html_url": "https://github.com/parca-dev/parca-agent/commit/7a2a3e76a9fcdc5a87806f20ba49c1896f5820f9",
+   "matched": [
+    "invalid mem access"
+   ],
+   "screen_rank": 118
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "0028f6f4068431255a716f399d84b6ab882d04f1",
+   "parents": [
+    "b24818465b399b0485c52a7464c1faf1f167f7ff"
+   ],
+   "title": "tetragon: Cleanup directories fater failed sensor load",
+   "committer_date": "2024-10-05T15:02:06.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/0028f6f4068431255a716f399d84b6ab882d04f1",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 119
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "a43e1061c2c3d616e5a8d40bd71d9663d3692519",
+   "parents": [
+    "f1bb2583e5907aedd48f1b9168c82fdee102ed7c"
+   ],
+   "title": "main: Split k8s watchers into process metadata and policy",
+   "committer_date": "2025-03-19T11:13:08.000Z",
+   "html_url": "https://github.com/cilium/tetragon/commit/a43e1061c2c3d616e5a8d40bd71d9663d3692519",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 120
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "15d5ff634a0ea2b5c07a489450045eb6a91cb60d",
+   "parents": [
+    "970cb8218ff522eaaf30ddb4fea125f18e0de36d"
+   ],
+   "title": "fix: ensure read buffer size is never negative",
+   "committer_date": "2026-09-07T14:53:31.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/15d5ff634a0ea2b5c07a489450045eb6a91cb60d",
+   "matched": [
+    "min value is negative",
+    "fails to load"
+   ],
+   "screen_rank": 121
+  },
+  {
+   "repo": "kubearmor/KubeArmor",
+   "commit": "4833e47fe510cf150d441a7f207350370b384b20",
+   "parents": [
+    "d1e7b37c760726085bf63996053ce9c2e38860a2",
+    "da4cb33c3351075aa2d66db8d12588b9550f06ca"
+   ],
+   "title": "Merge pull request #2633 from AryanBakliwal/ubuntu18-clang12-system_monitor-load",
+   "committer_date": "2026-05-27T15:52:41.000+05:30",
+   "html_url": "https://github.com/kubearmor/KubeArmor/commit/4833e47fe510cf150d441a7f207350370b384b20",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 122
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "b88e0b5500fb1846e5d4d0e4180c90d4f45334a0",
+   "parents": [
+    "61be133aec34b3713cd455cca233ad8db48ae0a8"
+   ],
+   "title": "Returns nil in SNMP GetCheckNames (#5567)",
+   "committer_date": "2020-05-19T16:04:03.000+02:00",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/b88e0b5500fb1846e5d4d0e4180c90d4f45334a0",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 123
+  },
+  {
+   "repo": "falcosecurity/libs",
+   "commit": "79bb88bbd39d1d8e71e2a74e77b9f0af0197deeb",
+   "parents": [
+    "084129b75014c8a183d72056a58c13cbd02048df"
+   ],
+   "title": "fix(bpf): Fix verifier errors",
+   "committer_date": "2023-02-06T20:48:27.000+01:00",
+   "html_url": "https://github.com/falcosecurity/libs/commit/79bb88bbd39d1d8e71e2a74e77b9f0af0197deeb",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 124
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "799acc7ca2c618d9b467f79e63ba9a0059a22121",
+   "parents": [
+    "4138cc42c563f11e7f476056b22457f942ff565d"
+   ],
+   "title": "libbpf-tools/softirqs: Add `-c/--cpu` option to filter cpu",
+   "committer_date": "2024-10-20T10:36:39.000-07:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/799acc7ca2c618d9b467f79e63ba9a0059a22121",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 125
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "cf170dcca222414233b59f6a42eb72ba881f1099",
+   "parents": [
+    "dc54e21ca5e905f91bdbf40df9bf4c7c6aa3a0b8"
+   ],
+   "title": "Fix consecutive Omnibus builds (#50225)",
+   "committer_date": "2026-05-01T11:19:52.000-04:00",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/cf170dcca222414233b59f6a42eb72ba881f1099",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 126
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "60b0166f8ed41b82c4632cab6b2188a2b0afb2dc",
+   "parents": [
+    "726c60f69bd589b337ec2be6d1102d5bdb86c7d8"
+   ],
+   "title": "fix verifier errors in http_filter example (#2039)",
+   "committer_date": "2018-11-10T13:37:04.000-08:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/60b0166f8ed41b82c4632cab6b2188a2b0afb2dc",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 127
+  },
+  {
+   "repo": "aquasecurity/tracee",
+   "commit": "e6974d8dc1672cb624a0bd614c4c6cb2786e21ff",
+   "parents": [
+    "249d773e8c080fff8612d47fc8d199b0f2116bb1"
+   ],
+   "title": "feat(ebpf): add lsm probe support",
+   "committer_date": "2025-09-18T13:39:11.000+03:00",
+   "html_url": "https://github.com/aquasecurity/tracee/commit/e6974d8dc1672cb624a0bd614c4c6cb2786e21ff",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 128
+  },
+  {
+   "repo": "falcosecurity/libs",
+   "commit": "3460c60a785ef41fdba1e6bc06dfb9dae2399b35",
+   "parents": [
+    "24bd290cd120eefa5e13f281e9a6692c534cd7ae"
+   ],
+   "title": "fix: fix verifier issues on old kernels",
+   "committer_date": "2023-04-17T13:11:27.000+02:00",
+   "html_url": "https://github.com/falcosecurity/libs/commit/3460c60a785ef41fdba1e6bc06dfb9dae2399b35",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 129
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "3318c261a9e6ef82484fc0f5f5254599b191b289",
+   "parents": [
+    "4f23e0e127f76d3b9ec42c636bdff370972bf82f"
+   ],
+   "title": "aarch64: turn off jump table optimization during jit compilation",
+   "committer_date": "2021-01-26T17:52:02.000-08:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/3318c261a9e6ef82484fc0f5f5254599b191b289",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 130
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "39b62cb450f8f094fd5576f35004be3a0047b4c4",
+   "parents": [
+    "3f8454483b01723e3e2102ee03277c104265b143"
+   ],
+   "title": "tools/ttysnoop: Fix uninitialized 'buf' error",
+   "committer_date": "2023-02-03T14:29:54.000-08:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/39b62cb450f8f094fd5576f35004be3a0047b4c4",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 131
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "a2f038473fc34184b76cba8fd638da72b73388e3",
+   "parents": [
+    "f52d62adb10776f083be07c900779bf9ffdb1da8"
+   ],
+   "title": "pkg/sensors: keep policies that would fail to load",
+   "committer_date": "2024-02-21T17:50:10.000+01:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/a2f038473fc34184b76cba8fd638da72b73388e3",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 132
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "757eb5e14cb0a42cbded964563184247386af114",
+   "parents": [
+    "4f00abdc388213dd02cfa3f8f8b6ec22709c251c"
+   ],
+   "title": "[system-probe] Add `batchManager` to `http` package (#7017)",
+   "committer_date": "2020-12-27T17:52:23.000-05:00",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/757eb5e14cb0a42cbded964563184247386af114",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 133
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "8eb389403823188d809021653bb73f2c598b4def",
+   "parents": [
+    "7e3115694f03aa24cd029baea25d9394ae3cc6ee"
+   ],
+   "title": "bpf: Use struct __ctx_buff * for ctx to work around a verifier error",
+   "committer_date": "2024-10-15T14:22:10.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/8eb389403823188d809021653bb73f2c598b4def",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 134
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "7575ba03ccaa5038255c8c1e5c31a8011ed9aaa1",
+   "parents": [
+    "e1dab8b14f4c8ca04fa80ad895519abf1edcc61c"
+   ],
+   "title": "datapath: Reduce from LXC complexity",
+   "committer_date": "2022-03-28T09:48:17.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/7575ba03ccaa5038255c8c1e5c31a8011ed9aaa1",
+   "matched": [
+    "make verifier happy"
+   ],
+   "screen_rank": 135
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "c3fb6f75366c644504964feb8bf381248edcc36f",
+   "parents": [
+    "14de6e679376f243dcd96b910393ab445915c18e"
+   ],
+   "title": "Update dependency toolchains_llvm to v1.11.3 (#58247)",
+   "committer_date": "2026-10-16T04:00:59.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/c3fb6f75366c644504964feb8bf381248edcc36f",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 136
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "35b9e87be4c80c7a0e0b149fe3ba31116c453b7e",
+   "parents": [
+    "a7c50bf79d10e65cde7cf1c3992cb9c0cb973de8"
+   ],
+   "title": "socket enricher: make iterators optional",
+   "committer_date": "2023-06-29T17:48:27.000+02:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/35b9e87be4c80c7a0e0b149fe3ba31116c453b7e",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 137
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "1581196dc22ec84db6f19c1ca4c7945dd04f0bbe",
+   "parents": [
+    "da5723d991614044db844df1c1803dee04d229d8"
+   ],
+   "title": "pkg/sensors: configure has.rateLimit per policy",
+   "committer_date": "2025-07-16T19:30:21.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/1581196dc22ec84db6f19c1ca4c7945dd04f0bbe",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 138
+  },
+  {
+   "repo": "cilium/pwru",
+   "commit": "1ea0741991eef933dde73095a15204a0b430f4ef",
+   "parents": [
+    "c1ee782a34be8b01665f31995f72d995a3b5c22d"
+   ],
+   "title": "Revert \"bpf: Move some common statements in handle_everything()\"",
+   "committer_date": "2025-12-30T11:12:51.000+01:00",
+   "html_url": "https://github.com/cilium/pwru/commit/1ea0741991eef933dde73095a15204a0b430f4ef",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 139
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "9dc9ea874cd2f240b530389e407e7b0ed29a3e1d",
+   "parents": [
+    "2a6d77fb472122a6efc893fe1f885d89ebb4499e"
+   ],
+   "title": "feat: add verifier debug output when running vaulty ebpf gadget",
+   "committer_date": "2024-09-30T20:24:54.000+02:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/9dc9ea874cd2f240b530389e407e7b0ed29a3e1d",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 140
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "ec3529b5ddfe40d7bbbe0d00981c53585db3b96a",
+   "parents": [
+    "41f281cfd9f93897655d2faccc3b6cc1b3c1c761"
+   ],
+   "title": "bpf: Change ipv6_addrcmp() into ipv6_addr_equals()",
+   "committer_date": "2023-06-14T02:55:35.000+01:00",
+   "html_url": "https://github.com/cilium/cilium/commit/ec3529b5ddfe40d7bbbe0d00981c53585db3b96a",
+   "matched": [
+    "verifier reject",
+    "math between"
+   ],
+   "screen_rank": 141
+  },
+  {
+   "repo": "falcosecurity/libs",
+   "commit": "f9770899e6aa808d8e6ce949c35365fbc5182b8e",
+   "parents": [
+    "09134be37b14e7ad18468720357cbb62e2b270ec"
+   ],
+   "title": "fix(modern): move some code to fix verifier on old kernels <5.11",
+   "committer_date": "2023-10-11T18:16:46.000+02:00",
+   "html_url": "https://github.com/falcosecurity/libs/commit/f9770899e6aa808d8e6ce949c35365fbc5182b8e",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 142
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "c3b65fce8b8405f913bfaa11351fc931a1499362",
+   "parents": [
+    "6775b51a539776a071b6ab4a0947c37ea2358145"
+   ],
+   "title": "bpf: fix asm volatile ctx->data assumptions to always init reg",
+   "committer_date": "2020-04-28T13:30:06.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/c3b65fce8b8405f913bfaa11351fc931a1499362",
+   "matched": [
+    "verifier error",
+    "!read_ok"
+   ],
+   "screen_rank": 143
+  },
+  {
+   "repo": "netobserv/netobserv-ebpf-agent",
+   "commit": "ecdb483078033445e60bf3e9fc0fa670f2be542d",
+   "parents": [
+    "08e7a331263c6abc913393cd5c187deab31dd168"
+   ],
+   "title": "NETOBSERV-2051: Fix eBPF verifier errors with 5.14.0-284.71.1.el9_2",
+   "committer_date": "2025-01-28T05:57:13.000-05:00",
+   "html_url": "https://github.com/netobserv/netobserv-ebpf-agent/commit/ecdb483078033445e60bf3e9fc0fa670f2be542d",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 144
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "ad0d3cf341402feaf34cb612c0f57732b0f5d5b4",
+   "parents": [
+    "278984cca893d7ce574392971f7a539251871e86"
+   ],
+   "title": "bpf: Fixes to support mattr=+alu32",
+   "committer_date": "2021-05-12T19:36:19.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/ad0d3cf341402feaf34cb612c0f57732b0f5d5b4",
+   "matched": [
+    "invalid mem access"
+   ],
+   "screen_rank": 145
+  },
+  {
+   "repo": "aquasecurity/tracee",
+   "commit": "89f3770f2b3b078ab5ed65cff980382b1bed8fe6",
+   "parents": [
+    "ae35ac3f48f0dd06569396ab7c3985b888ca8958"
+   ],
+   "title": "callbacks: print formatted libbpf verifier errors",
+   "committer_date": "2023-05-26T04:32:10.000-03:00",
+   "html_url": "https://github.com/aquasecurity/tracee/commit/89f3770f2b3b078ab5ed65cff980382b1bed8fe6",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 146
+  },
+  {
+   "repo": "netobserv/netobserv-ebpf-agent",
+   "commit": "1b85351eee43ce0f56830fa1497da95f1fe9cc8c",
+   "parents": [
+    "27baf2917e8d69a80f5baca2394019cf79c6bb19"
+   ],
+   "title": "NETOBSERV-1112: Add TCP RTT calculation to ebpf-agent and userspace. (#117)",
+   "committer_date": "2023-07-03T04:21:06.000-04:00",
+   "html_url": "https://github.com/netobserv/netobserv-ebpf-agent/commit/1b85351eee43ce0f56830fa1497da95f1fe9cc8c",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 147
+  },
+  {
+   "repo": "cilium/ebpf",
+   "commit": "9598c011294a934df9e686b549ed0acb15fc7aed",
+   "parents": [
+    "a5de6e310ce2025f7e43d95c8aedcab8e00f85f6"
+   ],
+   "title": "maps: finalize scalar maps during creation, defer prog and outer maps",
+   "committer_date": "2023-10-10T13:57:36.000+01:00",
+   "html_url": "https://github.com/cilium/ebpf/commit/9598c011294a934df9e686b549ed0acb15fc7aed",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 148
+  },
+  {
+   "repo": "falcosecurity/libs",
+   "commit": "c8036ab2edd10ad14bb4c86680607138b07ead72",
+   "parents": [
+    "8a2a0ad51952f4cbad8648dcd2603a79972e8e87"
+   ],
+   "title": "fix(modern_bpf): a pool of auxmap segments, claimed per task",
+   "committer_date": "2026-09-08T16:31:20.000+02:00",
+   "html_url": "https://github.com/falcosecurity/libs/commit/c8036ab2edd10ad14bb4c86680607138b07ead72",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 149
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "13f6ba703b0707c0120e07235dfd0d74a29b58ed",
+   "parents": [
+    "6c24e27a818e9c3a653625a5a81c62a9f9a53e60"
+   ],
+   "title": "sensors: restructure manager loop",
+   "committer_date": "2023-01-03T12:59:43.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/13f6ba703b0707c0120e07235dfd0d74a29b58ed",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 150
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "5dc6baaf390b420a24ff0e6408fef8172a63e97e",
+   "parents": [
+    "a5681d45d5597e9e816a28286369f71b20308de5"
+   ],
+   "title": "socketlb: Print verbose verifier logs",
+   "committer_date": "2024-04-04T08:46:30.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/5dc6baaf390b420a24ff0e6408fef8172a63e97e",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 151
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "f67102a95b9a8dde9e1699b78608cf5cd0747f83",
+   "parents": [
+    "2de02ec500ae10e670e404f8a20ec5c9044e4e59"
+   ],
+   "title": "bpf: Compile with debug options when DEBUG=true",
+   "committer_date": "2018-03-01T17:04:06.000-08:00",
+   "html_url": "https://github.com/cilium/cilium/commit/f67102a95b9a8dde9e1699b78608cf5cd0747f83",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 152
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "7762a5126b819e54f1f7003991e34852b62ca95b",
+   "parents": [
+    "011122662262e93e55196e3e2a56d7047a133c57"
+   ],
+   "title": "[cluster-agent] small fixes for replica nodepools (#43892)",
+   "committer_date": "2025-12-09T19:47:16.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/7762a5126b819e54f1f7003991e34852b62ca95b",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 153
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "dccc4f28b7404b2f77f8ad8c7ad1ea741db589f2",
+   "parents": [
+    "53b01c677dcbae85092b991657f126aa1480e9ee"
+   ],
+   "title": "better error meessage for error \"unknown opcode\" (#2101)",
+   "committer_date": "2018-12-31T18:08:01.000-08:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/dccc4f28b7404b2f77f8ad8c7ad1ea741db589f2",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 154
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "3d1baa4230919f73dca0ea575ad65a9b26eec9e7",
+   "parents": [
+    "d93e0d2524fbbda60122332c97cbd6698c849214"
+   ],
+   "title": "[USM] Fix verifier issue in kernel 6.5 (#22964)",
+   "committer_date": "2024-02-22T15:14:55.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/3d1baa4230919f73dca0ea575ad65a9b26eec9e7",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 155
+  },
+  {
+   "repo": "cilium/ebpf",
+   "commit": "af1262bbbe7810bddbfa7e4f8ef5b0853c2ffc35",
+   "parents": [
+    "148c76cf32ddb279b650f106febb1f4a6f9d11ee"
+   ],
+   "title": "prog_test: assert verifier error using errors.As()",
+   "committer_date": "2022-06-14T10:01:14.000+01:00",
+   "html_url": "https://github.com/cilium/ebpf/commit/af1262bbbe7810bddbfa7e4f8ef5b0853c2ffc35",
+   "matched": [
+    "verifier error",
+    "!read_ok"
+   ],
+   "screen_rank": 156
+  },
+  {
+   "repo": "falcosecurity/libs",
+   "commit": "acaf2de4ceefeb1633cca44100255ada6280b0fc",
+   "parents": [
+    "4b61d084e9bf073cf5a0a2c06bf5f1001bd93de4"
+   ],
+   "title": "fix(driver/modern_bpf): read `signal_deliver` siginfo via BPF_CORE_READ",
+   "committer_date": "2026-09-28T19:13:02.000+02:00",
+   "html_url": "https://github.com/falcosecurity/libs/commit/acaf2de4ceefeb1633cca44100255ada6280b0fc",
+   "matched": [
+    "verifier reject",
+    "invalid mem access",
+    "fails to load"
+   ],
+   "screen_rank": 157
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "bb6f985d32a3a5777d9c922961c77ac5d0bdbfb9",
+   "parents": [
+    "a4772b37783cf058efa786e0ddc2247a3df6cead"
+   ],
+   "title": "tetragon: Display verifier error log only for verbose option",
+   "committer_date": "2022-06-28T00:04:59.000-07:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/bb6f985d32a3a5777d9c922961c77ac5d0bdbfb9",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 158
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "fdca23e2b23f91f6672211961ee3b0a29449506c",
+   "parents": [
+    "24961d90e5557df0656dd92d16a77e869f9191c8"
+   ],
+   "title": "bpf: fix verifier error due to repulling of skb->data/end",
+   "committer_date": "2019-08-09T09:37:31.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/fdca23e2b23f91f6672211961ee3b0a29449506c",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 159
+  },
+  {
+   "repo": "aquasecurity/tracee",
+   "commit": "d2d00619b9f5bcce399d435fe5b7e4c60ebf286e",
+   "parents": [
+    "1371089523c8f8c9a4605226fbed26215db6fda4"
+   ],
+   "title": "fix: verifier error on arm due to register reuse (#2024)",
+   "committer_date": "2022-07-28T17:50:05.000+03:00",
+   "html_url": "https://github.com/aquasecurity/tracee/commit/d2d00619b9f5bcce399d435fe5b7e4c60ebf286e",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 160
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "a185c11035188b1338a48174db9746907527a675",
+   "parents": [
+    "c1c21117f158e0124d9c70308cf758ce2e967579"
+   ],
+   "title": "bpf: Annotate maps that could be read-only from datapath",
+   "committer_date": "2026-03-09T21:54:57.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/a185c11035188b1338a48174db9746907527a675",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 161
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "829717b6a68d664ba3fc9c919638decc2495fd9f",
+   "parents": [
+    "393de27c465c5744977a222f972be8cf8b91f69c"
+   ],
+   "title": "pkg: Log verifier error at debug level.",
+   "committer_date": "2023-05-23T16:27:30.000+01:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/829717b6a68d664ba3fc9c919638decc2495fd9f",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 162
+  },
+  {
+   "repo": "falcosecurity/libs",
+   "commit": "87c59f5a5dd34664ff05af619d8d551116575a14",
+   "parents": [
+    "84f5e4ff53672ebd1fb7e21c860ee8da84f51cbb"
+   ],
+   "title": "fix(driver/bpf): fix sys_generic with clang-20",
+   "committer_date": "2025-12-19T10:49:15.000+01:00",
+   "html_url": "https://github.com/falcosecurity/libs/commit/87c59f5a5dd34664ff05af619d8d551116575a14",
+   "matched": [
+    "verifier fail",
+    "unbounded memory access"
+   ],
+   "screen_rank": 163
+  },
+  {
+   "repo": "cilium/ebpf",
+   "commit": "d03929404a8fe8df3f0d4cbec1a24618a7c59f7c",
+   "parents": [
+    "e0825791eaf28e70c8c6403054c85b5d37450290"
+   ],
+   "title": "internal: trim and convert verifier errors to Go strings directly",
+   "committer_date": "2022-05-10T14:26:18.000+02:00",
+   "html_url": "https://github.com/cilium/ebpf/commit/d03929404a8fe8df3f0d4cbec1a24618a7c59f7c",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 164
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "1b556e5359b3fdd11cb8cd87c10846bdf8f40d3e",
+   "parents": [
+    "afdb4773999c10d26b4d900c75223ab46576e8dd"
+   ],
+   "title": "[USM] Fix HTTP/2 verifier issue (#25076)",
+   "committer_date": "2024-05-08T15:20:50.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/1b556e5359b3fdd11cb8cd87c10846bdf8f40d3e",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 165
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "4f5c312f26c884b15b98e8e94e2e50959a021338",
+   "parents": [
+    "600ce7b9e4cdbb01ba368f286ebb17b81ec2dcd0"
+   ],
+   "title": "Make the stale and check-issue-status workflows work as intended (#58009)",
+   "committer_date": "2026-10-12T17:59:54.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/4f5c312f26c884b15b98e8e94e2e50959a021338",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 166
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "cadfcb51dc5d3b76caf700c5449e126307db5135",
+   "parents": [
+    "32c98fd2ba99ec8331d948f244988dad9b065845"
+   ],
+   "title": "contrib/verify: Link empty CEL functions for uprobe objects",
+   "committer_date": "2026-09-08T00:58:38.000+10:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/cadfcb51dc5d3b76caf700c5449e126307db5135",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 167
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "43f7b154b1fb8b17e367d20f76bc9994c27dbef4",
+   "parents": [
+    "8ce47efeab7accb69a5e6b901d8b1904a72d4de7"
+   ],
+   "title": "loaderCache: copy map spec before using it",
+   "committer_date": "2025-05-02T12:57:12.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/43f7b154b1fb8b17e367d20f76bc9994c27dbef4",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 168
+  },
+  {
+   "repo": "parca-dev/parca-agent",
+   "commit": "bc6fe85d0f33fa4611a413c173f03f9d69fb74a2",
+   "parents": [
+    "8855204b2f1df55f1a58be48b202caaf2e5ce12f",
+    "d03d8648ac90517f5a5e556d4f7f6aa36a8aea32"
+   ],
+   "title": "unwinder/native: Accomodate larger program due to rate limits (#2059)",
+   "committer_date": "2023-09-25T08:29:37.000+01:00",
+   "html_url": "https://github.com/parca-dev/parca-agent/commit/bc6fe85d0f33fa4611a413c173f03f9d69fb74a2",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 169
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "25ff4431b6409277062fde545dfb402dc0edd35a",
+   "parents": [
+    "5406797981cbc1adc89b825b26d5a31d82044c79"
+   ],
+   "title": "bpf: write retprobe error before the map calls in copy_char_buf/iovec",
+   "committer_date": "2026-09-11T08:26:38.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/25ff4431b6409277062fde545dfb402dc0edd35a",
+   "matched": [
+    "verifier reject",
+    "math between"
+   ],
+   "screen_rank": 170
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "fbe9b7d146a0c4ddfcfdc6d1a28a013ed86a12c5",
+   "parents": [
+    "d8a143d77e185658f8e6218a3356a2e56ef15fad"
+   ],
+   "title": "tracing: pre-validate tracepoints before loading sensors",
+   "committer_date": "2026-04-08T10:25:11.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/fbe9b7d146a0c4ddfcfdc6d1a28a013ed86a12c5",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 171
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "737262d8d52d47c50ef08c1269ae9da6c9fb6e6d",
+   "parents": [
+    "3bcd8b90548e5c778fea9c697791573e6a43a96f"
+   ],
+   "title": "bpf: Add send_trace_notify hook for redirect_direct_{v4,v6}",
+   "committer_date": "2022-08-04T16:33:58.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/737262d8d52d47c50ef08c1269ae9da6c9fb6e6d",
+   "matched": [
+    "unbounded memory access",
+    "fails to load"
+   ],
+   "screen_rank": 172
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "d84803df88268effe0e80911ea2e42c3b4f5596a",
+   "parents": [
+    "cb6089800ec826a3bcd9ad20761323188333505e"
+   ],
+   "title": "Update debian changelog for release v0.36.0",
+   "committer_date": "2026-01-26T10:29:38.000+09:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/d84803df88268effe0e80911ea2e42c3b4f5596a",
+   "matched": [
+    "invalid mem access"
+   ],
+   "screen_rank": 173
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "6b3c9f16c99f7744ca5b294254b59b061059ff88",
+   "parents": [
+    "bae014fe01c3cb6adb1ab7b5e29d52497a45ef4e"
+   ],
+   "title": "bpf: Init (ipv6_frag_hdr) frag struct",
+   "committer_date": "2025-08-19T13:36:30.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/6b3c9f16c99f7744ca5b294254b59b061059ff88",
+   "matched": [
+    "!read_ok"
+   ],
+   "screen_rank": 174
+  },
+  {
+   "repo": "parca-dev/parca-agent",
+   "commit": "607887fe08a411ed4a443dd54964e249e402ca15",
+   "parents": [
+    "97b255e09395bcc3390739f988180567beb82f19"
+   ],
+   "title": "fix verification on 5.4",
+   "committer_date": "2024-05-22T11:49:16.000-04:00",
+   "html_url": "https://github.com/parca-dev/parca-agent/commit/607887fe08a411ed4a443dd54964e249e402ca15",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 175
+  },
+  {
+   "repo": "elastic/ebpf",
+   "commit": "6cad2baef9a0e6d786d2a114b6d0675d7a408605",
+   "parents": [
+    "0093f709124dac2b96b600ad7bf5a64745f8db16"
+   ],
+   "title": "Switch to BTF-style maps",
+   "committer_date": "2021-06-16T13:40:34.000+02:00",
+   "html_url": "https://github.com/elastic/ebpf/commit/6cad2baef9a0e6d786d2a114b6d0675d7a408605",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 176
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "ff7f795d62fde25349461f2bd4325e460fd60751",
+   "parents": [
+    "27804315f144baf9df8e251ed2ad21dcb8a062d1"
+   ],
+   "title": "uprobe: allow multiple targets in one policy",
+   "committer_date": "2026-05-18T11:00:12.000-07:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/ff7f795d62fde25349461f2bd4325e460fd60751",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 177
+  },
+  {
+   "repo": "kubearmor/KubeArmor",
+   "commit": "b0f1f3fd9f0147698aa68cd9489c74b925111a05",
+   "parents": [
+    "1c97dfd40cb0274dc1e7597c03f370ff0df8e56b"
+   ],
+   "title": "fix verifier bug",
+   "committer_date": "2026-03-11T11:50:33.000+05:30",
+   "html_url": "https://github.com/kubearmor/KubeArmor/commit/b0f1f3fd9f0147698aa68cd9489c74b925111a05",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 178
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "7601154876f54f244db8317f912a120233da637e",
+   "parents": [
+    "62bb35ce559236dc4353ba3c5308df9631083e50"
+   ],
+   "title": "[USM] protocol classification: add PostgreSQL classification (#14625)",
+   "committer_date": "2023-01-10T23:05:22.000+02:00",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/7601154876f54f244db8317f912a120233da637e",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 179
+  },
+  {
+   "repo": "netobserv/netobserv-ebpf-agent",
+   "commit": "c62173ac9558581fee03e63955a7eb8941178d05",
+   "parents": [
+    "8eb86a909c56ccb68c85a8e66b2300772cb476c2"
+   ],
+   "title": "NETOBSERV-934: Add support for SCTP, ICMPv4/v6 protocols to ebpf agent (#103)",
+   "committer_date": "2023-03-20T11:01:31.000-04:00",
+   "html_url": "https://github.com/netobserv/netobserv-ebpf-agent/commit/c62173ac9558581fee03e63955a7eb8941178d05",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 180
+  },
+  {
+   "repo": "cilium/ebpf",
+   "commit": "31d2e2b51febe1cab4c4aa77ad0efeb147e63f59",
+   "parents": [
+    "3d756ffa4fdf862f60d435ebb612ecdf0e9253df"
+   ],
+   "title": "btf: rename haveBTF() to haveMapBTF(), redefine haveBTF()",
+   "committer_date": "2022-11-21T15:54:10.000+01:00",
+   "html_url": "https://github.com/cilium/ebpf/commit/31d2e2b51febe1cab4c4aa77ad0efeb147e63f59",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 181
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "64dddf73b6a6e897ac7c06dacb4b203dcd43bca6",
+   "parents": [
+    "dfa8bb8ab3f04f555a082aa07875b1501390b127"
+   ],
+   "title": "bpf: fix program size issue for complex configs on 4.19",
+   "committer_date": "2020-06-16T15:17:05.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/64dddf73b6a6e897ac7c06dacb4b203dcd43bca6",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 182
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "394e72478a8d120dab0bff2c41db77695877ce57",
+   "parents": [
+    "feea943444adcf9c20f8b4342cf6ab5ad37d41d9"
+   ],
+   "title": "bpf: fix verifier's ctx port access in post bind hooks",
+   "committer_date": "2020-02-01T09:11:28.000+01:00",
+   "html_url": "https://github.com/cilium/cilium/commit/394e72478a8d120dab0bff2c41db77695877ce57",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 183
+  },
+  {
+   "repo": "parca-dev/parca-agent",
+   "commit": "5e51e930551d25f28809926ec99d84cef437c15f",
+   "parents": [
+    "1c9286cb9bb1160cf8d0619da089de617cd23feb"
+   ],
+   "title": ".eh_frame: Reduce size of the stack aggregation key",
+   "committer_date": "2022-11-07T16:04:08.000Z",
+   "html_url": "https://github.com/parca-dev/parca-agent/commit/5e51e930551d25f28809926ec99d84cef437c15f",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 184
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "83a8a2a5796211b9dd3208cda4ffa97b5182cc47",
+   "parents": [
+    "50d7cfdf3e3f06423f7ee23c0c89bb55a9a58aa1"
+   ],
+   "title": "makefile: fix verify target",
+   "committer_date": "2022-06-10T13:49:16.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/83a8a2a5796211b9dd3208cda4ffa97b5182cc47",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 185
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "8748d593161365805d9e4663b38b3dbf6f0af89c",
+   "parents": [
+    "0e8f423ebb948315e3156d38acd1f7f9802d11ea"
+   ],
+   "title": "Update dependency toolchains_llvm to v1.8.0 (#52240)",
+   "committer_date": "2026-06-15T22:32:40.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/8748d593161365805d9e4663b38b3dbf6f0af89c",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 186
+  },
+  {
+   "repo": "facebookincubator/katran",
+   "commit": "b07d96c32d586493cc3baa03a7b3c471e29827bc",
+   "parents": [
+    "803c8885476c975f0028742350c7a053eb366770"
+   ],
+   "title": "getdeps: select EL-specific manifest sections by distro_family",
+   "committer_date": "2026-09-18T07:35:56.000-07:00",
+   "html_url": "https://github.com/facebookincubator/katran/commit/b07d96c32d586493cc3baa03a7b3c471e29827bc",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 187
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "a2927d29acb767b729ca3179197f3000d432c536",
+   "parents": [
+    "6ee0f572437467d0f40e0da862581ce03f5200d6"
+   ],
+   "title": "pkg/datapath/loader: Improved verifier complexity test runner",
+   "committer_date": "2025-07-16T13:15:50.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/a2927d29acb767b729ca3179197f3000d432c536",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 188
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "89b27708ab6872a0208fae3b98ccf70a8bac6b79",
+   "parents": [
+    "fd9e691c00dd1c76819830568da309ff7d698ef2"
+   ],
+   "title": "Copy `netapi32.dll` from servercore image in nano-based Windows image (#9006)",
+   "committer_date": "2021-08-31T12:07:32.000+02:00",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/89b27708ab6872a0208fae3b98ccf70a8bac6b79",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 189
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "c39f55e9ce853bef748123c6d9a0878c3bdd2ccf",
+   "parents": [
+    "b4d9cc4e65a890d8169c75c09de290023316b2b4"
+   ],
+   "title": "loader: support larger verifier log sizes",
+   "committer_date": "2023-01-06T19:16:42.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/c39f55e9ce853bef748123c6d9a0878c3bdd2ccf",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 190
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "9ef7b39a00ece0d036a18968aa2f73be1ef00d5e",
+   "parents": [
+    "d971e6dadb684835ea0b5f2e6c071e03c486162e"
+   ],
+   "title": "policytest: Unload a policy after a failed load or an interrupt",
+   "committer_date": "2026-10-21T20:22:30.000+11:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/9ef7b39a00ece0d036a18968aa2f73be1ef00d5e",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 191
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "50c319d0cbfe0ab7c5999c83f47025563948b170",
+   "parents": [
+    "46024c6c4a30016b467b746753902b6805505a31"
+   ],
+   "title": "bpf/lib/nat.h: Fix verifier error for RHEL + mcpu=v3",
+   "committer_date": "2025-07-09T09:26:27.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/50c319d0cbfe0ab7c5999c83f47025563948b170",
+   "matched": [
+    "verifier error",
+    "fix verifier",
+    "invalid mem access"
+   ],
+   "screen_rank": 192
+  },
+  {
+   "repo": "facebookincubator/katran",
+   "commit": "a2cdcde79c59224bebdf887cf2df08242d417f8f",
+   "parents": [
+    "22eb3a48b20efb01dd694d6ce1d3dfa86d36a716"
+   ],
+   "title": "Fix FBThrift Python runtime packaging",
+   "committer_date": "2026-10-08T13:12:56.000-07:00",
+   "html_url": "https://github.com/facebookincubator/katran/commit/a2cdcde79c59224bebdf887cf2df08242d417f8f",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 193
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "5a76cf2c5e9648693ec15f59fc73847be3c5a1b6",
+   "parents": [
+    "6e17c405e59b38cc8c7b7b5dc7420cc6d08d26b2"
+   ],
+   "title": "bpf: Fix complexity issue failing cil_sock{4,6}_connect prog load",
+   "committer_date": "2024-07-12T14:21:48.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/5a76cf2c5e9648693ec15f59fc73847be3c5a1b6",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 194
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "118bf168f9f66f757684e653c080d034b34db2ff",
+   "parents": [
+    "c0995ce2c830bb1400278f1be9227c60ac3c70a7"
+   ],
+   "title": "libbpf-tools: Fix tcpconnect",
+   "committer_date": "2022-07-02T18:53:32.000-07:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/118bf168f9f66f757684e653c080d034b34db2ff",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 195
+  },
+  {
+   "repo": "aquasecurity/tracee",
+   "commit": "02dad67878f811b4e25b3da6196f7cbd7cbd97d4",
+   "parents": [
+    "1ecedcc71910e535b122302c43ed88d3925d3652"
+   ],
+   "title": "fix(ebpf): fix prefix check in capture write (#3600)",
+   "committer_date": "2023-10-24T00:01:20.000-03:00",
+   "html_url": "https://github.com/aquasecurity/tracee/commit/02dad67878f811b4e25b3da6196f7cbd7cbd97d4",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 196
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "91769d6f67eb7c36fe47348e8465f8deee0ee1de",
+   "parents": [
+    "60c6afd4b2287a4a8ac400238e3a6bd1ab986ad8"
+   ],
+   "title": "include/gadget: Add gadget_discard_buf() to buffer.h.",
+   "committer_date": "2024-01-05T09:26:17.000+01:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/91769d6f67eb7c36fe47348e8465f8deee0ee1de",
+   "matched": [
+    "verifier error",
+    "unreleased reference"
+   ],
+   "screen_rank": 197
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "b79ad274324c22b49669dde2f495123d8eee15b2",
+   "parents": [
+    "2e5d8874f132a3327aedae5d60be4e0183df9c94"
+   ],
+   "title": "usm: http2: Bump max interesting frames limit to 30 (#20493)",
+   "committer_date": "2023-10-30T18:04:21.000+02:00",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/b79ad274324c22b49669dde2f495123d8eee15b2",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 198
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "e540d11870958a71be87bd29c9c0db47c8e8e035",
+   "parents": [
+    "77224d6915c82c24925d0d682d6314424f14c023"
+   ],
+   "title": "bpf: fix verification issue on 5.4",
+   "committer_date": "2025-03-05T11:02:05.000+01:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/e540d11870958a71be87bd29c9c0db47c8e8e035",
+   "matched": [
+    "fix verifier",
+    "math between"
+   ],
+   "screen_rank": 199
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "ff54dbd703b6f30140a2671c3e03074bfa4642ed",
+   "parents": [
+    "2ace4f7deee89aaec2bfcc8f141d3ae40a8f53f4"
+   ],
+   "title": "datapath: Fix 4.19.57 verifier complaint for bpf_lxc w/ DSR",
+   "committer_date": "2020-01-17T16:16:29.000+01:00",
+   "html_url": "https://github.com/cilium/cilium/commit/ff54dbd703b6f30140a2671c3e03074bfa4642ed",
+   "matched": [
+    "invalid mem access"
+   ],
+   "screen_rank": 200
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "a75f0180b71484c82855a8e9f98a9393fcaa5e22",
+   "parents": [
+    "7e4b6e0165bbe81a6323b87463e0df0466220b1b"
+   ],
+   "title": "libbpf-tools/tcprtt: Fix out-of-bounds accessing of inet_sock struct.",
+   "committer_date": "2023-03-21T19:22:53.000+08:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/a75f0180b71484c82855a8e9f98a9393fcaa5e22",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 201
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "d00ec08d4d8f3dd5757a7553de4803f9c8ce7354",
+   "parents": [
+    "babd453b002951f1b9db6a59d4b4836358528401"
+   ],
+   "title": "gadgets/snapshot_{process,file}: Read __rcu fields with BPF_CORE_READ",
+   "committer_date": "2026-07-08T11:23:57.000+02:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/d00ec08d4d8f3dd5757a7553de4803f9c8ce7354",
+   "matched": [
+    "invalid mem access",
+    "fails to load"
+   ],
+   "screen_rank": 202
+  },
+  {
+   "repo": "cilium/ebpf",
+   "commit": "e37e6348fa41880b11f0d41297cff818d0b43dff",
+   "parents": [
+    "9da42c2fd67e8761067fcd9c27eb24b23acdb51c"
+   ],
+   "title": "btf: don't panic when attempting to create a Handle from a default Spec",
+   "committer_date": "2022-08-23T21:01:07.000+02:00",
+   "html_url": "https://github.com/cilium/ebpf/commit/e37e6348fa41880b11f0d41297cff818d0b43dff",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 203
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "e0b9c3be284b999feced7edb0b69f087ce8008b6",
+   "parents": [
+    "33ed1e688387cab5e3ad1ea3b8ed6fd1eccac505"
+   ],
+   "title": "bpf: fix verification failure",
+   "committer_date": "2024-01-17T07:24:50.000-08:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/e0b9c3be284b999feced7edb0b69f087ce8008b6",
+   "matched": [
+    "fix verifier",
+    "math between",
+    "fails to load"
+   ],
+   "screen_rank": 204
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "13b7a5e7a42a15d784ae18c31365bf8580821236",
+   "parents": [
+    "9c09a5893dfa2fb9570751027d27b43ce500b40c"
+   ],
+   "title": "[AGENTRUN-881] Improving telemetry forwarding via remoteAgentRegistry (#42736)",
+   "committer_date": "2025-11-06T10:20:00.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/13b7a5e7a42a15d784ae18c31365bf8580821236",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 205
+  },
+  {
+   "repo": "cilium/pwru",
+   "commit": "d6727224481c29a8bced1b83e89aa4d80b36ed21",
+   "parents": [
+    "8c3ac7fe1e555e25f3edbae38d9435e4ef222256"
+   ],
+   "title": "Revert \"support output cpu\"",
+   "committer_date": "2022-01-25T15:52:59.000+01:00",
+   "html_url": "https://github.com/cilium/pwru/commit/d6727224481c29a8bced1b83e89aa4d80b36ed21",
+   "matched": [
+    "verifier error",
+    "R1 type="
+   ],
+   "screen_rank": 206
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "b9a931e8af2b35583fa21047077a5087cf50ba38",
+   "parents": [
+    "4347687b27972163454ce30e0daf8a82220fd17d"
+   ],
+   "title": "fix: Ensure env read buffer size is never negative",
+   "committer_date": "2026-09-11T17:00:13.000+10:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/b9a931e8af2b35583fa21047077a5087cf50ba38",
+   "matched": [
+    "min value is negative"
+   ],
+   "screen_rank": 207
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "6e18eb020b68c619dbd6e0f7dc4c194fa885a523",
+   "parents": [
+    "b91046955d6ba6e335d8b71037e0a5154a09d064"
+   ],
+   "title": "bpf: Fix compatibility with Clang 17 in __lb6_affinity_backend_id",
+   "committer_date": "2024-03-15T11:15:29.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/6e18eb020b68c619dbd6e0f7dc4c194fa885a523",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 208
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "d3ff998f2b30b41227a395b6415627d8cb611e69",
+   "parents": [
+    "38994b01cdd6b707a422263e379692dcacaf14e1"
+   ],
+   "title": "datapath: Do not SNAT replies to outside",
+   "committer_date": "2021-09-10T17:17:06.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/d3ff998f2b30b41227a395b6415627d8cb611e69",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 209
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "9c2025e61ef8ef80c1583c44fa847e47373ced5d",
+   "parents": [
+    "4e2c281b7195cb6fc513dc9afca9994f10c384cf"
+   ],
+   "title": "usm: http2: Fix verifier workaround (#21754)",
+   "committer_date": "2023-12-25T16:42:55.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/9c2025e61ef8ef80c1583c44fa847e47373ced5d",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 210
+  },
+  {
+   "repo": "parca-dev/parca-agent",
+   "commit": "bba4d735cef7b38435461d82a73f8fa5fc895bac",
+   "parents": [
+    "0b6e7b99da4aef3f3e35312f99b70d13f9f6418e",
+    "7413b22c70580891f286d56478e345823eeca008"
+   ],
+   "title": "Refix 5.4 verifier error (#2837)",
+   "committer_date": "2024-05-31T11:41:25.000-04:00",
+   "html_url": "https://github.com/parca-dev/parca-agent/commit/bba4d735cef7b38435461d82a73f8fa5fc895bac",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 211
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "b7981f4aa825d4c7c6e5909c73585ffcb3740331",
+   "parents": [
+    "f5c11b0178986296737140e700692902ddc7f938",
+    "cc0a1436cb04862ec318fa702eac6aabf95e8bf7"
+   ],
+   "title": "Merge pull request #5105 from inspektor-gadget/francis/pull-signature-backup",
+   "committer_date": "2025-11-28T18:34:21.000+02:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/b7981f4aa825d4c7c6e5909c73585ffcb3740331",
+   "matched": [
+    "verifier fail"
+   ],
+   "screen_rank": 212
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "69cc7f674d2996e411432dfa383c9eb02f77538f",
+   "parents": [
+    "1d8daaa395f066b328a56a36fbd40a0de3a7b3c1"
+   ],
+   "title": "inject.py: fix BPF verification fails due to register offset",
+   "committer_date": "2024-06-16T08:48:25.000-07:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/69cc7f674d2996e411432dfa383c9eb02f77538f",
+   "matched": [
+    "verifier fail",
+    "math between"
+   ],
+   "screen_rank": 213
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "65fd45d1c5ed6f71c590cd8053b942a3368652f3",
+   "parents": [
+    "d6170b5bb21450d92d7bb984d342cbffb1e0d556"
+   ],
+   "title": "usm,npm: classification: Fix verifier error on rhel 8.4 (#35290)",
+   "committer_date": "2025-03-20T10:24:12.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/65fd45d1c5ed6f71c590cd8053b942a3368652f3",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 214
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "d8595ee3bf4b489688558f69831d5067d63c774c",
+   "parents": [
+    "d507a53e6871207e83194def0ab74c6e04640eac"
+   ],
+   "title": "tools: Prevent invalid mem access when reading PAGE_OFFSET on s390",
+   "committer_date": "2026-01-18T16:28:51.000+09:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/d8595ee3bf4b489688558f69831d5067d63c774c",
+   "matched": [
+    "invalid mem access",
+    "fails to load"
+   ],
+   "screen_rank": 215
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "2fe8ce47afdf4c9fdbb4afa8704f1559d05e32f4",
+   "parents": [
+    "2e21fc8354bfa80bfdaacc5ad80f1b84f7e2ec05"
+   ],
+   "title": "bpf: node_config - reduce default amount of vtep endpoints to 2",
+   "committer_date": "2022-02-18T11:14:36.000+01:00",
+   "html_url": "https://github.com/cilium/cilium/commit/2fe8ce47afdf4c9fdbb4afa8704f1559d05e32f4",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 216
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "f06dd60e140b1409acfec5c4fede6923707104f1",
+   "parents": [
+    "c02e0efdba49f7c816288970269a1f1b102e029a"
+   ],
+   "title": "pkg/sensors: fix TestAddPolicyLoadError",
+   "committer_date": "2024-02-21T17:50:10.000+01:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/f06dd60e140b1409acfec5c4fede6923707104f1",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 217
+  },
+  {
+   "repo": "cilium/ebpf",
+   "commit": "65fb774468cbc51047f7115a57623832e8388eff",
+   "parents": [
+    "9330be4f1ac7c7c49efa30a8613fdf36bd96b291"
+   ],
+   "title": "elf_reader_test: Fix CI by disabling the \"test_log_fixup\" selftest",
+   "committer_date": "2024-03-21T11:12:38.000Z",
+   "html_url": "https://github.com/cilium/ebpf/commit/65fb774468cbc51047f7115a57623832e8388eff",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 218
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "1e25adb69b44573ecaea42803fff7312fbfe9372",
+   "parents": [
+    "83fe54ba9f7313717e967134d7b6911236fb1efc"
+   ],
+   "title": "bpf: Fix verifier error when writing to skb->cb[0]",
+   "committer_date": "2019-06-14T17:39:37.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/1e25adb69b44573ecaea42803fff7312fbfe9372",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 219
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "0cfd665b49d8d2dfe8ee2599763cbca3f4b54015",
+   "parents": [
+    "20f1fda7de5136ba0a87be844f134a4ae4df9d10"
+   ],
+   "title": "fix a verifier failure",
+   "committer_date": "2018-01-08T06:40:29.000-08:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/0cfd665b49d8d2dfe8ee2599763cbca3f4b54015",
+   "matched": [
+    "math between"
+   ],
+   "screen_rank": 220
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "1cc4ba46a533baea697bb43b71a9669da92b582d",
+   "parents": [
+    "15d5ff634a0ea2b5c07a489450045eb6a91cb60d"
+   ],
+   "title": "fix: bound pointer offset to a max value",
+   "committer_date": "2026-09-07T14:53:31.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/1cc4ba46a533baea697bb43b71a9669da92b582d",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 221
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "0cf10993335045c0a35ac6b80efaa5eb99a4ab8e",
+   "parents": [
+    "02be31e3ec9b3d2ae4b4211a75ea39427f0cdad5"
+   ],
+   "title": "bpf: Align union v6addr old_daddr",
+   "committer_date": "2025-11-05T16:44:12.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/0cf10993335045c0a35ac6b80efaa5eb99a4ab8e",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 222
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "0ee605ab0670d566ff953248436ea971da8adf92",
+   "parents": [
+    "7c92ac025c6b80b0da63d78d3696b1295d361dfa"
+   ],
+   "title": "program/loader: properly log verifier errors",
+   "committer_date": "2022-10-24T15:50:31.000-04:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/0ee605ab0670d566ff953248436ea971da8adf92",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 223
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "f2afd959a095a70a288753dba9350cc04d8a551a",
+   "parents": [
+    "5c3e0e782b117ff376e29f818551a6e9eff98d6a"
+   ],
+   "title": "USMO-259 - Support Java Async frameworks (#16346)",
+   "committer_date": "2023-06-12T16:01:16.000+03:00",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/f2afd959a095a70a288753dba9350cc04d8a551a",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 224
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "642417d64d613522541f37f0aa5c824c7aef7bb4",
+   "parents": [
+    "937c254090d1927b042f6e438b44737a3eb6945f"
+   ],
+   "title": "[USM] Add gRPC classification (#18342)",
+   "committer_date": "2023-08-17T16:03:40.000+02:00",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/642417d64d613522541f37f0aa5c824c7aef7bb4",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 225
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "072968feb4150d55c4ea2d1c888347764f401873",
+   "parents": [
+    "bc993ec8282d71b5a63e51aefd943cf9206e145a"
+   ],
+   "title": "bpf: reduce default verifier log size by one byte for kernels <5.2",
+   "committer_date": "2023-04-03T14:37:26.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/072968feb4150d55c4ea2d1c888347764f401873",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 226
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "8a7ac0dc24b4f3c1b76ce97d3b15336f18472a61",
+   "parents": [
+    "e31672bd0b2d994b2c90cd958972a0409b3033e2"
+   ],
+   "title": "libbpf-tools/memleak: correct key size of memptrs",
+   "committer_date": "2023-11-23T11:16:01.000-08:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/8a7ac0dc24b4f3c1b76ce97d3b15336f18472a61",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 227
+  },
+  {
+   "repo": "cilium/ebpf",
+   "commit": "3fadfee1cd71ef7cba15f4ea92ef4e2f8dc8a8d9",
+   "parents": [
+    "d03929404a8fe8df3f0d4cbec1a24618a7c59f7c"
+   ],
+   "title": "syscalls: add haveBPFToBPFCalls feature probe",
+   "committer_date": "2022-05-10T14:26:18.000+02:00",
+   "html_url": "https://github.com/cilium/ebpf/commit/3fadfee1cd71ef7cba15f4ea92ef4e2f8dc8a8d9",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 228
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "b35560e3896c23181a78447417bf5330ce6f321a",
+   "parents": [
+    "0e3b0bbd3fdfec427f509d735185884401093773"
+   ],
+   "title": "bpf_tests: use bpf.LoadCollection, print full verifier error logs",
+   "committer_date": "2023-01-25T10:05:47.000-05:00",
+   "html_url": "https://github.com/cilium/cilium/commit/b35560e3896c23181a78447417bf5330ce6f321a",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 229
+  },
+  {
+   "repo": "cilium/ebpf",
+   "commit": "740adb6c24889dc02349c4cad1d2ab8823f00283",
+   "parents": [
+    "b4f36f036f773444bc7bf3e01a8f699342496369"
+   ],
+   "title": "asm: add .WithMetadata() for conveniently replacing individual Instructions",
+   "committer_date": "2022-11-02T10:10:14.000+01:00",
+   "html_url": "https://github.com/cilium/ebpf/commit/740adb6c24889dc02349c4cad1d2ab8823f00283",
+   "matched": [
+    "verifier error",
+    "verifier reject"
+   ],
+   "screen_rank": 230
+  },
+  {
+   "repo": "kubearmor/KubeArmor",
+   "commit": "ac83e82d4a55597f815e468f9a9209fb777a6f71",
+   "parents": [
+    "1095cf3eed9f037accb9d25cb24d50e21aa4564f"
+   ],
+   "title": "fixup! verifier error",
+   "committer_date": "2021-09-21T15:21:45.000+05:30",
+   "html_url": "https://github.com/kubearmor/KubeArmor/commit/ac83e82d4a55597f815e468f9a9209fb777a6f71",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 231
+  },
+  {
+   "repo": "elastic/ebpf",
+   "commit": "b852d8ec8dac0f683decff20da3d956f5d26c93e",
+   "parents": [
+    "4a5a8bd34d1ecc7e9bbbce0bdd2482bddedbc519"
+   ],
+   "title": "fix: load clang-18 probes on kernels before 6.15 (#249)",
+   "committer_date": "2026-10-12T09:33:47.000+02:00",
+   "html_url": "https://github.com/elastic/ebpf/commit/b852d8ec8dac0f683decff20da3d956f5d26c93e",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 232
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "cc0a1436cb04862ec318fa702eac6aabf95e8bf7",
+   "parents": [
+    "0dd8244ba006d81a549bcc8988574c04ebd2e725"
+   ],
+   "title": "pkg: oci: Pull gadget signature if verification failed.",
+   "committer_date": "2025-11-28T17:38:10.000+02:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/cc0a1436cb04862ec318fa702eac6aabf95e8bf7",
+   "matched": [
+    "verifier fail"
+   ],
+   "screen_rank": 233
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "66fd45b476278323fb11e1c6d64147dcc1c1798e",
+   "parents": [
+    "55b1a37bc03c50ce5c6635b98a48999fe0f21e68"
+   ],
+   "title": "tetragon: Cleanup progs/maps after failed sensor load",
+   "committer_date": "2024-10-05T15:02:06.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/66fd45b476278323fb11e1c6d64147dcc1c1798e",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 234
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "dcf2344e623896f629e212eff5d7412944fc8798",
+   "parents": [
+    "879bff25b593b5fa8cfa13b4c92cc52f0950ce39",
+    "2070a2aefb0bb30f675d0ebdfb804b5873bb0200"
+   ],
+   "title": "Merge pull request #1151 from goldshtn/usdt-workaround",
+   "committer_date": "2017-05-03T09:39:46.000-07:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/dcf2344e623896f629e212eff5d7412944fc8798",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 235
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "c0995ce2c830bb1400278f1be9227c60ac3c70a7",
+   "parents": [
+    "77615d4700391b8d6fb01b4888fb36ab30c21fbc"
+   ],
+   "title": "libbpf-tools: Fix syscount",
+   "committer_date": "2022-07-02T18:53:32.000-07:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/c0995ce2c830bb1400278f1be9227c60ac3c70a7",
+   "matched": [
+    "!read_ok",
+    "fails to load"
+   ],
+   "screen_rank": 236
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "ebb781e5ba1bb4b7c4f99c215799eaf8ed37620e",
+   "parents": [
+    "8d290d31e187ca83d3acfbc8ac237527225c914c"
+   ],
+   "title": "bpf: Fix sockops compile on newer LLVM",
+   "committer_date": "2019-10-03T19:32:04.000-07:00",
+   "html_url": "https://github.com/cilium/cilium/commit/ebb781e5ba1bb4b7c4f99c215799eaf8ed37620e",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 237
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "c7f76a597341d06dd004981901bce46d108f0e4a",
+   "parents": [
+    "11cd1667a5790db33e0c83b784a9e3939ffe8284"
+   ],
+   "title": "[CONTINT-3239] Revert \"[automated] Upgrade embedded Python patch version to 3.13.16\" (#57902)",
+   "committer_date": "2026-10-09T12:12:17.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/c7f76a597341d06dd004981901bce46d108f0e4a",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 238
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "b7af6e8ffda12aeb7045fdcba3cd8db1e3d75038",
+   "parents": [
+    "b21332e3438ccaffd2940037b83107f21e434e02"
+   ],
+   "title": "bpf: work around verifier issue in __ct_update_timeout",
+   "committer_date": "2019-06-30T09:34:48.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/b7af6e8ffda12aeb7045fdcba3cd8db1e3d75038",
+   "matched": [
+    "math between"
+   ],
+   "screen_rank": 239
+  },
+  {
+   "repo": "falcosecurity/libs",
+   "commit": "73a1ccf43ff29df033f189a10ba8a07b27848bb9",
+   "parents": [
+    "5e2daf82e60532a286d8486b312ddf9159474695"
+   ],
+   "title": "fix(driver-ebpf): fixes verifier error for sys_open_by_handle_at",
+   "committer_date": "2022-05-11T13:45:03.000+02:00",
+   "html_url": "https://github.com/falcosecurity/libs/commit/73a1ccf43ff29df033f189a10ba8a07b27848bb9",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 240
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "f5fdfa5a7b726e08c435386c7f2e8fe570c21f4b",
+   "parents": [
+    "56bee8c0c857f212af171da56f7293d82b2b76d8"
+   ],
+   "title": "trace sni: fix verifier issue on some 5.15 kernels",
+   "committer_date": "2022-05-05T11:37:48.000+02:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/f5fdfa5a7b726e08c435386c7f2e8fe570c21f4b",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 241
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "281a7ffa903faf79e8fe6631303fc3774cbf9161",
+   "parents": [
+    "a7b0cc20cb93bb54fb985dd36eaa52b9e7b00aa0"
+   ],
+   "title": "pkg: Log verifier error at debug level for gadget with result",
+   "committer_date": "2023-06-07T18:28:34.000+01:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/281a7ffa903faf79e8fe6631303fc3774cbf9161",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 242
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "8f1bc21bc5756c81b3b3058f6d9727ad7e53d9d7",
+   "parents": [
+    "8c4a16a7c34da269f89fe147fcddd4998c158a5b"
+   ],
+   "title": "bpf: tests: consume plen/flags in mock_fib_lookup",
+   "committer_date": "2026-10-16T11:03:44.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/8f1bc21bc5756c81b3b3058f6d9727ad7e53d9d7",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 243
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "6ab63e5cbf7327d039385198aafa8ffe87ca1002",
+   "parents": [
+    "6967b43249d67ca84a2614631626b1fcdc28f034"
+   ],
+   "title": "Add systemd-timesyncd default location to NTP check (#51313)",
+   "committer_date": "2026-05-27T17:02:52.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/6ab63e5cbf7327d039385198aafa8ffe87ca1002",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 244
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "5d882fdd1f8a7ecf4383bce66a76cfa10e41ddff",
+   "parents": [
+    "3f4f0372f56fd89090a009794063d30820dfbd4d"
+   ],
+   "title": "bpf: fix verifier error in dameon debug mode with newer LLVM versions",
+   "committer_date": "2017-11-30T06:56:13.000-08:00",
+   "html_url": "https://github.com/cilium/cilium/commit/5d882fdd1f8a7ecf4383bce66a76cfa10e41ddff",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 245
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "77685c2280aedd670ed19bf15f60bd7d086fffdb",
+   "parents": [
+    "8eb389403823188d809021653bb73f2c598b4def"
+   ],
+   "title": "bpf: NULL-check params in mock_fib_lookup",
+   "committer_date": "2024-10-15T14:22:10.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/77685c2280aedd670ed19bf15f60bd7d086fffdb",
+   "matched": [
+    "verifier error",
+    "invalid mem access"
+   ],
+   "screen_rank": 246
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "efb5d6509fea263bd6d36998f8e524d9942b8a79",
+   "parents": [
+    "8373eec6d362eba586ece6442d6d0bad0548112d"
+   ],
+   "title": "bpf: Fix verifier issue in fib_redirect",
+   "committer_date": "2023-03-16T13:15:00.000+01:00",
+   "html_url": "https://github.com/cilium/cilium/commit/efb5d6509fea263bd6d36998f8e524d9942b8a79",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 247
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "d06ad90b1a4b37048778dd7435c1bcf08f437783",
+   "parents": [
+    "4f8c1ad3000bc991d497890df46dae89dbb301c3"
+   ],
+   "title": "pkg/bpf: re-enable errors for unused maps unless `ErrRestrictedKernel`",
+   "committer_date": "2025-11-11T15:03:47.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/d06ad90b1a4b37048778dd7435c1bcf08f437783",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 248
+  },
+  {
+   "repo": "cilium/pwru",
+   "commit": "5455e747d71c24774a3c0296c04abe9f50b972ff",
+   "parents": [
+    "bde4f64a76d3069e706251912e6228af310adb3c"
+   ],
+   "title": "Fix verifier error to run --filter-trace-tc + --filter-track-bpf-helpers",
+   "committer_date": "2024-10-13T15:29:26.000+02:00",
+   "html_url": "https://github.com/cilium/pwru/commit/5455e747d71c24774a3c0296c04abe9f50b972ff",
+   "matched": [
+    "verifier error",
+    "fix verifier",
+    "fails to load"
+   ],
+   "screen_rank": 249
+  },
+  {
+   "repo": "falcosecurity/libs",
+   "commit": "747934f75e3c497403c4d5ee51d3fbb373076575",
+   "parents": [
+    "8cde1840166814438276b08a6be48b45cb63e37d"
+   ],
+   "title": "fix(driver/bpf): fix verifier issues in latest clang versions",
+   "committer_date": "2021-09-22T16:50:47.000+02:00",
+   "html_url": "https://github.com/falcosecurity/libs/commit/747934f75e3c497403c4d5ee51d3fbb373076575",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 250
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "1aa2a51e05ff0d0543f790ffcfcc2a38808dbe15",
+   "parents": [
+    "532c720105213559ed883ce2a8b1df1bc45bbd52"
+   ],
+   "title": "bpf: Always inline ratelimit_check_and_take",
+   "committer_date": "2025-04-12T17:36:25.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/1aa2a51e05ff0d0543f790ffcfcc2a38808dbe15",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 251
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "6cd44840199ba79cc59397743e0f01409262851e",
+   "parents": [
+    "28b8d54063c03798f9fe0ce654d674f9618a60af"
+   ],
+   "title": "bpf: fix ipv6_hdrlen_with_fraginfo() on pre-v5.12 kernels",
+   "committer_date": "2026-08-05T15:35:59.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/6cd44840199ba79cc59397743e0f01409262851e",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 252
+  },
+  {
+   "repo": "falcosecurity/libs",
+   "commit": "961362aed0977dc26700d0f2ffe7e2581ac4c4d5",
+   "parents": [
+    "e358b5ba736153d3cffa8c3bb3066c860b8e11aa"
+   ],
+   "title": "fix(driver/modern_bpf): avoid d_path on remote task paths",
+   "committer_date": "2026-10-01T11:28:31.000+02:00",
+   "html_url": "https://github.com/falcosecurity/libs/commit/961362aed0977dc26700d0f2ffe7e2581ac4c4d5",
+   "matched": [
+    "satisfy the verifier"
+   ],
+   "screen_rank": 253
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "419a7db43d080c1ae3d8984bf4e29505b79039c7",
+   "parents": [
+    "ae839790d6729cef9c26fef74a21555257f81dec"
+   ],
+   "title": "tools: mountsnoop, change memset to __builtin_memset (#2127)",
+   "committer_date": "2019-01-10T13:03:21.000-08:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/419a7db43d080c1ae3d8984bf4e29505b79039c7",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 254
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "6a2c5e949cbfc464b40d7b61196c9f2e1cffffaf",
+   "parents": [
+    "eb50bc7fed98e6fce20785e7873ba300cd7715cc"
+   ],
+   "title": "filter: fix verifier error in gadget_should_discard_data_by_skb",
+   "committer_date": "2025-04-01T17:12:14.000+02:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/6a2c5e949cbfc464b40d7b61196c9f2e1cffffaf",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 255
+  },
+  {
+   "repo": "falcosecurity/libs",
+   "commit": "ad79fc1d7975b5e5335018feed107cc60896f2f4",
+   "parents": [
+    "cbc6c977e061a01a5fed11b2d5b69a19035b1a11"
+   ],
+   "title": "chore(userspace/libpman): add support probing for BPF iterators",
+   "committer_date": "2026-03-11T17:00:09.000+01:00",
+   "html_url": "https://github.com/falcosecurity/libs/commit/ad79fc1d7975b5e5335018feed107cc60896f2f4",
+   "matched": [
+    "please the verifier"
+   ],
+   "screen_rank": 256
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "4095bae6b72a10a033b1cd5f577913e13c2c1648",
+   "parents": [
+    "45751af1b529d423e097a17590a5af515020c7b6"
+   ],
+   "title": "bpf: Only enable NAT46/64 for 5.4+ kernels",
+   "committer_date": "2022-03-29T12:06:09.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/4095bae6b72a10a033b1cd5f577913e13c2c1648",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 257
+  },
+  {
+   "repo": "kubearmor/KubeArmor",
+   "commit": "da4cb33c3351075aa2d66db8d12588b9550f06ca",
+   "parents": [
+    "d1e7b37c760726085bf63996053ce9c2e38860a2"
+   ],
+   "title": "fix(monitor): system monitor verifier error on ubuntu18 with clang12",
+   "committer_date": "2026-05-27T10:14:32.000+05:30",
+   "html_url": "https://github.com/kubearmor/KubeArmor/commit/da4cb33c3351075aa2d66db8d12588b9550f06ca",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 258
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "de679382fe1ed0b325c4d3cc76ab88af6752fac1",
+   "parents": [
+    "68965977e33b4e2a8c2d64a9b1be5ffe89e87045"
+   ],
+   "title": "ICMPv6: Fix verifier error when loading on l2-less devices",
+   "committer_date": "2025-09-18T07:48:01.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/de679382fe1ed0b325c4d3cc76ab88af6752fac1",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 259
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "fc245dfe9dabbd77e3adbf89a45aaab0cb1552fd",
+   "parents": [
+    "f720257c20c735bab2cfcc120b2fa9d3752778e3"
+   ],
+   "title": "biolatency: Fix --disks bpf_probe_read() (#1980)",
+   "committer_date": "2018-09-19T16:41:49.000-07:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/fc245dfe9dabbd77e3adbf89a45aaab0cb1552fd",
+   "matched": [
+    "invalid mem access",
+    "fails to load"
+   ],
+   "screen_rank": 260
+  },
+  {
+   "repo": "falcosecurity/libs",
+   "commit": "50aa2a0c9bb5f7e3c61dc0f2470f513521e34ec2",
+   "parents": [
+    "26805d2893330c48bff3ea68f262e2a7c723fdd6"
+   ],
+   "title": "new: Relax required kernel version for modern bpf",
+   "committer_date": "2023-02-28T16:43:24.000+01:00",
+   "html_url": "https://github.com/falcosecurity/libs/commit/50aa2a0c9bb5f7e3c61dc0f2470f513521e34ec2",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 261
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "f1c3c71f0003a62c6db65342fa87b68c9ceb8e9b",
+   "parents": [
+    "6e85cb49682e9a1eedbebb0079ebc35be263b9c2"
+   ],
+   "title": "bpf: lift v4-in-v6 limitation on lrp services",
+   "committer_date": "2020-10-20T16:56:56.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/f1c3c71f0003a62c6db65342fa87b68c9ceb8e9b",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 262
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "8d24881eeb29de57bfc9e250be878eaca138615f",
+   "parents": [
+    "6734decf99da119df041aaa7cb7a1a2c4aa91155"
+   ],
+   "title": "Removing irrelevant TODO comments from Agent log code (#44902)",
+   "committer_date": "2026-01-08T20:30:47.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/8d24881eeb29de57bfc9e250be878eaca138615f",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 263
+  },
+  {
+   "repo": "falcosecurity/libs",
+   "commit": "4a07fbf7c845736d6f086f0d3c6e9cddf99bc60b",
+   "parents": [
+    "892a21cae60b9ccf1232da1bc5b37c335772cbb5"
+   ],
+   "title": "fix: verifier issues on s390x",
+   "committer_date": "2022-12-05T16:09:47.000+01:00",
+   "html_url": "https://github.com/falcosecurity/libs/commit/4a07fbf7c845736d6f086f0d3c6e9cddf99bc60b",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 264
+  },
+  {
+   "repo": "parca-dev/parca-agent",
+   "commit": "3ddab1b95b413e8b8d909dfcb1ea06e4d809d5b3",
+   "parents": [
+    "07d1934fda4f913b6bc682859cc6b80f093a37b2",
+    "607887fe08a411ed4a443dd54964e249e402ca15"
+   ],
+   "title": "fix verification on 5.4 (#2816)",
+   "committer_date": "2024-05-23T11:26:15.000+02:00",
+   "html_url": "https://github.com/parca-dev/parca-agent/commit/3ddab1b95b413e8b8d909dfcb1ea06e4d809d5b3",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 265
+  },
+  {
+   "repo": "kubearmor/KubeArmor",
+   "commit": "026c31c617ab0c193a785c8eeec740aa3ce1cd4e",
+   "parents": [
+    "1c97dfd40cb0274dc1e7597c03f370ff0df8e56b",
+    "b0f1f3fd9f0147698aa68cd9489c74b925111a05"
+   ],
+   "title": "Merge pull request #2492 from Aryan-sharma11/fix-verifier-bug",
+   "committer_date": "2026-03-12T09:40:39.000+05:30",
+   "html_url": "https://github.com/kubearmor/KubeArmor/commit/026c31c617ab0c193a785c8eeec740aa3ce1cd4e",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 266
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "0dae3bae6ffe3e42232d9eed0d3e93a10db49f62",
+   "parents": [
+    "aa0e1eea92d90273ae885b0797e6f1ffb2b911b0"
+   ],
+   "title": "verify_test: add empty CEL functions",
+   "committer_date": "2026-02-16T12:01:15.000+01:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/0dae3bae6ffe3e42232d9eed0d3e93a10db49f62",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 267
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "ceaa4c42b0101c69d82407046e8437942237edcb",
+   "parents": [
+    "2f11767a22547f8fac98d4c2b36b326524db8934"
+   ],
+   "title": "bpf,test: Fix verifier issues in IPv6 BPF tests when running locally",
+   "committer_date": "2023-05-01T11:13:35.000+02:00",
+   "html_url": "https://github.com/cilium/cilium/commit/ceaa4c42b0101c69d82407046e8437942237edcb",
+   "matched": [
+    "verifier error",
+    "fix verifier",
+    "invalid access to packet"
+   ],
+   "screen_rank": 268
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "eee73ae6e12acd1a4d3814124b0e7895b16689c9",
+   "parents": [
+    "fbe9b7d146a0c4ddfcfdc6d1a28a013ed86a12c5"
+   ],
+   "title": "tracing: pre-validate LSM hooks before loading sensors",
+   "committer_date": "2026-04-08T10:25:11.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/eee73ae6e12acd1a4d3814124b0e7895b16689c9",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 269
+  },
+  {
+   "repo": "cilium/tetragon",
+   "commit": "ca5e095710a8640cf0012118cf5c8586f7bacc7f",
+   "parents": [
+    "a64f1abaf14dde19c2d4646aa13cb2ecf59d72ee"
+   ],
+   "title": "uprobe: allow partial policy loads",
+   "committer_date": "2026-07-29T18:04:37.000+02:00",
+   "html_url": "https://github.com/cilium/tetragon/commit/ca5e095710a8640cf0012118cf5c8586f7bacc7f",
+   "matched": [
+    "verifier fail"
+   ],
+   "screen_rank": 270
+  },
+  {
+   "repo": "elastic/ebpf",
+   "commit": "457eb2a7a9c71f41a413e7234c8d8c6aa9811b16",
+   "parents": [
+    "aa86836a0e99e9bd476431087f908580a80709ab"
+   ],
+   "title": "Set MEMLOCK rlimit to 1MB to accommodate larger eBPF maps",
+   "committer_date": "2021-06-16T13:40:34.000+02:00",
+   "html_url": "https://github.com/elastic/ebpf/commit/457eb2a7a9c71f41a413e7234c8d8c6aa9811b16",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 271
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "48c85b7e2c3ef9f58515415d6cb3a5a8c74c7af7",
+   "parents": [
+    "1edebdfcfe21485141885b3ea95d8bc595342bd4",
+    "f5fdfa5a7b726e08c435386c7f2e8fe570c21f4b"
+   ],
+   "title": "Merge pull request #649 from kinvolk/alban_snifix",
+   "committer_date": "2022-05-06T19:27:15.000+02:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/48c85b7e2c3ef9f58515415d6cb3a5a8c74c7af7",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 272
+  },
+  {
+   "repo": "DataDog/datadog-agent",
+   "commit": "1f38d0be838b310e64bafa7ff1615384bf9ca2c2",
+   "parents": [
+    "ab20d78f91cad28f084ff0afc96baf4b76c5122f"
+   ],
+   "title": "Oracle custom query bug fixes and performance improvements (#46637)",
+   "committer_date": "2026-02-19T15:01:01.000Z",
+   "html_url": "https://github.com/DataDog/datadog-agent/commit/1f38d0be838b310e64bafa7ff1615384bf9ca2c2",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 273
+  },
+  {
+   "repo": "aquasecurity/tracee",
+   "commit": "8b036cd652e230b03f76132fab41afcf0655ded2",
+   "parents": [
+    "df09c87453a77a7c3ff8bd21d386f0840f3cd27f"
+   ],
+   "title": "Fix(capture): fix verifier issue with elf capture (#3433)",
+   "committer_date": "2023-09-04T14:18:22.000+03:00",
+   "html_url": "https://github.com/aquasecurity/tracee/commit/8b036cd652e230b03f76132fab41afcf0655ded2",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 274
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "5327815b8f7c9245c4e2697bedbc2c39126b6ad7",
+   "parents": [
+    "f3525caeda190f8af0418f11cbf8e754cbe7b32e",
+    "95bfe306cf5cb74301f9b61ffba3053f90bc9f27"
+   ],
+   "title": "Merge pull request #1464 from inspektor-gadget/mauricio/fix-traceloop",
+   "committer_date": "2023-03-22T05:43:38.000-05:00",
+   "html_url": "https://github.com/inspektor-gadget/inspektor-gadget/commit/5327815b8f7c9245c4e2697bedbc2c39126b6ad7",
+   "matched": [
+    "make verifier happy"
+   ],
+   "screen_rank": 275
+  },
+  {
+   "repo": "iovisor/bcc",
+   "commit": "d1791f0b06ee3e7234fec407b9df847e5275e002",
+   "parents": [
+    "9252a8d03cccfae64a772bb71d431b52017b4121"
+   ],
+   "title": "lua: codegen tests, tracking inverse form of null guards, IPv6 header builtins (#1991)",
+   "committer_date": "2018-10-03T08:43:06.000-07:00",
+   "html_url": "https://github.com/iovisor/bcc/commit/d1791f0b06ee3e7234fec407b9df847e5275e002",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 276
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "46024c6c4a30016b467b746753902b6805505a31",
+   "parents": [
+    "fc4e9eeeb6602fd42a3a33171a3f8c6ad98fe70b"
+   ],
+   "title": "bpf/lib/nodeport.h: Fix verifier error on RHEL 8.6 + mCPU v3",
+   "committer_date": "2025-07-09T09:26:27.000Z",
+   "html_url": "https://github.com/cilium/cilium/commit/46024c6c4a30016b467b746753902b6805505a31",
+   "matched": [
+    "verifier error",
+    "fix verifier",
+    "invalid mem access"
+   ],
+   "screen_rank": 277
+  },
+  {
+   "repo": "cilium/ebpf",
+   "commit": "148c76cf32ddb279b650f106febb1f4a6f9d11ee",
+   "parents": [
+    "544f053c951ed3b02a881a4fe349ec7203a99225"
+   ],
+   "title": "internal: make VerifierError more succinct",
+   "committer_date": "2022-06-14T10:01:14.000+01:00",
+   "html_url": "https://github.com/cilium/ebpf/commit/148c76cf32ddb279b650f106febb1f4a6f9d11ee",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 278
+  },
+  {
+   "repo": "cilium/cilium",
+   "commit": "1e3174b1fcc3901d054b50c19a11cf7c18933fd2",
+   "parents": [
+    "b844a33cf3ebcf292931abbaf5f2336638d6c323"
+   ],
+   "title": "bpf,datapath: map-migrate - specify full tc/globals/ bpffs path",
+   "committer_date": "2022-02-11T09:50:59.000-08:00",
+   "html_url": "https://github.com/cilium/cilium/commit/1e3174b1fcc3901d054b50c19a11cf7c18933fd2",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 279
+  }
+ ]
+}
