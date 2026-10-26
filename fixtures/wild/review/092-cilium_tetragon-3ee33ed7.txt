@@ -1,0 +1,72 @@
+repo: cilium/tetragon
+commit: 3ee33ed73024842a5f8a2c048b8f3709a039bded
+rank: 92
+
+celbpf: deal with multiple kernels
+
+Loading the programs in 5.4 and 4.19 fails with:
+
+   ; tail_call(ctx, tailcalls, TAIL_CALL_ARGS);
+        3573: (bf) r1 = r6
+        3574: (18) r2 = 0xffff888138f0e400
+        3576: (b7) r3 = 3
+        3577: (85) call bpf_tail_call#12
+        tail_calls are not allowed in programs with bpf-to-bpf calls
+
+This is because tail-calls cannot mix with bpf-to-bpf calls for these
+kernel versions. Moreover, even if we eliminate the cel_expr() call, the
+program fails to load on 4.19 due to a large instruction count.
+
+For 4.19 kernels (!defined(__LARGE_BPF_PROG)), the stubs are completely
+removed from the BPF object, and for later kernels we force the
+cel_expr() call to be a bpf-to-bpf call.
+
+From userspace, we introduce two functions:
+ - celbpf.EnabledInBPF() to indicate whether the cel_expr stubs are present in
+   the bpf code.
+ - celbpf.Supported() to indicate whether we can support CEL exprssions.
+
+celbpf.Supported() uses  aruntime check to determine whether the
+kernel allows mixing bpf and tail calls [^1].
+
+for the case where EnabledInBPF() && !Supported(), we replace the call
+of cel_expr() with setting R0 to 0 and remove the cel_expr() function
+from the instructions. (This is the reason why we need the the
+cel_expr() to always be a bpf-to-bpf call.)
+
+[^1]: This capability was implemented in 5.10
+(https://lore.kernel.org/bpf/20200829231925.GB31692@ranger.igk.intel.com/T/),
+so it's between our two kernel variants  (5.4 and 6.1)
+
+Signed-off-by: Kornilios Kourtis <kornilios@isovalent.com>
+
+--- bpf/process/cel_expr.h
+@@ -8,7 +8,7 @@
+  * The code for the cel_expr_N functions will be generated and linked when the policy is loaded
+  */
+ 
+-#if defined(GENERIC_KPROBE) && !defined(__MULTI_KPROBE)
++#if defined(__LARGE_BPF_PROG) && (defined(GENERIC_KPROBE) && !defined(__MULTI_KPROBE))
+ int cel_expr_0(long *argsoff, char *args);
+ int cel_expr_1(long *argsoff, char *args);
+ int cel_expr_2(long *argsoff, char *args);
+@@ -18,8 +18,7 @@ int cel_expr_5(long *argsoff, char *args);
+ int cel_expr_6(long *argsoff, char *args);
+ int cel_expr_7(long *argsoff, char *args);
+ 
+-FUNC_LOCAL int
+-cel_expr(int id, long *argsoff, char *args)
++static __attribute__((noinline)) __attribute__((__unused__)) int cel_expr(int id, long *argsoff, char *args)
+ {
+ 	switch (id) {
+ 	case 0:
+@@ -44,7 +43,7 @@ cel_expr(int id, long *argsoff, char *args)
+ 	}
+ }
+ #else
+-FUNC_LOCAL int
++FUNC_INLINE int
+ cel_expr(int id, long *argsoff, char *args)
+ {
+ 	return 0;
+

@@ -1,0 +1,149 @@
+repo: cilium/cilium
+commit: ceaa4c42b0101c69d82407046e8437942237edcb
+rank: 268
+
+bpf,test: Fix verifier issues in IPv6 BPF tests when running locally
+
+When running the `TestBPF/ipv6_test.o` test locally with clang v13 and
+kernel v5.17 it resulted in the following verifier error:
+
+```
+171: (b7) r2 = 1                      ; R2_w=inv1
+; authhdr->seq = 1;
+172: (63) *(u32 *)(r1 +8) = r2
+invalid access to packet, off=8 size=4, R1(id=6,off=8,r=2)
+R1 offset is outside of the packet
+```
+
+Tracked this down to `ipv6_with_hop_auth_tcp_pktgen`. It gets a pointer
+from `pktgen__append_ipv6_extension_header`. All expected bounds checks
+were in place. It even has a function called `ctx_data_valid` with some
+inline assembly which is supposed to perform additional bounds checks.
+
+Was able to fix this by replacing `ctx_data_valid` with a normal check
+and adding a bounds check to `ipv6_with_hop_auth_tcp_pktgen`. This
+bounds check seems to be necessary because bounds checks do not seem
+to apply to copies.
+
+The verifier log reveals the following:
+
+```
+85: (69) r2 = *(u16 *)(r10 -40)       ; R2_w=invP14 R10=fp0
+; builder->layer_offsets[layer_idx] = builder->cur_off;
+86: (6b) *(u16 *)(r4 +10) = r2        ; R2_w=invP14 R4_w=fp-44 fp-40=mmmmmmmm
+; layer = ctx_data(ctx) + builder->cur_off;
+87: (0f) r1 += r7                     ; R1_w=pkt(id=0,off=14,r=54,imm=0) R7=invP14
+; builder->cur_off += hdrsize;
+88: (69) r2 = *(u16 *)(r10 -40)       ; R2_w=inv(id=0,umax_value=65535,var_off=(0x0; 0xffff)) R10=fp0
+```
+
+At instruction 85 we know the offset is `14` exactly. It is then written
+back to the stack. And at 88 we have lost bounds data. Since this is
+an offset we use to construct the pointers, this uncertainty becomes
+part of all pointers causing the need for additional checks.
+
+To mitigate the result of the above apparent verifier bug/limitation,
+I have also changes our offset value from 16 bit to 64 bit which tracks
+better.
+
+Signed-off-by: Dylan Reimerink <dylan.reimerink@isovalent.com>
+
+--- bpf/tests/ipv6_test.c
+@@ -144,6 +144,9 @@ int ipv6_with_hop_auth_tcp_pktgen(struct __ctx_buff *ctx)
+ 		return TEST_ERROR;
+ 
+ 	authhdr = (struct ipv6_authhdr *)l3_next;
++	if ((void *) authhdr + sizeof(struct ipv6_authhdr) > ctx_data_end(ctx))
++		return TEST_ERROR;
++
+ 	authhdr->spi = 0x222;
+ 	authhdr->seq = 1;
+ 
+
+--- bpf/tests/pktgen.h
+@@ -147,8 +147,8 @@ enum pkt_layer {
+ /* Packet builder */
+ struct pktgen {
+ 	struct __ctx_buff *ctx;
+-	__u16 cur_off;
+-	__u16 layer_offsets[PKT_BUILDER_LAYERS];
++	__u64 cur_off;
++	__u64 layer_offsets[PKT_BUILDER_LAYERS];
+ 	enum pkt_layer layers[PKT_BUILDER_LAYERS];
+ };
+ 
+@@ -176,29 +176,6 @@ int pktgen__free_layer(const struct pktgen *builder)
+ 	return -1;
+ }
+ 
+-static __always_inline
+-__attribute__((warn_unused_result))
+-int ctx_data_valid(const struct __ctx_buff *ctx, __maybe_unused __u16 off)
+-{
+-	int ret = 0;
+-
+-	/* try to open up a range on the pkt reg */
+-	asm volatile("r1 = *(u32 *)(%[ctx] +0)\n\t"
+-		     "r2 = *(u32 *)(%[ctx] +4)\n\t"
+-		     "%[off] &= %[offmax]\n\t"
+-		     "r1 += %[off]\n\t"
+-		     "if r1 > r2 goto +2\n\t"
+-		     "%[ret] = 0\n\t"
+-		     "goto +1\n\t"
+-		     "%[ret] = %[errno]\n\t"
+-		     : [ret]"=r"(ret)
+-		     : [ctx]"r"(ctx), [off]"r"(off),
+-		       [offmax]"i"(0xff), [errno]"i"(-EINVAL)
+-		     : "r1", "r2");
+-
+-	return ret;
+-}
+-
+ /* Push an empty ethernet header onto the packet */
+ static __always_inline
+ __attribute__((warn_unused_result))
+@@ -398,11 +375,7 @@ struct ipv6_opt_hdr *pktgen__append_ipv6_extension_header(struct pktgen *builder
+ 	if (!hdr)
+ 		return NULL;
+ 
+-	/* after multiple extension headers are added, LLVM tends to generate
+-	 * code that verifier doesn't understand. try to open up a range on
+-	 * the pkt reg
+-	 */
+-	if (ctx_data_valid(builder->ctx, builder->cur_off))
++	if ((void *) hdr + sizeof(struct ipv6_opt_hdr) > ctx_data_end(builder->ctx))
+ 		return NULL;
+ 
+ 	hdr->hdrlen = hdrlen;
+@@ -537,7 +510,7 @@ void *pktgen__push_data_room(struct pktgen *builder, int len)
+ 	/* Check that any value within the struct will not exceed a u16 which
+ 	 * is the max allowed offset within a packet from ctx->data.
+ 	 */
+-	if (builder->cur_off >= MAX_PACKET_OFF - len)
++	if ((__s64)builder->cur_off >= MAX_PACKET_OFF - len)
+ 		return 0;
+ 
+ 	layer = ctx_data(ctx) + builder->cur_off;
+@@ -581,10 +554,10 @@ void pktgen__finish(const struct pktgen *builder)
+ 	struct ipv6hdr *ipv6_layer;
+ 	struct ipv6_opt_hdr *ipv6_opt_layer;
+ 	struct tcphdr *tcp_layer;
+-	__u16 layer_off;
++	__u64 layer_off;
+ 	__u16 v4len;
+ 	__be16 v6len;
+-	__u16 hdr_size;
++	__u64 hdr_size;
+ 
+ 	#pragma unroll
+ 	for (int i = 0; i < PKT_BUILDER_LAYERS; i++) {
+@@ -780,7 +753,7 @@ void pktgen__finish(const struct pktgen *builder)
+ 						builder->layer_offsets[i];
+ 			}
+ 
+-			tcp_layer->doff = hdr_size / 4;
++			tcp_layer->doff = (__u16)hdr_size / 4;
+ 
+ 			break;
+ 
+

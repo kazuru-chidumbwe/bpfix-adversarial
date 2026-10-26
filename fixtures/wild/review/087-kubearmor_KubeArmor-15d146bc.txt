@@ -1,0 +1,25 @@
+repo: kubearmor/KubeArmor
+commit: 15d146bcda3db9c67c9bdfea217aa070a0d9a360
+rank: 87
+
+Merge pull request #1856 from Aryan-sharma11/fix--bpflsm
+
+fix: BPFLSM enforcer fails to load on newer kernels (6.8+)
+
+--- KubeArmor/BPF/enforcer.bpf.c
+@@ -428,9 +428,11 @@ int BPF_PROG(enforce_net_create, int family, int type, int protocol) {
+ 
+ #define LSM_NET(name, ID)                                                      \
+   int BPF_PROG(name, struct socket *sock) {                                    \
+-    int type = sock->type;                                                     \
+-    int protocol = sock->sk->sk_protocol;                                      \
+-    return match_net_rules(type, protocol, ID);                                \
++    int sock_type = BPF_CORE_READ(sock, type);                                 \
++    struct sock *sk;                                                           \
++    sk = BPF_CORE_READ(sock, sk);                                              \
++    int protocol = BPF_CORE_READ(sk, sk_protocol);                             \
++    return match_net_rules(sock_type, protocol, ID);                           \
+   }
+ 
+ SEC("lsm/socket_connect")
+

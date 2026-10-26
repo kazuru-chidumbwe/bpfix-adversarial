@@ -1,0 +1,38 @@
+repo: elastic/ebpf
+commit: 6cad2baef9a0e6d786d2a114b6d0675d7a408605
+rank: 176
+
+Switch to BTF-style maps
+
+Legacy eBPF map definitions are planned to be removed in libbpf v1.0. Switch to BTF maps in the tc filter.
+
+Note that BTF maps can be used without BTF being enabled in the kernel. BTF-defined maps are only handled by libbpf. It is a feature which allows annotating maps with type info for more human-readable dumps in bpftool for example.
+However, BTF maps add some constraints - they require newer Clang (7+) and you need to compile with debug symbols (-g) as well, in order for the .BTF sections to be created.
+More constraints: tc has to be compiled with libbpf, otherwise it fails to relocate the maps.
+When using new Clang, the flag -mcpu=v2 needs to be used to prevent it from generating 32-bit instructions (which fail to load on older kernels).
+
+This change was tested on Ubuntu 16 and 20 with Clang-12. Same as before, the eBPF binary can be moved across systems and it loads successfully.
+
+--- ebpf/host_isolation/tc_filter/tc_filter.c
+@@ -20,13 +20,13 @@
+ 
+ #define PCKT_FRAGMENTED 65343
+ 
+-struct bpf_elf_map __section("maps") allowed_IPs = {
+-	.type = BPF_MAP_TYPE_HASH,
+-	.size_key = sizeof(int),
+-	.size_value = sizeof(int),
+-	.pinning = PIN_GLOBAL_NS,
+-	.max_elem = 64,
+-};
++struct {
++	__uint(type, BPF_MAP_TYPE_HASH);
++	__uint(key_size, sizeof(int));
++	__uint(value_size, sizeof(int));
++	__uint(max_entries, 64);
++	__uint(pinning, LIBBPF_PIN_BY_NAME);
++} allowed_IPs __section(".maps");
+ 
+ __attribute__((always_inline))
+ static int allow_tcp_pkt_egress(struct tcphdr *tcp, struct iphdr *ip)
+

@@ -1,0 +1,52 @@
+repo: iovisor/bcc
+commit: 8a7ac0dc24b4f3c1b76ce97d3b15336f18472a61
+rank: 227
+
+libbpf-tools/memleak: correct key size of memptrs
+
+There is a miss change in commit 32be0a338e9f (use tid instead of tgid),
+the following errors will occur. So correct it.
+
+  ~ # memleak
+  using default object: libc.so.6
+  using page size: 4096
+  tracing kernel: true
+  libbpf: prog 'posix_memalign_exit': BPF program load failed: Permission denied
+  libbpf: prog 'posix_memalign_exit': -- BEGIN PROG LOAD LOG --
+  reg type unsupported for arg#0 function posix_memalign_exit#61
+  0: R1=ctx(off=0,imm=0) R10=fp0
+  ; int BPF_KRETPROBE(posix_memalign_exit)
+  0: (bf) r6 = r1                       ; R1=ctx(off=0,imm=0) R6_w=ctx(off=0,imm=0)
+  ; const u32 tid = bpf_get_current_pid_tgid();
+  1: (85) call bpf_get_current_pid_tgid#14      ; R0_w=scalar()
+  ; const u32 tid = bpf_get_current_pid_tgid();
+  2: (63) *(u32 *)(r10 -12) = r0        ; R0_w=scalar() R10=fp0 fp-16=mmmm????
+  3: (bf) r2 = r10                      ; R2_w=fp0 R10=fp0
+  ;
+  4: (07) r2 += -12                     ; R2_w=fp-12
+  ; memptr64 = bpf_map_lookup_elem(&memptrs, &tid);
+  5: (18) r1 = 0xff60000002030800       ; R1_w=map_ptr(off=0,ks=8,vs=8,imm=0)
+  7: (85) call bpf_map_lookup_elem#1
+  invalid indirect read from stack R2 off -12+4 size 8
+  processed 7 insns (limit 1000000) max_states_per_insn 0 total_states 0 peak_states 0 mark_read 0
+  -- END PROG LOAD LOG --
+  libbpf: prog 'posix_memalign_exit': failed to load: -13
+  libbpf: failed to load object 'memleak_bpf'
+  libbpf: failed to load BPF skeleton 'memleak_bpf': -13
+  failed to load bpf object
+  done
+
+Change-Id: Ie517785aa151c3922c3db3032a02ea76b29f607e
+Signed-off-by: Mickey Zhu <mickey_zhu@realsil.com.cn>
+
+--- libbpf-tools/memleak.bpf.c
+@@ -39,7 +39,7 @@ struct {
+ 
+ struct {
+ 	__uint(type, BPF_MAP_TYPE_HASH);
+-	__type(key, u64);
++	__type(key, u32);
+ 	__type(value, u64);
+ 	__uint(max_entries, 10240);
+ } memptrs SEC(".maps");
+

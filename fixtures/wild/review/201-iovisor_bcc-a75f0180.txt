@@ -1,0 +1,55 @@
+repo: iovisor/bcc
+commit: a75f0180b71484c82855a8e9f98a9393fcaa5e22
+rank: 201
+
+libbpf-tools/tcprtt: Fix out-of-bounds accessing of inet_sock struct.
+
+Running tcprtt with local port/address options causes the following
+error:
+
+  $ ./tcprtt -i 1 -p 80
+  libbpf: prog 'tcp_rcv': BPF program load failed: Permission denied
+  libbpf: prog 'tcp_rcv': -- BEGIN PROG LOAD LOG --
+  reg type unsupported for arg#0 function tcp_rcv#20
+  0: R1=ctx(off=0,imm=0) R10=fp0
+  ; int BPF_PROG(tcp_rcv, struct sock *sk)
+  0: (79) r6 = *(u64 *)(r1 +0)
+  func 'tcp_rcv_established' arg0 has btf_id 3984 type STRUCT 'sock'
+  1: R1=ctx(off=0,imm=0) R6_w=ptr_sock(off=0,imm=0)
+  ; if (targ_sport && targ_sport != inet->inet_sport)
+  1: (18) r1 = 0xffff9ff6c03b8004       ; R1_w=map_value(off=4,ks=4,vs=17,imm=0)
+  3: (69) r2 = *(u16 *)(r1 +0)          ; R1_w=map_value(off=4,ks=4,vs=17,imm=0) R2_w=20480
+  ; if (targ_sport && targ_sport != inet->inet_sport)
+  4: (15) if r2 == 0x0 goto pc+3        ; R2_w=20480
+  ; if (targ_sport && targ_sport != inet->inet_sport)
+  5: (69) r1 = *(u16 *)(r1 +0)          ; R1_w=20480
+  ; if (targ_sport && targ_sport != inet->inet_sport)
+  6: (69) r2 = *(u16 *)(r6 +800)
+  access beyond struct sock at off 800 size 2
+  processed 6 insns (limit 1000000) max_states_per_insn 0 total_states 0 peak_states 0 mark_read 0
+  -- END PROG LOAD LOG --
+  libbpf: prog 'tcp_rcv': failed to load: -13
+  libbpf: failed to load object 'tcprtt_bpf'
+  libbpf: failed to load BPF skeleton 'tcprtt_bpf': -13
+  failed to load BPF object: -13
+
+The kernel only knows that sk is struct sock. Fixed this by introducing BPF_CORE_READ.
+
+Signed-off-by: Chen Yaqi <chendotjs@gmail.com>
+
+--- libbpf-tools/tcprtt.bpf.c
+@@ -38,11 +38,11 @@ int BPF_PROG(tcp_rcv, struct sock *sk)
+ 	u64 key, slot;
+ 	u32 srtt;
+ 
+-	if (targ_sport && targ_sport != inet->inet_sport)
++	if (targ_sport && targ_sport != BPF_CORE_READ(inet, inet_sport))
+ 		return 0;
+ 	if (targ_dport && targ_dport != sk->__sk_common.skc_dport)
+ 		return 0;
+-	if (targ_saddr && targ_saddr != inet->inet_saddr)
++	if (targ_saddr && targ_saddr != BPF_CORE_READ(inet, inet_saddr))
+ 		return 0;
+ 	if (targ_daddr && targ_daddr != sk->__sk_common.skc_daddr)
+ 		return 0;
+

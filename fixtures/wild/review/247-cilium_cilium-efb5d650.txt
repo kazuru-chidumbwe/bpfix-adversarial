@@ -1,0 +1,91 @@
+repo: cilium/cilium
+commit: efb5d6509fea263bd6d36998f8e524d9942b8a79
+rank: 247
+
+bpf: Fix verifier issue in fib_redirect
+
+Paul reported that verifier complexity tests were broken on bpf-next for
+a while due to the GH action testing the wrong datapath configurations for
+some months. This slipped in via #22754. Paul says:
+
+  As part of the verifier tests, we first compile the datapath then
+  attempt to load it. We do that for a set of kernels and datapath
+  configurations. We compile e.g. bpf_lxc with:
+
+    make -C bpf KERNEL=[kernel] MAX_LXC_OPTIONS=[config]
+
+  That method of passing the two environment variables however doesn't
+  seem to work in the CI for some reason. The datapath config used for
+  the compilation ends up empty and the default one is used instead.
+
+  That means the verifier test has been covering a subset of the expected
+  datapath configurations. The 4.19 kernel is not affected because it was
+  kept in the previous K8sVerifier ginkgo test.
+
+Specifically, bpf-next fails with an invalid size of register fill error
+from the verifier:
+
+  [...]
+  578: R0=scalar()
+  578: (79) r6 = *(u64 *)(r10 -288)     ; R6_w=ctx(off=0,imm=0) R10=fp0
+  579: (b4) w9 = -141                   ; R9_w=4294967155
+  580: (c6) if w0 s< 0x0 goto pc+2320   ; R0=scalar(smax=9223372034707292159,umax=18446744071562067967,var_off=(0x0; 0xffffffff7fffffff),s32_min=0,u32_max=2147483647)
+  ; if (no_neigh) {
+  581: (61) r1 = *(u32 *)(r10 -292)     ; R1_w=scalar(umax=4294967295,var_off=(0x0; 0xffffffff)) R10=fp0
+  582: (16) if w1 == 0x0 goto pc+2292   ; R1_w=scalar(umax=4294967295,var_off=(0x0; 0xffffffff))
+  ; dmac = nh_params.nh_family == AF_INET ?
+  583: (18) r1 = 0xffff8c030542d400     ; R1_w=map_ptr(off=0,ks=4,vs=8,imm=0)
+  585: (61) r2 = *(u32 *)(r10 -304)
+  invalid size of register fill
+  processed 7447 insns (limit 1000000) max_states_per_insn 5 total_states 426 peak_states 420 mark_read 117
+
+Maxim built a small reproducer:
+
+1) Setup LVH:
+
+  # mkdir -v /tmp/lvh
+  # docker run -v /tmp/lvh:/mnt/images quay.io/lvh-images/complexity-test:bpf-next-main cp /data/images/complexity-test_bpf-next.qcow2.zst /mnt/images/
+  # zstd -d /tmp/lvh/complexity-test_bpf-next.qcow2.zst -o /tmp/datapath-bpf-complexity.qcow2
+  # rm -vf /tmp/lvh/complexity-test_bpf-next.qcow2.zst
+  # rmdir -v /tmp/lvh
+  # ./lvh run --image /tmp/datapath-bpf-complexity.qcow2 --host-mount "$YOUR_CILIUM_REPOSITORY_DIR"
+
+2) Inside the VM:
+
+  # cd /host
+  # make -C bpf KERNEL=netnext MAX_HOST_OPTIONS='-DSKIP_DEBUG=1 -DENABLE_IPV4=1 -DENABLE_IPV6=1 -DENABLE_ROUTING=1 -DPOLICY_VERDICT_NOTIFY=1 -DALLOW_ICMP_FRAG_NEEDED=1 -DENABLE_IDENTITY_MARK=1 -DMONITOR_AGGREGATION=3 -DCT_REPORT_FLAGS=0x0002 -DENABLE_HOST_FIREWALL=1 -DENABLE_ICMP_RULE=1 -DENABLE_CUSTOM_CALLS=1 -DENABLE_SRV6=1 -DHAVE_LPM_TRIE_MAP_TYPE=1 -DHAVE_LRU_HASH_MAP_TYPE=1 -DENABLE_MASQUERADE=1 -DENABLE_SRC_RANGE_CHECK=1 -DENABLE_NODEPORT=1 -DENABLE_NODEPORT_ACCELERATION=1 -DENABLE_SESSION_AFFINITY=1 -DENABLE_DSR_ICMP_ERRORS=1 -DENABLE_DSR=1 -DENABLE_DSR_HYBRID=1 -DENABLE_IPV4_FRAGMENTS=1 -DENABLE_TPROXY=1 -DENABLE_HOST_ROUTING=1 -DENABLE_BANDWIDTH_MANAGER=1 -DETH_HLEN=0 -DENCAP_IFINDEX=1 -DTUNNEL_MODE=1 -DENABLE_EGRESS_GATEWAY=1 -DENABLE_VTEP=1 -DENABLE_SCTP=1' bpf_host.o
+  # env TC_PROGS="" XDP_PROGS="" CG_PROGS="" TC_PROGS="bpf_host" ./test/bpf/verifier-test.sh
+
+The above verifier log with nh_params.nh_family == AF_INET test seems to
+make little sense. It looks like the *(u32 *)(r10 -304) is about fetching
+the nh_family, but the verifier thinks that the data on stack was a spilled
+pointer. We can actually fix this by using fib_params->l.family directly
+which would also simplify the code a bit. For the next hop, the fib lookup
+helper updates the field depending on whether the next hop is a v4 or v6
+address.
+
+Related: #24335
+Reported-by: Paul Chaignon <paul@cilium.io>
+Co-developed-by: Maxim Mikityanskiy <maxim@isovalent.com>
+Signed-off-by: Maxim Mikityanskiy <maxim@isovalent.com>
+Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
+
+--- bpf/lib/fib.h
+@@ -83,7 +83,6 @@ fib_redirect(struct __ctx_buff *ctx, const bool needs_l2_check,
+ skip_oif:
+ #else
+ 	*oif = DIRECT_ROUTING_DEV_IFINDEX;
+-	nh_params.nh_family = fib_params->l.family;
+ #endif /* ENABLE_SKIP_FIB */
+ 	if (needs_l2_check) {
+ 		bool l2_hdr_required = true;
+@@ -112,7 +111,7 @@ fib_redirect(struct __ctx_buff *ctx, const bool needs_l2_check,
+ 			 * inbound client traffic on the load-balancer where we
+ 			 * know that replies need to go back to them.
+ 			 */
+-			dmac = nh_params.nh_family == AF_INET ?
++			dmac = fib_params->l.family == AF_INET ?
+ 			       neigh_lookup_ip4(&fib_params->l.ipv4_dst) :
+ 			       neigh_lookup_ip6((void *)&fib_params->l.ipv6_dst);
+ 			if (!dmac) {
+

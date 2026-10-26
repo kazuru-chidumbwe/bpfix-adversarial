@@ -1,0 +1,119 @@
+repo: cilium/cilium
+commit: c3b65fce8b8405f913bfaa11351fc931a1499362
+rank: 143
+
+bpf: fix asm volatile ctx->data assumptions to always init reg
+
+I've recently seen an odd verifier error similar to this:
+
+  [...]
+  8276: (61) r1 = *(u32 *)(r6 +0)
+  8277: (61) r2 = *(u32 *)(r6 +4)
+  8278: (25) if r5 > 0xff goto pc+6
+   R0=inv(id=0) R1=pkt(id=0,off=0,r=0,imm=0) R2=pkt_end(id=0,off=0,imm=0) R4=inv(id=0,umax_value=65535,var_off=(0x0; 0xffff)) R5=inv(id=0,umax_value=255,var_off=(0x0; 0xff)) R6=ctx(id=0,off=0,imm=0) R7=inv16 R8=map_value(id=0,off=0,ks=38,vs=56,imm=0) R9=inv(id=0,umax_value=4294967295,var_off=(0x0; 0xffffffff)) R10=fp0 fp-168=??mmmmmm fp-176=mmmmmmmm fp-184=mmmmmmmm fp-192=mmmmmmmm fp-200=mmmmmmmm fp-208=00000000 fp-216=00000000 fp-224=00000000 fp-232=00000000 fp-240=00000000 fp-248=00000000 fp-256=00000000 fp-264=00000000 fp-272=mmmmmmmm fp-280=mmmmmmmm fp-288=00000000
+  8279: (0f) r1 += r5
+
+  from 8278 to 8285: R0=inv(id=0) R1=pkt(id=0,off=0,r=0,imm=0) R2=pkt_end(id=0,off=0,imm=0) R4=inv(id=0,umax_value=65535,var_off=(0x0; 0xffff)) R5=inv(id=0,smin_value=-2147483648,smax_value=2147483647,umin_value=256) R6=ctx(id=0,off=0,imm=0) R7=inv16 R8=map_value(id=0,off=0,ks=38,vs=56,imm=0) R9=inv(id=0,umax_value=4294967295,var_off=(0x0; 0xffffffff)) R10=fp0 fp-168=??mmmmmm fp-176=mmmmmmmm fp-184=mmmmmmmm fp-192=mmmmmmmm fp-200=mmmmmmmm fp-208=00000000 fp-216=00000000 fp-224=00000000 fp-232=00000000 fp-240=00000000 fp-248=00000000 fp-256=00000000 fp-264=00000000 fp-272=mmmmmmmm fp-280=mmmmmmmm fp-288=00000000
+  8285: (b7) r5 = -22
+  8286: (7b) *(u64 *)(r10 -296) = r3
+  R3 !read_ok
+  [...]
+
+This was related to asm volatile interactions in XDP code. Looking at
+the LLVM objdump from a prog with ~8900 BPF insns, I've noticed two
+occasions where there is something weird in the LLVM codegen:
+
+  000000000000fef0 LBB5_796:
+    8158:       7b 2a e0 fe 00 00 00 00 *(u64 *)(r10 - 288) = r2
+    8159:       79 a5 f0 fe 00 00 00 00 r5 = *(u64 *)(r10 - 272)
+    8160:       bf 71 00 00 00 00 00 00 r1 = r7
+    8161:       0f 15 00 00 00 00 00 00 r5 += r1
+    8162:       67 05 00 00 20 00 00 00 r5 <<= 32
+    8163:       c7 05 00 00 20 00 00 00 r5 s>>= 32
+    8164:       61 61 00 00 00 00 00 00 r1 = *(u32 *)(r6 + 0)
+    8165:       61 62 04 00 00 00 00 00 r2 = *(u32 *)(r6 + 4)
+    8166:       25 05 06 00 ff 00 00 00 if r5 > 255 goto +6 <LBB5_796+0x78>  <---
+    8167:       0f 51 00 00 00 00 00 00 r1 += r5
+    8168:       bf 13 00 00 00 00 00 00 r3 = r1                              <---
+    8169:       07 01 00 00 02 00 00 00 r1 += 2
+    8170:       2d 21 02 00 00 00 00 00 if r1 > r2 goto +2 <LBB5_796+0x78>
+    8171:       b7 05 00 00 00 00 00 00 r5 = 0
+    8172:       05 00 01 00 00 00 00 00 goto +1 <LBB5_796+0x80>
+    8173:       b7 05 00 00 ea ff ff ff r5 = -22
+    8174:       7b 3a d8 fe 00 00 00 00 *(u64 *)(r10 - 296) = r3             <---
+    8175:       67 05 00 00 20 00 00 00 r5 <<= 32
+    8176:       bf 51 00 00 00 00 00 00 r1 = r5
+    8177:       77 01 00 00 20 00 00 00 r1 >>= 32
+    8178:       55 01 ce 00 00 00 00 00 if r1 != 0 goto +206 <LBB5_811>
+    8179:       79 a1 e8 fe 00 00 00 00 r1 = *(u64 *)(r10 - 280)
+    8180:       79 a2 d8 fe 00 00 00 00 r2 = *(u64 *)(r10 - 296)             <---
+    8181:       79 a3 e0 fe 00 00 00 00 r3 = *(u64 *)(r10 - 288)
+    8182:       15 01 02 00 00 00 00 00 if r1 == 0 goto +2 <LBB5_799>
+    8183:       69 21 00 00 00 00 00 00 r1 = *(u16 *)(r2 + 0)                <---
+    8184:       15 01 cd 00 00 00 00 00 if r1 == 0 goto +205 <LBB5_812>
+
+Basically, LLVM spills r3 with ctx->data* to stack, however, from the
+path `if r5 > 255` it does not yet contain the ctx->data from r1. The
+`r3 = r1` happens in the fall-through path.
+
+Verifier is more strict on us here since it requires a register to be
+initialized, and r3 from prior paths was uninitialized e.g. due to
+helper call. While logically the code is correct, for BPF we need to
+initialize the reg first in such case.
+
+Simply setting r3 to 0 did not help, presumably as it tries to reuse
+the spilled register elsewhere again (though w/o throwing an error or
+such).
+
+A different workaround we can do here is to just mask the offset with
+the max offset we ever allow (e.g. we don't go beyond 0xff anyway).
+This keeps the spilled reg valid as well and resolves the issue.
+
+Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
+
+--- bpf/include/bpf/ctx/xdp.h
+@@ -23,6 +23,7 @@
+ #define META_PIVOT			((int)(field_sizeof(struct __sk_buff, cb) + \
+ 					       sizeof(__u32) * 2))
+ 
++/* This must be a mask and all offsets guaranteed to be less than that. */
+ #define __CTX_OFF_MAX			0xff
+ 
+ static __always_inline __maybe_unused int
+@@ -36,7 +37,7 @@ xdp_load_bytes(struct xdp_md *ctx, __u64 off, void *to, const __u64 len)
+ 	 */
+ 	asm volatile("r1 = *(u32 *)(%[ctx] +0)\n\t"
+ 		     "r2 = *(u32 *)(%[ctx] +4)\n\t"
+-		     "if %[off] > %[offmax] goto +6\n\t"
++		     "%[off] &= %[offmax]\n\t"
+ 		     "r1 += %[off]\n\t"
+ 		     "%[from] = r1\n\t"
+ 		     "r1 += %[len]\n\t"
+@@ -62,7 +63,7 @@ xdp_store_bytes(struct xdp_md *ctx, __u64 off, const void *from,
+ 	/* See xdp_load_bytes(). */
+ 	asm volatile("r1 = *(u32 *)(%[ctx] +0)\n\t"
+ 		     "r2 = *(u32 *)(%[ctx] +4)\n\t"
+-		     "if %[off] > %[offmax] goto +6\n\t"
++		     "%[off] &= %[offmax]\n\t"
+ 		     "r1 += %[off]\n\t"
+ 		     "%[to] = r1\n\t"
+ 		     "r1 += %[len]\n\t"
+@@ -149,7 +150,7 @@ l3_csum_replace(struct xdp_md *ctx, __u64 off, const __u32 from, __u32 to,
+ 	/* See xdp_load_bytes(). */
+ 	asm volatile("r1 = *(u32 *)(%[ctx] +0)\n\t"
+ 		     "r2 = *(u32 *)(%[ctx] +4)\n\t"
+-		     "if %[off] > %[offmax] goto +6\n\t"
++		     "%[off] &= %[offmax]\n\t"
+ 		     "r1 += %[off]\n\t"
+ 		     "%[sum] = r1\n\t"
+ 		     "r1 += 2\n\t"
+@@ -186,7 +187,7 @@ l4_csum_replace(struct xdp_md *ctx, __u64 off, __u32 from, __u32 to,
+ 	/* See xdp_load_bytes(). */
+ 	asm volatile("r1 = *(u32 *)(%[ctx] +0)\n\t"
+ 		     "r2 = *(u32 *)(%[ctx] +4)\n\t"
+-		     "if %[off] > %[offmax] goto +6\n\t"
++		     "%[off] &= %[offmax]\n\t"
+ 		     "r1 += %[off]\n\t"
+ 		     "%[sum] = r1\n\t"
+ 		     "r1 += 2\n\t"
+

@@ -1,0 +1,483 @@
+repo: DataDog/datadog-agent
+commit: 7601154876f54f244db8317f912a120233da637e
+rank: 179
+
+[USM] protocol classification: add PostgreSQL classification (#14625)
+
+* protocol classification: add per-cpu array map
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* Outsmart the verifier
+
+* protocol classification: add per-cpu array map
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* Outsmart the verifier
+
+* protocol classification: add PostgreSQL classification
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* fix licenses & set postgres port in test
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* test: fix port
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* test: use JoinHostPort instead of Sprintf
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* [USM] protocol classification: add Postgres detection
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* revert check_command fix
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* postgres: refactor check_command
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* change map type on unsupported systems
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* fix runtime-compilation on older kernels + doc
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* fix array map
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* fix merge
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* tests: add documentation
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* tests: add long query test
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* docs & refactor
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* fix licenses
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* refactor
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* postgres: try to classify from client start messages
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* add missing Cgo defs
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* add postgres docker image pulling
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* add missing editor flag to change map type
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* remove unused import
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* case-insensitive check + docs
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* check on tmp buf
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* docs
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* try fixing verifier issue
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* fix verifier issue
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* tests: fix docker-compose path
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* fixup! Merge remote-tracking branch 'origin/main' into guillaume.pagnoux/USMO-9-protocol-classification-posgres
+
+* re-delete re-added files
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* go mod tidy
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* add docs
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* remove redundant check
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* refactor server creation in tests
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* rename guards
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* specify postgres version in docker-compose
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* tests: skip when using NAT
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* split sql files
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* tests: add tests for all supported sql queries
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* move postgres struct to postgres-defs.h
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* remove redundant check
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* classify on command completion messages as well
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* add long response test
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+* re-enable query detection
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+
+Signed-off-by: Guillaume Pagnoux <guillaume.pagnoux@datadoghq.com>
+Co-authored-by: Guy Arbitman <guy20495@gmail.com>
+
+--- pkg/network/ebpf/c/protocols/amqp-helpers.h
+@@ -7,7 +7,7 @@
+ // The method checks if the given buffer includes the protocol header which must be sent in the start of a new connection.
+ // Ref: https://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf
+ static __always_inline bool is_amqp_protocol_header(const char* buf, __u32 buf_size) {
+-    CHECK_PRELIMINARY_BUFFER_CONDITIONS(buf, buf_size, AMQP_MIN_FRAME_LENGTH)
++    CHECK_PRELIMINARY_BUFFER_CONDITIONS(buf, buf_size, AMQP_MIN_FRAME_LENGTH);
+ 
+ #define AMQP_PREFACE "AMQP"
+ 
+
+--- pkg/network/ebpf/c/protocols/http-classification-helpers.h
+@@ -6,7 +6,7 @@
+ // Checks if the given buffers start with `HTTP` prefix (represents a response) or starts with `<method> /` which represents
+ // a request, where <method> is one of: GET, POST, PUT, DELETE, HEAD, OPTIONS, or PATCH.
+ static __always_inline bool is_http(const char *buf, __u32 size) {
+-    CHECK_PRELIMINARY_BUFFER_CONDITIONS(buf, size, HTTP_MIN_SIZE)
++    CHECK_PRELIMINARY_BUFFER_CONDITIONS(buf, size, HTTP_MIN_SIZE);
+ 
+ #define HTTP "HTTP/"
+ #define GET "GET /"
+
+--- pkg/network/ebpf/c/protocols/http2-helpers.h
+@@ -37,7 +37,7 @@ static __always_inline bool read_http2_frame_header(const char *buf, size_t buf_
+ // The method checks if the given buffer starts with the HTTP2 marker as defined in https://datatracker.ietf.org/doc/html/rfc7540.
+ // We check that the given buffer is not empty and its size is at least 24 bytes.
+ static __always_inline bool is_http2_preface(const char* buf, __u32 buf_size) {
+-    CHECK_PRELIMINARY_BUFFER_CONDITIONS(buf, buf_size, HTTP2_MARKER_SIZE)
++    CHECK_PRELIMINARY_BUFFER_CONDITIONS(buf, buf_size, HTTP2_MARKER_SIZE);
+ 
+ #define HTTP2_PREFACE "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"
+ 
+@@ -51,7 +51,7 @@ static __always_inline bool is_http2_preface(const char* buf, __u32 buf_size) {
+ // The settings frame must not be related to the connection (stream_id == 0) and the length should be a multiplication
+ // of 6 bytes.
+ static __always_inline bool is_http2_server_settings(const char* buf, __u32 buf_size) {
+-    CHECK_PRELIMINARY_BUFFER_CONDITIONS(buf, buf_size, HTTP2_FRAME_HEADER_SIZE)
++    CHECK_PRELIMINARY_BUFFER_CONDITIONS(buf, buf_size, HTTP2_FRAME_HEADER_SIZE);
+ 
+     struct http2_frame frame_header;
+     if (!read_http2_frame_header(buf, buf_size, &frame_header)) {
+
+--- pkg/network/ebpf/c/protocols/mongo-helpers.h
+@@ -26,7 +26,7 @@ static __always_inline bool mongo_have_seen_request(conn_tuple_t *tup, __s32 res
+ 
+ // Checks if the given buffer represents a mongo request or a response.
+ static __always_inline bool is_mongo(conn_tuple_t *tup, const char *buf, __u32 size) {
+-    CHECK_PRELIMINARY_BUFFER_CONDITIONS(buf, size, MONGO_HEADER_LENGTH)
++    CHECK_PRELIMINARY_BUFFER_CONDITIONS(buf, size, MONGO_HEADER_LENGTH);
+ 
+     mongo_msg_header header = *((mongo_msg_header*)buf);
+ 
+
+--- pkg/network/ebpf/c/protocols/postgres-defs.h
+@@ -0,0 +1,50 @@
++#ifndef __POSTGRES_DEFS_H
++#define __POSTGRES_DEFS_H
++
++// The minimum size we want to be able to check for a startup message. This size includes:
++// - The length field: 4 bytes
++// - The protocol major version: 2 bytes
++// - The protocol minior version: 2 bytes
++// - The "user" string, as the first connection parameter name: 5 bytes
++#define POSTGRES_STARTUP_MIN_LEN 13
++
++// Postgres protocol version, in big endian, as described in the protocol
++// specification. This is version "3.0".
++#define PG_STARTUP_VERSION 196608
++#define PG_STARTUP_USER_PARAM "user"
++
++// From https://www.postgresql.org/docs/current/protocol-overview.html:
++// The first byte of a message identifies the message type, and the next four
++// bytes specify the length of the rest of the message (this length count
++// includes itself, but not the message-type byte). The remaining contents of
++// the message are determined by the message type. Some messages do not have
++// a payload at all, so the minimum size, including the length itself, is
++// 4 bytes.
++#define POSTGRES_MIN_PAYLOAD_LEN 4
++// Assume typical query message size is below an artificial limit.
++// 30000 is copied from postgres code base:
++// https://github.com/postgres/postgres/tree/master/src/interfaces/libpq/fe-protocol3.c#L94
++#define POSTGRES_MAX_PAYLOAD_LEN 30000
++
++#define POSTGRES_QUERY_MAGIC_BYTE 'Q'
++#define POSTGRES_COMMAND_COMPLETE_MAGIC_BYTE 'C'
++
++// Regular format of postgres message: | byte tag | int32_t len | string payload |
++// From https://www.postgresql.org/docs/current/protocol-overview.html:
++// The first byte of a message identifies the message type, and the next four
++// bytes specify the length of the rest of the message (this length count
++// includes itself, but not the message-type byte). The remaining contents of
++// the message are determined by the message type
++struct pg_message_header {
++    __u8 message_tag;
++    __u32 message_len; // Big-endian: use bpf_ntohl to read this field
++} __attribute__((packed));
++
++// Postgres Startup Message (used when a client connects to the server) differs
++// from other messages by not having a message tag.
++struct pg_startup_header {
++    __u32 message_len; // Big-endian: use bpf_ntohl to read this field
++    __u32 version; // Big-endian: use bpf_ntohl to read this field
++};
++
++#endif // __POSTGRES_DEFS_H
+
+--- pkg/network/ebpf/c/protocols/postgres-helpers.h
+@@ -0,0 +1,45 @@
++#ifndef __POSTGRES_HELPERS_H
++#define __POSTGRES_HELPERS_H
++
++#include "postgres-defs.h"
++#include "sql-helpers.h"
++
++// is_postgres_connect checks if the buffer is a Postgres startup message.
++static __always_inline bool is_postgres_connect(const char *buf, __u32 buf_size) {
++    CHECK_PRELIMINARY_BUFFER_CONDITIONS(buf, buf_size, POSTGRES_STARTUP_MIN_LEN);
++
++    struct pg_startup_header *hdr = (struct pg_startup_header *)buf;
++
++    if (bpf_ntohl(hdr->version) != PG_STARTUP_VERSION) {
++        return false;
++    }
++
++    // Check if we can find the user param. Postgres uses C-style strings, so
++    // we also check for the terminating null byte.
++    return !bpf_memcmp(buf + sizeof(*hdr), PG_STARTUP_USER_PARAM, sizeof(PG_STARTUP_USER_PARAM));
++}
++
++// is_postgres_query checks if the buffer is a regular Postgres message.
++static __always_inline bool is_postgres_query(const char *buf, __u32 buf_size) {
++    CHECK_PRELIMINARY_BUFFER_CONDITIONS(buf, buf_size, sizeof(struct pg_message_header));
++
++    struct pg_message_header *hdr = (struct pg_message_header *)buf;
++
++    // We only classify queries for now
++    if (hdr->message_tag != POSTGRES_QUERY_MAGIC_BYTE && hdr->message_tag != POSTGRES_COMMAND_COMPLETE_MAGIC_BYTE) {
++        return false;
++    }
++
++    __u32 message_len = bpf_ntohl(hdr->message_len);
++    if (message_len < POSTGRES_MIN_PAYLOAD_LEN || message_len > POSTGRES_MAX_PAYLOAD_LEN) {
++        return false;
++    }
++
++    return is_sql_command(buf + sizeof(*hdr), buf_size - sizeof(*hdr));
++}
++
++static __always_inline bool is_postgres(const char *buf, __u32 buf_size) {
++    return is_postgres_query(buf, buf_size) || is_postgres_connect(buf, buf_size);
++}
++
++#endif // __POSTGRES_HELPERS_H
+
+--- pkg/network/ebpf/c/protocols/protocol-classification-common.h
+@@ -11,14 +11,16 @@
+ long bpf_skb_load_bytes_with_telemetry(const void *skb, u32 offset, void *to, u32 len) {return 0;}
+ #endif
+ 
+-#define CHECK_PRELIMINARY_BUFFER_CONDITIONS(buf, buf_size, min_buff_size)   \
+-    if (buf_size < min_buff_size) {                                         \
+-        return false;                                                       \
+-    }                                                                       \
+-                                                                            \
+-    if (buf == NULL) {                                                      \
+-        return false;                                                       \
+-    }                                                                       \
++#define CHECK_PRELIMINARY_BUFFER_CONDITIONS(buf, buf_size, min_buff_size) \
++    do {                                                                  \
++        if (buf_size < min_buff_size) {                                   \
++            return false;                                                 \
++        }                                                                 \
++                                                                          \
++        if (buf == NULL) {                                                \
++            return false;                                                 \
++        }                                                                 \
++    } while (0)
+ 
+ // Returns true if the packet is TCP.
+ static __always_inline bool is_tcp(conn_tuple_t *tup) {
+
+--- pkg/network/ebpf/c/protocols/protocol-classification-defs.h
+@@ -4,10 +4,11 @@
+ #include <linux/types.h>
+ 
+ #include "amqp-defs.h"
+-#include "http2-defs.h"
+ #include "http-classification-defs.h"
++#include "http2-defs.h"
+ #include "mongo-defs.h"
+ #include "redis-defs.h"
++#include "sql-defs.h"
+ 
+ // Represents the max buffer size required to classify protocols .
+ // We need to round it to be multiplication of 16 since we are reading blocks of 16 bytes in read_into_buffer_skb_all_kernels.
+@@ -25,6 +26,7 @@ typedef enum {
+     PROTOCOL_HTTP2,
+     PROTOCOL_TLS,
+     PROTOCOL_MONGO = 6,
++    PROTOCOL_POSTGRES = 7,
+     PROTOCOL_AMQP = 8,
+     PROTOCOL_REDIS = 9,
+     //  Add new protocols before that line.
+
+--- pkg/network/ebpf/c/protocols/protocol-classification.h
+@@ -13,6 +13,7 @@
+ #include "http2-helpers.h"
+ #include "mongo-helpers.h"
+ #include "redis-helpers.h"
++#include "postgres-helpers.h"
+ 
+ // Determines the protocols of the given buffer. If we already classified the payload (a.k.a protocol out param
+ // has a known protocol), then we do nothing.
+@@ -31,6 +32,8 @@ static __always_inline void classify_protocol(protocol_t *protocol, conn_tuple_t
+         *protocol = PROTOCOL_REDIS;
+     } else if (is_mongo(tup, buf, size)) {
+         *protocol = PROTOCOL_MONGO;
++    } else if (is_postgres(buf, size)) {
++        *protocol = PROTOCOL_POSTGRES;
+     } else {
+         *protocol = PROTOCOL_UNKNOWN;
+     }
+
+--- pkg/network/ebpf/c/protocols/redis-helpers.h
+@@ -69,7 +69,7 @@ static __always_inline bool check_integer_and_crlf(const char* buf, __u32 buf_si
+ }
+ 
+ static __always_inline bool is_redis(const char* buf, __u32 buf_size) {
+-    CHECK_PRELIMINARY_BUFFER_CONDITIONS(buf, buf_size, REDIS_MIN_FRAME_LENGTH)
++    CHECK_PRELIMINARY_BUFFER_CONDITIONS(buf, buf_size, REDIS_MIN_FRAME_LENGTH);
+ 
+     char first_char = buf[0];
+     switch (first_char) {
+
+--- pkg/network/ebpf/c/protocols/sql-defs.h
+@@ -0,0 +1,14 @@
++#ifndef __SQL_DEFS_H
++#define __SQL_DEFS_H
++
++#define SQL_COMMAND_MAX_SIZE 6
++
++#define SQL_ALTER "ALTER"
++#define SQL_CREATE "CREATE"
++#define SQL_DELETE "DELETE"
++#define SQL_DROP "DROP"
++#define SQL_INSERT "INSERT"
++#define SQL_SELECT "SELECT"
++#define SQL_UPDATE "UPDATE"
++
++#endif /*__SQL_DEFS_H*/
+
+--- pkg/network/ebpf/c/protocols/sql-helpers.h
+@@ -0,0 +1,38 @@
++#ifndef __SQL_HELPERS_H
++#define __SQL_HELPERS_H
++
++#include "bpf_builtins.h"
++#include "sql-defs.h"
++
++// Check that we can read the amount of memory we want, then to the comparison.
++// Note: we use `sizeof(command) - 1` to *not* compare with the null-terminator of
++// the strings.
++#define check_command(buf, command, buf_size) \
++    (!bpf_memcmp((buf), &(command), sizeof(command) - 1))
++
++// is_sql_command check that there is an SQL query in buf. We only check the
++// most commonly used SQL queries
++static __always_inline bool is_sql_command(const char *buf, __u32 buf_size) {
++    char tmp[SQL_COMMAND_MAX_SIZE];
++
++    // Convert what would be the query to uppercase to match queries like
++    // 'select * from table'
++#pragma unroll (SQL_COMMAND_MAX_SIZE)
++    for (int i = 0; i < SQL_COMMAND_MAX_SIZE; i++) {
++        if ('a' <= buf[i] && buf[i] <= 'z') {
++            tmp[i] = buf[i] - 'a' +'A';
++        } else {
++            tmp[i] = buf[i];
++        }
++    }
++
++    return check_command(tmp, SQL_ALTER, buf_size)
++        || check_command(tmp, SQL_CREATE, buf_size)
++        || check_command(tmp, SQL_DELETE, buf_size)
++        || check_command(tmp, SQL_DROP, buf_size)
++        || check_command(tmp, SQL_INSERT, buf_size)
++        || check_command(tmp, SQL_SELECT, buf_size)
++        || check_command(tmp, SQL_UPDATE, buf_size);
++}
++
++#endif // __SQL_HELPERS_H
+

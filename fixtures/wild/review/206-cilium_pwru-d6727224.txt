@@ -1,0 +1,43 @@
+repo: cilium/pwru
+commit: d6727224481c29a8bced1b83e89aa4d80b36ed21
+rank: 206
+
+Revert "support output cpu"
+
+This reverts commit 015a7340a3020963ba0cee4c313655198fb30f6c.
+
+On the 5.16.1-arch1-1 kernel this commit caused the following verifier
+error when running "pwru --filter-dst-ip 8.8.8.8 --output-skb":
+
+    2022/01/25 12:02:40 Loading objects: field KprobeSkb1:
+    program kprobe_skb_1: load program: permission denied:
+    R1 type=ctx expected=fp
+    ; int kprobe_skb_1(struct pt_regs *ctx) {
+    0: (bf) r9 = r1
+    ; struct sk_buff *skb = (struct sk_buff *) PT_REGS_PARM1(ctx);
+    1: (79) r8 = *(u64 *)(r9 +112)
+    2: (b7) r1 = 0
+    ; struct event_t event = {};
+    3: (63) *(u32 *)(r10 -56) = r1
+    last_idx 3 first_idx 0
+
+The full log is included in the revert PR.
+
+--- bpf/kprobe_pwru.c
+@@ -49,7 +49,6 @@ struct event_t {
+ 	u64 addr;
+ 	u64 skb_addr;
+ 	u64 ts;
+-	u32 cpu;
+ 	typeof(print_skb_id) print_skb_id;
+ 	struct skb_meta meta;
+ 	struct tuple tuple;
+@@ -374,7 +373,6 @@ handle_everything(struct sk_buff *skb, struct pt_regs *ctx) {
+ 	event.addr = PT_REGS_IP(ctx);
+ 	event.skb_addr = (u64) skb;
+ 	event.ts = bpf_ktime_get_ns();
+-	event.cpu = bpf_get_smp_processor_id();
+ 	bpf_perf_event_output(ctx, &events, BPF_F_CURRENT_CPU, &event, sizeof(event));
+ 
+ 	return 0;
+

@@ -1,0 +1,30 @@
+repo: DataDog/datadog-agent
+commit: 65fd45d1c5ed6f71c590cd8053b942a3368652f3
+rank: 214
+
+usm,npm: classification: Fix verifier error on rhel 8.4 (#35290)
+
+--- pkg/network/ebpf/c/protocols/read_into_buffer.h
+@@ -37,13 +37,17 @@
+             return;                                                                                                 \
+         }                                                                                                           \
+                                                                                                                     \
++        if (total_size < i*(blk_size)) {                                                                            \
++            return;                                                                                                 \
++        }                                                                                                           \
++        /* Calculating the absolute size from the allocated buffer, that was left empty, again to please the */     \
++        /* verifier so it can be assured we are not exceeding the memory limits. */                                 \
++        const u64 left_buffer = total_size - i*(blk_size);                                                          \
++                                                                                                                    \
+         /* The maximum that we can read is (blk_size) - 1. Checking (to please the verifier) that we read no more */\
+         /* than the allowed max size. */                                                                            \
+-        const s64 read_size = left_payload < (blk_size) - 1 ? left_payload : (blk_size) - 1;                        \
++        const u64 read_size = left_payload < (blk_size) - 1 ? left_payload : (blk_size) - 1;                        \
+                                                                                                                     \
+-        /* Calculating the absolute size from the allocated buffer, that was left empty, again to please the */     \
+-        /* verifier so it can be assured we are not exceeding the memory limits. */                                 \
+-        const s64 left_buffer = (s64)(total_size) < (s64)(i*(blk_size)) ? 0 : total_size - i*(blk_size);            \
+         if (read_size <= left_buffer) {                                                                             \
+             fn(skb, offset, buffer, read_size);                                                                     \
+         }                                                                                                           \
+

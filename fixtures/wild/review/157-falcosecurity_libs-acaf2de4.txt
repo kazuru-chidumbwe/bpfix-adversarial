@@ -1,0 +1,76 @@
+repo: falcosecurity/libs
+commit: acaf2de4ceefeb1633cca44100255ada6280b0fc
+rank: 157
+
+fix(driver/modern_bpf): read `signal_deliver` siginfo via BPF_CORE_READ
+
+Signal tracepoints can receive the `SEND_SIG_NOINFO` (0) and
+`SEND_SIG_PRIV` (1) sentinels in place of a real `kernel_siginfo`
+pointer. Since `SEND_SIG_PRIV` survives a NULL check, kernel commit
+77515ab12e49 ("bpf: Mark signal tracepoint siginfo arguments as
+scalar") lists `signal_generate` and `signal_deliver` in
+`raw_tp_null_args[]` and exposes the `info` argument to `tp_btf`
+programs as a scalar.
+
+With that change the verifier rejects the direct `info->...` accesses
+in the `signal_deliver` program with "invalid mem access 'scalar'",
+and since all programs are loaded together the modern probe fails to
+load entirely (seen on 6.18.53).
+
+Read the fields through `BPF_CORE_READ` instead. It is accepted both
+when `info` is a scalar and when it is a BTF pointer, so older
+kernels keep working. The resulting `spid` values are unchanged.
+
+Link: https://github.com/torvalds/linux/commit/77515ab12e4983e6416f8c35039a3f0c0822ac70
+Signed-off-by: Adnan Ali <adduali1310@hotmail.com>
+
+--- driver/modern_bpf/programs/attached/events/signal_deliver.bpf.c
+@@ -30,29 +30,34 @@ int BPF_PROG(signal_deliver, int sig, struct kernel_siginfo *info, struct k_siga
+ 	/* Try to find the source pid */
+ 	pid_t spid = 0;
+ 
++	/* Signal tracepoints can receive the `SEND_SIG_NOINFO` (0) and
++	 * `SEND_SIG_PRIV` (1) sentinels instead of a real pointer, so newer kernels
++	 * expose `info` as a scalar and the verifier rejects direct accesses.
++	 * `BPF_CORE_READ` works with both the scalar and the BTF pointer.
++	 */
+ 	if(info != NULL) {
+ 		switch(sig) {
+ 		case SIGKILL:
+-			spid = info->_sifields._kill._pid;
++			spid = BPF_CORE_READ(info, _sifields._kill._pid);
+ 			break;
+ 
+ 		case SIGTERM:
+ 		case SIGHUP:
+ 		case SIGINT:
+ 		case SIGTSTP:
+ 		case SIGQUIT: {
+-			int si_code = info->si_code;
++			int si_code = BPF_CORE_READ(info, si_code);
+ 			if(si_code == SI_USER || si_code == SI_QUEUE || si_code <= 0) {
+ 				/* This is equivalent to `info->si_pid` where
+ 				 * `si_pid` is a macro `_sifields._kill._pid`
+ 				 */
+-				spid = info->_sifields._kill._pid;
++				spid = BPF_CORE_READ(info, _sifields._kill._pid);
+ 			}
+ 			break;
+ 		}
+ 
+ 		case SIGCHLD:
+-			spid = info->_sifields._sigchld._pid;
++			spid = BPF_CORE_READ(info, _sifields._sigchld._pid);
+ 			break;
+ 
+ 		default:
+@@ -61,7 +66,7 @@ int BPF_PROG(signal_deliver, int sig, struct kernel_siginfo *info, struct k_siga
+ 		}
+ 
+ 		if(sig >= SIGRTMIN && sig <= SIGRTMAX) {
+-			spid = info->_sifields._rt._pid;
++			spid = BPF_CORE_READ(info, _sifields._rt._pid);
+ 		}
+ 	}
+ 
+

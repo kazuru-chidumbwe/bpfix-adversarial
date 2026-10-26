@@ -1,0 +1,54 @@
+repo: cilium/cilium
+commit: ebb781e5ba1bb4b7c4f99c215799eaf8ed37620e
+rank: 237
+
+bpf: Fix sockops compile on newer LLVM
+
+Older versions of Clang/LLVM (7.0 and earlier) compile this line into a
+32-bit read followed by a shift:
+
+  r8 = *(u32 *)(r6 + 64)
+  r8 >>= 16
+
+Newer versions of Clang/LLVM will compile this instead into a single
+16-bit read into an offset from the context like this:
+
+  r8 = *(u16 *)(r6 + 66)
+
+Unfortunately, the kernel verifier (at least as of v5.0, possibly newer)
+does not currently support reads into 'struct bpf_sock_ops' at such
+offsets, which leads to verifier errors when attempting to load the
+program when compiled on newer compilers.
+
+Fix it by forcing a 32-bit read and shifting it.
+
+Signed-off-by: Joe Stringer <joe@cilium.io>
+
+--- bpf/sockops/bpf_sockops.h
+@@ -61,7 +61,11 @@ static __always_inline void sk_extract4_key(struct bpf_sock_ops *ops,
+ 	key->family = ENDPOINT_KEY_IPV4;
+ 
+ 	key->sport = (bpf_ntohl(ops->local_port) >> 16);
+-	key->dport = ops->remote_port >> 16;
++	/* clang-7.1 or higher seems to think it can do a 16-bit read here
++	 * which unfortunately most kernels (as of October 2019) do not
++	 * support, which leads to verifier failures. Insert a READ_ONCE
++	 * to make sure that a 32-bit read followed by shift is generated. */
++	key->dport = READ_ONCE(ops->remote_port) >> 16;
+ }
+ 
+ static __always_inline void sk_msg_extract4_key(struct sk_msg_md *msg,
+@@ -72,7 +76,11 @@ static __always_inline void sk_msg_extract4_key(struct sk_msg_md *msg,
+ 	key->family = ENDPOINT_KEY_IPV4;
+ 
+ 	key->sport = (bpf_ntohl(msg->local_port) >> 16);
+-	key->dport = msg->remote_port >> 16;
++	/* clang-7.1 or higher seems to think it can do a 16-bit read here
++	 * which unfortunately most kernels (as of October 2019) do not
++	 * support, which leads to verifier failures. Insert a READ_ONCE
++	 * to make sure that a 32-bit read followed by shift is generated. */
++	key->dport = READ_ONCE(msg->remote_port) >> 16;
+ }
+ 
+ static __always_inline void sk_lb4_key_v2(struct lb4_key_v2 *lb4,
+

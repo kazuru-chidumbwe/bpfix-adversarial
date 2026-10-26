@@ -1,0 +1,323 @@
+repo: DataDog/datadog-agent
+commit: a0310db565b03130a52a8dfff8e701f8255f4726
+rank: 43
+
+[USMON-358] postgres monitoring (#25416)
+
+* usm: Update agent-payload version
+
+Updating to a version that supports DB aggregations from USM
+
+* usm: postgres: Added configuration to enable postgres monitoring
+
+* usm: postgres: Added configuration to control max stats buffered
+
+Every protocol has its own configuration to control the number of stats in memory
+to store until the next connections check
+
+* usm: postgres: Added eBPF decoding code
+
+The commit contains the postgres decoding plaintext implementation.
+
+* usm: postgres: Added protocol
+
+The commit adds the postgres protocol struct to USM.
+The commit does not contain actual user-mode processing of postgres events. That part will be
+added in a dedicated commit
+
+* usm: postgres: Add test build flag, to test utils files
+
+* usm: postgres: Add statskeeper and processing of events
+
+* usm: postgres: Expose postgres requests to connections check
+
+* usm: postgres: Added debugging endpoint
+
+* Fixed CR comments
+
+* usm: postgres: Added postgres encoder
+
+* usm: postgres: Added UTs
+
+* usm: postgres: Handle verifier error on old kernels
+
+* usm: postgres: Fixed wrong latnecy for multiple records
+
+If we have a single record, then we should use firstLatencySample, but if we have
+many records, we should use the latency field
+
+* usm: postgres: Update protobuf structs
+
+* usm: postgres: tests: Address CR comments
+
+--- pkg/network/ebpf/c/prebuilt/usm.c
+@@ -11,6 +11,7 @@
+ #include "protocols/http2/decoding.h"
+ #include "protocols/http2/decoding-tls.h"
+ #include "protocols/kafka/kafka-parsing.h"
++#include "protocols/postgres/decoding.h"
+ #include "protocols/sockfd-probes.h"
+ #include "protocols/tls/java/erpc_dispatcher.h"
+ #include "protocols/tls/java/erpc_handlers.h"
+@@ -50,6 +51,7 @@ int tracepoint__net__netif_receive_skb(struct pt_regs* ctx) {
+     http2_batch_flush(ctx);
+     terminated_http2_batch_flush(ctx);
+     kafka_batch_flush(ctx);
++    postgres_batch_flush(ctx);
+     return 0;
+ }
+ 
+
+--- pkg/network/ebpf/c/protocols/classification/defs.h
+@@ -143,6 +143,7 @@ typedef enum {
+     PROG_KAFKA,
+     PROG_KAFKA_RESPONSE_PARSER,
+     PROG_GRPC,
++    PROG_POSTGRES,
+     // Add before this value.
+     PROG_MAX,
+ } protocol_prog_t;
+
+--- pkg/network/ebpf/c/protocols/classification/dispatcher-helpers.h
+@@ -15,6 +15,8 @@
+ #include "protocols/http2/usm-events.h"
+ #include "protocols/kafka/kafka-classification.h"
+ #include "protocols/kafka/usm-events.h"
++#include "protocols/postgres/helpers.h"
++#include "protocols/postgres/usm-events.h"
+ 
+ __maybe_unused static __always_inline protocol_prog_t protocol_to_program(protocol_t proto) {
+     switch(proto) {
+@@ -24,6 +26,8 @@ __maybe_unused static __always_inline protocol_prog_t protocol_to_program(protoc
+         return PROG_HTTP2_HANDLE_FIRST_FRAME;
+     case PROTOCOL_KAFKA:
+         return PROG_KAFKA;
++    case PROTOCOL_POSTGRES:
++        return PROG_POSTGRES;
+     default:
+         if (proto != PROTOCOL_UNKNOWN) {
+             log_debug("protocol doesn't have a matching program: %d", proto);
+@@ -71,6 +75,8 @@ static __always_inline void classify_protocol_for_dispatcher(protocol_t *protoco
+         *protocol = PROTOCOL_HTTP;
+     } else if (is_http2_monitoring_enabled() && is_http2(buf, size)) {
+         *protocol = PROTOCOL_HTTP2;
++    } else if (is_postgres_monitoring_enabled() && is_postgres(buf, size)) {
++        *protocol = PROTOCOL_POSTGRES;
+     } else {
+         *protocol = PROTOCOL_UNKNOWN;
+     }
+
+--- pkg/network/ebpf/c/protocols/postgres/decoding-maps.h
+@@ -0,0 +1,15 @@
++#ifndef __POSTGRES_MAPS_H
++#define __POSTGRES_MAPS_H
++
++#include "bpf_helpers.h"
++#include "map-defs.h"
++
++#include "protocols/postgres/types.h"
++
++// Keeps track of in-flight Postgres transactions
++BPF_HASH_MAP(postgres_in_flight, conn_tuple_t, postgres_transaction_t, 0)
++
++// Acts as a scratch buffer for Postgres events, for preparing events before they are sent to userspace.
++BPF_PERCPU_ARRAY_MAP(postgres_scratch_buffer, postgres_event_t, 1)
++
++#endif
+
+--- pkg/network/ebpf/c/protocols/postgres/decoding.h
+@@ -0,0 +1,129 @@
++#ifndef __POSTGRES_DECODING_H
++#define __POSTGRES_DECODING_H
++
++#include "bpf_builtins.h"
++#include "bpf_telemetry.h"
++
++#include "protocols/sockfd.h"
++
++#include "protocols/postgres/decoding-maps.h"
++#include "protocols/postgres/defs.h"
++#include "protocols/postgres/types.h"
++#include "protocols/postgres/usm-events.h"
++#include "protocols/read_into_buffer.h"
++
++READ_INTO_BUFFER(postgres_query, POSTGRES_BUFFER_SIZE, BLK_SIZE)
++
++// Enqueues a batch of events to the user-space. To spare stack size, we take a scratch buffer from the map, copy
++// the connection tuple and the transaction to it, and then enqueue the event.
++static __always_inline void postgres_batch_enqueue_wrapper(conn_tuple_t *tuple, postgres_transaction_t *tx) {
++    u32 zero = 0;
++    postgres_event_t *event = bpf_map_lookup_elem(&postgres_scratch_buffer, &zero);
++    if (!event) {
++        return;
++    }
++
++    bpf_memcpy(&event->tuple, tuple, sizeof(conn_tuple_t));
++    bpf_memcpy(&event->tx, tx, sizeof(postgres_transaction_t));
++    postgres_batch_enqueue(event);
++}
++
++// Reads a message header from the given context. Returns true if the header was read successfully, false otherwise.
++static __always_inline bool read_message_header(struct __sk_buff *skb, skb_info_t *skb_info, struct pg_message_header* header) {
++    // Ensuring that the header is in the buffer.
++    if (skb_info->data_off + sizeof(struct pg_message_header) > skb_info->data_end) {
++        return false;
++    }
++    bpf_skb_load_bytes(skb, skb_info->data_off, header, sizeof(struct pg_message_header));
++    // Converting the header to host byte order.
++    header->message_len = bpf_ntohl(header->message_len);
++    return true;
++}
++
++// Handles a new query by creating a new transaction and storing it in the map.
++// If a transaction already exists for the given connection, it is aborted.
++// Query message format - https://www.postgresql.org/docs/current/protocol-message-formats.html#PROTOCOL-MESSAGE-FORMATS-QUERY
++// the first 5 bytes are the message header, and the query is the rest of the payload.
++static __always_inline void handle_new_query(struct __sk_buff *skb, skb_info_t *skb_info, conn_tuple_t *conn_tuple, __u32 query_len) {
++    postgres_transaction_t new_transaction = {};
++    new_transaction.request_started = bpf_ktime_get_ns();
++    read_into_buffer_postgres_query((char *)new_transaction.request_fragment, skb, skb_info->data_off);
++    new_transaction.original_query_size = query_len;
++    bpf_map_update_elem(&postgres_in_flight, conn_tuple, &new_transaction, BPF_ANY);
++}
++
++// Handles a command complete message by enqueuing the transaction and deleting it from the in-flight map.
++// The format of the command complete message is described here: https://www.postgresql.org/docs/current/protocol-message-formats.html#PROTOCOL-MESSAGE-FORMATS-COMMANDCOMPLETE
++static __always_inline void handle_command_complete(conn_tuple_t *conn_tuple, postgres_transaction_t *transaction) {
++    transaction->response_last_seen = bpf_ktime_get_ns();
++    postgres_batch_enqueue_wrapper(conn_tuple, transaction);
++    bpf_map_delete_elem(&postgres_in_flight, conn_tuple);
++}
++
++SEC("socket/postgres_process")
++int socket__postgres_process(struct __sk_buff* skb) {
++    skb_info_t skb_info = {};
++    conn_tuple_t conn_tuple = {};
++
++    if (!fetch_dispatching_arguments(&conn_tuple, &skb_info)) {
++        return 0;
++    }
++
++    normalize_tuple(&conn_tuple);
++
++    // Read first message header
++    struct pg_message_header header;
++    if (!read_message_header(skb, &skb_info, &header)) {
++        return 0;
++    }
++    // Advance the data offset to the end of the first message header.
++    skb_info.data_off += sizeof(struct pg_message_header);
++
++    // If the message is a new query, we store the query in the in-flight map.
++    // If we had a transaction for the connection, we override it and drops the previous one.
++    if (header.message_tag == POSTGRES_QUERY_MAGIC_BYTE) {
++        // message_len includes size of the payload, 4 bytes of the message length itself, but not the message tag.
++        // So if we want to know the size of the payload, we need to subtract the size of the message length.
++        handle_new_query(skb, &skb_info, &conn_tuple, header.message_len - sizeof(__u32));
++        return 0;
++    }
++
++    // We didn't find a new query, thus we assume we're in the middle of a transaction.
++    // We look up the transaction in the in-flight map, and if it doesn't exist, we ignore the message.
++    postgres_transaction_t *transaction = bpf_map_lookup_elem(&postgres_in_flight, &conn_tuple);
++    if (!transaction) {
++        return 0;
++    }
++
++    // If the message is a command complete, we enqueue the transaction and delete it from the in-flight map.
++    if (header.message_tag == POSTGRES_COMMAND_COMPLETE_MAGIC_BYTE) {
++        handle_command_complete(&conn_tuple, transaction);
++        return 0;
++    }
++
++    // We're in the middle of a transaction, and the message is not a command complete, but it can be a chain of
++    // messages. So we try to read up to POSTGRES_MAX_MESSAGES messages, looking for a command complete message.
++
++    // Advance the data offset to the end of the first message (after the payload). The message length includes the size
++    // of the payload, 4 bytes of the message length itself, but not the message tag. Since we already moved the data
++    // offset to the end of the message header, we want to jump over the payload.
++    skb_info.data_off += header.message_len - sizeof(__u32);
++
++#pragma unroll(POSTGRES_MAX_MESSAGES)
++    for (__u32 iteration = 0; iteration < POSTGRES_MAX_MESSAGES; ++iteration) {
++        if (!read_message_header(skb, &skb_info, &header)) {
++            break;
++        }
++        if (header.message_tag == POSTGRES_COMMAND_COMPLETE_MAGIC_BYTE) {
++            handle_command_complete(&conn_tuple, transaction);
++            break;
++        }
++        // We didn't find a command complete message, so we advance the data offset to the end of the message.
++        // reminder, the message length includes the size of the payload, 4 bytes of the message length itself, but not
++        // the message tag. So we need to add 1 to the message length to jump over the entire message.
++        skb_info.data_off += header.message_len + 1;
++    }
++    return 0;
++}
++
++#endif
+
+--- pkg/network/ebpf/c/protocols/postgres/types.h
+@@ -0,0 +1,31 @@
++#ifndef __POSTGRES_TYPES_H
++#define __POSTGRES_TYPES_H
++
++#include "conn_tuple.h"
++
++// Controls the number of Postgres transactions read from userspace at a time.
++#define POSTGRES_BATCH_SIZE 25
++
++// Maximum length of postgres query to send to userspace.
++#define POSTGRES_BUFFER_SIZE 64
++
++// Maximum number of Postgres messages we can parse for a single packet.
++#define POSTGRES_MAX_MESSAGES 80
++
++// Postgres transaction information we store in the kernel.
++typedef struct {
++    // The Postgres query we are currently parsing. Stored up to POSTGRES_BUFFER_SIZE bytes.
++    char request_fragment[POSTGRES_BUFFER_SIZE];
++    __u64 request_started;
++    __u64 response_last_seen;
++    // The actual size of the query stored in request_fragment.
++    __u32 original_query_size;
++} postgres_transaction_t;
++
++// The struct we send to userspace, containing the connection tuple and the transaction information.
++typedef struct {
++    conn_tuple_t tuple;
++    postgres_transaction_t tx;
++} postgres_event_t;
++
++#endif
+
+--- pkg/network/ebpf/c/protocols/postgres/usm-events.h
+@@ -0,0 +1,9 @@
++#ifndef __POSTGRES_USM_EVENTS_H
++#define __POSTGRES_USM_EVENTS_H
++
++#include "protocols/events.h"
++#include "protocols/postgres/types.h"
++
++USM_EVENTS_INIT(postgres, postgres_event_t, POSTGRES_BATCH_SIZE);
++
++#endif
+
+--- pkg/network/ebpf/c/runtime/usm.c
+@@ -18,6 +18,7 @@
+ #include "protocols/http2/decoding.h"
+ #include "protocols/http2/decoding-tls.h"
+ #include "protocols/kafka/kafka-parsing.h"
++#include "protocols/postgres/decoding.h"
+ #include "protocols/sockfd-probes.h"
+ #include "protocols/tls/java/erpc_dispatcher.h"
+ #include "protocols/tls/java/erpc_handlers.h"
+@@ -62,6 +63,7 @@ int tracepoint__net__netif_receive_skb(struct pt_regs* ctx) {
+     http2_batch_flush(ctx);
+     terminated_http2_batch_flush(ctx);
+     kafka_batch_flush(ctx);
++    postgres_batch_flush(ctx);
+     return 0;
+ }
+ 
+

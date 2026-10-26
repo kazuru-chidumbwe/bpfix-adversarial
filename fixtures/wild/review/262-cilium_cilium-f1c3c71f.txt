@@ -1,0 +1,99 @@
+repo: cilium/cilium
+commit: f1c3c71f0003a62c6db65342fa87b68c9ceb8e9b
+rank: 262
+
+bpf: lift v4-in-v6 limitation on lrp services
+
+v4-in-v6 for LRP services was originally not implemented due to throwing
+an obscure verifier error with no particular log message involved:
+
+  [...]
+  level=warning msg=“Prog section ‘connect6’ rejected: Unknown error 524 (524)!” subsys=datapath-loader
+  level=warning msg=” - Type:         18" subsys=datapath-loader
+  level=warning msg=” - Attach Type:  11" subsys=datapath-loader
+  level=warning msg=” - Instructions: 1105 (0 over limit)” subsys=datapath-loader
+  level=warning msg=” - License:      GPL” subsys=datapath-loader
+  level=warning subsys=datapath-loader
+  level=warning msg=“Verifier analysis:” subsys=datapath-loader
+  level=warning subsys=datapath-loader
+  level=warning msg=“processed 2500 insns (limit 1000000) max_states_per_insn 3 total_states 169 peak_states 169 mark_read 26" subsys=datapath-loader
+  level=warning subsys=datapath-loader
+  [...]
+
+This may indeed be an odd combination of either LLVM code generation or
+verifier quirk. It is fixed by changing the return 0 to -ENXIO (or some
+other error code). Changing to an error code is the correct approach
+either way as otherwise we indicate to sock6_xlate_v4_in_v6() that a
+front-to-backend mapping actually took place which clearly did not
+though.
+
+I've opened #13637 to investigate verifier/kernel side for later.
+
+Also, simplify the ifdef wrapping a bit and let the compiler optimize
+away the conditional when sock4_skip_xlate_if_same_netns() statically
+returns false.
+
+Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
+
+--- bpf/bpf_sock.c
+@@ -272,7 +272,7 @@ sock4_wildcard_lookup_full(struct lb4_key *key __maybe_unused,
+  * actual service frontend. Hence, allow service translation for pod traffic
+  * getting redirected to backend (across network namespaces), but skip service
+  * translation for backend to itself or another service backend within the same
+- * namespace. Currently only v4, but neither v4-in-v6 nor plain v6 supported.
++ * namespace. Currently only v4 and v4-in-v6, but no plain v6 is supported.
+  *
+  * For example, in EKS cluster, a local-redirect service exists with the AWS
+  * metadata IP, port as the frontend <169.254.169.254, 80> and kiam proxy as a
+@@ -283,11 +283,11 @@ sock4_wildcard_lookup_full(struct lb4_key *key __maybe_unused,
+  * a socket lookup for the backend <ip, port> in its namespace, ns1, and skip
+  * service translation.
+  */
+-#ifdef BPF_HAVE_SOCKET_LOOKUP
+-static __always_inline __maybe_unused bool
+-sock4_skip_xlate_if_same_netns(struct bpf_sock_addr *ctx,
+-			       const struct lb4_backend *backend)
++static __always_inline bool
++sock4_skip_xlate_if_same_netns(struct bpf_sock_addr *ctx __maybe_unused,
++			       const struct lb4_backend *backend __maybe_unused)
+ {
++#ifdef BPF_HAVE_SOCKET_LOOKUP
+ 	struct bpf_sock_tuple tuple = {
+ 		.ipv4.daddr = backend->address,
+ 		.ipv4.dport = backend->port,
+@@ -303,18 +303,15 @@ sock4_skip_xlate_if_same_netns(struct bpf_sock_addr *ctx,
+ 		sk = sk_lookup_udp(ctx, &tuple, sizeof(tuple.ipv4),
+ 				   BPF_F_CURRENT_NETNS, 0);
+ 		break;
+-	default:
+-		break;
+ 	}
+ 
+ 	if (sk) {
+ 		sk_release(sk);
+ 		return true;
+ 	}
+-
++#endif /* BPF_HAVE_SOCKET_LOOKUP */
+ 	return false;
+ }
+-#endif /* BPF_HAVE_SOCKET_LOOKUP */
+ 
+ static __always_inline int __sock4_xlate_fwd(struct bpf_sock_addr *ctx,
+ 					     struct bpf_sock_addr *ctx_full,
+@@ -397,11 +394,10 @@ static __always_inline int __sock4_xlate_fwd(struct bpf_sock_addr *ctx,
+ 		return -ENOENT;
+ 	}
+ 
+-#ifdef BPF_HAVE_SOCKET_LOOKUP
+-	if (lb4_svc_is_localredirect(svc) && ctx_full == ctx &&
++	if (lb4_svc_is_localredirect(svc) &&
+ 	    sock4_skip_xlate_if_same_netns(ctx_full, backend))
+-		return 0;
+-#endif
++		return -ENXIO;
++
+ 	if (lb4_svc_is_affinity(svc) && !backend_from_affinity)
+ 		lb4_update_affinity_by_netns(svc, &id, backend_id);
+ 
+

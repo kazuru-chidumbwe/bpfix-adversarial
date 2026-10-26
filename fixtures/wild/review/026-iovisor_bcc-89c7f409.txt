@@ -1,0 +1,101 @@
+repo: iovisor/bcc
+commit: 89c7f409b4a683abc5524057dfb6d2047ba1a827
+rank: 26
+
+ksnoop: fix verification failures on 5.15 kernel
+
+hengqi.chen@gmail.com reported:
+
+I have two VMs:
+
+One has the kernel built against the following commit:
+
+0693b27644f04852e46f7f034e3143992b658869 (bpf-next)
+
+The ksnoop tool (from BCC repo) works well on this VM.
+
+Another has the kernel built against the following commit:
+
+5319255b8df9271474bc9027cabf82253934f28d (bpf-next)
+
+On this VM, the ksnoop tool failed with the following message:
+
+[snip]
+
+; last_ip = func_stack->ips[last_stack_depth];
+
+141: (67) r6 <<= 3
+
+142: (0f) r3 += r6
+
+; ip = func_stack->ips[stack_depth];
+
+143: (79) r2 = *(u64 *)(r4 +0)
+
+ frame1: R0=map_value(id=0,off=0,ks=8,vs=144,imm=0) R1_w=invP(id=4,smin_value=-1,smax_value=14) R2_w=invP(id=0,umax_value=2040,var_off=(0x0; 0x7f8)) R3_w=map_value(id=0,off=8,ks=8,vs=144,umax_value=120,var_off=(0x0; 0x78)) R4_w=map_value(id=0,off=8,ks=8,vs=144,umax_value=2040,var_off=(0x0; 0x7f8)) R6_w=invP(id=0,umax_value=120,var_off=(0x0; 0x78)) R7=map_value(id=0,off=0,ks=8,vs=144,imm=0) R9=ctx(id=0,off=0,imm=0) R10=fp0 fp-16=mmmmmmmm fp-24=mmmmmmmm fp-32=mmmmmmmm fp-40=mmmmmmmm fp-48=mmmmmmmm fp-56=mmmmmmmm fp-64=mmmmmmmm fp-72=mmmmmmmm fp-80=mmmmmmmm fp-88=mmmmmmmm fp-96=mmmmmmmm fp-104=mmmmmmmm fp-112=mmmmmmmm fp-120=mmmmmmmm fp-128=mmmmmmmm fp-136=mmmmmmmm fp-144=mmmmmmmm fp-152=mmmmmmmm fp-160=mmmmmmmm fp-168=00000000
+
+invalid access to map value, value_size=144 off=2048 size=8
+
+R4 max value is outside of the allowed memory range
+
+processed 65 insns (limit 1000000) max_states_per_insn 0 total_states 3 peak_states 3 mark_read 2
+
+libbpf: -- END LOG --
+
+libbpf: failed to load program 'kprobe_return'
+
+libbpf: failed to load object 'ksnoop_bpf'
+
+libbpf: failed to load BPF skeleton 'ksnoop_bpf': -4007
+
+Error: Could not load ksnoop BPF: Unknown error 4007
+
+The above invalid map access appears to stem from the fact the
+"stack_depth" variable (used to retrieve the instruction pointer
+from the recorded call stack) is decremented.  The off=2048
+value is a clue; this suggests an index resulting from an underflow
+of the __u8 index value.  Adding a bitmask to the decrement operation
+solves the problem.  It appears that the guards on stack_depth size
+around the array dereference were optimized out.
+
+Reported-by: Hengqi Chen <hengqi.chen@gmail.com>
+Signed-off-by: Alan Maguire <alan.maguire@oracle.com>
+
+--- libbpf-tools/ksnoop.bpf.c
+@@ -19,6 +19,8 @@
+  * data should be collected.
+  */
+ #define FUNC_MAX_STACK_DEPTH	16
++/* used to convince verifier we do not stray outside of array bounds */
++#define FUNC_STACK_DEPTH_MASK	(FUNC_MAX_STACK_DEPTH - 1)
+ 
+ #ifndef ENOSPC
+ #define ENOSPC			28
+@@ -99,7 +101,9 @@ static struct trace *get_trace(struct pt_regs *ctx, bool entry)
+ 		    last_stack_depth < FUNC_MAX_STACK_DEPTH)
+ 			last_ip = func_stack->ips[last_stack_depth];
+ 		/* push ip onto stack. return will pop it. */
+-		func_stack->ips[stack_depth++] = ip;
++		func_stack->ips[stack_depth] = ip;
++		/* mask used in case bounds checks are optimized out */
++		stack_depth = (stack_depth + 1) & FUNC_STACK_DEPTH_MASK;
+ 		func_stack->stack_depth = stack_depth;
+ 		/* rather than zero stack entries on popping, we zero the
+ 		 * (stack_depth + 1)'th entry when pushing the current
+@@ -118,8 +122,13 @@ static struct trace *get_trace(struct pt_regs *ctx, bool entry)
+ 		if (last_stack_depth >= 0 &&
+ 		    last_stack_depth < FUNC_MAX_STACK_DEPTH)
+ 			last_ip = func_stack->ips[last_stack_depth];
+-		if (stack_depth > 0)
+-			stack_depth = stack_depth - 1;
++		if (stack_depth > 0) {
++			/* logical OR convinces verifier that we don't
++			 * end up with a < 0 value, translating to 0xff
++			 * and an outside of map element access.
++			 */
++			stack_depth = (stack_depth - 1) & FUNC_STACK_DEPTH_MASK;
++		}
+ 		/* retrieve ip from stack as IP in pt_regs is
+ 		 * bpf kretprobe trampoline address.
+ 		 */
+

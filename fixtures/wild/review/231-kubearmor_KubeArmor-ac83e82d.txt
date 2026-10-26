@@ -1,0 +1,22 @@
+repo: kubearmor/KubeArmor
+commit: ac83e82d4a55597f815e468f9a9209fb777a6f71
+rank: 231
+
+fixup! verifier error
+
+Signed-off-by: Divyansh Kamboj <divyansh.kamboj@accuknox.com>
+
+--- KubeArmor/BPF/system_monitor.c
+@@ -441,9 +441,9 @@ static __always_inline int save_path_to_str_buf(bufs_t *string_p,
+ 
+ #pragma unroll
+ 	for (int i = 0; i < MAX_PATH_COMPONENTS; i++) {
+-		bpf_probe_read(&mnt_root, sizeof(struct dentry),
++		bpf_probe_read(&mnt_root, sizeof(struct dentry *),
+ 			       &vfsmnt->mnt_root);
+-		bpf_probe_read(&d_parent, sizeof(struct dentry),
++		bpf_probe_read(&d_parent, sizeof(struct dentry *),
+ 			       &dentry->d_parent);
+ 		if (dentry == mnt_root || dentry == d_parent) {
+ 			if (dentry != mnt_root) {
+

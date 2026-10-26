@@ -1,0 +1,46 @@
+repo: cilium/cilium
+commit: 0cf10993335045c0a35ac6b80efaa5eb99a4ab8e
+rank: 222
+
+bpf: Align union v6addr old_daddr
+
+The [union v6addr] is a packed struct. Adding more vars on the stack can
+easily cause the verifier failures due to misaligned access. For
+example:
+
+--- FAIL: TestBPF/skip_tunnel_from_lxc.o (0.22s)
+
+    bpf_test.go:188: verifier error: load program: permission denied:
+    ...
+    ; if (loopback) { @ lb.h:532
+    4111: (16) if w2 == 0x0 goto pc+1524          ; R2_w=1
+    4112: (79) r3 = *(u64 *)(r10 -304)    ; R3_w=map_value(map=cilium_tail_cal,ks=4,vs=64) R10=fp0 fp-304=map_value(map=cilium_tail_cal,ks=4,vs=64)
+    ; case  16: jmp_16:  __it_mob(d, s, 64); fallthrough; @ builtins.h:196
+    4113: (79) r2 = *(u64 *)(r3 +8)       ; R2_w=scalar() R3_w=map_value(map=cilium_tail_cal,ks=4,vs=64)
+    4114: (7b) *(u64 *)(r10 -92) = r2
+    misaligned stack access off 0+0+-92 size 8
+
+From bpf/include/bpf/builtins.h:
+
+    /* Unfortunately verifier forces aligned stack access while other memory
+     * do not have to be aligned (map, pkt, etc). Mark those on the /stack/
+     * for objects > 8 bytes in order to force-align such memcpy candidates
+     * when we really need them to be aligned, this is not needed for objects
+     * of size <= 8 bytes and in case of > 8 bytes /only/ when 8 byte is not
+     * the natural object alignment (e.g. __u8 foo[12]).
+     */
+    #define __align_stack_8		__aligned(8)
+
+Signed-off-by: Martynas Pumputis <martynas@isovalent.com>
+
+--- bpf/lib/lb.h
+@@ -564,7 +564,7 @@ static __always_inline int __lb6_rev_nat(struct __ctx_buff *ctx, int l4_off,
+ 
+ #ifdef USE_LOOPBACK_LB
+ 	if (loopback) {
+-		union v6addr old_daddr;
++		union v6addr old_daddr __align_stack_8;
+ 
+ 		ipv6_addr_copy(&old_daddr, &tuple->daddr);
+ 		cilium_dbg_lb(ctx, DBG_LB6_LOOPBACK_SNAT_REV, old_daddr.p4, old_saddr.p4);
+

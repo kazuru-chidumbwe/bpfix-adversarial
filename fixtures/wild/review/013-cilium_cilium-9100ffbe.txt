@@ -1,0 +1,48 @@
+repo: cilium/cilium
+commit: 9100ffbef97968f8bf27edc1e489829a73129f99
+rank: 13
+
+bpf: Fix stack alignment in sock6_xlate_fwd to prevent verifier errors
+
+The BPF verifier was rejecting the cil_sock6_sendmsg program with a
+"misaligned stack access" error when trying to perform 64-bit loads
+from stack offset -76, which is only 4-byte aligned:
+
+  21: (79) r2 = *(u64 *)(r10 -76)
+  misaligned stack access off (0x0; 0x0)+0+-76 size 8
+
+The root cause is that struct lb6_key contains a union v6addr (16 bytes)
+and other fields. When the compiler optimizes operations like
+memcpy(&orig_key, &key, sizeof(key)) into efficient 64-bit load/store
+instructions, it requires the source and destination addresses to be
+8-byte aligned.
+
+Without explicit alignment, the stack allocator may place these
+structures at offsets that are only 4-byte aligned, causing the
+verifier to reject the program since BPF requires all 64-bit memory
+operations to use 8-byte aligned addresses.
+
+This fix adds the __align_stack_8 attribute to struct lb6_key
+declarations in __sock6_xlate_fwd(), ensuring both 'key' and 'orig_key'
+are placed at 8-byte aligned stack offsets. After the fix, the verifier
+accepts the program with properly aligned stack accesses at offsets
+-96, -112, and -144 (all divisible by 8).
+
+Fixes: 9fe94b64cdb4 ("bpf: trace_sock: rate limit socket traces based on monitor aggregation")
+Signed-off-by: André Martins <andre@cilium.io>
+
+--- bpf/bpf_sock.c
+@@ -974,10 +974,10 @@ static __always_inline int __sock6_xlate_fwd(struct bpf_sock_addr *ctx,
+ 	const struct lb6_service *svc;
+ 	__u16 dst_port = ctx_dst_port(ctx);
+ 	__u8 protocol = ctx_protocol(ctx);
+-	struct lb6_key key = {
++	struct lb6_key key __align_stack_8 = {
+ 		.dport		= dst_port,
+ 		.proto		= protocol,
+-	}, orig_key;
++	}, orig_key __align_stack_8;
+ 	const struct lb6_service *backend_slot;
+ 	bool backend_from_affinity = false;
+ 	__u32 backend_id = 0;
+

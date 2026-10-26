@@ -1,0 +1,32 @@
+repo: cilium/cilium
+commit: 1aa2a51e05ff0d0543f790ffcfcc2a38808dbe15
+rank: 251
+
+bpf: Always inline ratelimit_check_and_take
+
+After enabling coverage for EVENTS_MAP_RATE_LIMIT (next commit), clang
+sometimes uninlines ratelimit_check_and_take (marked as inline, but not
+__always_inline), which produces this verification error in bpf_host
+and bpf_lxc on kernel 5.4:
+
+Error: program tail_ipv4_to_endpoint: load program: invalid argument: tail_calls are not allowed in programs with bpf-to-bpf calls
+
+Mark ratelimit_check_and_take as __always_inline to suppress this
+behavior.
+
+Fixes: 93f1619cb472 ("bpf: Add ratelimiting feature and use it for ICMPv6 responses")
+Signed-off-by: Maxim Mikityanskiy <maxim@isovalent.com>
+
+--- bpf/lib/ratelimit.h
+@@ -57,8 +57,8 @@ struct ratelimit_settings {
+ 	__u64 topup_interval_ns;
+ };
+ 
+-static inline bool ratelimit_check_and_take(struct ratelimit_key *key,
+-					    const struct ratelimit_settings *settings)
++static __always_inline bool ratelimit_check_and_take(struct ratelimit_key *key,
++						     const struct ratelimit_settings *settings)
+ {
+ 	struct ratelimit_value *value;
+ 	struct ratelimit_value new_value;
+

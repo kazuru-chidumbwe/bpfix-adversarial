@@ -1,0 +1,707 @@
+repo: cilium/cilium
+commit: 0aa0f68b0765ad4a1ddd6f7502055742612cb358
+rank: 9
+
+Load balancer changes. (go side addressing changes in next commit)
+
+Signed-off-by: Madhu Challa <madhu@cilium.io>
+Acked-by: Thomas Graf <thomas@cilium.io>
+Acked-by: Andre Martins <andre@cilium.io>
+
+go side addressing changes.
+
+Signed-off-by: Madhu Challa <madhu@cilium.io>
+Acked-by: Thomas Graf <thomas@cilium.io>
+Acked-by: Andre Martins <andre@cilium.io>
+
+Address @aanm comments.
+
+Signed-off-by: Madhu Challa <madhu@cilium.io>
+Acked-by: Thomas Graf <thomas@cilium.io>
+Acked-by: Andre Martins <andre@cilium.io>
+
+Address @tgraf comments.
+
+Signed-off-by: Madhu Challa <madhu@cilium.io>
+Acked-by: Thomas Graf <thomas@cilium.io>
+Acked-by: Andre Martins <andre@cilium.io>
+
+- Getting some verifier rejects. Will fix them separately so we know which fixes are causing them.
+
+Should be passing pointer to new state.
+
+Woraround verifier bug https://llvm.org/bugs/show_bug.cgi?id=26243
+
+use ipv6_hdrlen to figure out l4 offset.
+
+Signed-off-by: Madhu Challa <madhu@cilium.io>
+Acked-by: Thomas Graf <thomas@cilium.io>
+Acked-by: Andre Martins <andre@cilium.io>
+
+--- bpf/bpf_lb.c
+@@ -0,0 +1,166 @@
++#include <lb_config.h>
++#include <netdev_config.h>
++
++#include <bpf/api.h>
++
++#include <stdint.h>
++#include <stdio.h>
++
++#include "lib/common.h"
++#include "lib/maps.h"
++#include "lib/ipv6.h"
++#include "lib/icmp6.h"
++#include "lib/l4.h"
++#include "lib/eth.h"
++#include "lib/dbg.h"
++#include "lib/drop.h"
++
++__BPF_MAP(cilium_lb_services, BPF_MAP_TYPE_HASH, 0, sizeof(struct lb_key), sizeof(struct lb_value), PIN_GLOBAL_NS, CILIUM_LB_MAP_SIZE);
++
++static inline __u32 lb_hash(struct ipv6hdr *ip6, __u16 sport, __u16 dport)
++{
++	return ip6->saddr.s6_addr32[0] ^ ip6->saddr.s6_addr32[1] ^
++	       ip6->saddr.s6_addr32[2] ^ ip6->saddr.s6_addr32[3] ^
++	       ip6->daddr.s6_addr32[0] ^ ip6->daddr.s6_addr32[1] ^
++	       ip6->daddr.s6_addr32[2] ^ ip6->daddr.s6_addr32[3] ^
++	       (__u32)sport ^ (__u32)dport;
++}
++
++__section("from-netdev")
++int from_netdev(struct __sk_buff *skb)
++{
++	__u8 server_prefix[] = SERVER_PREFIX;
++	__u8 router_ip[] = ROUTER_IP;
++	__u8 nexthdr;
++	__u32 proto = skb->protocol, hash;
++	__be32 sum;
++	__u16 sport;
++	int l4_off, csum_off, ret = TC_ACT_OK;
++	void *data = (void *) (long) skb->data;
++	void *data_end = (void *) (long) skb->data_end;
++	struct lb_key key = {};
++	struct lb_value *val;
++	union v6addr lb_ip;
++
++	if (likely(proto == __constant_htons(ETH_P_IPV6))) {
++		struct ipv6hdr *ip6 = data + ETH_HLEN;
++		union v6addr *dst = (union v6addr *) &ip6->daddr;
++
++		ipv6_addr_copy(&lb_ip, (union v6addr *)router_ip);
++
++		if (data + ETH_HLEN + sizeof(*ip6) > data_end) {
++			ret = DROP_INVALID;
++			goto error;
++		}
++
++		ipv6_addr_copy(&key.vip, dst);
++
++		if (ipv6_addrcmp(&key.vip, &lb_ip))
++			return TC_ACT_OK;
++
++		cilium_trace_capture(skb, DBG_CAPTURE_FROM_LB, skb->ingress_ifindex);
++		nexthdr = ip6->nexthdr;
++		l4_off = ETH_HLEN + ipv6_hdrlen(skb, ETH_HLEN, &nexthdr);
++
++#ifdef HANDLE_NS
++		if (unlikely(nexthdr == IPPROTO_ICMPV6)) {
++			ret = icmp6_handle(skb, ETH_HLEN, ip6);
++			if (IS_ERR(ret))
++				goto error;
++
++		}
++#endif
++
++		csum_off = l4_checksum_offset(nexthdr);
++		if (unlikely(!csum_off))
++			goto error;
++
++		switch (nexthdr) {
++		case IPPROTO_TCP:
++		case IPPROTO_UDP:
++			/* Port offsets for UDP and TCP are the same */
++			ret = l4_load_port(skb, l4_off + TCP_DPORT_OFF, &key.dport);
++			if (IS_ERR(ret))
++				goto error;
++
++			ret = l4_load_port(skb, l4_off + TCP_SPORT_OFF, &sport);
++			if (IS_ERR(ret))
++				goto error;
++			break;
++		/* FIXME: ICMPv6 */
++		default:
++			ret = DROP_UNKNOWN_L4;
++			goto error;
++		}
++
++		hash = lb_hash(ip6, sport, key.dport);
++		cilium_trace(skb, DBG_PKT_HASH, hash, 0);
++
++		key.dport = ntohs(key.dport);
++		//cilium_trace(skb, DBG_GENERIC, key.vip.p1, 0);
++		//cilium_trace(skb, DBG_GENERIC, key.vip.p2, 0);
++		//cilium_trace(skb, DBG_GENERIC, key.vip.p3, 0);
++		//cilium_trace(skb, DBG_GENERIC, key.vip.p4, 0);
++		//cilium_trace(skb, DBG_GENERIC, key.dport, 0);
++		val = map_lookup_elem(&cilium_lb_services, &key);
++		if (val != NULL && val->lxc_count) {
++			union macaddr lb_mac = NODE_MAC;
++			union macaddr lxc_mac = LXC_MAC;
++			int i, which = hash % val->lxc_count;
++
++#pragma unroll
++			for (i = 0; i < MAX_LXC; i++) {
++				if (i != which)
++					continue;
++
++				ipv6_addr_copy(&lb_ip,
++					       (union v6addr *) &server_prefix);
++				ipv6_set_node_id(&lb_ip, val->lxc[i].node_id);
++				ipv6_set_state(&lb_ip, val->state);
++				ipv6_set_lxc_id(&lb_ip, val->lxc[i].lxc_id);
++				if (key.dport != val->lxc[i].port) {
++					__u16 tmp = htons(val->lxc[i].port);
++					//cilium_trace(skb, DBG_GENERIC, val->lxc[i].port, 0);
++					switch (nexthdr) {
++					case IPPROTO_TCP:
++					case IPPROTO_UDP:
++					/* Port offsets for UDP and TCP are the same */
++						ret = l4_modify_port(skb, l4_off + TCP_DPORT_OFF,
++								     csum_off, tmp,
++								     htons(key.dport));
++						if (IS_ERR(ret))
++							goto error;
++						break;
++					/* FIXME: Handle ICMPv6 */
++					/* default handled outside the loop */
++					}
++				}
++			}
++
++			ipv6_store_daddr(skb, lb_ip.addr, ETH_HLEN);
++
++			/* fixup csums */
++			sum = csum_diff(key.vip.addr, 16, lb_ip.addr, 16, 0);
++			if (l4_csum_replace(skb, csum_off, 0, sum, BPF_F_PSEUDO_HDR) < 0) {
++				ret = DROP_CSUM_L4;
++				goto error;
++			}
++
++			eth_store_saddr(skb, lb_mac.addr, 0);
++			eth_store_daddr(skb, lxc_mac.addr, 0);
++
++			cilium_trace_capture(skb, DBG_CAPTURE_DELIVERY, LB_SERVER_IFINDEX);
++			ret = redirect(LB_SERVER_IFINDEX, 0);
++		} else {
++			cilium_trace(skb, DBG_LB_SERVICES_LOOKUP_FAIL, key.vip.p4, key.dport);
++		}
++	}
++
++	if (IS_ERR(ret)) {
++error:
++		return send_drop_notify_error(skb, ret, TC_ACT_SHOT);
++	} else
++		return ret;
++}
++
++BPF_LICENSE("GPL");
+
+--- bpf/bpf_lxc.c
+@@ -21,6 +21,7 @@
+ #include "lib/lxc.h"
+ #include "lib/nat46.h"
+ #include "lib/policy.h"
++#include "lib/lb.h"
+ #include "lib/drop.h"
+ #include "lib/dbg.h"
+ 
+@@ -86,6 +87,7 @@ static inline int ipv6_l3_from_lxc(struct __sk_buff *skb,
+ 	union macaddr router_mac = NODE_MAC;
+ 	union v6addr host_ip = HOST_IP;
+ 	int do_nat46 = 0, ret, l4_off;
++	__u16 state = 0;
+ 
+ 	if (unlikely(!valid_src_mac(eth)))
+ 		return DROP_INVALID_SMAC;
+@@ -119,13 +121,13 @@ static inline int ipv6_l3_from_lxc(struct __sk_buff *skb,
+ 	 * entry to allow reverse packets and return set cb[CB_POLICY] to
+ 	 * POLICY_SKIP if the packet is a reply packet to an existing
+ 	 * incoming connection. */
+-	ret = ct_lookup6(&CT_MAP6, tuple, skb, l4_off, SECLABEL, 0);
++	ret = ct_lookup6(&CT_MAP6, tuple, skb, l4_off, SECLABEL, 0, &state);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	switch (ret) {
+ 	case CT_NEW:
+-		ret = ct_create6(&CT_MAP6, tuple, skb, 0);
++		ret = ct_create6(&CT_MAP6, tuple, skb, 0, 0);
+ 		if (IS_ERR(ret))
+ 			return ret;
+ 		break;
+@@ -142,6 +144,13 @@ static inline int ipv6_l3_from_lxc(struct __sk_buff *skb,
+ 		return DROP_POLICY;
+ 	}
+ 
++	if (state) {
++		ret = lb_dsr_dnat(skb, state, tuple);
++		cilium_trace(skb, DBG_GENERIC, state, ret);
++		if (IS_ERR(ret))
++			return ret;
++	}
++
+ 	/* Check if destination is within our cluster prefix */
+ 	if (ipv6_match_subnet_96(&tuple->addr, &host_ip)) {
+ 		void *data = (void *) (long) skb->data;
+@@ -329,7 +338,7 @@ static inline int handle_ipv4(struct __sk_buff *skb)
+ 
+ 	switch (ret) {
+ 	case CT_NEW:
+-		ret = ct_create4(&CT_MAP4, &tuple, skb, 0);
++		ret = ct_create4(&CT_MAP4, &tuple, skb, 0, 0);
+ 		if (IS_ERR(ret))
+ 			return ret;
+ 		break;
+@@ -501,7 +510,10 @@ static inline int __inline__ ipv6_policy(struct __sk_buff *skb, int ifindex, __u
+ 	void *data = (void *) (long) skb->data;
+ 	void *data_end = (void *) (long) skb->data_end;
+ 	struct ipv6hdr *ip6 = data + ETH_HLEN;
+-	int ret, l4_off;
++	int ret, l4_off, csum_off;
++	__u16 state = 0, state_zero=0;
++	union v6addr dip;
++	__be32 sum;
+ 
+ 	if (data + sizeof(struct ipv6hdr) + ETH_HLEN > data_end)
+ 		return DROP_INVALID;
+@@ -510,16 +522,36 @@ static inline int __inline__ ipv6_policy(struct __sk_buff *skb, int ifindex, __u
+ 	tuple.nexthdr = ip6->nexthdr;
+ 	ipv6_addr_copy(&tuple.addr, (union v6addr *) &ip6->saddr);
+ 
++	/*
++	 * derive state and zero it.
++	 */
++	ipv6_load_daddr(skb, ETH_HLEN, &dip);
++	state = ipv6_derive_state(&dip);
++	if (state) {
++		ipv6_set_state(&dip, 0);
++		ret = ipv6_store_daddr(skb, dip.addr, ETH_HLEN);
++		if (IS_ERR(ret))
++			return DROP_WRITE_ERROR;
++
++		/* fixup csum */
++		sum = csum_diff(&state, sizeof(state), &state_zero, sizeof(state_zero), 0);
++		csum_off = l4_checksum_offset(tuple.nexthdr);
++		if (l4_csum_replace(skb, csum_off, 0, sum, BPF_F_PSEUDO_HDR) < 0)
++			return DROP_CSUM_L4;
++
++		cilium_trace(skb, DBG_GENERIC, state, 0);
++	}
++
+ 	l4_off = ETH_HLEN + ipv6_hdrlen(skb, ETH_HLEN, &tuple.nexthdr);
+-	ret = ct_lookup6(&CT_MAP6, &tuple, skb, l4_off, SECLABEL, 1);
++	ret = ct_lookup6(&CT_MAP6, &tuple, skb, l4_off, SECLABEL, 1, NULL);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	if (policy_can_access(&POLICY_MAP, skb, src_label) != TC_ACT_OK) {
+ 		if (ret != CT_ESTABLISHED && ret != CT_REPLY && ret != CT_RELATED)
+ 			return DROP_POLICY;
+ 	} else if (ret == CT_NEW) {
+-		ret = ct_create6(&CT_MAP6, &tuple, skb, 1);
++		ret = ct_create6(&CT_MAP6, &tuple, skb, 1, state);
+ 		if (IS_ERR(ret))
+ 			return ret;
+ 	}
+@@ -550,7 +582,7 @@ static inline int __inline__ ipv4_policy(struct __sk_buff *skb, int ifindex, __u
+ 		if (ret != CT_ESTABLISHED && ret != CT_REPLY && ret != CT_RELATED)
+ 			return DROP_POLICY;
+ 	} else if (ret == CT_NEW) {
+-		ret = ct_create4(&CT_MAP4, &tuple, skb, 1);
++		ret = ct_create4(&CT_MAP4, &tuple, skb, 1, 0);
+ 		if (IS_ERR(ret))
+ 			return ret;
+ 	}
+
+--- bpf/bpf_netdev.c
+@@ -32,14 +32,8 @@ static inline int is_node_subnet(const union v6addr *dst, const union v6addr *no
+ 	tmp = dst->p1 - node_ip->p1;
+ 	if (!tmp) {
+ 		tmp = dst->p2 - node_ip->p2;
+-		if (!tmp) {
++		if (!tmp)
+ 			tmp = dst->p3 - node_ip->p3;
+-			if (!tmp) {
+-				__u32 a = ntohl(dst->p4);
+-				__u32 b = ntohl(node_ip->p4);
+-				tmp = (a & 0xFFFF0000) - (b & 0xFFFF0000);
+-			}
+-		}
+ 	}
+ 
+ 	return !tmp;
+@@ -50,14 +44,8 @@ static inline int matches_cluster_prefix(const union v6addr *addr, const union v
+ 	int tmp;
+ 
+ 	tmp = addr->p1 - prefix->p1;
+-	if (!tmp) {
++	if (!tmp)
+ 		tmp = addr->p2 - prefix->p2;
+-		if (!tmp) {
+-			__u32 a = ntohl(addr->p3);
+-			__u32 b = ntohl(prefix->p3);
+-			tmp = (a & 0xFFFF0000) - (b & 0xFFFF0000);
+-		}
+-	}
+ 
+ 	return !tmp;
+ }
+
+--- bpf/lb_config.h
+@@ -0,0 +1,27 @@
++#ifndef __LB_CONFIG_H__
++#define __LB_CONFIG_H__
++
++/*
++ * This is just a dummy header with dummy values to allow for test
++ * compilation without the full code generation engine backend.
++ */
++
++#define HANDLE_NS
++
++/* Prefix to use when sending packet to server */
++#define SERVER_PREFIX { 0xf0, 0x0d, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }
++/* Load balancer IPv6 address */
++#define ROUTER_IP { 0x20, 0x01, 0x0d, 0xb8, 0xaa, 0xaa, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x03 }
++/* Load balancer Mac address */
++#define NODE_MAC { .addr = { 0x52, 0x54, 0x0, 0xa6, 0xf2, 0x22 } }
++
++/*
++ * FIXME: Next two defines are not needed by having stack handle the packet
++ */
++
++/* mac address of the server */
++#define LXC_MAC { .addr = { 0x52, 0x54, 0x0, 0xb3, 0x02, 0xe8 }}
++ /* ifindex of load balancer server side interface */
++#define LB_SERVER_IFINDEX 3
++
++#endif /* __LB_CONFIG_H__ */
+
+--- bpf/lib/common.h
+@@ -159,6 +159,29 @@ struct ct_entry {
+ 	__u16 rx_closing:1,
+ 	      tx_closing:1,
+ 	      reserve:14;
++	__u16 state;
++};
++
++struct lb_key {
++        union v6addr vip;
++        __u16 dport;
++};
++
++#define MAX_LXC                 8
++#define CILIUM_LB_MAP_SIZE	32
++
++struct lb_lxc_pair {
++        __u16 lxc_id;
++        __u16 port;
++        __u32 node_id;
++};
++
++struct lb_value {
++        union v6addr vip;
++        __u16 dport;
++        __u16 state;
++        int lxc_count; /* round robin across lxc */
++        struct lb_lxc_pair lxc[MAX_LXC];
+ };
+ 
+ #endif
+
+--- bpf/lib/conntrack.h
+@@ -29,14 +29,16 @@ enum {
+ 
+ 
+ static inline int __inline__ __ct_lookup(void *map, struct __sk_buff *skb,
+-					 void *tuple, int action, int in)
++					 void *tuple, int action, int in, __u16 *state)
+ {
+ 	struct ct_entry *entry;
+ 	int ret;
+ 
+ 	if ((entry = map_lookup_elem(map, tuple))) {
+ 		cilium_trace(skb, DBG_CT_MATCH, entry->lifetime, 0);
+ 		entry->lifetime = CT_DEFAULT_LIFEIME;
++		if (state)
++			*state = entry->state;
+ 
+ #ifdef CONNTRACK_ACCOUNTING
+ 		/* FIXME: This is slow, per-cpu counters? */
+@@ -100,7 +102,7 @@ static inline void __inline__ ipv6_ct_tuple_reverse(struct ipv6_ct_tuple *tuple)
+ 
+ /* Offset must point to IPv6 */
+ static inline int __inline__ ct_lookup6(void *map, struct ipv6_ct_tuple *tuple,
+-					struct __sk_buff *skb, int l4_off, __u32 secctx, int in)
++					struct __sk_buff *skb, int l4_off, __u32 secctx, int in, __u16 *state)
+ {
+ 	int ret, action = ACTION_UNSPEC;
+ 
+@@ -190,10 +192,11 @@ static inline int __inline__ ct_lookup6(void *map, struct ipv6_ct_tuple *tuple,
+ 	/* Lookup the reverse direction
+ 	 *
+ 	 * This will find an existing flow in the reverse direction.
++	 * The reverse direction is the one where state is stored.
+ 	 */
+ 	cilium_trace(skb, DBG_CT_LOOKUP, (tuple->sport << 16) | tuple->dport,
+ 		     (tuple->nexthdr << 8) | tuple->flags);
+-	if ((ret = __ct_lookup(map, skb, tuple, action, in)) != CT_NEW) {
++	if ((ret = __ct_lookup(map, skb, tuple, action, in, state)) != CT_NEW) {
+ 		if (likely(ret == CT_ESTABLISHED)) {
+ 			if (unlikely(tuple->flags & TUPLE_F_RELATED))
+ 				ret = CT_RELATED;
+@@ -207,7 +210,7 @@ static inline int __inline__ ct_lookup6(void *map, struct ipv6_ct_tuple *tuple,
+ 	ipv6_ct_tuple_reverse(tuple);
+ 	cilium_trace(skb, DBG_CT_LOOKUP, (tuple->sport << 16) | tuple->dport,
+ 		     (tuple->nexthdr << 8) | tuple->flags);
+-	ret = __ct_lookup(map, skb, tuple, action, in);
++	ret = __ct_lookup(map, skb, tuple, action, in, NULL);
+ 
+ 	/* No entries found, packet must be eligible for creating a CT entry */
+ 	if (ret == CT_NEW && action != ACTION_CREATE)
+@@ -327,7 +330,7 @@ static inline int __inline__ ct_lookup4(void *map, struct ipv4_ct_tuple *tuple,
+ 	 */
+ 	cilium_trace(skb, DBG_CT_LOOKUP, (tuple->sport << 16) | tuple->dport,
+ 		     (tuple->nexthdr << 8) | tuple->flags);
+-	if ((ret = __ct_lookup(map, skb, tuple, action, in)) != CT_NEW) {
++	if ((ret = __ct_lookup(map, skb, tuple, action, in, NULL)) != CT_NEW) {
+ 		if (likely(ret == CT_ESTABLISHED)) {
+ 			if (unlikely(tuple->flags & TUPLE_F_RELATED))
+ 				ret = CT_RELATED;
+@@ -341,7 +344,7 @@ static inline int __inline__ ct_lookup4(void *map, struct ipv4_ct_tuple *tuple,
+ 	ipv4_ct_tuple_reverse(tuple);
+ 	cilium_trace(skb, DBG_CT_LOOKUP, (tuple->sport << 16) | tuple->dport,
+ 		     (tuple->nexthdr << 8) | tuple->flags);
+-	ret = __ct_lookup(map, skb, tuple, action, in);
++	ret = __ct_lookup(map, skb, tuple, action, in, NULL);
+ 
+ 	/* No entries found, packet must be eligible for creating a CT entry */
+ 	if (ret == CT_NEW && action != ACTION_CREATE)
+@@ -354,13 +357,16 @@ static inline int __inline__ ct_lookup4(void *map, struct ipv4_ct_tuple *tuple,
+ 
+ /* Offset must point to IPv6 */
+ static inline int __inline__ ct_create6(void *map, struct ipv6_ct_tuple *tuple,
+-					struct __sk_buff *skb, int in)
++					struct __sk_buff *skb, int in, __u16 state)
+ {
+ 	/* Create entry in original direction */
+ 	struct ct_entry entry = {
+ 		.lifetime = CT_DEFAULT_LIFEIME,
+ 	};
+ 
++	if (state)
++		entry.state = state;
++
+ 	if (in) {
+ 		entry.rx_packets = 1;
+ 		entry.rx_bytes = skb->len;
+@@ -394,13 +400,16 @@ static inline int __inline__ ct_create6(void *map, struct ipv6_ct_tuple *tuple,
+ }
+ 
+ static inline int __inline__ ct_create4(void *map, struct ipv4_ct_tuple *tuple,
+-					struct __sk_buff *skb, int in)
++					struct __sk_buff *skb, int in, __u16 state)
+ {
+ 	/* Create entry in original direction */
+ 	struct ct_entry entry = {
+ 		.lifetime = CT_DEFAULT_LIFEIME,
+ 	};
+ 
++	if (state)
++		entry.state = state;
++
+ 	if (in) {
+ 		entry.rx_packets = 1;
+ 		entry.rx_bytes = skb->len;
+@@ -430,8 +439,14 @@ static inline int __inline__ ct_create4(void *map, struct ipv4_ct_tuple *tuple,
+ }
+ 
+ #else /* !CONNTRACK */
++static inline int __inline__ __ct_lookup(void *map, struct __sk_buff *skb,
++void *tuple, int action, int in, __u16 *state)
++{
++	return 0;
++}
++
+ static inline int __inline__ ct_lookup6(void *map, struct ipv6_ct_tuple *tuple,
+-					struct __sk_buff *skb, int off, __u32 secctx, int in)
++					struct __sk_buff *skb, int off, __u32 secctx, int in, __u16 *state)
+ {
+ 	return 0;
+ }
+@@ -442,12 +457,12 @@ static inline int __inline__ ct_lookup4(void *map, struct ipv4_ct_tuple *tuple,
+ 	return 0;
+ }
+ 
+-static inline int __inline__ ct_create6(void *map, struct ipv6_ct_tuple *tuple, struct __sk_buff *skb, int in)
++static inline int __inline__ ct_create6(void *map, struct ipv6_ct_tuple *tuple, struct __sk_buff *skb, int in, __u16 state)
+ {
+ 	return 0;
+ }
+ 
+-static inline int __inline__ ct_create4(void *map, struct ipv4_ct_tuple *tuple, struct __sk_buff *skb, int in)
++static inline int __inline__ ct_create4(void *map, struct ipv4_ct_tuple *tuple, struct __sk_buff *skb, int in, __u16 state)
+ {
+ 	return 0;
+ }
+
+--- bpf/lib/dbg.h
+@@ -22,6 +22,8 @@ enum {
+ 	DBG_ERROR_RET,
+ 	DBG_TO_HOST,
+ 	DBG_TO_STACK,
++	DBG_PKT_HASH,
++	DBG_LB_SERVICES_LOOKUP_FAIL,
+ };
+ 
+ /* Capture types */
+@@ -31,6 +33,7 @@ enum {
+ 	DBG_CAPTURE_FROM_NETDEV,
+ 	DBG_CAPTURE_FROM_OVERLAY,
+ 	DBG_CAPTURE_DELIVERY,
++	DBG_CAPTURE_FROM_LB,
+ };
+ 
+ static inline uint32_t __inline__ get_packet_marker(struct __sk_buff *skb)
+
+--- bpf/lib/ipv6.h
+@@ -211,9 +211,37 @@ static inline __u16 derive_lxc_id(union v6addr *addr)
+ 	return ntohl(addr->p4) & 0xFFFF;
+ }
+ 
++/* FIXME: rewrite this to avoid byte order conversion */
++static inline void ipv6_set_lxc_id(union v6addr *addr, __u16 lxc_id)
++{
++	__u32 p4 = ntohl(addr->p4);
++	p4 &= ~0xFFFF;
++	p4 |= lxc_id;
++	addr->p4 = htonl(p4);
++}
++
++static inline __u16 ipv6_derive_state(const union v6addr *addr)
++{
++	return (ntohl(addr->p4) >> 16);
++}
++
++/* FIXME: rewrite this to avoid byte order conversion */
++static inline void ipv6_set_state(union v6addr *addr, __u16 state)
++{
++	__u32 p4 = ntohl(addr->p4);
++	p4 &= 0xFFFF;
++	p4 |= (state << 16);
++	addr->p4 = htonl(p4);
++}
++
+ static inline __u32 ipv6_derive_node_id(union v6addr *addr)
+ {
+-	return (ntohl(addr->p3) & 0xFFFF) << 16 | (ntohl(addr->p4) >> 16);
++	return ntohl(addr->p3);
++}
++
++static inline void ipv6_set_node_id(union v6addr *addr, __u32 node_id)
++{
++	addr->p3 = htonl(node_id);
+ }
+ 
+ static inline __be32 ipv6_pseudohdr_checksum(struct ipv6hdr *hdr,
+
+--- bpf/lib/l4.h
+@@ -9,6 +9,8 @@
+ #define TCP_DPORT_OFF (offsetof(struct tcphdr, dest))
+ #define TCP_SPORT_OFF (offsetof(struct tcphdr, source))
+ #define TCP_CSUM_OFF (offsetof(struct tcphdr, check))
++#define UDP_DPORT_OFF (offsetof(struct udphdr, dest))
++#define UDP_SPORT_OFF (offsetof(struct udphdr, source))
+ #define UDP_CSUM_OFF (offsetof(struct udphdr, check))
+ 
+ 
+@@ -114,4 +116,9 @@ static inline int l4_port_map_out(struct __sk_buff *skb, int l4_off, int csum_of
+ 	return l4_modify_port(skb, l4_off + TCP_SPORT_OFF, csum_off, map->from, sport);
+ }
+ 
++static inline int l4_load_port(struct __sk_buff *skb, int off, __u16 *port)
++{
++        return skb_load_bytes(skb, off, port, sizeof(__u16));
++}
++
+ #endif
+
+--- bpf/lib/lb.h
+@@ -0,0 +1,55 @@
++#ifndef __LB_H_
++#define __LB_H_
++
++__BPF_MAP(cilium_lb_state, BPF_MAP_TYPE_HASH, CILIUM_MAP_LB_STATE, sizeof(__u16), sizeof(struct lb_value), PIN_GLOBAL_NS, CILIUM_LB_MAP_SIZE);
++
++static inline int lb_dsr_dnat(struct __sk_buff *skb, __u16 state, struct ipv6_ct_tuple *tuple)
++{
++	struct lb_value *val;
++	int off = ETH_HLEN + sizeof(struct ipv6hdr), ret;
++
++	val = map_lookup_elem(&cilium_lb_state, &state);
++	if (val != NULL) {
++		union v6addr tmp = {}, sip;
++		__u16 sport;
++		int csum_off;
++		__be32 sum;
++
++		if (ipv6_load_saddr(skb, ETH_HLEN, &sip) < 0)
++			return DROP_INVALID;
++
++		csum_off = l4_checksum_offset(tuple->nexthdr);
++		switch (tuple->nexthdr) {
++		case IPPROTO_TCP:
++		case IPPROTO_UDP:
++			/* Port offsets for UDP and TCP are the same */
++			ret = l4_load_port(skb, off + TCP_SPORT_OFF, &sport);
++			if (IS_ERR(ret))
++				return ret;
++			ret = l4_modify_port(skb, off + TCP_SPORT_OFF, csum_off,
++					     htons(val->dport), sport);
++			if (IS_ERR(ret))
++				return ret;
++			break;
++
++		default:
++			return DROP_UNKNOWN_L4;
++		}
++
++		tmp.p1 = val->vip.p1;
++		tmp.p2 = val->vip.p2;
++		tmp.p3 = val->vip.p3;
++		tmp.p4 = val->vip.p4;
++		ret = ipv6_store_saddr(skb, tmp.addr, ETH_HLEN);
++		if (IS_ERR(ret))
++			return DROP_WRITE_ERROR;
++
++		sum = csum_diff(sip.addr, 16, tmp.addr, 16, 0);
++		if (l4_csum_replace(skb, csum_off, 0, sum, BPF_F_PSEUDO_HDR) < 0)
++			return DROP_CSUM_L4;
++	}
++
++	return 0;
++}
++
++#endif /* __LB_H_ */
+
+--- bpf/lib/maps.h
+@@ -7,6 +7,7 @@
+ #define CILIUM_MAP_POLICY	1
+ #define CILIUM_MAP_CALLS	2
+ #define CILIUM_MAP_RES_POLICY	3
++#define CILIUM_MAP_LB_STATE	4
+ 
+ __BPF_MAP(cilium_lxc, BPF_MAP_TYPE_HASH, CILIUM_MAP_LXC, sizeof(__u32), sizeof(struct lxc_info), PIN_GLOBAL_NS, 1024);
+ 
+

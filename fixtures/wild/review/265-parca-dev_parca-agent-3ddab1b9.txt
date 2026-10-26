@@ -1,0 +1,24 @@
+repo: parca-dev/parca-agent
+commit: 3ddab1b95b413e8b8d909dfcb1ea06e4d809d5b3
+rank: 265
+
+fix verification on 5.4 (#2816)
+
+For some reason, the verifier on 5.4 doesn't like reading `index` here,
+and after trying various tricks I couldn't get it to work.
+
+This extra logging info was added recently, so I don't think it's too
+big of a deal to just revert it.
+
+--- bpf/unwinders/native.bpf.c
+@@ -688,8 +688,7 @@ static __always_inline enum find_unwind_table_return find_unwind_table(chunk_inf
+         }
+     }
+ 
+-    LOG("[error] could not find chunk for adjusted ip=0x%llx, mapping idx %d, mapping exe id 0x%llx", adjusted_pc, index,
+-        proc_info->mappings[index].executable_id);
++    LOG("[error] could not find chunk for adjusted ip=0x%llx", adjusted_pc);
+     return FIND_UNWIND_CHUNK_NOT_FOUND;
+ }
+ 
+

@@ -1,0 +1,111 @@
+repo: cilium/tetragon
+commit: e0b9c3be284b999feced7edb0b69f087ce8008b6
+rank: 204
+
+bpf: fix verification failure
+
+On the latest 5.4, I'm seeing the following failure:
+
+```
+=== RUN   TestKillerOverride/override_helper/kprobe_(no_multi)
+...
+load program: invalid argument:
+	; generic_tracepoint_filter(void *ctx)
+	0: (bf) r6 = r1
+	1: (b7) r1 = 0
+	; int ret, zero = 0;
+	2: (63) *(u32 *)(r10 -28) = r1
+	last_idx 2 first_idx 0
+	regs=2 stack=0 before 1: (b7) r1 = 0
+	3: (bf) r2 = r10
+	;
+	4: (07) r2 += -28
+	; msg = map_lookup_elem(&tp_heap, &zero);
+	5: (18) r1 = 0xffff954178190400
+	7: (85) call bpf_map_lookup_elem#1
+	8: (bf) r7 = r0
+	; if (!msg)
+	9: (15) if r7 == 0x0 goto pc+1989
+	 R0_w=map_value(id=0,off=0,ks=4,vs=24304,imm=0) R6_w=ctx(id=0,off=0,imm=0) R7_w=map_value(id=0,off=0,ks=4,vs=24304,imm=0) R10=fp0 fp-32=mmmm????
+	; &msg->caps, &filter_map, msg->idx);
+	10: (61) r1 = *(u32 *)(r7 +24288)
+	 R0_w=map_value(id=0,off=0,ks=4,vs=24304,imm=0) R6_w=ctx(id=0,off=0,imm=0) R7_w=map_value(id=0,off=0,ks=4,vs=24304,imm=0) R10=fp0 fp-32=mmmm????
+	11: (63) *(u32 *)(r10 -24) = r1
+	; struct task_struct *task = (struct task_struct *)get_current_task();
+	12: (85) call bpf_get_current_task#35
+	13: (bf) r9 = r0
+	; struct task_struct *task = (struct task_struct *)get_current_task();
+	14: (7b) *(u64 *)(r10 -16) = r9
+	; __u32 pid = get_current_pid_tgid() >> 32;
+	15: (85) call bpf_get_current_pid_tgid#14
+	; __u32 pid = get_current_pid_tgid() >> 32;
+...
+	regs=4 stack=0 before 1895: (4f) r2 |= r6
+	regs=44 stack=0 before 1894: (4f) r2 |= r1
+	regs=46 stack=0 before 1893: (67) r2 <<= 24
+	regs=46 stack=0 before 1892: (79) r2 = *(u64 *)(r10 -40)
+	regs=42 stack=10 before 1891: (67) r1 <<= 16
+	regs=42 stack=10 before 1890: (79) r1 = *(u64 *)(r10 -48)
+	regs=40 stack=30 before 1889: (4f) r6 |= r1
+	regs=42 stack=30 before 1888: (79) r1 = *(u64 *)(r10 -56)
+	regs=40 stack=70 before 1887: (67) r6 <<= 8
+	regs=40 stack=70 before 1886: (4f) r9 |= r7
+	regs=40 stack=70 before 1885: (4f) r9 |= r8
+	regs=40 stack=70 before 1884: (67) r9 <<= 24
+	regs=40 stack=70 before 1883: (67) r8 <<= 16
+	regs=40 stack=70 before 1882: (4f) r7 |= r1
+	regs=40 stack=70 before 1881: (79) r1 = *(u64 *)(r10 -64)
+	regs=40 stack=70 before 1880: (67) r7 <<= 8
+	regs=40 stack=70 before 1879: (15) if r0 == 0x0 goto pc+95
+	regs=40 stack=70 before 1878: (85) call bpf_map_lookup_elem#1
+	regs=40 stack=70 before 1876: (18) r1 = 0xffff954177317000
+	regs=40 stack=70 before 1875: (07) r2 += -16
+	regs=40 stack=70 before 1874: (bf) r2 = r10
+	regs=40 stack=70 before 1873: (63) *(u32 *)(r10 -16) = r0
+	regs=40 stack=70 before 1872: (77) r0 >>= 32
+	 R0_rw=inv(id=0) R6_rw=invP(id=0,umax_value=255,var_off=(0x0; 0xff)) R7_rw=inv(id=0,umax_value=255,var_off=(0x0; 0xff)) R8_rw=inv(id=0,umax_value=255,var_off=(0x0; 0xff)) R9_rw=inv(id=0,umax_value=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmm???? fp-16_r=mmmmmmmm fp-24=mmmmmmmm fp-32=mmmm???? fp-40_rw=mmmmmmmm fp-48_rw=mmmmmmmm fp-56_rw=mmmmmmmm fp-64_rw=mmmmmmmm fp-72_rw=mmmmmmmm fp-80_rw=mmmmmmmm fp-88_rw=mmmmmmmm fp-96_r=map_value fp-104=map_value fp-112=ctx fp-120=mmmmmmmm fp-128=mmmmmmmm fp-136_r=map_value fp-144_rw=mmmmmmmm fp-152_rw=mmmmmmmm fp-160_rw=mmmmmmmm fp-168_rw=mmmmmmmm fp-176_rw=mmmmmmmm fp-184_rw=mmmmmmmm fp-192_rw=mmmmmmmm fp-200_rw=mmmmmmmm fp-208_rw=mmmmmmmm
+	parent didn't have regs=40 stack=0 marks
+	last_idx 1871 first_idx 1821
+	regs=40 stack=0 before 1871: (85) call bpf_get_current_pid_tgid#14
+	regs=40 stack=0 before 1870: (71) r6 = *(u8 *)(r1 +1)
+	math between map_value pointer and register with unbounded min value is not allowed
+	processed 3841 insns (limit 1000000) max_states_per_insn 4 total_states 173 peak_states 170 mark_read 136
+    logcapture.go:25: time="2024-01-10T10:30:34Z" level=info msg="Unloading sensor __killer__"
+    logcapture.go:25: time="2024-01-10T10:30:34Z" level=info msg="BPF prog was unloaded" label=kprobe/killer pin=killer-sensor-1-killer_kprobe
+    logcapture.go:25: time="2024-01-10T10:30:34Z" level=info msg="map was unloaded" map=killer_data pin=killer_data
+    logcapture.go:25: time="2024-01-10T10:30:34Z" level=info msg="map was unloaded" map=killer_data pin=killer_data
+    logcapture.go:25: time="2024-01-10T10:30:34Z" level=info msg="Cleaning up killer"
+    observer_test_helper.go:443: SensorManager.AddTracingPolicy error: sensor gtp-sensor-2 from collection killer-override failed to load: failed prog /home/kkourt/src/tetragon/bpf/objs/bpf_generic_tracepoint_v53.o kern_version 328959 loadInstance: opening collection '/home/kkourt/src/tetragon/bpf/objs/bpf_generic_tracepoint_v53.o' failed: program generic_tracepoint_filter: load program: invalid argument: math between map_value pointer and register with unbounded min value is not allowed (18925 line(s) omitted)
+    filenames.go:47: keeping export file for TestKillerOverride-override_helper-kprobe_(no_multi) (/tmp/tetragon.gotest.TestKillerOverride-override_helper-kprobe_(no_multi).4012676103.json)
+```
+
+It's not clear to me what the issue exatly is, but reading the code I
+found an opportunity to simplify it which seems to fix the issue.
+
+Signed-off-by: Kornilios Kourtis <kornilios@isovalent.com>
+
+--- bpf/lib/bpf_task.h
+@@ -158,12 +158,13 @@ static inline __attribute__((always_inline)) struct execve_map_value *
+ event_find_curr(__u32 *ppid, bool *walked)
+ {
+ 	struct task_struct *task = (struct task_struct *)get_current_task();
+-	__u32 pid = get_current_pid_tgid() >> 32;
+ 	struct execve_map_value *value = 0;
+ 	int i;
++	__u32 pid;
+ 
+ #pragma unroll
+ 	for (i = 0; i < 4; i++) {
++		probe_read(&pid, sizeof(pid), _(&task->tgid));
+ 		value = execve_map_get_noinit(pid);
+ 		if (value && value->key.ktime != 0)
+ 			break;
+@@ -172,7 +173,6 @@ event_find_curr(__u32 *ppid, bool *walked)
+ 		probe_read(&task, sizeof(task), _(&task->real_parent));
+ 		if (!task)
+ 			break;
+-		probe_read(&pid, sizeof(pid), _(&task->tgid));
+ 	}
+ 	*ppid = pid;
+ 	return value;
+

@@ -1,0 +1,44 @@
+repo: cilium/cilium
+commit: 9bb7aa0481f3837257153a21d947aecc48c760d1
+rank: 36
+
+bpf: Force-align IPv4 CT tuples used by revSNAT memcpy()
+
+struct ipv4_ct_tuple is __packed, so its natural alignment is 1 while its
+size is 14. __bpf_memcpy() decomposes a 14-byte copy into u16 + u32 + u64
+accesses, and the trailing 8-byte access requires the object to sit on an
+8-byte aligned stack slot. builtins.h provides __align_stack_8 for exactly
+this case, but the tuples copied in snat_v4_rev_nat_handle_mapping() were
+never annotated.
+
+Clang happened to place them on aligned slots so far. Any change to the
+frame layout of tail_handle_inter_cluster_revsnat() can move them, at which
+point the verifier rejects the program with:
+
+      misaligned stack access off (0x0; 0x0)+0+-92 size 8
+
+Annotate both ends of the copy so the alignment no longer depends on
+unrelated stack allocation decisions.
+
+Signed-off-by: Hadrien Patte <hadrien.patte@datadoghq.com>
+
+--- bpf/lib/nat.h
+@@ -488,7 +488,7 @@ snat_v4_rev_nat_handle_mapping(const struct __ctx_buff *ctx,
+ 	}
+ 
+ 	if (*state && (*state)->common.needs_ct) {
+-		struct ipv4_ct_tuple tuple_revsnat;
++		struct ipv4_ct_tuple tuple_revsnat __align_stack_8;
+ 		int ret;
+ 
+ 		memcpy(&tuple_revsnat, tuple, sizeof(tuple_revsnat));
+@@ -1206,7 +1206,7 @@ snat_v4_rev_nat(struct __ctx_buff *ctx, const struct ipv4_nat_target *target,
+ 		struct trace_ctx *trace, __s8 *ext_err __maybe_unused)
+ {
+ 	struct ipv4_nat_entry *state = NULL;
+-	struct ipv4_ct_tuple tuple = {};
++	struct ipv4_ct_tuple tuple __align_stack_8 = {};
+ 	void *data, *data_end;
+ 	struct iphdr *ip4;
+ 	fraginfo_t fraginfo;
+

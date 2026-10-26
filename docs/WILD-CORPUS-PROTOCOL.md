@@ -74,6 +74,8 @@ Each included case is captured once on the pin and replayed through every regist
 2. **Message and diff** (`tools/wild_dump_for_review.py`, decisions in `fixtures/wild/pass2_decisions.tsv`): E1, the complexity exclusion of inclusion 4, and N0 (below), from the commit message and the BPF C diff.
 3. **Build** on the pin: inclusions 2–4 and E3–E5.
 
+Codes used in the decision files: `E1`–`E5` as in Section 4; `C` complexity or resource limit (inclusion 4: instruction, program-size or stack budget); `I4` environment or capability (inclusion 4: unsupported feature or helper, loader or map-creation failure, error code without a verifier message); `N0` not a fix for a verifier rejection (see the changes below). A later duplicate of an earlier-ranked patch is `E3`.
+
 ## Changes after the freeze
 
 - **26 Oct 2026, during pass 2, before any candidate was built. N0 code added.** Commits matched by the search that do not fix a verifier rejection at all (features, refactors, test frameworks, documentation) are excluded at pass 2 with code N0. Their parent is not expected to reject, so inclusion 2 would exclude them at pass 3. N0 saves builds and does not change which cases are included. A commit whose message names a verifier rejection it fixes is never N0, even when the diff also carries other changes.

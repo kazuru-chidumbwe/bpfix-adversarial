@@ -1,0 +1,57 @@
+repo: cilium/tetragon
+commit: b4d901f005e290f282eb04c7ddf56dcac3233b1e
+rank: 6
+
+fix: Bound arg metadata index with an unconditional mask
+
+clang > 20 lowers the switch over a0..a4 to a computed table load and
+copies the index before its own range check. Pre-5.7 verifiers do not
+propagate the narrowed range to that copy, so the load is rejected on
+4.19 with:
+
+  R2 unbounded memory access, make sure to bounds check any array
+  access into a map
+
+Index the args the same way generic_process_event() already does and
+mask after the decrement, so the bound holds no matter how the check
+is scheduled.
+
+Signed-off-by: Tam Mach <tam.mach@cilium.io>
+
+--- bpf/process/types/basic.h
+@@ -561,19 +561,21 @@ FUNC_INLINE bool has_max_data(unsigned long argm)
+ 
+ FUNC_INLINE unsigned long get_arg_meta(int meta, struct msg_generic_kprobe *e)
+ {
+-	switch (meta & ARGM_INDEX_MASK) {
+-	case 1:
+-		return e->a0;
+-	case 2:
+-		return e->a1;
+-	case 3:
+-		return e->a2;
+-	case 4:
+-		return e->a3;
+-	case 5:
+-		return e->a4;
+-	}
+-	return 0;
++	int idx = meta & ARGM_INDEX_MASK;
++
++	if (idx < 1 || idx > MAX_POSSIBLE_ARGS)
++		return 0;
++
++	/* Mask after the decrement so the bound holds unconditionally:
++	 * clang > 20 copies the index before its own range check, and
++	 * pre-5.7 verifiers do not propagate the narrowed range to the
++	 * copy.
++	 */
++	idx -= 1;
++	asm volatile("%[idx] &= %[mask];\n"
++		     : [idx] "+r"(idx)
++		     : [mask] "i"(MAX_POSSIBLE_ARGS_MASK));
++	return (&e->a0)[idx];
+ }
+ 
+ FUNC_INLINE u16 string_padded_len(u16 len)
+

@@ -1,0 +1,42 @@
+repo: cilium/cilium
+commit: 1e25adb69b44573ecaea42803fff7312fbfe9372
+rank: 219
+
+bpf: Fix verifier error when writing to skb->cb[0]
+
+Fixes:
+```
+1499: (bf) r3 = r1
+1500: (07) r3 += 34
+1501: (79) r5 = *(u64 *)(r10 -152)
+1502: (18) r4 = 0x146e468fb16
+1504: (7b) *(u64 *)(r10 -128) = r4
+1505: (18) r4 = 0x48c1
+1507: (6b) *(u16 *)(r10 -20) = r4
+1508: (18) r4 = 0x5ecbc396
+1510: (63) *(u32 *)(r10 -24) = r4
+1511: (79) r7 = *(u64 *)(r10 -136)
+1512: (57) r7 &= 65535
+1513: (bf) r4 = r7
+1514: (67) r4 <<= 16
+1515: (47) r4 |= 512
+1516: (63) *(u32 *)(r5 +0) = r4
+dereference of modified ctx ptr R5 off=48+0, ctx+const is allowed, ctx+const+const is not
+```
+
+Fixes: #8302
+
+Signed-off-by: Thomas Graf <thomas@cilium.io>
+
+--- bpf/lib/lxc.h
+@@ -89,6 +89,9 @@ skb_redirect_to_proxy_hairpin(struct __sk_buff *skb, __be16 proxy_port)
+ 	int ret;
+ 
+ 	skb->cb[0] = MARK_MAGIC_TO_PROXY | (proxy_port << 16);
++	/* Workaround to avoid verifier complaint:
++	 * dereference of modified ctx ptr R5 off=48+0, ctx+const is allowed, ctx+const+const is not */
++	asm volatile("": : :"memory");
+ 
+ 	if (!revalidate_data(skb, &data, &data_end, &ip4))
+ 		return DROP_INVALID;
+

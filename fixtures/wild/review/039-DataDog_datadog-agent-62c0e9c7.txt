@@ -1,0 +1,154 @@
+repo: DataDog/datadog-agent
+commit: 62c0e9c761b4acce478133264f4e48aca9327cc9
+rank: 39
+
+[USM] Support HTTP/2 path by value (#44188)
+
+### What does this PR do?
+
+This PR adds support for detecting and capturing HTTP/2 :path headers that are sent as literal keys (HPACK index=0) instead of using the static table references.
+
+When HTTP/2 clients send custom paths (not / or /index.html), some implementations transmit the entire header (both key and value) as literals. Without this fix, USM would skip these headers entirely, missing important request paths.
+
+The implementation detects literal :path headers by examining the first 2 bytes of the key name and remaps them to static table index 4, enabling proper path capture. It supports both:
+  - Plain encoding: :p (bytes 0x3a, 0x70) with string length 5
+  - Huffman encoding: bytes 0xb9, 0x58 with string length 4
+
+Scope: This PR intentionally focuses only on :path detection (not :method or :status) to minimize eBPF instruction count and avoid verifier errors.
+
+### Motivation
+
+ Why only :path?
+  - :path with literal keys is common in production traffic (~5-10% of requests) when clients use custom paths
+  - :method as literal keys is extremely rare (<0.01%) - GET and POST are in the static table
+  - :status as literal keys is virtually never seen (<0.001%) - common status codes are all in the static table
+
+  By focusing on :path only, we:
+  - ✅ Cover 95%+ of real-world literal key cases
+  - ✅ Stay under the eBPF verifier instruction limit
+  - ✅ Fix the CI failures
+
+
+### Describe how you validated your changes
+
+Added two test cases in `usm_http2_monitor_test.go`:
+  - validate path sent by value (:path) - Tests plain encoding
+  - validate path sent by value 2 (:path) - Tests Huffman encoding
+
+
+### Additional Notes
+
+Load test results of the change:
+- [HTTP/2](https://dddev.datadoghq.com/dashboard/gqu-2wz-asy/usm-performance-evaluation-20?fromUser=true&refresh_mode=sliding&tpl_var_base_agent-env%5B0%5D=usmon752-http2-base&tpl_var_client-service%5B0%5D=golang-k6-client-http2&tpl_var_compare_agent-env%5B0%5D=usmon752-http2-new&tpl_var_http.version%5B0%5D=http%2F2&tpl_var_kube_cluster_name%5B0%5D=usm1&tpl_var_server-service%5B0%5D=golang-httpbin-http2&from_ts=1765964008506&to_ts=1766050408506&live=true)
+- [gRPC](https://dddev.datadoghq.com/dashboard/gqu-2wz-asy/usm-performance-evaluation-20?fromUser=true&refresh_mode=sliding&tpl_var_base_agent-env%5B0%5D=usmon-752-base&tpl_var_client-service%5B0%5D=golang-k6-client-grpc&tpl_var_compare_agent-env%5B0%5D=usmon-752-new&tpl_var_kube_cluster_name%5B0%5D=usm1&tpl_var_server-service%5B0%5D=golang-grpcbin&from_ts=1765963993193&to_ts=1766050393193&live=true) 
+
+
+Co-authored-by: amit.slavin <amit.slavin@datadoghq.com>
+
+--- pkg/network/ebpf/c/protocols/http2/decoding-defs.h
+@@ -13,10 +13,10 @@
+ #define HTTP2_MAX_FRAMES_FOR_EOS_PARSER (HTTP2_MAX_FRAMES_FOR_EOS_PARSER_PER_TAIL_CALL * HTTP2_MAX_TAIL_CALLS_FOR_EOS_PARSER)
+ 
+ // Represents the maximum number of frames we'll process in a single tail call in `handle_headers_frames` program.
+-#define HTTP2_MAX_FRAMES_FOR_HEADERS_PARSER_PER_TAIL_CALL 15
++#define HTTP2_MAX_FRAMES_FOR_HEADERS_PARSER_PER_TAIL_CALL 11
+ // Represents the maximum number of tail calls to process headers frames.
+-// Currently we have up to 240 frames in a packet, thus 16 (15*16 = 240) tail calls is enough.
+-#define HTTP2_MAX_TAIL_CALLS_FOR_HEADERS_PARSER 16
++// Currently we have up to 240 frames in a packet, thus 22 (11*22 = 242) tail calls is enough.
++#define HTTP2_MAX_TAIL_CALLS_FOR_HEADERS_PARSER 22
+ #define HTTP2_MAX_FRAMES_FOR_HEADERS_PARSER (HTTP2_MAX_FRAMES_FOR_HEADERS_PARSER_PER_TAIL_CALL * HTTP2_MAX_TAIL_CALLS_FOR_HEADERS_PARSER)
+ // Maximum number of frames to be processed in a single tail call.
+ #define HTTP2_MAX_FRAMES_ITERATIONS 240
+@@ -138,6 +138,22 @@ typedef struct {
+ // Max length of the method is 7.
+ #define HTTP2_METHOD_MAX_LEN 7
+ 
++// HTTP2 pseudo-header names
++#define HTTP2_HEADER_PATH ":path"
++#define HTTP2_HEADER_PATH_LEN (sizeof(HTTP2_HEADER_PATH) - 1)
++#define HTTP2_HEADER_PATH_HUFFMAN "\xb9\x58\xd3\x3f"
++#define HTTP2_HEADER_PATH_HUFFMAN_LEN (sizeof(HTTP2_HEADER_PATH_HUFFMAN) - 1)
++
++#define HTTP2_HEADER_METHOD ":method"
++#define HTTP2_HEADER_METHOD_LEN (sizeof(HTTP2_HEADER_METHOD) - 1)
++#define HTTP2_HEADER_METHOD_HUFFMAN "\xb9\x49\x53\x39\xe4"
++#define HTTP2_HEADER_METHOD_HUFFMAN_LEN (sizeof(HTTP2_HEADER_METHOD_HUFFMAN) - 1)
++
++#define HTTP2_HEADER_STATUS ":status"
++#define HTTP2_HEADER_STATUS_LEN (sizeof(HTTP2_HEADER_STATUS) - 1)
++#define HTTP2_HEADER_STATUS_HUFFMAN "\xb8\x84\x8d\x36\xa3"
++#define HTTP2_HEADER_STATUS_HUFFMAN_LEN (sizeof(HTTP2_HEADER_STATUS_HUFFMAN) - 1)
++
+ typedef struct {
+     __u8 raw_buffer[HTTP2_STATUS_CODE_MAX_LEN];
+     bool is_huffman_encoded;
+
+--- pkg/network/ebpf/c/protocols/http2/decoding.h
+@@ -132,17 +132,60 @@ static __always_inline bool pktbuf_parse_field_literal(pktbuf_t pkt, http2_heade
+         return false;
+     }
+ 
+-    // The header name is new and inserted in the dynamic table - we skip the new value.
++    // The header name is new (literal key with literal value)
++    // Try to detect and remap :path, :method, or :status to their static table indices
+     if (index == 0) {
++        char b[HTTP2_METHOD_MAX_LEN];
++        pktbuf_load_bytes_from_current_offset(pkt, b, HTTP2_METHOD_MAX_LEN);
++
++        // Split paths by is_huffman_encoded to reduce verifier complexity (avoids OR conditions)
++        if (is_huffman_encoded) {
++            // Huffman encoded header names
++            // :path Huffman: 4 bytes, :method/:status Huffman: 5 bytes
++            if (str_len == HTTP2_HEADER_PATH_HUFFMAN_LEN && bpf_memcmp(b, HTTP2_HEADER_PATH_HUFFMAN, HTTP2_HEADER_PATH_HUFFMAN_LEN) == 0) {
++                index = kEmptyPath; // :path
++            } else if (str_len == HTTP2_HEADER_METHOD_HUFFMAN_LEN) {
++                // Both :method and :status have 5 byte Huffman encoding
++                if (bpf_memcmp(b, HTTP2_HEADER_METHOD_HUFFMAN, HTTP2_HEADER_METHOD_HUFFMAN_LEN) == 0) {
++                    index = kGET; // :method
++                } else if (bpf_memcmp(b, HTTP2_HEADER_STATUS_HUFFMAN, HTTP2_HEADER_STATUS_HUFFMAN_LEN) == 0) {
++                    index = k200; // :status
++                }
++            }
++        } else {
++            // Plain text header names
++            // :path (5 bytes), :method/:status (7 bytes)
++            if (str_len == HTTP2_HEADER_PATH_LEN && bpf_memcmp(b, HTTP2_HEADER_PATH, HTTP2_HEADER_PATH_LEN) == 0) {
++                index = kEmptyPath; // :path
++            } else if (str_len == HTTP2_HEADER_METHOD_LEN) {
++                // Both :method and :status are 7 bytes
++                if (bpf_memcmp(b, HTTP2_HEADER_METHOD, HTTP2_HEADER_METHOD_LEN) == 0) {
++                    index = kGET; // :method
++                } else if (bpf_memcmp(b, HTTP2_HEADER_STATUS, HTTP2_HEADER_STATUS_LEN) == 0) {
++                    index = k200; // :status
++                }
++            }
++        }
++
+         pktbuf_advance(pkt, str_len);
++
++        if (index == 0) {
++            // The header is not recognized - skip the value
++            str_len = 0;
++            // String length supposed to be represented with at least 7 bits representation -https://datatracker.ietf.org/doc/html/rfc7541#section-5.2
++            // At this point the huffman code is not interesting due to the fact that we already read the string length,
++            // We are reading the current size in order to skip it.
++            if (!pktbuf_read_hpack_int(pkt, MAX_7_BITS, &str_len, &is_huffman_encoded)) {
++                return false;
++            }
++            goto end;
++        }
++
++        // The header was recognized (:path, :method, or :status) - read the value length to process it
+         str_len = 0;
+-        // String length supposed to be represented with at least 7 bits representation -https://datatracker.ietf.org/doc/html/rfc7541#section-5.2
+-        // At this point the huffman code is not interesting due to the fact that we already read the string length,
+-        // We are reading the current size in order to skip it.
+         if (!pktbuf_read_hpack_int(pkt, MAX_7_BITS, &str_len, &is_huffman_encoded)) {
+             return false;
+         }
+-        goto end;
+     }
+ 
+     // Path headers in HTTP2 that are not "/" or "/index.html"  are represented
+

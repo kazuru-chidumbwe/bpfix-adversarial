@@ -1,0 +1,136 @@
+repo: falcosecurity/libs
+commit: 347edcbd60448c0ca60c25d6e2db3a76826a7449
+rank: 18
+
+fix(modern_bpf): bpf_loop the sendmmsg/recvmmsg iovec data store
+
+On stricter verifiers sendmmsg_x/recvmmsg_x exceed the 1M processed-instruction
+limit and fail to load with E2BIG. handle_exit() runs as a bpf_loop callback,
+and the bounded for(j < MAX_IOVCNT) loop in the native iovec data store
+(parameter 4) is re-explored on every SCC fixed-point pass of that callback,
+multiplying the processed-instruction count.
+
+Replace the inner for-loop with a bpf_loop() helper so the verifier checks the
+per-iteration body once, collapsing that multiplication and keeping the program
+within the limit. The loop callback re-fetches the per-cpu auxmap (a map-value
+pointer cannot cross the bpf_loop context) and masks the index for bounds.
+
+handle_exit() is shared with the legacy single-message programs
+sendmmsg_old_x/recvmmsg_old_x, which are loaded only when the bpf_loop helper is
+NOT available and therefore must not contain a bpf_loop call. The store is
+chosen by a compile-time use_bpf_loop constant threaded from each program (true
+for the bpf_loop programs, false for the legacy ones), NOT by a CO-RE feature
+probe: some kernels expose BPF_FUNC_loop in their BTF enum without implementing
+the helper, so bpf_core_enum_value_exists() would wrongly route the legacy
+program through bpf_loop and it would fail to load with "invalid func
+unknown#181".
+
+The selector is a tiny __always_inline that, because use_bpf_loop is constant,
+collapses to a single call to one of two __noinline stores: the bpf_loop store
+for the _x programs and the for-loop store for the _old_x programs. The
+__noinline boundary is required on its own -- inlining the bpf_loop store into
+the callback re-introduces the SCC re-exploration and the E2BIG. The legacy
+single-message path is not subject to the SCC blowup, so its for-loop store is
+correct.
+
+The ia32 (compat) mmsg path keeps the bounded for-loop. The 3-frame 512-byte
+stack budget (program -> callback -> noinline callee) is preserved.
+
+Signed-off-by: Angelo Puglisi <angelopuglisi86@gmail.com>
+
+--- driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/recvmmsg.bpf.c
+@@ -16,9 +16,9 @@ typedef struct {
+ 	struct mmsghdr *mmh;
+ } recvmmsg_data_t;
+ 
+-static __always_inline long handle_exit(uint32_t index, void *ctx) {
+-	recvmmsg_data_t *data = (recvmmsg_data_t *)ctx;
+-
++static __always_inline long recvmmsg_handle_msg(uint32_t index,
++                                                recvmmsg_data_t *data,
++                                                bool use_bpf_loop) {
+ 	/* Read individual fields instead of the full struct mmsghdr to keep
+ 	 * frame 1 stack small enough for the 512-byte 3-frame limit.
+ 	 * Handle both native and compat (ia32) layouts.
+@@ -73,7 +73,7 @@ static __always_inline long handle_exit(uint32_t index, void *ctx) {
+ 	}
+ 
+ 	/* Parameter 4: data (type: PT_BYTEBUF) */
+-	auxmap__store_iovec_data_param_noinline(auxmap, msg_iov, msg_iovlen, snaplen);
++	auxmap__store_iovec_data_param_mmsg(auxmap, msg_iov, msg_iovlen, snaplen, use_bpf_loop);
+ 
+ 	/* Parameter 5: tuple (type: PT_SOCKTUPLE) */
+ 	auxmap__store_socktuple_param_noinline(auxmap, data->fd, INBOUND, msg_name);
+@@ -95,6 +95,12 @@ static __always_inline long handle_exit(uint32_t index, void *ctx) {
+ 	return 0;
+ }
+ 
++/* bpf_loop callback used by recvmmsg_x. That program is loaded only when the
++ * bpf_loop helper is available, so the per-message iovec store uses bpf_loop. */
++static long handle_exit(uint32_t index, void *ctx) {
++	return recvmmsg_handle_msg(index, (recvmmsg_data_t *)ctx, true);
++}
++
+ SEC("tp_btf/sys_exit")
+ int BPF_PROG(recvmmsg_x, struct pt_regs *regs, long ret) {
+ 	if(ret <= 0) {
+@@ -189,8 +195,8 @@ int BPF_PROG(recvmmsg_old_x, struct pt_regs *regs, long ret) {
+ 	        .mmh = (struct mmsghdr *)args[1],
+ 	};
+ 
+-	// Send only first message
+-	handle_exit(0, &data);
++	// Send only first message; legacy program runs without bpf_loop.
++	recvmmsg_handle_msg(0, &data, false);
+ 
+ 	return 0;
+ }
+
+--- driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/sendmmsg.bpf.c
+@@ -16,9 +16,9 @@ typedef struct {
+ 	struct mmsghdr *mmh;
+ } sendmmsg_exit_t;
+ 
+-static __always_inline long handle_exit(uint32_t index, void *ctx) {
+-	sendmmsg_exit_t *data = (sendmmsg_exit_t *)ctx;
+-
++static __always_inline long sendmmsg_handle_msg(uint32_t index,
++                                                sendmmsg_exit_t *data,
++                                                bool use_bpf_loop) {
+ 	/* Read individual fields instead of the full struct mmsghdr to keep
+ 	 * frame 1 stack small enough for the 512-byte 3-frame limit.
+ 	 * Handle both native and compat (ia32) layouts.
+@@ -67,7 +67,7 @@ static __always_inline long handle_exit(uint32_t index, void *ctx) {
+ 	}
+ 
+ 	/* Parameter 4: data (type: PT_BYTEBUF) */
+-	auxmap__store_iovec_data_param_noinline(auxmap, msg_iov, msg_iovlen, snaplen);
++	auxmap__store_iovec_data_param_mmsg(auxmap, msg_iov, msg_iovlen, snaplen, use_bpf_loop);
+ 
+ 	/* Parameter 5: tuple (type: PT_SOCKTUPLE)*/
+ 	auxmap__store_socktuple_param_noinline(auxmap, data->fd, OUTBOUND, msg_name);
+@@ -80,6 +80,12 @@ static __always_inline long handle_exit(uint32_t index, void *ctx) {
+ 	return 0;
+ }
+ 
++/* bpf_loop callback used by sendmmsg_x. That program is loaded only when the
++ * bpf_loop helper is available, so the per-message iovec store uses bpf_loop. */
++static long handle_exit(uint32_t index, void *ctx) {
++	return sendmmsg_handle_msg(index, (sendmmsg_exit_t *)ctx, true);
++}
++
+ SEC("tp_btf/sys_exit")
+ int BPF_PROG(sendmmsg_x, struct pt_regs *regs, long ret) {
+ 	if(ret <= 0) {
+@@ -168,8 +174,8 @@ int BPF_PROG(sendmmsg_old_x, struct pt_regs *regs, long ret) {
+ 	        .mmh = (struct mmsghdr *)args[1],
+ 	};
+ 
+-	// Only first message
+-	handle_exit(0, &data);
++	// Only first message; legacy program runs without bpf_loop.
++	sendmmsg_handle_msg(0, &data, false);
+ 
+ 	return 0;
+ }
+

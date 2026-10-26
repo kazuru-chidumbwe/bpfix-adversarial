@@ -1,0 +1,36 @@
+repo: cilium/cilium
+commit: 80a3023ddb743a259e6a37a8bdd38ee57e4c54da
+rank: 77
+
+bpf: Fix misaligned access in bpf_xdp with prefilter and IPv6
+
+When both prefilter and IPv6 are enabled, bpf_xdp fails to load with:
+
+    51: (79) r1 = *(u64 *)(r2 +30)
+    52: (7b) *(u64 *)(r10 -12) = r1
+    misaligned stack access off (0x0; 0x0)+0+-12 size 8
+
+This is caused by the memcpy call on pfx.lpm.data:
+
+    memcpy(pfx.lpm.data, &ipv6_hdr->saddr, sizeof(pfx.addr));
+
+This call uses our optimized memcpy implementation which requires the
+destination on-stack objects to the 8-bytes aligned. Normally we would
+fix it by aligning the pfx object, but here the destination buffer is
+actually, pfx.lpm.data which is not at the start of pfx. We therefore
+need to fallback to the unoptimized, builtin memcpy.
+
+Fixes: 9c85721 ("bpf: optimized memcpy/memzero with dw-wide copies")
+Signed-off-by: Paul Chaignon <paul@cilium.io>
+
+--- bpf/bpf_xdp.c
+@@ -211,7 +211,7 @@ static __always_inline int check_v6(struct __ctx_buff *ctx)
+ 		return CTX_ACT_DROP;
+ 
+ #ifdef CIDR6_FILTER
+-	memcpy(pfx.lpm.data, &ipv6_hdr->saddr, sizeof(pfx.addr));
++	__bpf_memcpy_builtin(pfx.lpm.data, &ipv6_hdr->saddr, sizeof(pfx.addr));
+ 	pfx.lpm.prefixlen = 128;
+ 
+ #ifdef CIDR6_LPM_PREFILTER
+

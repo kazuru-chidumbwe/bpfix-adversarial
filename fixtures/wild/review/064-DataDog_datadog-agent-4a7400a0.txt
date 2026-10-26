@@ -1,0 +1,107 @@
+repo: DataDog/datadog-agent
+commit: 4a7400a0aaa3ddff7bd94809e67fa4958429db32
+rank: 64
+
+[CNM-5355] Improve protocol_classifier_entrypoint performance (#56780)
+
+### What does this PR do?
+
+Reduces the per-packet cost of `socket__classifier_entry` (`protocol_classifier_entrypoint()`):
+
+- **Early exit for TLS flows.** Once a flow's encryption layer is known, return unless the record is a ClientHello/ServerHello. The socket filter can't see past TLS (USM classifies the inner protocol from decrypted data in separate uprobe programs), so the only remaining work is extracting handshake tags. This covers every flow known to be TLS, including ones whose handshake was never seen. Letting CH/SH through also re-parses tags for a new connection that reuses a stale `connection_protocol` entry's tuple, as long as that entry has no application layer set.
+- **Move the early exits ahead of `classification_context_init()`,** so fully classified and TLS flows skip the per-CPU context setup and payload copy.
+- **Look up the protocol stack once and copy it by value** (4 bytes). All read-only checks share that single lookup; writes still go through `get_or_create_protocol_stack()`, and `init_routing_cache()` still gets `NULL` when there's no entry, so tail-call routing is unchanged.
+
+For every record it now skips, `main` already returned without classifying, just after paying for context init. It does not set `FLAG_FULLY_CLASSIFIED`, so later protocols (e.g. USM-decrypted inner protocols) still merge into connection stats (`stats.h`).
+
+A second commit adds a `TestTLSClassification/Stale-TLS-Entry` regression test.
+
+### Motivation
+
+While investigating a customer-reported performance issue (NTWK-684 / CNM-5355), the classifier was found running in full for every packet of long-lived flows (e.g. curl/https downloads of large files). TLS flows never become "fully classified", so they never hit the existing early exit.
+
+The by-value copy also avoids an older-verifier rejection: on kernels like 4.14, a nullable map-value pointer that is spilled across a helper call reloads as an untracked scalar (`R5 invalid mem access 'inv'`). Copying the struct means no map-value pointer is held across `is_tls()` or `classification_context_init()`.
+
+### Describe how you validated your changes
+
+- KMT on `amazon_4.14` and `amazon_5.4`: `TestUSMSuite` and `TestTracerSuite` `TestProtocolClassification` and `TestTLSClassification` pass for CO-RE, prebuilt and runtime-compiled. `TestTLSClassification` asserts ClientHello/ServerHello tags, so the handshake path is intact.
+- New `Stale-TLS-Entry` case (Ubuntu 24.04, 6.8): marks the tuple as TLS in `connection_protocol` before the handshake, then asserts the connection still gets its TLS tags. It passes for runtime-compiled, CO-RE and fentry. It also fails against an early exit that lets only ServerHellos through, a regression the existing per-version cases don't catch.
+- AKS A/B, 7.83.3 vs. this branch (fentry, USM off, 10-minute runs of Kafka, in-cluster nginx HTTP and Azure Premium blob HTTPS workloads):
+  - `socket__classifier_entry` is 9–23% cheaper per call on every node: servers the most (Kafka broker −21.5%, nginx server −23%), clients −9% to −12%.
+  - TLS blob client: ≈ 0.4–0.5 cores saved and +2.1% throughput on a CPU-bound node.
+  - Kafka broker ≈ 0.06–0.18 cores; nginx ≈ 0.15 cores (server + client).
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+
+Co-authored-by: jim.wilson <jim.wilson@datadoghq.com>
+
+--- pkg/network/ebpf/c/protocols/classification/protocol-classification.h
+@@ -142,29 +142,56 @@ __maybe_unused static __always_inline void protocol_classifier_entrypoint(struct
+         return;
+     }
+ 
+-    classification_context_t *classification_ctx = classification_context_init(skb, &skb_tup, &skb_info);
+-    if (!classification_ctx) {
++    // Snapshot the stack by value so all reads below share this one lookup. Older verifiers (e.g. 4.14) lose track
++    // of a nullable map-value pointer that is held live across helper calls; a copy in our own frame has no such issue.
++    // Writes still go through get_or_create_protocol_stack.
++    protocol_stack_t *stack_entry = get_protocol_stack_if_exists(&skb_tup);
++    const bool stack_exists = stack_entry != NULL;
++    protocol_stack_t stack = {0};
++    if (stack_exists) {
++        stack = *stack_entry;
++    }
++
++    if (is_fully_classified(&stack)) {
+         return;
+     }
+ 
+-    protocol_stack_t *protocol_stack = get_protocol_stack_if_exists(&classification_ctx->tuple);
++    const bool encryption_layer_known = is_protocol_layer_known(&stack, LAYER_ENCRYPTION);
++    tls_record_header_t tls_hdr = {0};
++    bool is_tls_record = false;
+ 
+-    if (is_fully_classified(protocol_stack)) {
+-        return;
++    if (encryption_layer_known) {
++        // The socket filter can't see past the encryption layer (USM's uprobes classify the inner protocol on
++        // decrypted data in a separate program), so the only thing left to do here is extract ClientHello/ServerHello
++        // tags. Let those records through and skip everything else. Letting them through also lets a new connection
++        // that reuses a leaked connection_protocol entry's tuple get its handshake parsed, as long as the stale entry
++        // has no application layer set; otherwise the TLS block below is skipped and the stale tags remain.
++        is_tls_record = is_tls(skb, skb_info.data_off, skb_info.data_end, &tls_hdr);
++        if (!is_tls_record || tls_hdr.content_type != TLS_HANDSHAKE) {
++            return;
++        }
+     }
+ 
+-    bool encryption_layer_known = is_protocol_layer_known(protocol_stack, LAYER_ENCRYPTION);
++    classification_context_t *classification_ctx = classification_context_init(skb, &skb_tup, &skb_info);
++    if (!classification_ctx) {
++        return;
++    }
+ 
+     // Load information that will be later on used to route tail-calls
+-    init_routing_cache(classification_ctx, protocol_stack);
++    if (stack_exists) {
++        init_routing_cache(classification_ctx, &stack);
++    } else {
++        init_routing_cache(classification_ctx, NULL);
++    }
+ 
+     const char *buffer = &(classification_ctx->buffer.data[0]);
+ 
+-    protocol_t app_layer_proto = get_protocol_from_stack(protocol_stack, LAYER_APPLICATION);
++    protocol_t app_layer_proto = get_protocol_from_stack(&stack, LAYER_APPLICATION);
+ 
+-    tls_record_header_t tls_hdr = {0};
++    protocol_stack_t *protocol_stack = NULL;
+ 
+-    if ((app_layer_proto == PROTOCOL_UNKNOWN || app_layer_proto == PROTOCOL_POSTGRES) && is_tls(skb, skb_info.data_off, skb_info.data_end, &tls_hdr)) {
++    if ((app_layer_proto == PROTOCOL_UNKNOWN || app_layer_proto == PROTOCOL_POSTGRES) &&
++        (is_tls_record || is_tls(skb, skb_info.data_off, skb_info.data_end, &tls_hdr))) {
+         protocol_stack = get_or_create_protocol_stack(&classification_ctx->tuple);
+         if (!protocol_stack) {
+             return;
+

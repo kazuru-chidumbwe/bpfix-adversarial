@@ -1,0 +1,48 @@
+repo: cilium/tetragon
+commit: 15d5ff634a0ea2b5c07a489450045eb6a91cb60d
+rank: 121
+
+fix: ensure read buffer size is never negative
+
+When compiling with clang versions > 20, the bpf_execve_event.h fails to
+load with:
+    R2 min value is negative, either use unsigned or 'var &= const'
+
+as newer clang versions seem to generate the check for if (args_size) as
+a check relative between to registers (i.e. if r1 == r3) rather than
+explicitly comparing against 0 - which causes the wrong registers to be
+bound checked.
+
+So instead we just introduce an explicit check for the case in which
+args is at most '\0', and bail early (with the good side-effect of
+avoiding an unnecessary call to bpf_probe_read size a size of 0). Being
+explicit keeps the verifier happy.
+
+Signed-off-by: Rafael Roquetto <rroquett@isovalent.com>
+
+--- bpf/process/bpf_execve_event.h
+@@ -57,16 +57,20 @@ read_args(void *ctx, struct msg_execve_event *event)
+ 	 */
+ 	free_size = (char *)&event->process + BUFFER - args;
+ 
+-	if (args_size < BUFFER && args_size < free_size) {
+-		if (args_size)
+-			args_size -= 1;
++	if (args_size < 2) {
++		/* args contains at most a '\0', nothing to read */
++		size = 0;
++	} else if (args_size < BUFFER && args_size < free_size) {
++		/* args fit in the inline buffer, read them in */
++		args_size -= 1; // strip trailing '\0'
+ 		size = args_size & 0x3ff /* BUFFER - 1 */;
+ 		err = with_errmetrics(probe_read, args, size, (char *)start_stack);
+ 		if (err < 0) {
+ 			p->flags |= EVENT_ERROR_ARGS;
+ 			size = 0;
+ 		}
+ 	} else {
++		/* args too big for inline buffer, use data event */
+ 		size = data_event_bytes(ctx, (struct data_event_desc *)args,
+ 					(unsigned long)start_stack,
+ 					args_size,
+

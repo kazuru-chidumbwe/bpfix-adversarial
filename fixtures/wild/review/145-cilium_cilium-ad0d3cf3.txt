@@ -1,0 +1,138 @@
+repo: cilium/cilium
+commit: ad0d3cf341402feaf34cb612c0f57732b0f5d5b4
+rank: 145
+
+bpf: Fixes to support mattr=+alu32
+
+mattr=+alu32, supported since LLVM 7.0 and implied by mcpu=v3, enables
+the use of 32-bit registers in BPF bytecode. Enabling this compiler
+option can however result in loading issues as illustrated below.
+
+    12: (61) r1 = *(u32 *)(r0 +80) // ctx->data_end
+    13: (61) r6 = *(u32 *)(r0 +76) // ctx->data
+    14: (bc) w7 = w6 // <- verifier looses track of inferred pkt type here.
+    [...]
+    38: (71) r1 = *(u8 *)(r7 +20)
+    R7 invalid mem access 'inv'
+
+These errors typically happen because the data and data_end pointers are
+actually 32-bit registers. Depending on how these pointers are used,
+LLVM sometimes makes use of that assumption (e.g., 32-bit assignment on
+instruction 14 above). The verifier is however not able to follow and
+reject such programs.
+
+We can usually work around those by ensuring these pointers are only
+used via 64-bit types. This commit implements this wherever needed to
+pass the verifier.
+
+Signed-off-by: John Fastabend <john.fastabend@gmail.com>
+Signed-off-by: Paul Chaignon <paul@cilium.io>
+
+--- bpf/include/bpf/ctx/skb.h
+@@ -68,7 +68,7 @@ ctx_adjust_troom(struct __sk_buff *ctx, const __s32 len_diff)
+ 	return skb_change_tail(ctx, ctx->len + len_diff, 0);
+ }
+ 
+-static __always_inline __maybe_unused __u32
++static __always_inline __maybe_unused __u64
+ ctx_full_len(const struct __sk_buff *ctx)
+ {
+ 	return ctx->len;
+
+--- bpf/include/bpf/ctx/xdp.h
+@@ -262,7 +262,7 @@ ctx_redirect(const struct xdp_md *ctx, int ifindex, const __u32 flags)
+ 	return XDP_TX;
+ }
+ 
+-static __always_inline __maybe_unused __u32
++static __always_inline __maybe_unused __u64
+ ctx_full_len(const struct xdp_md *ctx)
+ {
+ 	/* No non-linear section in XDP. */
+
+--- bpf/lib/common.h
+@@ -142,7 +142,7 @@ ____revalidate_data_pull(struct __ctx_buff *ctx, void **data_, void **data_end_,
+ 			 void **l3, const __u32 l3_len, const bool pull,
+ 			 __u8 eth_hlen)
+ {
+-	const __u32 tot_len = eth_hlen + l3_len;
++	const __u64 tot_len = eth_hlen + l3_len;
+ 	void *data_end;
+ 	void *data;
+ 
+
+--- bpf/lib/csum.h
+@@ -57,7 +57,7 @@ static __always_inline void csum_l4_offset_and_flags(__u8 nexthdr,
+  * @arg to	To value or a csum diff
+  * @arg flags	Additional flags to be passed to l4_csum_replace()
+  */
+-static __always_inline int csum_l4_replace(struct __ctx_buff *ctx, int l4_off,
++static __always_inline int csum_l4_replace(struct __ctx_buff *ctx, __u64 l4_off,
+ 					   const struct csum_offset *csum,
+ 					   __be32 from, __be32 to, int flags)
+ {
+
+--- bpf/lib/encap.h
+@@ -63,10 +63,11 @@ encap_remap_v6_host_address(struct __ctx_buff *ctx __maybe_unused,
+ 	void *data, *data_end;
+ 	struct ipv6hdr *ip6;
+ 	union v6addr *which;
+-	__u32 off, noff;
+ 	__u8 nexthdr;
+ 	__u16 proto;
+ 	__be32 sum;
++	__u32 noff;
++	__u64 off;
+ 	int ret;
+ 
+ 	validate_ethertype(ctx, &proto);
+
+--- bpf/lib/metrics.h
+@@ -21,7 +21,7 @@
+  *		is the drop error code.
+  * Update the metrics map.
+  */
+-static __always_inline void update_metrics(__u32 bytes, __u8 direction,
++static __always_inline void update_metrics(__u64 bytes, __u8 direction,
+ 					   __u8 reason)
+ {
+ 	struct metrics_value *entry, newEntry = {};
+@@ -34,10 +34,10 @@ static __always_inline void update_metrics(__u32 bytes, __u8 direction,
+ 	entry = map_lookup_elem(&METRICS_MAP, &key);
+ 	if (entry) {
+ 		entry->count += 1;
+-		entry->bytes += (__u64)bytes;
++		entry->bytes += bytes;
+ 	} else {
+ 		newEntry.count = 1;
+-		newEntry.bytes = (__u64)bytes;
++		newEntry.bytes = bytes;
+ 		map_update_elem(&METRICS_MAP, &key, &newEntry, 0);
+ 	}
+ }
+
+--- bpf/lib/nat.h
+@@ -512,8 +512,8 @@ static __always_inline __maybe_unused int snat_v4_process(struct __ctx_buff *ctx
+ 		__be16 sport;
+ 		__be16 dport;
+ 	} l4hdr;
+-	__u32 off;
+ 	bool icmp_echoreply = false;
++	__u64 off;
+ 	int ret;
+ 
+ 	build_bug_on(sizeof(struct ipv4_nat_entry) > 64);
+
+--- bpf/lib/nodeport.h
+@@ -442,8 +442,8 @@ static __always_inline int dsr_reply_icmp6(struct __ctx_buff *ctx,
+ 	const __s32 orig_dgram = 64, off = ETH_HLEN;
+ 	const __u32 l3_max = sizeof(*ip6) + orig_dgram;
+ 	__be16 type = bpf_htons(ETH_P_IPV6);
+-	__s32 len_new = off + sizeof(*ip6) + orig_dgram;
+-	__s32 len_old = ctx_full_len(ctx);
++	__u64 len_new = off + sizeof(*ip6) + orig_dgram;
++	__u64 len_old = ctx_full_len(ctx);
+ 	void *data_end = ctx_data_end(ctx);
+ 	void *data = ctx_data(ctx);
+ 	__wsum wsum;
+

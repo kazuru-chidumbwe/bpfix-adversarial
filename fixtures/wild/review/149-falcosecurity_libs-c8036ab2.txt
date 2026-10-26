@@ -1,0 +1,271 @@
+repo: falcosecurity/libs
+commit: c8036ab2edd10ad14bb4c86680607138b07ead72
+rank: 149
+
+fix(modern_bpf): a pool of auxmap segments, claimed per task
+
+Dropping an event whose buffer was taken keeps corruption out of userspace, but
+it is still a lost event, and under fork load it happens about 20 times per
+million. This stops the overlap instead of catching it.
+
+The auxmap becomes AUXMAP_POOL_DEPTH segments per CPU, laid out contiguously and
+indexed `cpu * AUXMAP_POOL_DEPTH + i`. auxmap__get() no longer looks a segment
+up, it claims one for the calling task, and auxmap__put() releases it at submit.
+A build that is scheduled out still holds its claim, so the next event on that
+CPU takes a different segment rather than resetting the positions under it.
+Depth 2 is 16 MB on a 64-CPU box against 8 MB before.
+
+Four things about the shape, because the obvious version of each is wrong:
+
+- A continuation cannot be handed its segment: the BPF stack does not survive a
+  tail call and ctx is read-only, so auxmap__resume() finds the segment whose
+  owner is the current task. Code that runs mid-build and cannot be handed the
+  pointer either -- a bpf_loop callback, whose context cannot carry a map value
+  pointer -- uses auxmap__owned(), which finds without claiming. Calling
+  auxmap__get() there would claim the first free slot, which is this build's only
+  when the build happens to hold the first one.
+- Not a depth counter. The interleaving is not LIFO -- A can be preempted by B
+  and then B preempted by A resuming -- so any "current depth" scheme picks the
+  wrong slot.
+- The claim has to be indivisible. A read of the owner followed by a write lets
+  two tasks come out of the same window holding one segment, and the loser's
+  bytes land in the winner's event. So auxmap__claim() is a cmpxchg, which BPF
+  only grew in 5.12 while this probe supports 5.8; see below.
+- Both search helpers carry a slot index out of the loop and look the segment up
+  once at the end. A pointer returned from iteration i is a distinct map value
+  provenance that stays live to submit, so the verifier cannot merge the
+  depth-many paths: it re-walks every auxmap__store_* helper once per slot,
+  multiplied by each site that inlines it, which at depth 2 exceeds the 1M
+  instruction limit in recvmmsg_x outright. Worth keeping in mind before adding
+  per-call work here: execve and execveat have four get/resume sites each, so
+  anything added is multiplied precisely where there is least headroom.
+
+When every segment is claimed, the arriving event drops and
+n_drops_auxmap_pool_full says the depth was too small. Displacing a live build
+instead would submit a spliced event, since the build displaced holds its pointer
+across the preemption and keeps storing through the positions we just reset. The
+claim is also released after every bpf_tail_call, which does not return on
+success, so a failed one cannot strand a segment.
+
+The atomics are settled in userspace. A version check would be the wrong test --
+distributions backport, and all that matters is whether the verifier takes the
+opcode -- so probe_bpf_atomics() loads a seven-instruction program that uses one
+and sets the g_bpf_atomics rodata flag from the answer. It asks twice: once with
+the atomic, once with that one instruction replaced by the plain store the
+cleared branch would run, everything else identical. If the control loads and the
+atomic does not, this kernel refuses the opcode; if neither loads, this is an
+environment that cannot load any BPF program, and the real load fails straight
+after and reports it properly. Answering no is not passive -- it takes the
+cmpxchg out of every program, and doing that on a kernel that can preempt a build
+reintroduces exactly the race this commit removes -- so only a kernel that
+genuinely refuses the opcode may be answered no.
+
+The flag does not spare an old verifier the instruction, which is worth spelling
+out because the obvious reading is that it would. A verifier without the atomics
+rejects BPF_STX | BPF_ATOMIC carrying a non-zero imm in a pass that runs before
+it walks anything -- "BPF_STX uses reserved fields", zero insns processed -- so it
+never reaches the branch to fold, and the object fails to load outright rather
+than degrading. That shows up on 5.10.258 in libs' own bpfvalidator matrix. So
+prepare_bpf_atomics() rewrites each such instruction as the plain store it guards
+before handing the object to the kernel, which is sound for the same reason the
+branch is dead. Only the cmpxchg encoding is rewritten: any other atomic carrying
+an imm does something a plain store does not, so it is an error rather than a
+silent rewrite. Both the rewrite and an inconclusive probe log at WARNING,
+because consumers filter on that threshold by default and neither line was
+visible below it.
+
+192 of the 196 are rewritten. The other four are in handle_exit, the bpf_loop
+callback that recvmmsg and sendmmsg build each message in: a callback is passed by
+address, so clang emits it as a subprogram in `.text` however it is marked, and
+bpf_object__for_each_program() skips subprograms. No kernel carries bpf_loop
+(5.17) without the atomics (5.12), but rather than rest on that coincidence,
+recvmmsg_x and sendmmsg_x declare needs_bpf_atomics and are refused where the
+rewrite ran, falling back to the `_old_x` variant every pre-5.17 kernel already
+takes.
+
+Measured under a heavy fork load on a 64-CPU box, modern_bpf:
+
+                       total   at tail call   in body   pool_full    events
+    no pool              354            312        42          --     18.1M
+    pool depth 1         386            324        62         398     23.5M
+    pool depth 2           0              0         0           0     24.3M
+
+The depth-1 row is the control that makes the zero mean something: one segment
+makes the pool a no-op, and the rate comes back at 16.5 per million against the
+19.6 measured without it. At depth 2 the pool was never full, so no event ever
+arrived on a CPU with both segments already claimed -- which is the argument for 2
+being enough rather than a starting point, and for not paying 8 MB per CPU to go
+deeper.
+
+Signed-off-by: Grzegorz Nosek <grzegorz.nosek@sysdig.com>
+
+--- driver/modern_bpf/programs/attached/events/sched_process_exec.bpf.c
+@@ -163,6 +163,7 @@ int BPF_PROG(sched_p_exec, struct task_struct *p, pid_t old_pid, struct linux_bi
+ 	/*=============================== COLLECT PARAMETERS  ===========================*/
+ 
+ 	bpf_tail_call(ctx, &extra_sched_proc_exec_calls, T1_SCHED_PROC_EXEC);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+@@ -258,6 +259,7 @@ int BPF_PROG(t1_sched_p_exec, struct task_struct *p, pid_t old_pid, struct linux
+ 	/*=============================== COLLECT PARAMETERS  ===========================*/
+ 
+ 	bpf_tail_call(ctx, &extra_sched_proc_exec_calls, T2_SCHED_PROC_EXEC);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+
+--- driver/modern_bpf/programs/attached/events/sched_process_fork.bpf.c
+@@ -156,6 +156,7 @@ int BPF_PROG(sched_p_fork, struct task_struct *parent, struct task_struct *child
+ 	/*=============================== COLLECT PARAMETERS  ===========================*/
+ 
+ 	bpf_tail_call(ctx, &extra_sched_proc_fork_calls, T1_SCHED_PROC_FORK);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+@@ -232,6 +233,7 @@ int BPF_PROG(t1_sched_p_fork, struct task_struct *parent, struct task_struct *ch
+ 	 * for the verifier (limit 1000000 instructions).
+ 	 */
+ 	bpf_tail_call(ctx, &extra_sched_proc_fork_calls, T2_SCHED_PROC_FORK);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+
+--- driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/clone.bpf.c
+@@ -123,6 +123,7 @@ int BPF_PROG(clone_x, struct pt_regs *regs, long ret) {
+ 	 * for the verifier (limit 1000000 instructions).
+ 	 */
+ 	bpf_tail_call(ctx, &syscall_exit_extra_tail_table, T1_CLONE_X);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+@@ -177,6 +178,7 @@ int BPF_PROG(t1_clone_x, struct pt_regs *regs, long ret) {
+ 	 * for the verifier (limit 1000000 instructions).
+ 	 */
+ 	bpf_tail_call(ctx, &syscall_exit_extra_tail_table, T2_CLONE_X);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+
+--- driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/clone3.bpf.c
+@@ -123,6 +123,7 @@ int BPF_PROG(clone3_x, struct pt_regs *regs, long ret) {
+ 	 * for the verifier (limit 1000000 instructions).
+ 	 */
+ 	bpf_tail_call(ctx, &syscall_exit_extra_tail_table, T1_CLONE3_X);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+@@ -175,6 +176,7 @@ int BPF_PROG(t1_clone3_x, struct pt_regs *regs, long ret) {
+ 	 * for the verifier (limit 1000000 instructions).
+ 	 */
+ 	bpf_tail_call(ctx, &syscall_exit_extra_tail_table, T2_CLONE3_X);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+
+--- driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/execve.bpf.c
+@@ -46,6 +46,7 @@ int BPF_PROG(execve_x, struct pt_regs *regs, long ret) {
+ 	/*=============================== COLLECT PARAMETERS  ===========================*/
+ 
+ 	bpf_tail_call(ctx, &syscall_exit_extra_tail_table, T1_EXECVE_X);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+@@ -111,6 +112,7 @@ int BPF_PROG(t1_execve_x, struct pt_regs *regs, long ret) {
+ 	/*=============================== COLLECT PARAMETERS  ===========================*/
+ 
+ 	bpf_tail_call(ctx, &syscall_exit_extra_tail_table, T2_EXECVE_X);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+@@ -198,6 +200,7 @@ int BPF_PROG(t2_execve_x, struct pt_regs *regs, long ret) {
+ 	/*=============================== COLLECT PARAMETERS  ===========================*/
+ 
+ 	bpf_tail_call(ctx, &syscall_exit_extra_tail_table, T3_EXECVE_X);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+
+--- driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/execveat.bpf.c
+@@ -46,6 +46,7 @@ int BPF_PROG(execveat_x, struct pt_regs *regs, long ret) {
+ 	/*=============================== COLLECT PARAMETERS  ===========================*/
+ 
+ 	bpf_tail_call(ctx, &syscall_exit_extra_tail_table, T1_EXECVEAT_X);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+@@ -111,6 +112,7 @@ int BPF_PROG(t1_execveat_x, struct pt_regs *regs, long ret) {
+ 	/*=============================== COLLECT PARAMETERS  ===========================*/
+ 
+ 	bpf_tail_call(ctx, &syscall_exit_extra_tail_table, T2_EXECVEAT_X);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+@@ -197,6 +199,7 @@ int BPF_PROG(t2_execveat_x, struct pt_regs *regs, long ret) {
+ 	/*=============================== COLLECT PARAMETERS  ===========================*/
+ 
+ 	bpf_tail_call(ctx, &syscall_exit_extra_tail_table, T3_EXECVEAT_X);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+
+--- driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/fork.bpf.c
+@@ -125,6 +125,7 @@ int BPF_PROG(fork_x, struct pt_regs *regs, long ret) {
+ 	 * for the verifier (limit 1000000 instructions).
+ 	 */
+ 	bpf_tail_call(ctx, &syscall_exit_extra_tail_table, T1_FORK_X);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+@@ -169,6 +170,7 @@ int BPF_PROG(t1_fork_x, struct pt_regs *regs, long ret) {
+ 	 * for the verifier (limit 1000000 instructions).
+ 	 */
+ 	bpf_tail_call(ctx, &syscall_exit_extra_tail_table, T2_FORK_X);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+
+--- driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/open_by_handle_at.bpf.c
+@@ -35,6 +35,7 @@ int BPF_PROG(open_by_handle_at_x, struct pt_regs *regs, long ret) {
+ 	/*=============================== COLLECT PARAMETERS  ===========================*/
+ 
+ 	bpf_tail_call(ctx, &syscall_exit_extra_tail_table, T1_OPEN_BY_HANDLE_AT_X);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+
+--- driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/vfork.bpf.c
+@@ -124,6 +124,7 @@ int BPF_PROG(vfork_x, struct pt_regs *regs, long ret) {
+ 	 * for the verifier (limit 1000000 instructions).
+ 	 */
+ 	bpf_tail_call(ctx, &syscall_exit_extra_tail_table, T1_VFORK_X);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+@@ -168,6 +169,7 @@ int BPF_PROG(t1_vfork_x, struct pt_regs *regs, long ret) {
+ 	 * for the verifier (limit 1000000 instructions).
+ 	 */
+ 	bpf_tail_call(ctx, &syscall_exit_extra_tail_table, T2_VFORK_X);
++	auxmap__put(auxmap);
+ 	return 0;
+ }
+ 
+

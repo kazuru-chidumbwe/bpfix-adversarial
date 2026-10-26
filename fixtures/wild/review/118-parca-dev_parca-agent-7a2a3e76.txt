@@ -1,0 +1,447 @@
+repo: parca-dev/parca-agent
+commit: 7a2a3e76a9fcdc5a87806f20ba49c1896f5820f9
+rank: 118
+
+.eh_frame: Read user stacks from kernel context
+
+Context
+=======
+
+If a userspace process was compiled with frame pointers, we can rely on
+`bpf_get_stackid` with the `BPF_F_USER_STACK` flag to fetch user stacks.
+It does all the hard work, including making sure we can walk user stacks
+from kernel context, such as when we are executing a system call.
+
+When this happens, the kernel saves the userspace registers in memory. The
+registers we get through the perf events are the current registers. As we
+are in kernel context, these are registers that point to kernel data and
+code. For this reason, we need a way to recover said stored registers.
+
+If we were building a kernel extension we would use the `task_pt_regs`
+macro. There's a new helper [1] to achieve exactly this, `bpf_task_pt_regs`,
+but unfortunately we can't always rely on it's included only in v5.15 or
+greater.
+
+Proposed solution
+=================
+
+We walk the internal kernel datastructures until we can read the
+x86_64 registers we need. In case we are in kernel context, and current
+thread is not a kernel process (kworker), we read the saved task's
+registers and continue the normal unwinding process.
+
+Notes
+=====
+
+For some reason, not really sure about why; needs more investigation,
+writing this code has not been a walk in the park. The verifier didn't
+allow me to do direct pointer dereferences, that's why the code is
+littered with manual ones. Mostly complained with
+
+> `avoid R0 invalid mem access 'scalar'`
+
+The other interesting bit is that I can't make the verifier pass when
+checking for the return value of `set_initial_state` and returning if
+there is an issue.
+
+> dereference of modified ctx ptr R6 off=32 disallowed
+
+Additonally, the full `vmlinux.h` has been dumped as we need the
+definition of a bunch of structs.
+
+Future changes / areas of improvement
+=====================================
+
+- Once we have automatic feature calibration we can use the new helper, if
+available, which will be more reliable;
+- This code is pretty fragile. Any changes in the running box, such as
+  running with KASAN=on, will make it fail, resulting in missing kernel
+stacks;
+
+Test Plan
+=========
+
+Ran it for 1h without issues. The kernel stacks now appear and look
+reasonable. See PR for more.
+
+**kernel tests**
+```
+=============
+Test results:
+=============
+- ✅ 5.4
+- ✅ 5.10
+- ✅ 5.18
+- ✅ 5.19
+```
+
+- [0]: https://github.com/torvalds/linux/blob/3d7cb6b04c3f3115719235cc6866b10326de34cd/arch/x86/include/asm/processor.h#L758-L763
+- [1]: https://github.com/torvalds/linux/commit/dd6e10fbd9fb86a571d925602c8a24bb4d09a2a7
+
+Signed-off-by: Francisco Javier Honduvilla Coto <javierhonduco@gmail.com>
+
+--- bpf/common.h
+@@ -1,128 +1,11 @@
+-// Maximum value an `unsigned long int' can hold.  (Minimum is 0.)
+-#if __WORDSIZE == 64
+-#define ULONG_MAX 18446744073709551615UL
+-#else
+-#define ULONG_MAX 4294967295UL
+-#endif
++#ifndef __LINUX_PAGE_CONSTANTS_HACK__
++#define __LINUX_PAGE_CONSTANTS_HACK__
+ 
+-typedef unsigned char __u8;
+-typedef short unsigned int __u16;
+-typedef short signed int __s16;
+-typedef unsigned int __u32;
++// Values for x86_64 as of 6.0.18-200.
++#define TOP_OF_KERNEL_STACK_PADDING 0
++#define THREAD_SIZE_ORDER 2
++#define PAGE_SHIFT 12
++#define PAGE_SIZE (1UL << PAGE_SHIFT)
++#define THREAD_SIZE (PAGE_SIZE << THREAD_SIZE_ORDER)
+ 
+-typedef int __s32;
+-
+-typedef long long int __s64;
+-typedef long long unsigned int __u64;
+-typedef __u64 u64;
+-
+-typedef __u8 u8;
+-typedef __u16 u16;
+-typedef __s16 s16;
+-typedef __u32 u32;
+-
+-
+-typedef __s32 s32;
+-typedef __s64 s64;
+-
+-typedef __u16 __be16;
+-typedef __u32 __be32;
+-typedef __u32 __wsum;
+-
+-enum {
+-	false = 0,
+-	true = 1,
+-};
+-
+-typedef _Bool bool;
+-typedef u64 phys_addr_t;
+-
+-typedef int __kernel_pid_t;
+-typedef __kernel_pid_t pid_t;
+-
+-enum {
+-	BPF_ANY = 0,
+-	BPF_NOEXIST = 1,
+-	BPF_EXIST = 2,
+-	BPF_F_LOCK = 4,
+-};
+-
+-enum bpf_map_type {
+-	BPF_MAP_TYPE_UNSPEC = 0,
+-	BPF_MAP_TYPE_HASH = 1,
+-	BPF_MAP_TYPE_ARRAY = 2,
+-	BPF_MAP_TYPE_PROG_ARRAY = 3,
+-	BPF_MAP_TYPE_PERF_EVENT_ARRAY = 4,
+-	BPF_MAP_TYPE_PERCPU_HASH = 5,
+-	BPF_MAP_TYPE_PERCPU_ARRAY = 6,
+-	BPF_MAP_TYPE_STACK_TRACE = 7,
+-	BPF_MAP_TYPE_CGROUP_ARRAY = 8,
+-	BPF_MAP_TYPE_LRU_HASH = 9,
+-	BPF_MAP_TYPE_LRU_PERCPU_HASH = 10,
+-	BPF_MAP_TYPE_LPM_TRIE = 11,
+-	BPF_MAP_TYPE_ARRAY_OF_MAPS = 12,
+-	BPF_MAP_TYPE_HASH_OF_MAPS = 13,
+-	BPF_MAP_TYPE_DEVMAP = 14,
+-	BPF_MAP_TYPE_SOCKMAP = 15,
+-	BPF_MAP_TYPE_CPUMAP = 16,
+-	BPF_MAP_TYPE_XSKMAP = 17,
+-	BPF_MAP_TYPE_SOCKHASH = 18,
+-	BPF_MAP_TYPE_CGROUP_STORAGE = 19,
+-	BPF_MAP_TYPE_REUSEPORT_SOCKARRAY = 20,
+-	BPF_MAP_TYPE_PERCPU_CGROUP_STORAGE = 21,
+-	BPF_MAP_TYPE_QUEUE = 22,
+-	BPF_MAP_TYPE_STACK = 23,
+-	BPF_MAP_TYPE_SK_STORAGE = 24,
+-	BPF_MAP_TYPE_DEVMAP_HASH = 25,
+-	BPF_MAP_TYPE_STRUCT_OPS = 26,
+-	BPF_MAP_TYPE_RINGBUF = 27,
+-	BPF_MAP_TYPE_INODE_STORAGE = 28,
+-	BPF_MAP_TYPE_TASK_STORAGE = 29,
+-	BPF_MAP_TYPE_BLOOM_FILTER = 30,
+-};
+-
+-enum {
+-	BPF_F_SKIP_FIELD_MASK = 255,
+-	BPF_F_USER_STACK = 256,
+-	BPF_F_FAST_STACK_CMP = 512,
+-	BPF_F_REUSE_STACKID = 1024,
+-	BPF_F_USER_BUILD_ID = 2048,
+-};
+-
+-enum {
+-	BPF_F_INDEX_MASK = 4294967295,
+-	BPF_F_CURRENT_CPU = 4294967295,
+-	BPF_F_CTXLEN_MASK = 0,
+-};
+-
+-struct pt_regs {
+-	long unsigned int r15;
+-	long unsigned int r14;
+-	long unsigned int r13;
+-	long unsigned int r12;
+-	long unsigned int bp;
+-	long unsigned int bx;
+-	long unsigned int r11;
+-	long unsigned int r10;
+-	long unsigned int r9;
+-	long unsigned int r8;
+-	long unsigned int ax;
+-	long unsigned int cx;
+-	long unsigned int dx;
+-	long unsigned int si;
+-	long unsigned int di;
+-	long unsigned int orig_ax;
+-	long unsigned int ip;
+-	long unsigned int cs;
+-	long unsigned int flags;
+-	long unsigned int sp;
+-	long unsigned int ss;
+-};
+-
+-typedef struct pt_regs bpf_user_pt_regs_t;
+-
+-struct bpf_perf_event_data {
+-	bpf_user_pt_regs_t regs;
+-	__u64 sample_period;
+-	__u64 addr;
+-};
++#endif
+\ No newline at end of file
+
+--- bpf/cpu/cpu.bpf.c
+@@ -10,6 +10,7 @@
+ // features supported by which kernels.
+ 
+ #include "../common.h"
++#include "../vmlinux.h"
+ #include "hash.h"
+ 
+ #include <bpf/bpf_core_read.h>
+@@ -78,11 +79,11 @@ enum stack_walking_method {
+   STACK_WALKING_METHOD_DWARF = 1,
+ };
+ 
+-struct config_t {
++struct unwinder_config_t {
+   bool debug;
+ };
+ 
+-const volatile struct config_t config = {};
++const volatile struct unwinder_config_t unwinder_config = {};
+ 
+ /*============================== MACROS =====================================*/
+ 
+@@ -97,7 +98,7 @@ const volatile struct config_t config = {};
+ // Stack Traces are slightly different
+ // in that the value is 1 big byte array
+ // of the stack addresses
+-typedef __u64 stack_trace_type[MAX_STACK_DEPTH];
++typedef u64 stack_trace_type[MAX_STACK_DEPTH];
+ #define BPF_STACK_TRACE(_name, _max_entries) BPF_MAP(_name, BPF_MAP_TYPE_STACK_TRACE, u32, stack_trace_type, _max_entries);
+ 
+ #define BPF_HASH(_name, _key_type, _value_type, _max_entries) BPF_MAP(_name, BPF_MAP_TYPE_HASH, _key_type, _value_type, _max_entries);
+@@ -158,7 +159,7 @@ typedef struct {
+ 
+ // State of unwinder such as the registers as well
+ // as internal data.
+-typedef struct unwind_state {
++typedef struct {
+   u64 ip;
+   u64 sp;
+   u64 bp;
+@@ -481,6 +482,80 @@ static __always_inline enum find_unwind_table_return find_unwind_table(shard_inf
+   return FIND_UNWIND_SHARD_NOT_FOUND;
+ }
+ 
++// Kernel addresses have the top bits set.
++static __always_inline bool in_kernel(u64 ip) {
++  return ip & (1UL << 63);
++}
++
++// kthreads mm's is not set.
++//
++// We don't check for the return value of `retrieve_task_registers`, it's
++// caller due the verifier not liking that code.
++static __always_inline bool is_kthread() {
++  struct task_struct *task = (struct task_struct *)bpf_get_current_task();
++  if (task == NULL) {
++    return false;
++  }
++
++  void *mm;
++  int err = bpf_probe_read_kernel(&mm, 8, &task->mm);
++  if (err) {
++    bpf_printk("[warn] bpf_probe_read_kernel failed with %d", err);
++    return false;
++  }
++
++  return mm == NULL;
++}
++
++// avoid R0 invalid mem access 'scalar'
++// Port of `task_pt_regs` in BPF.
++static __always_inline bool retrieve_task_registers(u64 *ip, u64 *sp, u64 *bp) {
++  if (ip == NULL || sp == NULL || bp == NULL) {
++    return false;
++  }
++
++  int err;
++  void *stack;
++
++  struct task_struct *task = (struct task_struct *)bpf_get_current_task();
++  if (task == NULL) {
++    return false;
++  }
++
++  if (is_kthread()) {
++    return false;
++  }
++
++  err = bpf_probe_read_kernel(&stack, 8, &task->stack);
++  if (err) {
++    bpf_printk("[warn] bpf_probe_read_kernel failed with %d", err);
++    return false;
++  }
++
++  void *ptr = stack + THREAD_SIZE - TOP_OF_KERNEL_STACK_PADDING;
++  struct pt_regs *regs = ((struct pt_regs *)ptr) - 1;
++
++  err = bpf_probe_read_kernel((void *)ip, 8, &regs->ip);
++  if (err) {
++    bpf_printk("bpf_probe_read_kernel failed err %d", err);
++    return false;
++  }
++
++  err = bpf_probe_read_kernel((void *)sp, 8, &regs->sp);
++  if (err) {
++    bpf_printk("bpf_probe_read_kernel failed err %d", err);
++    return false;
++  }
++
++  err = bpf_probe_read_kernel((void *)bp, 8, &regs->bp);
++  if (err) {
++    bpf_printk("bpf_probe_read_kernel failed err %d", err);
++    return false;
++  }
++
++  return true;
++}
++
+ // Aggregate the given stacktrace.
+ static __always_inline void add_stack(struct bpf_perf_event_data *ctx, u64 pid_tgid, enum stack_walking_method method, unwind_state_t *unwind_state) {
+   u64 zero = 0;
+@@ -776,25 +851,48 @@ int walk_user_stacktrace_impl(struct bpf_perf_event_data *ctx) {
+   return 0;
+ }
+ 
+-static __always_inline void set_initial_state(bpf_user_pt_regs_t *regs) {
++// Set up the initial registers to start unwinding.
++static __always_inline bool set_initial_state(struct pt_regs *regs) {
+   u32 zero = 0;
+ 
+   unwind_state_t *unwind_state = bpf_map_lookup_elem(&heap, &zero);
+   if (unwind_state == NULL) {
+     // This should never happen.
+-    return;
++    return false;
+   }
+ 
+   // Just reset the stack size. This must be checked in userspace to ensure
+   // we aren't reading garbage data.
+   unwind_state->stack.len = 0;
+-
+-  unwind_state->ip = regs->ip;
+-  unwind_state->sp = regs->sp;
+-  unwind_state->bp = regs->bp;
+   unwind_state->tail_calls = 0;
++
++  u64 ip = 0;
++  u64 sp = 0;
++  u64 bp = 0;
++
++  bpf_printk("we are setting state %llx", regs->ip);
++
++  if (in_kernel(regs->ip)) {
++    if (retrieve_task_registers(&ip, &sp, &bp)) {
++      bpf_printk("we are in kernelspace, but got the user regs");
++      unwind_state->ip = ip;
++      unwind_state->sp = sp;
++      unwind_state->bp = bp;
++    } else {
++      bpf_printk("we are in kernelspace, but failed, probs a kworker");
++      return false;
++    }
++  } else {
++    bpf_printk("we are in userspace");
++    unwind_state->ip = regs->ip;
++    unwind_state->sp = regs->sp;
++    unwind_state->bp = regs->bp;
++  }
++
++  return true;
+ }
+ 
++// Note: `set_initial_state` must be called before this function.
+ static __always_inline int walk_user_stacktrace(struct bpf_perf_event_data *ctx) {
+ 
+   bump_samples();
+@@ -803,7 +901,6 @@ static __always_inline int walk_user_stacktrace(struct bpf_perf_event_data *ctx)
+   bpf_printk("traversing stack using .eh_frame information!!");
+   bpf_printk("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+ 
+-  set_initial_state(&ctx->regs);
+   bpf_tail_call(ctx, &programs, 0);
+   return 0;
+ }
+@@ -818,7 +915,11 @@ int profile_cpu(struct bpf_perf_event_data *ctx) {
+     return 0;
+   }
+ 
+-  if (config.debug) {
++  if (is_kthread()) {
++    return 0;
++  }
++
++  if (unwinder_config.debug) {
+     // This can be very noisy
+     // bpf_printk("debug mode enabled, make sure you specified process name");
+     if (!is_debug_enabled_for_pid(user_tgid)) {
+@@ -832,10 +933,19 @@ int profile_cpu(struct bpf_perf_event_data *ctx) {
+   if (!has_unwind_info) {
+     add_stack(ctx, pid_tgid, STACK_WALKING_METHOD_FP, NULL);
+   } else {
++    set_initial_state(&ctx->regs);
++
++    u32 zero = 0;
++    unwind_state_t *unwind_state = bpf_map_lookup_elem(&heap, &zero);
++    if (unwind_state == NULL) {
++      // This should never happen.
++      return 0;
++    }
++
+     shard_info_t *shard = NULL;
+-    find_unwind_table(&shard, user_pid, ctx->regs.ip, NULL);
++    find_unwind_table(&shard, user_pid, unwind_state->ip, NULL);
+     if (shard == NULL) {
+-      bpf_printk("IP not covered. In kernel space / JIT / bug? IP %llx)", ctx->regs.ip);
++      bpf_printk("IP not covered. In kernel space / JIT / bug? IP %llx)", unwind_state->ip);
+       BUMP_UNWIND_PC_NOT_COVERED_ERROR();
+       return 0;
+     }
+
+--- bpf/vmlinux.h
+(no patch: binary or too large)
+

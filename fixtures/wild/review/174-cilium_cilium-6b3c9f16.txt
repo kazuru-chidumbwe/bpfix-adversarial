@@ -1,0 +1,36 @@
+repo: cilium/cilium
+commit: 6b3c9f16c99f7744ca5b294254b59b061059ff88
+rank: 174
+
+bpf: Init (ipv6_frag_hdr) frag struct
+
+Otherwise, the verifier complains after setting the following in
+the xdp_nodeport_lb6_dsr_lb.c test:
+
+    #define ENABLE_SRC_RANGE_CHECK
+    #define ENABLE_SESSION_AFFINITY
+
+The verifier log:
+
+    ; if (nh == NEXTHDR_FRAGMENT) { @ ipv6.h:143
+    79: (7b) *(u64 *)(r10 -200) = r5
+    R5 !read_ok
+
+The R5 register was not initialized.
+
+Worth noting that the issue appeared only when BPF testing. Running the
+above configuration on Kind did not result in any verification issues.
+
+Signed-off-by: Martynas Pumputis <martynas@isovalent.com>
+
+--- bpf/lib/ipv6.h
+@@ -141,7 +141,7 @@ static __always_inline int ipv6_hdrlen_offset(struct __ctx_buff *ctx, int l3_off
+ 		}
+ 
+ 		if (nh == NEXTHDR_FRAGMENT) {
+-			struct ipv6_frag_hdr frag;
++			struct ipv6_frag_hdr frag = { 0 };
+ 
+ 			if (ctx_load_bytes(ctx, l3_off + len, &frag, sizeof(frag)) < 0)
+ 				return DROP_INVALID;
+

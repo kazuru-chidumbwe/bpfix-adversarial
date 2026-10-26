@@ -1,0 +1,53 @@
+repo: cilium/tetragon
+commit: 25ff4431b6409277062fde545dfb402dc0edd35a
+rank: 170
+
+bpf: write retprobe error before the map calls in copy_char_buf/iovec
+
+In the has_return_copy() branch the only use of the args_off() pointer was
+the final store, so clang computed the pointer after retprobe_map_get_key()
+and retprobe_map_set(), keeping the offset on the stack across them. Kernels
+before 5.5 lose the bounds of a stack-saved offset, so the verifier rejected
+the access with:
+
+  math between map_value pointer and register with unbounded min value is not allowed
+
+This commits stores before the calls to keep the pointer arithmetic where the
+offset is still bounded. The behavior should not change.
+
+Signed-off-by: Daniel Gomez <dangome3@cisco.com>
+
+--- bpf/process/generic_calls.h
+@@ -135,10 +135,15 @@ copy_char_buf(void *ctx, long off, unsigned long arg, int argm,
+ 	int *s = (int *)args_off(e, off);
+ 
+ 	if (has_return_copy(argm)) {
++		/* Write the error before the calls below. Otherwise clang
++		 * computes 's' only after them, which means keeping the offset
++		 * on the stack across the calls.
++		 */
++		int ret = return_error(s, char_buf_saved_for_retprobe);
+ 		__u64 retid = retprobe_map_get_key(ctx);
+ 
+ 		retprobe_map_set(e->func_id, retid, e->common.ktime, arg);
+-		return return_error(s, char_buf_saved_for_retprobe);
++		return ret;
+ 	}
+ 	return __copy_char_buf(ctx, off, arg, get_arg_meta(argm, e), has_max_data(argm), e);
+ }
+
+--- bpf/process/types/basic.h
+@@ -1367,10 +1367,11 @@ copy_char_iovec(void *ctx, long off, unsigned long arg, int argm,
+ 	meta = get_arg_meta(argm, e);
+ 
+ 	if (has_return_copy(argm)) {
++		int ret = return_error(s, char_buf_saved_for_retprobe);
+ 		u64 retid = retprobe_map_get_key(ctx);
+ 
+ 		retprobe_map_set_iovec(e->func_id, retid, e->common.ktime, arg, meta);
+-		return return_error(s, char_buf_saved_for_retprobe);
++		return ret;
+ 	}
+ 	return __copy_char_iovec(off, arg, meta, 0, e);
+ }
+

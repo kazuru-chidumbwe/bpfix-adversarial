@@ -1,0 +1,28 @@
+repo: kubearmor/KubeArmor
+commit: da4cb33c3351075aa2d66db8d12588b9550f06ca
+rank: 258
+
+fix(monitor): system monitor verifier error on ubuntu18 with clang12
+
+Signed-off-by: Aryan Bakliwal <aryanbakliwal12345@gmail.com>
+
+--- KubeArmor/BPF/system_monitor.c
+@@ -1025,8 +1025,9 @@ static __always_inline int save_all_hashes_to_the_buffer(bufs_t *bufs_p, bool ad
+     if (num_of_hashes_idx >= MAX_BUFFER_SIZE || num_of_hashes_idx + num_of_hashes >= MAX_BUFFER_SIZE)
+         return -1;
+ 
+-    u32 idx = num_of_hashes_idx & (MAX_BUFFER_SIZE - 1);
++    u32 idx = num_of_hashes_idx;
+     volatile_reg(idx);
++    idx &= (MAX_BUFFER_SIZE - 1);
+ 
+     if (bpf_probe_read(&(bufs_p->buf[idx]), sizeof(u8), &num_of_hashes) != 0)
+     {
+@@ -2605,4 +2606,4 @@ int kprobe__udp_sendmsg(struct pt_regs *ctx)
+     return 0;
+ }
+ 
+-char LICENSE[] SEC("license") = "Dual BSD/GPL";
+\ No newline at end of file
++char LICENSE[] SEC("license") = "Dual BSD/GPL";
+

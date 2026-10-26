@@ -1,0 +1,81 @@
+repo: cilium/cilium
+commit: 6cd44840199ba79cc59397743e0f01409262851e
+rank: 252
+
+bpf: fix ipv6_hdrlen_with_fraginfo() on pre-v5.12 kernels
+
+e9cd917197d6 ("bpf: Make ipv6_hdrlen_with_fraginfo into global func")
+causes the verifier on pre-v5.12 kernels to reject the program with
+
+```
+Verifier error tail: load program: invalid argument:
+	func#0 @0
+	func#1 @1363
+	Validating ipv6_hdrlen_with_fraginfo() func#1...
+	arg#1 type is not a struct
+	Arg#1 type PTR in ipv6_hdrlen_with_fraginfo() is not
+```
+
+This is addressed on newer kernels by
+https://github.com/torvalds/linux/commit/e5069b9c23b3857db986c58801bebe450cff3392
+
+Work-around this limitation by having the global function use an auxvar to
+manage its parameters, and wrapping the function inside a helper which
+converts between pointer parameters and the auxvar.
+
+Fixes: #47672
+Suggested-by: Dylan Reimerink <dylan.reimerink@isovalent.com>
+Signed-off-by: Julian Wiedmann <jwi@isovalent.com>
+
+--- bpf/lib/ipv6.h
+@@ -5,6 +5,7 @@
+ 
+ #include <linux/ipv6.h>
+ 
++#include "auxvars.h"
+ #include "eth.h"
+ #include "dbg.h"
+ #include "drop_reasons.h"
+@@ -162,13 +163,38 @@ static __always_inline int ipv6_hdrlen_offset(const struct __ctx_buff *ctx, int
+ 	return DROP_INVALID_EXTHDR;
+ }
+ 
++struct ipv6_hdrlen_arg {
++	fraginfo_t fraginfo;
++	__u8 nexthdr;
++};
++
++DEFINE_AUX(struct ipv6_hdrlen_arg, ipv6_hdrlen_arg);
++
+ __noinline __weak
++int ipv6_hdrlen_with_fraginfo_weak(const struct __ctx_buff *ctx)
++{
++	struct ipv6_hdrlen_arg *arg = AUX(ipv6_hdrlen_arg);
++
++	return ipv6_hdrlen_offset(ctx, ETH_HLEN, &arg->nexthdr, &arg->fraginfo);
++}
++
++static __always_inline
+ int ipv6_hdrlen_with_fraginfo(const struct __ctx_buff *ctx, __u8 *nexthdr, fraginfo_t *fraginfo)
+ {
+-	if (!nexthdr)
+-		return DROP_INVALID;
++	struct ipv6_hdrlen_arg *arg = AUX(ipv6_hdrlen_arg);
++	int ret;
++
++	/* For global function on pre-v5.12 kernel, we can't pass pointers as
++	 * parameters. So let's wrap them into an auxvar.
++	 */
++	arg->fraginfo = 0;
++	arg->nexthdr = *nexthdr;
++
++	ret = ipv6_hdrlen_with_fraginfo_weak(ctx);
++	*nexthdr = arg->nexthdr;
++	*fraginfo = arg->fraginfo;
+ 
+-	return ipv6_hdrlen_offset(ctx, ETH_HLEN, nexthdr, fraginfo);
++	return ret;
+ }
+ 
+ static __always_inline int ipv6_hdrlen(const struct __ctx_buff *ctx, __u8 *nexthdr)
+

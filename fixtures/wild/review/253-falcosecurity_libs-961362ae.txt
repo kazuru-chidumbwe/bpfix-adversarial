@@ -1,0 +1,52 @@
+repo: falcosecurity/libs
+commit: 961362aed0977dc26700d0f2ffe7e2581ac4c4d5
+rank: 253
+
+fix(driver/modern_bpf): avoid d_path on remote task paths
+
+The synchronous task iterator reads path fields from tasks that can run
+exit_mm() or exit_fs() in parallel. bpf_rcu_read_lock() satisfies the
+verifier's trusted-pointer requirement, but it does not acquire references
+to the remote file, fs_struct, dentries, or mounts. bpf_d_path() can
+therefore enter d_path() with an object freed during task teardown and
+trigger a general protection fault.
+
+Use the approximate path helpers for executable, cwd, and root fields.
+They traverse paths through no-fault BPF reads rather than passing
+unpinned remote-task objects to bpf_d_path(), preventing the kernel oops
+and its secondary Tasks Trace RCU warnings. Path output retains the
+existing approximate-helper semantics.
+
+Fixes: b47c95e44968 ("feat(driver/modern_bpf): add support for synchronously fetching tasks")
+Signed-off-by: Chris J Arges <carges@cloudflare.com>
+
+--- driver/modern_bpf/programs/attached/iterators/task.bpf.c
+@@ -65,7 +65,8 @@ int dump_task(struct bpf_iter__task *ctx) {
+ 	                                           task);
+ 
+ 	/* Parameter 7: exepath (type: PT_FSPATH) */
+-	auxmap__store_task_exe_file_path_sleepable(auxmap, task);
++	/* An RCU read-side critical section does not pin remote task path objects. */
++	auxmap__store_task_exe_file_path(auxmap, task);
+ 
+ 	/* Parameter 8: flags (type: PT_FLAGS32) */
+ 	uint32_t flags = 0;
+@@ -96,7 +97,7 @@ int dump_task(struct bpf_iter__task *ctx) {
+ 	                                           task);
+ 
+ 	/* Parameter 10: cwd (type: PT_CHARBUF) */
+-	auxmap__store_task_cwd_sleepable(auxmap, task);
++	auxmap__store_task_cwd(auxmap, task);
+ 
+ 	/* Parameter 11: fdlimit (type: PT_UINT64) */
+ 	unsigned long fdlimit = extract__fdlimit(task);
+@@ -180,7 +181,7 @@ int dump_task(struct bpf_iter__task *ctx) {
+ 	auxmap__store_cgroups_param(auxmap, task);
+ 
+ 	/* Parameter 29: root (type: PT_FSPATH) */
+-	auxmap__store_task_root_sleepable(auxmap, task);
++	auxmap__store_task_root(auxmap, task);
+ 
+ 	// filterd_out and fdlist in scap_threadinfo are internal fields, not relevant in this context.
+ 
+

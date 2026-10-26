@@ -1,0 +1,144 @@
+rank	decision	code	note
+1	exclude	N0	VTEP feature
+3	exclude	C	split for verifier complexity (tail call)
+5	exclude	N0	probe framework for verifier capabilities
+6	pass		unbounded memory access on 4.19 (switch over args); mask index
+9	exclude	N0	load balancer feature
+11	pass		invalid context access on older kernels; uapi struct fields compiled out
+13	pass		misaligned stack access; stack alignment attribute
+14	pass		32-bit assignment of packet pointer loses pkt type
+15	exclude	C	1M instruction budget (opaquify)
+18	exclude	C	1M processed-instruction limit (bpf_loop)
+20	pass		5.4 verifier error; LOG arguments
+26	pass		ksnoop array bounds on 5.15; index mask
+28	pass		R2 type=mem expected=fp for map lookup key from global function arg
+30	pass		verification error on 4.18 RHEL; probe_read_str return handling
+34	pass		verifier rejects statically initialised address
+36	pass		misaligned stack access in revSNAT memcpy
+39	exclude	N0	HTTP/2 feature; instruction-count note only
+40	pass		TLS direction change with a verification-error fix in the same commit
+43	exclude	N0	postgres monitoring feature
+44	pass		v5.3 programs: ty could be negative; u32 mask
+46	pass		R2 !read_ok with LLVM 17; initialise l4_off on error path
+48	pass		verifier error on 4.14 with debug; pid width and format
+51	exclude	N0	test log prefix
+52	exclude	N0	HTTP/2 metrics feature
+54	exclude	C	combined stack budget (resource limit, no source location)
+56	pass		ksnoop invalid access to map value on 6.15 (index underflow)
+59	exclude	N0	sockaddr_un read change; no verifier rejection named
+60	exclude	E1	CO-RE type existence check only
+63	pass		5.4 verifier issue on unwind table index
+64	pass		older verifiers lose nullable map value across helper calls
+65	pass		5.4 verifier issue; index mask
+68	pass		R9 invalid mem access map_value_or_null; null check
+71	exclude	C	program size and tail-call budget
+72	exclude	C	1M instruction and 512-byte stack limits
+74	pass		verifier error; skb_val null check
+77	pass		misaligned stack access in bpf_xdp prefilter
+79	pass		R9 unbounded memory access on 5.4; mask in asm
+80	pass		pwru: caching xdp pointer rejected
+85	exclude	N0	selinux permission names feature
+86	exclude	N0	gpu_top gadget feature
+87	pass		BPFLSM enforcer fails to load on 6.8+; direct deref replaced
+91	exclude	C	1M instruction budget (opaquify), duplicate of rank 15
+92	exclude	I4	capability: tail calls not allowed with bpf-to-bpf calls on old kernels
+93	pass		math between map_value pointer and unbounded min on 5.4; loop unroll
+95	pass		verifier errors on RHEL 5.14 kernel
+100	exclude	N0	test packet generation helper
+101	exclude	N0	read_into_buffer optimisation
+106	pass		R1 invalid mem access 'inv' in policy check
+107	exclude	N0	hidden module scan behaviour change
+110	exclude	N0	profiler rewrite in Rust
+111	pass		biosnoop out-of-bounds access of rq; BPF_CORE_READ
+112	exclude	N0	fix deletes the failing macro and its test; no fixed program
+114	exclude	N0	preventive initialisation for a later patch; parent not expected to reject
+116	pass		tracee verifier issue on 4.19; volatile buf_off
+118	exclude	N0	user stack feature
+121	pass		R2 min value is negative with clang > 20
+122	pass		system monitor verifier error on Ubuntu 18 clang 12
+124	pass		filler read size bound verifier errors
+125	exclude	E1	verifier part of the fix is a build flag (-mcpu=v3)
+129	pass		verifier issues on old kernels; argument number mask
+133	exclude	N0	http batch manager refactor
+134	pass		func arg reference type size cannot be determined; typed ctx
+135	exclude	C	LXC complexity split into tail calls
+137	exclude	N0	socket enricher iterator fallback
+139	pass		pwru revert to avoid verifier error on skb address shift
+141	pass		math between map_value pointer and unbounded min; ipv6_addr_equals
+142	pass		old kernels <5.11: keep ringbuf pointer in registers
+143	pass		asm volatile ctx->data: register not always initialised
+144	exclude	E3	same patch as rank 95 (netobserv RHEL 5.14 struct init)
+145	pass		alu32: 32-bit move loses inferred pkt type
+147	exclude	N0	TCP RTT feature
+149	exclude	N0	auxmap pool feature
+155	exclude	C	HTTP/2 tail-call frame budget on 6.5
+157	pass		tp_btf siginfo exposed as scalar; direct access rejected
+159	pass		pkt_end arithmetic after re-pulling skb data
+160	pass		tracee arm register reuse; volatile index
+161	exclude	N0	comments on maps that could be read-only; no program change
+163	pass		R5 unbounded memory access on RHEL8 with clang-20
+165	pass		HTTP/2 verifier issue; telemetry removed
+169	exclude	C	program size for rate limits (duplicate of rank 71)
+170	pass		math between map_value pointer and unbounded min before 5.5
+172	exclude	N0	trace notify hook feature
+174	pass		uninitialised ipv6_frag_hdr
+175	exclude	E3	same LOG change as rank 20
+176	exclude	E1	switch to BTF-style maps and build flags
+178	pass		5.4 loses bounds on 64-bit spill of u32
+179	exclude	N0	PostgreSQL classification feature; no rejection named
+180	exclude	N0	SCTP/ICMP feature
+182	exclude	C	4096-instruction program size on 4.19
+183	pass		ctx port access in post_bind hooks on 4.19
+184	exclude	I4	map creation E2BIG (environment, not a verifier rejection)
+192	pass		RHEL + mcpu=v3: tuple read through ctx->data
+194	pass		R7 pointer arithmetic rejection in sock connect
+195	pass		tcpconnect loop bound on filter_ports
+196	pass		tracee capture write prefix check
+198	exclude	C	1M instruction limit (HTTP/2 frame iterations)
+199	pass		5.4 math between map_value pointer and unbounded min; selector mask
+200	pass		4.19.57 bpf_lxc DSR: revalidate_data
+201	pass		tcprtt out-of-bounds access of inet_sock
+202	pass		rcu_ptr_or_null direct dereference rejected
+204	pass		5.4 verification failure in override helper pid read
+206	pass		pwru revert: verifier error on 5.16 with output cpu
+207	pass		R2 min value is negative in read_envs with clang > 20
+208	pass		invalid indirect read from stack with Clang 17
+209	exclude	N0	SNAT reply behaviour fix
+210	exclude	N0	loop condition change; no rejection named
+211	exclude	E3	same LOG change as rank 20
+214	pass		RHEL 8.4 classification read_into_buffer bound
+216	exclude	I4	libbpf .rodata.cst32 relocation (loader, not verifier)
+219	pass		dereference of modified ctx pointer writing skb->cb[0]
+221	pass		clang > 20 pointer offset out of range; offset clamp
+222	pass		misaligned stack access for union v6addr
+224	exclude	N0	Java async TLS feature
+225	exclude	N0	gRPC classification feature
+227	exclude	E1	map key type change
+231	pass		probe_read size of pointer vs struct
+232	exclude	E1	CO-RE field-exists guards
+236	pass		syscount verifier error on latency read
+237	pass		16-bit sockops ctx read with newer LLVM
+239	pass		LLVM 7/8 codegen in __ct_update_timeout
+240	pass		sys_open_by_handle_at string literal pointer
+241	pass		sni loop bound on some 5.15 kernels
+243	pass		R4 is not a scalar at global function call (dead-code-eliminated args)
+245	pass		4.9 narrow ctx access of skb->tc_index
+246	pass		global function params may be NULL; null check
+247	pass		fib_redirect verifier issue on bpf-next
+249	pass		pwru tc + bpf helpers tracking verifier error
+250	pass		latest clang: bound curoff
+251	exclude	I4	capability: tail calls not allowed with bpf-to-bpf calls on 5.4
+252	pass		pre-5.12 kernels reject global func ipv6_hdrlen_with_fraginfo
+253	exclude	N0	runtime fault in d_path, not a verifier rejection
+255	exclude	E3	same patch as rank 74
+257	exclude	C	4096-instruction program size on 4.19
+258	exclude	E3	same patch as rank 122
+259	pass		ICMPv6 on l2-less devices: ETH_HLEN
+262	exclude	I4	ENOTSUPP (error 524), no verifier rejection message
+265	exclude	E3	same LOG change as rank 20
+266	exclude	E3	same patch as rank 178
+268	pass		IPv6 BPF tests: authhdr bound with clang 13 on 5.17
+272	exclude	E3	same patch as rank 241
+274	pass		elf capture: possibly negative read size
+275	exclude	E3	same patch as rank 93
+277	pass		RHEL 8.6 mcpu v3: info may be NULL

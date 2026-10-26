@@ -1,0 +1,57 @@
+repo: cilium/pwru
+commit: 1ea0741991eef933dde73095a15204a0b430f4ef
+rank: 139
+
+Revert "bpf: Move some common statements in handle_everything()"
+
+This reverts commit bc140a80ddca1eb2f541e3bd62076c9e69a68e16.
+
+To avoid verifier error "R2 =<< 56":
+
+    ; event->skb_addr = skb_addr; @ kprobe_pwru.c:658
+    1827: (79) r1 = *(u64 *)(r10 -56)     ; frame1:
+          R1_w=ptr_sk_buff() R10=fp0 fp-56=ptr_sk_buff()
+    1828: (bf) r2 = r1                    ; frame1:
+          R1_w=ptr_sk_buff() R2_w=ptr_sk_buff()
+    1829: (77) r2 >>= 56
+
+Signed-off-by: Martynas Pumputis <martynas@isovalent.com>
+
+--- bpf/kprobe_pwru.c
+@@ -650,12 +650,6 @@ handle_everything(struct sk_buff *skb, void *ctx, struct event_t *event, u64 *_s
+ 		bpf_map_update_elem(&skb_stackid, &skb, &stackid, BPF_ANY);
+ 	}
+ 
+-	if (CFG.output_caller)
+-		bpf_probe_read_kernel(&event->caller_addr,
+-				      sizeof(event->caller_addr),
+-				      (void *)PT_REGS_SP((struct pt_regs *)ctx));
+-
+-	event->skb_addr = skb_addr;
+ 	event->pid = bpf_get_current_pid_tgid() >> 32;
+ 	event->ts = bpf_ktime_get_ns();
+ 	event->cpu_id = bpf_get_smp_processor_id();
+@@ -688,10 +682,14 @@ kprobe_skb(struct sk_buff *skb, struct pt_regs *ctx,
+ 	if (!handle_everything(skb, ctx, &event, _stackid, true))
+ 		return BPF_OK;
+ 
++	event.skb_addr = (u64) skb;
+ 	event.addr = get_addr(ctx, true);
+ 	event.type = kprobe_multi ? EVENT_TYPE_KPROBE_MULTI: EVENT_TYPE_KPROBE;
+ 	event.param_second = PT_REGS_PARM2(ctx);
+ 	event.param_third = PT_REGS_PARM3(ctx);
++	if (CFG.output_caller)
++		bpf_probe_read_kernel(&event.caller_addr, sizeof(event.caller_addr), (void *)PT_REGS_SP(ctx));
++
+ 
+ 	bpf_map_push_elem(&events, &event, BPF_EXIST);
+ 
+@@ -877,6 +875,7 @@ int BPF_PROG(fentry_tc, struct sk_buff *skb) {
+ 	if (!handle_everything(skb, ctx, &event, NULL, false))
+ 		return BPF_OK;
+ 
++	event.skb_addr = (u64) skb;
+ 	event.addr = get_addr(ctx, false);
+ 	event.type = EVENT_TYPE_TC;
+ 	bpf_map_push_elem(&events, &event, BPF_EXIST);
+

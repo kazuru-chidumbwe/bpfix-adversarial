@@ -1,0 +1,20 @@
+repo: falcosecurity/libs
+commit: 73a1ccf43ff29df033f189a10ba8a07b27848bb9
+rank: 240
+
+fix(driver-ebpf): fixes verifier error for sys_open_by_handle_at
+
+Signed-off-by: Giles Hutton <ghutton@redhat.com>
+
+--- driver/bpf/fillers.h
+@@ -3098,7 +3098,8 @@ FILLER(sys_open_by_handle_at_x, true)
+ 		}
+ 	} 
+ 
+-	res = bpf_val_to_ring(data, (unsigned long)"<NA>");
++	char na[] = "<NA>";
++	res = bpf_val_to_ring(data, (unsigned long)na);
+ 	return res;
+ }
+ 
+

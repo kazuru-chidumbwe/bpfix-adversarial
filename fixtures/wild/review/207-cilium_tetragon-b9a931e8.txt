@@ -1,0 +1,33 @@
+repo: cilium/tetragon
+commit: b9a931e8af2b35583fa21047077a5087cf50ba38
+rank: 207
+
+fix: Ensure env read buffer size is never negative
+
+read_args() got an explicit size check in 15d5ff634, but read_envs()
+kept the same "if (envs_size) envs_size -= 1" construct. Under clang
+> 20 that compiles to a register-to-register compare, so the verifier
+never narrows the range and rejects the program with:
+
+  R2 min value is negative, either use unsigned or 'var &= const'
+
+Relates: #5453
+Signed-off-by: Tam Mach <tam.mach@cilium.io>
+
+--- bpf/process/bpf_execve_event.h
+@@ -116,9 +116,11 @@ FUNC_INLINE __u32 read_envs(void *ctx, struct msg_execve_event *event)
+ 	free_size = (char *)&event->process + BUFFER - envs;
+ 	envs_size = env_end - env_start;
+ 
+-	if (envs_size < BUFFER && envs_size < free_size) {
+-		if (envs_size)
+-			envs_size -= 1;
++	if (envs_size < 2) {
++		/* envs contains at most a '\0', nothing to read */
++		size = 0;
++	} else if (envs_size < BUFFER && envs_size < free_size) {
++		envs_size -= 1; // strip trailing '\0'
+ 		size = envs_size & 0x3ff; /* BUFFER - 1 */
+ 
+ 		err = probe_read(envs, size, (char *)env_start);
+

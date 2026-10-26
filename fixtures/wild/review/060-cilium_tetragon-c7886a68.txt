@@ -1,0 +1,89 @@
+repo: cilium/tetragon
+commit: c7886a68ebeec13a9e52bd38a3977eaa9f8b3e1e
+rank: 60
+
+hubble-fgs: Fix verifier error on non-upstreeam, non-LTS kernels
+
+RHEL kernels have the kernfs_inode_id union defined presumably
+for KABI/UAPI reasons (its exposed through some tracepoints), but
+instead of using it in the kernfs_inode struct definition they
+choose to use an anon union.
+
+We know this by reviewing BTF of RHEL kernel,
+
+[1583] STRUCT 'kernfs_node' size=128 vlen=13
+        'count' type_id=82 bits_offset=0
+        'active' type_id=82 bits_offset=32
+        'parent' type_id=1584 bits_offset=64
+        'name' type_id=5 bits_offset=128
+        'rb' type_id=621 bits_offset=192
+        'ns' type_id=208 bits_offset=384
+        'hash' type_id=9 bits_offset=448
+        '(anon)' type_id=1592 bits_offset=512
+        'priv' type_id=109 bits_offset=768
+        '(anon)' type_id=1594 bits_offset=832
+        'flags' type_id=19 bits_offset=896
+        'mode' type_id=60 bits_offset=912
+        'iattr' type_id=1595 bits_offset=960
+
+with 'anon'
+
+[1594] UNION '(anon)' size=8 vlen=3
+        'id' type_id=36 bits_offset=0
+        'rh_kabi_hidden_172' type_id=1593 bits_offset=0
+        '(anon)' type_id=519 bits_offset=0
+
+This breaks our code because when we find kernfs_inode_id union
+we try to walk through the union with pointer chasing like
+so, inode->kernfs_indoe_union->id. Then on these kernels the
+relocation lookup fails because there is no id.id to find here.
+Relocation code at load puts garbage call there to block verifier
+and we get this error on load,
+
+ ; if (!bpf_core_type_exists(union kernfs_node_id)) {
+ 2150: (55) if r1 != 0x0 goto pc+44
+ last_idx 2150 first_idx 2146
+ regs=2 stack=0 before 2149: (b7) r1 = 1
+ ; _(&vfsmnt->mnt_root));
+ 2195: (85) call unknown#195896080
+ invalid func unknown#195896080
+
+So to fix this we use field_exists check and try to walk the
+structure with kernfs->id.id. If it is successful then we
+can do the READ_INTO because we know each field is there.
+If it fails then try the kernfs->id lookup. This will work
+in the anonymous union case and when it is embedded directly with
+a u64.
+
+Signed-off-by: John Fastabend <john.fastabend@gmail.com>
+
+--- bpf/lib/bpf_cgroup.h
+@@ -47,18 +47,22 @@ static inline __attribute__((always_inline)) __u64
+ __get_cgroup_kn_id(const struct kernfs_node *kn)
+ {
+ 	__u64 id = 0;
+-	struct kernfs_node___old *old_kn;
+ 
+ 	if (!kn)
+ 		return id;
+ 
+-	/* Kernels prior to 5.5 have the kernfs_node_id */
+-	if (!bpf_core_type_exists(union kernfs_node_id)) {
+-		probe_read(&id, sizeof(id), _(&kn->id));
+-	} else {
++	/* Kernels prior to 5.5 have the kernfs_node_id, but distros (RHEL)
++	 * seem to have kernfs_node_id defined for UAPI reasons even though
++	 * its not used here directly. To resolve this walk struct for id.id
++	 */
++	if (bpf_core_field_exists(((struct kernfs_node___old *)0)->id.id)) {
++		struct kernfs_node___old *old_kn;
++
+ 		old_kn = (void *)kn;
+ 		if (BPF_CORE_READ_INTO(&id, old_kn, id.id) != 0)
+ 			return 0;
++	} else {
++		probe_read(&id, sizeof(id), _(&kn->id));
+ 	}
+ 
+ 	return id;
+

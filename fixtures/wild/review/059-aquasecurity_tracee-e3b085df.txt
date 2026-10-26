@@ -1,0 +1,150 @@
+repo: aquasecurity/tracee
+commit: e3b085df63f4888bc6a46bcbf78a5421963b74ca
+rank: 59
+
+fix(ebpf): read sockaddr_un members individually
+
+- Read sockaddr_un members individually to prevent offset issues,
+especially since the destination struct (on the stack) may not be
+aligned with the source struct (from the kernel).
+
+This also:
+
+- Treat len member as the sun_path length, not the struct size.
+
+- Change all related bpf_core_type_size() calls to use sizeof() instead.
+
+- Create a new update_min() function macro to update the minimum value
+of a variable using a register to satisfy the verifier.
+
+--- pkg/ebpf/c/common/buffer.h
+@@ -452,20 +452,25 @@ statfunc int save_sockaddr_to_buf(args_buffer_t *buf, struct socket *sock, u8 in
+         get_network_details_from_sock_v4(sk, &net_details, 0);
+         get_local_sockaddr_in_from_network_details(&local, &net_details, family);
+ 
+-        save_to_submit_buf(buf, (void *) &local, bpf_core_type_size(struct sockaddr_in), index);
++        // NOTE: for stack allocated, use sizeof instead of bpf_core_type_size
++        save_to_submit_buf(buf, (void *) &local, sizeof(local), index);
+     } else if (family == AF_INET6) {
+         net_conn_v6_t net_details = {};
+         struct sockaddr_in6 local;
+ 
+         get_network_details_from_sock_v6(sk, &net_details, 0);
+         get_local_sockaddr_in6_from_network_details(&local, &net_details, family);
+ 
+-        save_to_submit_buf(buf, (void *) &local, bpf_core_type_size(struct sockaddr_in6), index);
++        // NOTE: for stack allocated, use sizeof instead of bpf_core_type_size
++        save_to_submit_buf(buf, (void *) &local, sizeof(local), index);
+     } else if (family == AF_UNIX) {
+         struct unix_sock *unix_sk = (struct unix_sock *) sk;
+         struct sockaddr_un sockaddr = get_unix_sock_addr(unix_sk);
+-        save_to_submit_buf(buf, (void *) &sockaddr, bpf_core_type_size(struct sockaddr_un), index);
++
++        // NOTE: for stack allocated, use sizeof instead of bpf_core_type_size
++        save_to_submit_buf(buf, (void *) &sockaddr, sizeof(sockaddr), index);
+     }
++
+     return 0;
+ }
+ 
+
+--- pkg/ebpf/c/common/common.h
+@@ -117,6 +117,19 @@ static __inline int strncmp(char *str1, char *str2, int n)
+ #define list_first_entry_ebpf(ptr, type, member)                                                   \
+     list_entry_ebpf(BPF_CORE_READ(ptr, next), type, member)
+ 
++#ifndef update_min
++    // update_min sets __var as __max_const if __var is greater than __max_const.
++    // It forces the check to be done via a register, which is sometimes necessary
++    // to satisfy the eBPF verifier.
++    #define update_min(__var, __max_const)                                                         \
++        ({                                                                                         \
++            asm volatile("if %[size] <= %[max_size] goto +1;\n"                                    \
++                         "%[size] = %[max_size];\n"                                                \
++                         :                                                                         \
++                         : [size] "r"(__var), [max_size] "r"(__max_const));                        \
++        })
++#endif
++
+ statfunc u64 get_current_time_in_ns(void)
+ {
+     if (bpf_core_enum_value_exists(enum bpf_func_id, BPF_FUNC_ktime_get_boot_ns))
+
+--- pkg/ebpf/c/common/network.h
+@@ -369,11 +369,18 @@ statfunc struct sockaddr_un get_unix_sock_addr(struct unix_sock *sock)
+ {
+     struct unix_address *addr = BPF_CORE_READ(sock, addr);
+     int len = BPF_CORE_READ(addr, len);
++
++    // name is a flexible array member (struct sockaddr_un[])
++    struct sockaddr_un *sockaddr_src = (struct sockaddr_un *) addr->name;
+     struct sockaddr_un sockaddr = {};
+-    // NOTE(nadav.str): stack allocated, so runtime core size check is avoided
+-    if (len <= sizeof(struct sockaddr_un)) {
+-        bpf_probe_read(&sockaddr, len, addr->name);
+-    }
++    sockaddr.sun_family = BPF_CORE_READ(sockaddr_src, sun_family);
++
++    // https://elixir.bootlin.com/linux/v6.13.4/source/net/unix/af_unix.c#L363
++    len -= offsetof(struct sockaddr_un, sun_path);
++    update_min(len, UNIX_PATH_MAX); // truncate if too long for our buffer
++
++    bpf_core_read(&sockaddr.sun_path, len, &sockaddr_src->sun_path);
++
+     return sockaddr;
+ }
+ 
+
+--- pkg/ebpf/c/tracee.bpf.c
+@@ -513,23 +513,23 @@ statfunc int send_socket_dup(program_data_t *p, u64 oldfd, u64 newfd)
+         get_network_details_from_sock_v4(sk, &net_details, 0);
+         get_remote_sockaddr_in_from_network_details(&remote, &net_details, family);
+ 
+-        save_to_submit_buf(
+-            &(p->event->args_buf), &remote, bpf_core_type_size(struct sockaddr_in), 2);
++        // NOTE: for stack allocated, use sizeof instead of bpf_core_type_size
++        save_to_submit_buf(&(p->event->args_buf), &remote, sizeof(remote), 2);
+     } else if (family == AF_INET6) {
+         net_conn_v6_t net_details = {};
+         struct sockaddr_in6 remote;
+ 
+         get_network_details_from_sock_v6(sk, &net_details, 0);
+         get_remote_sockaddr_in6_from_network_details(&remote, &net_details, family);
+ 
+-        save_to_submit_buf(
+-            &(p->event->args_buf), &remote, bpf_core_type_size(struct sockaddr_in6), 2);
++        // NOTE: for stack allocated, use sizeof instead of bpf_core_type_size
++        save_to_submit_buf(&(p->event->args_buf), &remote, sizeof(remote), 2);
+     } else if (family == AF_UNIX) {
+         struct unix_sock *unix_sk = (struct unix_sock *) sk;
+         struct sockaddr_un sockaddr = get_unix_sock_addr(unix_sk);
+ 
+-        save_to_submit_buf(
+-            &(p->event->args_buf), &sockaddr, bpf_core_type_size(struct sockaddr_un), 2);
++        // NOTE: for stack allocated, use sizeof instead of bpf_core_type_size
++        save_to_submit_buf(&(p->event->args_buf), &sockaddr, sizeof(sockaddr), 2);
+     }
+ 
+     return events_perf_submit(p, 0);
+
+--- pkg/ebpf/c/vmlinux.h
+@@ -613,14 +613,16 @@ struct unix_sock {
+     struct unix_address *addr;
+ };
+ 
++#define UNIX_PATH_MAX 108
++
+ struct sockaddr_un {
+     __kernel_sa_family_t sun_family;
+-    char sun_path[108];
++    char sun_path[UNIX_PATH_MAX];
+ };
+ 
+ struct unix_address {
+     int len;
+-    struct sockaddr_un name[0];
++    struct sockaddr_un name[];
+ };
+ 
+ struct ipv6_pinfo {
+

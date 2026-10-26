@@ -1,0 +1,31 @@
+repo: cilium/tetragon
+commit: 1cc4ba46a533baea697bb43b71a9669da92b582d
+rank: 221
+
+fix: bound pointer offset to a max value
+
+Code generated when compiling with clang > 20 causes the verifier to
+complain that (buffer + offset) leads to an address beyond the
+acceptable 32-bit range, causing the ebpf program to fail to load.
+
+This commit simply truncates the offset to MAX_BUF_LEN, giving buffer a
+reasonable range and keeping the verifier happy.
+
+Signed-off-by: Rafael Roquetto <rroquett@isovalent.com>
+
+--- bpf/lib/process.h
+@@ -733,8 +733,12 @@ read_exe(struct task_struct *task, struct heap_exe *exe)
+ 	asm volatile("%[len] &= 0xff;\n"
+ 		     : [len] "+r"(exe->len));
+ 	with_errmetrics(probe_read, exe->buf, exe->len, buffer);
+-	if (revlen < STRING_POSTFIX_MAX_LENGTH)
++	if (revlen < STRING_POSTFIX_MAX_LENGTH) {
++		if (offset > MAX_BUF_LEN)
++			offset = MAX_BUF_LEN;
++
+ 		with_errmetrics(probe_read, exe->end, revlen, (char *)(buffer + offset));
++	}
+ 	return exe->len;
+ }
+ #endif
+

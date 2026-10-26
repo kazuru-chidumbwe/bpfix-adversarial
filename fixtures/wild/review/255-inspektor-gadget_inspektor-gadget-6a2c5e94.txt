@@ -1,0 +1,24 @@
+repo: inspektor-gadget/inspektor-gadget
+commit: 6a2c5e949cbfc464b40d7b61196c9f2e1cffffaf
+rank: 255
+
+filter: fix verifier error in gadget_should_discard_data_by_skb
+
+gadget_should_discard_data_by_skb() dereferences a NULL pointer with
+"skb_val->mntns" when skb_val is NULL.
+
+Fixes: 04c60a742182 ("gadgets: Uniform filtering for networking gadgets")
+
+Signed-off-by: Alban Crequy <alban.crequy@gmail.com>
+
+--- gadgets/trace_dns/program.bpf.c
+@@ -363,7 +363,7 @@ int ig_trace_dns(struct __sk_buff *skb)
+ 	// Enrich event with process metadata
+ 	gadget_process_populate_from_socket(skb_val, &event->proc);
+ 
+-	if (paths) {
++	if (paths && skb_val != NULL) {
+ 		if (bpf_core_enum_value_exists(
+ 			    enum bpf_func_id, BPF_FUNC_probe_read_kernel_str)) {
+ 			bpf_probe_read_kernel_str(
+

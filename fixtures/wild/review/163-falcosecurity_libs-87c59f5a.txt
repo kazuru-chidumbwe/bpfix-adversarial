@@ -1,0 +1,65 @@
+repo: falcosecurity/libs
+commit: 87c59f5a5dd34664ff05af619d8d551116575a14
+rank: 163
+
+fix(driver/bpf): fix sys_generic with clang-20
+
+On RHEL8 with clang-20, the verifier fails with the following
+on loading sys_generic:
+
+457: (85) call bpf_perf_event_output#25
+ R0=inv(id=19,umax_value=65523,var_off=(0x0; 0xffffffff)) R1_w=ctx(id=0,off=0,imm=0) R2_w=map_ptr(id=0,off=0,ks=4,vs=4,imm=0) R3_w=inv4294967295 R4_w=map_value(id=0,off=0,ks=4,vs=262144,imm=0) R5_w=inv(id=0,umax_value=4294967295,var_off=(0x0; 0xffffffff)) R6=ctx(id=0,off=0,imm=0) R7=map_value(id=0,off=0,ks=4,vs=201,imm=0) R8=map_value(id=0,off=0,ks=4,vs=262144,imm=0) R9=inv4294967291 R10=fp0 fp-8=mmmmmmmm fp-16=map_value fp-24=mmmmmmmm fp-32=invP fp-40=mmmmmmmm
+R5 unbounded memory access, use 'var &= const' or 'if (var < const)'
+processed 448 insns (limit 1000000) max_states_per_insn 0 total_states 12 peak_states 12 mark_read 6
+
+R5 unbounded memory access, use 'var &= const' or 'if (var < const)'
+
+The actual value (data->state->tail_ctx.len) appears to be read from
+memory every single time which increases register pressure.
+
+Using a local variable for the value instead (and bounding it with the
+appropriate limits) helps the compiler assigning it to its final register
+which the verifier can finally analyze properly.
+
+Signed-off-by: Gerlando Falauto <gerlando.falauto@sysdig.com>
+
+--- driver/bpf/ring_helpers.h
+@@ -38,6 +38,8 @@ static __always_inline void fixup_evt_arg_len(char *p, unsigned int argnum, unsi
+ }
+ 
+ static __always_inline int push_evt_frame(void *ctx, struct filler_data *data) {
++	/* Appease the verifier by bounding length to begin with */
++	unsigned long len = (data->state->tail_ctx.len) & SCRATCH_SIZE_MAX;
+ 	if(data->state->tail_ctx.curarg != data->evt->nparams) {
+ 		bpf_printk("corrupted filler for event type %d (added %u args, should have added %u)\n",
+ 		           data->state->tail_ctx.evt_type,
+@@ -46,24 +48,24 @@ static __always_inline int push_evt_frame(void *ctx, struct filler_data *data) {
+ 		return PPM_FAILURE_BUG;
+ 	}
+ 
+-	if(data->state->tail_ctx.len > PERF_EVENT_MAX_SIZE) {
++	if(len > PERF_EVENT_MAX_SIZE) {
+ 		return PPM_FAILURE_FRAME_SCRATCH_MAP_FULL;
+ 	}
+ 
+-	fixup_evt_len(data->buf, data->state->tail_ctx.len);
++	fixup_evt_len(data->buf, len);
+ 
+ #ifdef BPF_FORBIDS_ZERO_ACCESS
+ 	int res = bpf_perf_event_output(ctx,
+ 	                                &perf_map,
+ 	                                BPF_F_CURRENT_CPU,
+ 	                                data->buf,
+-	                                ((data->state->tail_ctx.len - 1) & SCRATCH_SIZE_MAX) + 1);
++	                                ((len - 1) & SCRATCH_SIZE_MAX) + 1);
+ #else
+ 	int res = bpf_perf_event_output(ctx,
+ 	                                &perf_map,
+ 	                                BPF_F_CURRENT_CPU,
+ 	                                data->buf,
+-	                                data->state->tail_ctx.len & SCRATCH_SIZE_MAX);
++	                                len & SCRATCH_SIZE_MAX);
+ #endif
+ 	if(res == -ENOENT || res == -EOPNOTSUPP) {
+ 		/*
+

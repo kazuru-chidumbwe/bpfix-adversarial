@@ -1,0 +1,21 @@
+repo: aquasecurity/tracee
+commit: 02dad67878f811b4e25b3da6196f7cbd7cbd97d4
+rank: 196
+
+fix(ebpf): fix prefix check in capture write (#3600)
+
+Fix prefix check, so it will use the right path address.
+This should prevent verifier error in new kernels.
+Also fixed the check logic to do what it was supposed to do.
+
+--- pkg/ebpf/c/tracee.bpf.c
+@@ -3002,7 +3002,7 @@ statfunc int capture_file_write(struct pt_regs *ctx, u32 event_id, bool is_buf)
+     // otherwise the capture will overwrite itself.
+     int pid = 0;
+     void *path_buf = get_path_str_cached(file);
+-    if (path_buf != NULL && !has_prefix("/dev/null", (char *) &path_buf, 10)) {
++    if (path_buf != NULL && has_prefix("/dev/null", (char *) path_buf, 10)) {
+         pid = p.event->context.task.pid;
+     }
+ 
+

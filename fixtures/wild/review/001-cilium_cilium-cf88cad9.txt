@@ -1,0 +1,139 @@
+repo: cilium/cilium
+commit: cf88cad9bbdbaf6704219559ece9be20e3ec9e45
+rank: 1
+
+VXLAN Tunnel Endpoint (VTEP) Integration
+
+In enterprise on-prem or hybrid cloud datacenter, traditional
+load balancer devices like BIG-IP are used for north-south
+load balancing to Kubernetes cluster POD either through routing
+mode or VXLAN tunnel mode. These VXLAN devices usually has VNI
+key based implementation https://datatracker.ietf.org/doc/html/rfc7348.
+Cilium VXLAN implementation does not use VNI key and VTEP
+IP/MAC mapping to direct tunnel traffic, This feature enables
+Cilium VXLAN Tunnel Endpoint (VTEP) Integration. Add Cilium agent
+option EnableVTEP to enable this feature and it is disabled by
+default. This feature support Cilium tunnel and route mode
+
+1 In VXLAN tunnel mode, the egress packets from Cilium-managed pod
+before encapsulation use host namespace side MAC address as
+the destination MAC address, when egress packet arrive at
+VTEP device, the MAC address does not match the VTEP
+MAC address of the VTEP device and the packet is
+dropped. Thus we need to rewrite the inner packet destination
+MAC address to remote VTEP MAC address.
+
+2 Cilium VXLAN use pod identity as the VXLAN tunnel key that
+does not match pre-configured VTEP device VNI key
+
+This patch addresses above two points.
+In #17106 discussion, We decided to pre-populate IPCache map with
+VTEP devices CIDR, VNI, MAC, IP. When packets egress to VTEP devices,
+use the pre-populated VTEP device entry in IPCache map to
+encapsulate the packet.
+
+One issue observed when using eth_store_daddr() from
+bpf/lib/eth.h to re-write the inner packet destination MAC
+address,it failed to pass BPF verifier check with
+“R1 invalid mem access ‘inv’”, see full detail in issue
+kernel, both issues are resolved by initializing vtep_mac to 0
+
+Example to enable this feature in configmap cilium-config:
+
+enable-vtep: "true"
+vtep-endpoint: "10.169.72.14    10.169.72.15"
+vtep-cidr: "10.1.99.0/24        10.1.88.0/24"
+vtep-mac: "52:54:00:3e:3f:c1   52:54:00:4e:01:a6"
+
+VTEP devices must use cilium reserved world id "2" as VNI
+
+Suggested-by: Joe Stringer <joe@cilium.io>
+Signed-off-by: Vincent Li <v.li@f5.com>
+
+--- bpf/bpf_lxc.c
+@@ -850,6 +850,27 @@ static __always_inline int handle_ipv4_from_lxc(struct __ctx_buff *ctx,
+ skip_egress_gateway:
+ #endif
+ 
++#ifdef ENABLE_VTEP
++	{
++		int i;
++		mac_t vtep_mac = 0;
++
++		for (i = 0; i < VTEP_NUMS; i++) {
++			if (tunnel_endpoint == VTEP_ENDPOINT[i]) {
++				vtep_mac = VTEP_MAC[i];
++				break;
++			}
++		}
++
++		if (vtep_mac && tunnel_endpoint) {
++			if (eth_store_daddr(ctx, (__u8 *)&vtep_mac, 0) < 0)
++				return DROP_WRITE_ERROR;
++			return __encap_and_redirect_with_nodeid(ctx, tunnel_endpoint,
++									WORLD_ID, monitor);
++		}
++	}
++#endif
++
+ #ifdef TUNNEL_MODE
+ # ifdef ENABLE_WIREGUARD
+ 	/* In the tunnel mode we encapsulate pod2pod traffic only via Wireguard
+
+--- bpf/bpf_overlay.c
+@@ -221,7 +221,22 @@ static __always_inline int handle_ipv4(struct __ctx_buff *ctx, __u32 *identity)
+ 
+ 		if (*identity == HOST_ID)
+ 			return DROP_INVALID_IDENTITY;
+-
++#ifdef ENABLE_VTEP
++		{
++			struct remote_endpoint_info *info;
++			int i;
++
++			info = lookup_ip4_remote_endpoint(ip4->saddr);
++			if (!info)
++				return DROP_NO_TUNNEL_ENDPOINT;
++			for (i = 0; i < VTEP_NUMS; i++) {
++				if (info->tunnel_endpoint == VTEP_ENDPOINT[i]) {
++					if (*identity != WORLD_ID)
++						return DROP_INVALID_VNI;
++				}
++			}
++		}
++#endif
+ 		/* See comment at equivalent code in handle_ipv6() */
+ 		if (identity_is_remote_node(*identity)) {
+ 			struct remote_endpoint_info *info;
+
+--- bpf/lib/common.h
+@@ -433,6 +433,7 @@ enum {
+ #define DROP_PROXY_UNKNOWN_PROTO	-180
+ #define DROP_POLICY_DENY	-181
+ #define DROP_VLAN_FILTERED	-182
++#define DROP_INVALID_VNI	-183
+ 
+ #define NAT_PUNT_TO_STACK	DROP_NAT_NOT_NEEDED
+ 
+
+--- bpf/node_config.h
+@@ -179,6 +179,18 @@ DEFINE_IPV6(HOST_IP, 0xbe, 0xef, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0xa, 0x
+ # define LB_SELECTION		LB_SELECTION_RANDOM
+ #endif
+ 
++#ifdef ENABLE_VTEP
++#define VTEP_ENDPOINT (__u32[]){0xeb48a90a, 0xec48a90a, 0xed48a90a, 0xee48a90a, }
++/* HEX representation of VTEP IP
++ * 10.169.72.235, 10.169.72.236, 10.169.72.237, 10.169.72.238
++ */
++#define VTEP_MAC (__u64[]){0x562e984c3682, 0x552e984c3682, 0x542e984c3682, 0x532e984c3682}
++/* VTEP MAC address
++ * 82:36:4c:89:2e:56, 82:36:4c:89:2e:55, 82:36:4c:89:2e:54, 82:36:4c:89:2e:53
++ */
++#define VTEP_NUMS 4
++#endif
++
+ /* It appears that we can support around the below number of prefixes in an
+  * unrolled loop for LPM CIDR handling in older kernels along with the rest of
+  * the logic in the datapath, hence the defines below. This number was arrived
+

@@ -1,0 +1,138 @@
+repo: DataDog/datadog-agent
+commit: 38ac0da6f60ea755ebe33ee629e2dc757350acc1
+rank: 54
+
+perf(dyninst): free up BPF stack on the swiss-map AES chain and guard it with a test (#58160)
+
+### What does this PR do?
+
+Two stack-budget changes to the dyninst eBPF program:
+
+- The swiss-map AES helpers spelled MixColumns out one column at a time, which
+  made clang keep all 16 tmp bytes live and spill 216/208 bytes of frame. Loop
+  over the columns instead; frames drop to 72 and 32 bytes.
+- Add `pkg/dyninst/ebpf/stackbudget`, which reads a compiled eBPF object,
+  rebuilds the call graph, and reports the worst combined stack. Both
+  architectures are built and asserted in a unit test.
+
+### Motivation
+
+`probe_run_with_cookie -> sm_loop -> sm_swiss_map_aes{e,enc}` sits at exactly 512
+bytes on arm64, the verifier's limit, so any new work anywhere on that chain
+fails to load. Today you only find that out from a KMT job printing "combined
+stack size of N calls is M. Too large", and because the limit is
+architecture-sensitive, x86 CI never sees it.
+
+### Describe how you validated your changes
+
+The re-roll is bit-identical to the unrolled form over 3M pseudorandom (tmp, rk)
+vectors plus single-byte edge patterns. The analyzer was checked against
+known-good and known-bad objects: it reproduces the 512-byte chain on the
+current tree and the rejected 544-byte chain reported by CI, frame count
+included.
+
+### Additional Notes
+
+Split out of #56772, which needs the headroom. That PR is stacked on this one.
+
+Co-authored-by: grant.seltzerrichman <grant.seltzerrichman@datadoghq.com>
+
+--- pkg/dyninst/ebpf/stack_machine.h
+@@ -2282,36 +2282,17 @@ sm_swiss_map_aesenc(stack_machine_t* sm) {
+     sm->swiss_map_state.aes_rk_offset = off + 16;
+   }
+ 
+-  // MixColumns + AddRoundKey.
+-  uint8_t a0, a1, a2, a3, x0, x1, x2, x3;
+-
+-  a0 = tmp[0]; a1 = tmp[1]; a2 = tmp[2]; a3 = tmp[3];
+-  x0 = xtime(a0); x1 = xtime(a1); x2 = xtime(a2); x3 = xtime(a3);
+-  state[0] = x0 ^ x1 ^ a1 ^ a2 ^ a3 ^ rk[0];
+-  state[1] = a0 ^ x1 ^ x2 ^ a2 ^ a3 ^ rk[1];
+-  state[2] = a0 ^ a1 ^ x2 ^ x3 ^ a3 ^ rk[2];
+-  state[3] = x0 ^ a0 ^ a1 ^ a2 ^ x3 ^ rk[3];
+-
+-  a0 = tmp[4]; a1 = tmp[5]; a2 = tmp[6]; a3 = tmp[7];
+-  x0 = xtime(a0); x1 = xtime(a1); x2 = xtime(a2); x3 = xtime(a3);
+-  state[4] = x0 ^ x1 ^ a1 ^ a2 ^ a3 ^ rk[4];
+-  state[5] = a0 ^ x1 ^ x2 ^ a2 ^ a3 ^ rk[5];
+-  state[6] = a0 ^ a1 ^ x2 ^ x3 ^ a3 ^ rk[6];
+-  state[7] = x0 ^ a0 ^ a1 ^ a2 ^ x3 ^ rk[7];
+-
+-  a0 = tmp[8]; a1 = tmp[9]; a2 = tmp[10]; a3 = tmp[11];
+-  x0 = xtime(a0); x1 = xtime(a1); x2 = xtime(a2); x3 = xtime(a3);
+-  state[8]  = x0 ^ x1 ^ a1 ^ a2 ^ a3 ^ rk[8];
+-  state[9]  = a0 ^ x1 ^ x2 ^ a2 ^ a3 ^ rk[9];
+-  state[10] = a0 ^ a1 ^ x2 ^ x3 ^ a3 ^ rk[10];
+-  state[11] = x0 ^ a0 ^ a1 ^ a2 ^ x3 ^ rk[11];
+-
+-  a0 = tmp[12]; a1 = tmp[13]; a2 = tmp[14]; a3 = tmp[15];
+-  x0 = xtime(a0); x1 = xtime(a1); x2 = xtime(a2); x3 = xtime(a3);
+-  state[12] = x0 ^ x1 ^ a1 ^ a2 ^ a3 ^ rk[12];
+-  state[13] = a0 ^ x1 ^ x2 ^ a2 ^ a3 ^ rk[13];
+-  state[14] = a0 ^ a1 ^ x2 ^ x3 ^ a3 ^ rk[14];
+-  state[15] = x0 ^ a0 ^ a1 ^ a2 ^ x3 ^ rk[15];
++  // MixColumns + AddRoundKey, one column at a time.
++  for (uint32_t c = 0; c < 4; c++) {
++    uint32_t off = (c * 4) & 12;
++    uint8_t a0 = tmp[off + 0], a1 = tmp[off + 1];
++    uint8_t a2 = tmp[off + 2], a3 = tmp[off + 3];
++    uint8_t x0 = xtime(a0), x1 = xtime(a1), x2 = xtime(a2), x3 = xtime(a3);
++    state[off + 0] = x0 ^ x1 ^ a1 ^ a2 ^ a3 ^ rk[off + 0];
++    state[off + 1] = a0 ^ x1 ^ x2 ^ a2 ^ a3 ^ rk[off + 1];
++    state[off + 2] = a0 ^ a1 ^ x2 ^ x3 ^ a3 ^ rk[off + 2];
++    state[off + 3] = x0 ^ a0 ^ a1 ^ a2 ^ x3 ^ rk[off + 3];
++  }
+   return 0;
+ }
+ 
+@@ -2374,36 +2355,18 @@ sm_swiss_map_aese(stack_machine_t* sm) {
+     return 0;
+   }
+ 
+-  // AESMC: MixColumns only (NO AddRoundKey — that was done before SubBytes).
+-  uint8_t a0, a1, a2, a3, x0, x1, x2, x3;
+-
+-  a0 = tmp[0]; a1 = tmp[1]; a2 = tmp[2]; a3 = tmp[3];
+-  x0 = xtime(a0); x1 = xtime(a1); x2 = xtime(a2); x3 = xtime(a3);
+-  state[0] = x0 ^ x1 ^ a1 ^ a2 ^ a3;
+-  state[1] = a0 ^ x1 ^ x2 ^ a2 ^ a3;
+-  state[2] = a0 ^ a1 ^ x2 ^ x3 ^ a3;
+-  state[3] = x0 ^ a0 ^ a1 ^ a2 ^ x3;
+-
+-  a0 = tmp[4]; a1 = tmp[5]; a2 = tmp[6]; a3 = tmp[7];
+-  x0 = xtime(a0); x1 = xtime(a1); x2 = xtime(a2); x3 = xtime(a3);
+-  state[4] = x0 ^ x1 ^ a1 ^ a2 ^ a3;
+-  state[5] = a0 ^ x1 ^ x2 ^ a2 ^ a3;
+-  state[6] = a0 ^ a1 ^ x2 ^ x3 ^ a3;
+-  state[7] = x0 ^ a0 ^ a1 ^ a2 ^ x3;
+-
+-  a0 = tmp[8]; a1 = tmp[9]; a2 = tmp[10]; a3 = tmp[11];
+-  x0 = xtime(a0); x1 = xtime(a1); x2 = xtime(a2); x3 = xtime(a3);
+-  state[8]  = x0 ^ x1 ^ a1 ^ a2 ^ a3;
+-  state[9]  = a0 ^ x1 ^ x2 ^ a2 ^ a3;
+-  state[10] = a0 ^ a1 ^ x2 ^ x3 ^ a3;
+-  state[11] = x0 ^ a0 ^ a1 ^ a2 ^ x3;
+-
+-  a0 = tmp[12]; a1 = tmp[13]; a2 = tmp[14]; a3 = tmp[15];
+-  x0 = xtime(a0); x1 = xtime(a1); x2 = xtime(a2); x3 = xtime(a3);
+-  state[12] = x0 ^ x1 ^ a1 ^ a2 ^ a3;
+-  state[13] = a0 ^ x1 ^ x2 ^ a2 ^ a3;
+-  state[14] = a0 ^ a1 ^ x2 ^ x3 ^ a3;
+-  state[15] = x0 ^ a0 ^ a1 ^ a2 ^ x3;
++  // AESMC: MixColumns only (NO AddRoundKey — that was done before SubBytes),
++  // one column at a time.
++  for (uint32_t c = 0; c < 4; c++) {
++    uint32_t off = (c * 4) & 12;
++    uint8_t a0 = tmp[off + 0], a1 = tmp[off + 1];
++    uint8_t a2 = tmp[off + 2], a3 = tmp[off + 3];
++    uint8_t x0 = xtime(a0), x1 = xtime(a1), x2 = xtime(a2), x3 = xtime(a3);
++    state[off + 0] = x0 ^ x1 ^ a1 ^ a2 ^ a3;
++    state[off + 1] = a0 ^ x1 ^ x2 ^ a2 ^ a3;
++    state[off + 2] = a0 ^ a1 ^ x2 ^ x3 ^ a3;
++    state[off + 3] = x0 ^ a0 ^ a1 ^ a2 ^ x3;
++  }
+   return 0;
+ }
+ 
+

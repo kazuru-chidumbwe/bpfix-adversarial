@@ -1,0 +1,131 @@
+repo: cilium/cilium
+commit: 847014aa62f94e5a53178670cad1eacea455b227
+rank: 14
+
+bpf: Avoid 32bit assignment of packet pointer
+
+Since ctx->{data,data_end,data_meta} are 32-bits fields, LLVM sometimes
+generates 32-bit assignments for those pointers. This leads to verifier
+errors as the verifier is unable to track the packet pointers through
+the 32-bit assignments, as show below.
+
+    ; return (void *)(unsigned long)ctx->data;
+    2: (61) r9 = *(u32 *)(r7 +76)
+    ; R7_w=ctx(id=0,off=0,imm=0) R9_w=pkt(id=0,off=0,r=0,imm=0)
+    ; return (void *)(unsigned long)ctx->data;
+    3: (bc) w6 = w9
+    ; R6_w=inv(id=0,umax_value=4294967295,var_off=(0x0; 0xffffffff)) R9_w=pkt(id=0,off=0,r=0,imm=0)
+    ; if (data + tot_len > data_end)
+    4: (bf) r2 = r6
+    ; R2_w=inv(id=1,umax_value=4294967295,var_off=(0x0; 0xffffffff)) R6_w=inv(id=1,umax_value=4294967295,var_off=(0x0; 0xffffffff))
+    5: (07) r2 += 54
+    ; R2_w=inv(id=0,umin_value=54,umax_value=4294967349,var_off=(0x0; 0x1ffffffff))
+    ; if (data + tot_len > data_end)
+    6: (2d) if r2 > r1 goto pc+466
+    ; R1_w=pkt_end(id=0,off=0,imm=0) R2_w=inv(id=0,umin_value=54,umax_value=4294967349,var_off=(0x0; 0x1ffffffff))
+    ; tmp = a->d1 - b->d1;
+    7: (71) r2 = *(u8 *)(r6 +22)
+    R6 invalid mem access 'inv'
+
+As a workaround, Yonghong Song suggested to read those fields using asm
+bytecode. With that trick, LLVM is unaware that the original field is
+actually on 32 bits and can't perform the above "optimization".
+
+This workaround is needed only now because a subsequent commit
+introduces some BPF C code that causes this bytecode to be generated
+(snat_v6_needed).
+
+[ Quentin: Add #undef DEFINE_FUNC_CTX_POINTER. ]
+
+Related: https://lore.kernel.org/bpf/c5a76b4d-abed-51f6-bf16-040eb0baf290@fb.com/T/#m933626f7404562a6e98af78a8f44c30977681ffa
+Suggested-by: Yonghong Song <yhs@fb.com>
+Signed-off-by: Paul Chaignon <paul@cilium.io>
+
+--- bpf/include/bpf/ctx/common.h
+@@ -13,21 +13,6 @@
+ #define __ctx_skb		1
+ #define __ctx_xdp		2
+ 
+-static __always_inline void *ctx_data(const struct __ctx_buff *ctx)
+-{
+-	return (void *)(unsigned long)ctx->data;
+-}
+-
+-static __always_inline void *ctx_data_meta(const struct __ctx_buff *ctx)
+-{
+-	return (void *)(unsigned long)ctx->data_meta;
+-}
+-
+-static __always_inline void *ctx_data_end(const struct __ctx_buff *ctx)
+-{
+-	return (void *)(unsigned long)ctx->data_end;
+-}
+-
+ static __always_inline bool ctx_no_room(const void *needed, const void *limit)
+ {
+ 	return unlikely(needed > limit);
+
+--- bpf/include/bpf/ctx/skb.h
+@@ -60,6 +60,29 @@
+ #define get_hash(ctx)		ctx->hash
+ #define get_hash_recalc(ctx)	get_hash(ctx)
+ 
++#define DEFINE_FUNC_CTX_POINTER(FIELD)						\
++static __always_inline void *							\
++ctx_ ## FIELD(const struct __sk_buff *ctx)					\
++{										\
++	void *ptr;								\
++										\
++	/* LLVM may generate u32 assignments of ctx->{data,data_end,data_meta}.	\
++	 * With this inline asm, LLVM loses track of the fact this field is on	\
++	 * 32 bits.								\
++	 */									\
++	asm volatile("%0 = *(u32 *)(%1 + %2)"					\
++		     : "=r"(ptr)						\
++		     : "r"(ctx), "i"(offsetof(struct __sk_buff, FIELD)));	\
++	return ptr;								\
++}
++/* This defines ctx_data(). */
++DEFINE_FUNC_CTX_POINTER(data)
++/* This defines ctx_data_end(). */
++DEFINE_FUNC_CTX_POINTER(data_end)
++/* This defines ctx_data_meta(). */
++DEFINE_FUNC_CTX_POINTER(data_meta)
++#undef DEFINE_FUNC_CTX_POINTER
++
+ static __always_inline __maybe_unused int
+ ctx_redirect(const struct __sk_buff *ctx __maybe_unused, int ifindex, __u32 flags)
+ {
+
+--- bpf/include/bpf/ctx/xdp.h
+@@ -110,6 +110,29 @@ xdp_store_bytes(const struct xdp_md *ctx, __u64 off, const void *from,
+ #define get_hash(ctx)			({ 0; })
+ #define get_hash_recalc(ctx)		get_hash(ctx)
+ 
++#define DEFINE_FUNC_CTX_POINTER(FIELD)						\
++static __always_inline void *							\
++ctx_ ## FIELD(const struct xdp_md *ctx)						\
++{										\
++	void *ptr;								\
++										\
++	/* LLVM may generate u32 assignments of ctx->{data,data_end,data_meta}.	\
++	 * With this inline asm, LLVM loses track of the fact this field is on	\
++	 * 32 bits.								\
++	 */									\
++	asm volatile("%0 = *(u32 *)(%1 + %2)"					\
++		     : "=r"(ptr)						\
++		     : "r"(ctx), "i"(offsetof(struct xdp_md, FIELD)));		\
++	return ptr;								\
++}
++/* This defines ctx_data(). */
++DEFINE_FUNC_CTX_POINTER(data)
++/* This defines ctx_data_end(). */
++DEFINE_FUNC_CTX_POINTER(data_end)
++/* This defines ctx_data_meta(). */
++DEFINE_FUNC_CTX_POINTER(data_meta)
++#undef DEFINE_FUNC_CTX_POINTER
++
+ static __always_inline __maybe_unused void
+ __csum_replace_by_diff(__sum16 *sum, __wsum diff)
+ {
+

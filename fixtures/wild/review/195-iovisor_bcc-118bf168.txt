@@ -1,0 +1,39 @@
+repo: iovisor/bcc
+commit: 118bf168f9f66f757684e653c080d034b34db2ff
+rank: 195
+
+libbpf-tools: Fix tcpconnect
+
+Running tcpconnect causes the following error:
+
+    ...
+    ; for (i = 0; i < filter_ports_len; i++) {
+    43: (7d) if r1 s>= r4 goto pc+96
+    R0=inv(id=0) R1_w=inv66 R2_w=map_value(id=0,off=280,ks=4,vs=280,imm=0) R3=map_value(id=0,off=0,ks=4,vs=280,imm=0) R4_w=inv(id=0,umin_value=67,umax_value=2147483647,var_off=(0x0; 0x7fffffff)) R6=ctx(id=0,off=0,imm=0) R7=inv(id=0) R8=inv(id=0) R9=inv(id=0,umax_value=65535,var_off=(0x0; 0xffff)) R10=fp0 fp-80=mmmmmm??
+    ; if (port == filter_ports[i])
+    44: (61) r4 = *(u32 *)(r2 +0)
+    R0=inv(id=0) R1_w=inv66 R2_w=map_value(id=0,off=280,ks=4,vs=280,imm=0) R3=map_value(id=0,off=0,ks=4,vs=280,imm=0) R4_w=inv(id=0,umin_value=67,umax_value=2147483647,var_off=(0x0; 0x7fffffff)) R6=ctx(id=0,off=0,imm=0) R7=inv(id=0) R8=inv(id=0) R9=inv(id=0,umax_value=65535,var_off=(0x0; 0xffff)) R10=fp0 fp-80=mmmmmm??
+    invalid access to map value, value_size=280 off=280 size=4
+    R2 min value is outside of the array range
+    processed 783 insns (limit 1000000) max_states_per_insn 4 total_states 23 peak_states 23 mark_read 6
+    -- END PROG LOAD LOG --
+    libbpf: failed to load program 'tcp_v4_connect_ret'
+    libbpf: failed to load object 'tcpconnect_bpf'
+    libbpf: failed to load BPF skeleton 'tcpconnect_bpf': -13
+    failed to load BPF object: -13
+
+Fix this by checking i against MAX_PORTS.
+
+Signed-off-by: Hengqi Chen <chenhengqi@outlook.com>
+
+--- libbpf-tools/tcpconnect.bpf.c
+@@ -55,7 +55,7 @@ static __always_inline bool filter_port(__u16 port)
+ 	if (filter_ports_len == 0)
+ 		return false;
+ 
+-	for (i = 0; i < filter_ports_len; i++) {
++	for (i = 0; i < filter_ports_len && i < MAX_PORTS; i++) {
+ 		if (port == filter_ports[i])
+ 			return false;
+ 	}
+

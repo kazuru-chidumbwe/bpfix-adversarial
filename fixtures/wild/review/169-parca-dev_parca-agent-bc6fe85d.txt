@@ -1,0 +1,65 @@
+repo: parca-dev/parca-agent
+commit: bc6fe85d0f33fa4611a413c173f03f9d69fb74a2
+rank: 169
+
+unwinder/native: Accomodate larger program due to rate limits (#2059)
+
+The newly added rate limits increase the code size of the native
+unwinder. By default they are disabled, so the abstract paths that the
+verifier has to analyse are reduced, compared to when they are enabled.
+
+As in Go, structs with fields that aren't explicitely named have a
+default value, in the case of booleans, false, this feature was disabled
+in unit and integration tests, working both locally and CI.
+
+In the Agent binary we have this flag enabled by default. This worked in
+local testing because the kernel I run is new enough to allow for larger
+programs (6.4.6-200.fc38.x86_64) but both the e2e tests in CI and in our
+own Demo deployment, which run older kernels, the program fails to load
+with `Argument list too long`.
+
+Enabled rate limiting by default in tests shows the issue before this
+commit. To fix it, the the iterations per program were reduced. We might
+want to revisit this in the future.
+
+Test Plan
+=========
+
+With rate-limits enabled both integration and unit tests pass now.
+
+
+```
+$ make vmtest
+=============
+Test results:
+=============
+- ✅ 5.4
+- ✅ 5.10
+- ✅ 5.19
+- ✅ 6.1
+```
+
+--- bpf/cpu/cpu.bpf.c
+@@ -21,19 +21,10 @@
+ #define RUBY_UNWINDER_PROGRAM_ID 1
+ #define PYTHON_UNWINDER_PROGRAM_ID 2
+ 
+-#if __TARGET_ARCH_arm64
+ // Number of frames to walk per tail call iteration.
+-#define MAX_STACK_DEPTH_PER_PROGRAM 8
++#define MAX_STACK_DEPTH_PER_PROGRAM 7
+ // Number of BPF tail calls that will be attempted.
+-#define MAX_TAIL_CALLS 16
+-#endif
+-
+-#if __TARGET_ARCH_x86
+-// Number of frames to walk per tail call iteration.
+-#define MAX_STACK_DEPTH_PER_PROGRAM 9
+-// Number of BPF tail calls that will be attempted.
+-#define MAX_TAIL_CALLS 15
+-#endif
++#define MAX_TAIL_CALLS 19
+ 
+ // Maximum number of frames.
+ #define MAX_STACK_DEPTH 127
+

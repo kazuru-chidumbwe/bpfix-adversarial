@@ -1,0 +1,35 @@
+repo: cilium/pwru
+commit: 9824afb57dc06a7c0d82c86b145ac5d629038d89
+rank: 80
+
+bpf: Do not cache xdp to avoid verifier failure
+
+It's to avoid such verifier error:
+
+```log
+	; set_xdp_metadata(xdp, xdp_metadata);
+	642: (bf) r1 = r10                    ; R1_w=fp0 R10=fp0
+	; u64 xdp_metadata[4] = {};
+	643: (07) r1 += -288                  ; R1_w=fp-288
+	; __builtin_memcpy(event->skb_metadata, xdp_metadata, sizeof(xdp_metadata));
+	644: (79) r2 = *(u64 *)(r10 -40)      ; R2_w=ptr_xdp_buff() R10=fp0 fp-40_w=ptr_xdp_buff()
+	645: (bf) r3 = r2                     ; R2_w=ptr_xdp_buff() R3_w=ptr_xdp_buff()
+	646: (77) r3 >>= 56
+	R3 pointer arithmetic with >>= operator prohibited
+```
+
+It's because `xdp_metadata[0] = xdp` and `xdp` is not allowed to do `>>= 56`.
+
+Signed-off-by: Leon Hwang <leon.hwang@linux.dev>
+
+--- bpf/kprobe_pwru.c
+@@ -878,7 +878,7 @@ filter_xdp(struct xdp_buff *xdp) {
+ static __noinline void
+ set_xdp_metadata(struct xdp_buff *xdp, u64 *metadata) {
+ 	/* This func will be rewrote by Go. */
+-	metadata[0] = (u64)(void *) xdp;
++	metadata[0] = xdp ? 1 : 0;
+ }
+ 
+ static __always_inline void
+

@@ -1,0 +1,26 @@
+repo: inspektor-gadget/inspektor-gadget
+commit: f5fdfa5a7b726e08c435386c7f2e8fe570c21f4b
+rank: 241
+
+trace sni: fix verifier issue on some 5.15 kernels
+
+Unroll the loop up to TLS_MAX_SERVER_NAME_LEN iterations instead of
+server_name_len.
+See:
+https://github.com/gardener/connectivity-monitor/commit/7442cb91f3051096bb365c56a6c0cce8a2f847d5
+
+--- pkg/gadgets/snisnoop/tracer/bpf/snisnoop.c
+@@ -97,10 +97,10 @@ static inline int parse_sni(struct __sk_buff *skb, int data_offset, char *out)
+ 
+   // Read the server name field.
+   int counter = 0;
+-  for (int i = 0; i < server_name_len; i++) {
++  for (int i = 0; i < TLS_MAX_SERVER_NAME_LEN; i++) {
+     if (!out)
+       break;
+-    if (i >= TLS_MAX_SERVER_NAME_LEN)
++    if (i >= server_name_len)
+       break;
+     char b;
+     bpf_skb_load_bytes(skb, server_name_off + i, &b, 1);
+

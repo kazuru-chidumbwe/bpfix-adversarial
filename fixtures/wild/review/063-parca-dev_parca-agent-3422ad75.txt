@@ -1,0 +1,80 @@
+repo: parca-dev/parca-agent
+commit: 3422ad75ba067ffce4f9d02483bc1edce3811422
+rank: 63
+
+bpf: Fix odd verifier issue in CI for 5.4
+
+After https://github.com/parca-dev/parca-agent/pull/1352, the verifier
+is failing on 4.2 with
+```
+2023-02-16T13:37:38.1632673Z [            ] stderr: ; u64 found_pc = unwind_table->rows[table_idx].pc;
+2023-02-16T13:37:38.1636262Z [            ] stderr: 271: (67) r2 <<= 4
+2023-02-16T13:37:38.1640155Z [            ] stderr: 272: (79) r1 = *(u64 *)(r10 -80)
+2023-02-16T13:37:38.1646306Z [            ] stderr: 273: (0f) r1 += r2
+2023-02-16T13:37:38.1650683Z [            ] stderr: last_idx 273 first_idx 270
+2023-02-16T13:37:38.1656777Z [            ] stderr: regs=4 stack=0 before 272: (79) r1 = *(u64 *)(r10 -80)
+2023-02-16T13:37:38.1660589Z [            ] stderr: regs=4 stack=0 before 271: (67) r2 <<= 4
+2023-02-16T13:37:38.1666574Z [            ] stderr: regs=4 stack=0 before 270: (79) r2 = *(u64 *)(r10 -104)
+2023-02-16T13:37:38.1678436Z [            ] stderr:  R0=inv(id=0) R1_w=inv(id=0) R2_w=map_value(id=0,off=40,ks=4,vs=1056,umax_value=1008,var_off=(0x0; 0x3f8)) R6=map_value(id=0,off=40,ks=4,vs=1056,imm=0) R7_w=map_value(id=0,off=32,ks=4,vs=1056,imm=0) R8_w=inv(id=0,umax_value=255,var_off=(0x0; 0xff)) R9=map_value(id=0,off=0,ks=4,vs=1056,imm=0) R10=fp0 fp-8=????mmmm fp-32=mmmmmmmm fp-48=0000mmmm fp-56=mmmmmmmm fp-64=ctx fp-72=00000000 fp-80_r=map_value fp-88=map_value fp-96=map_value fp-104_r=mmmmmmmm fp-112_w=mmmmmmmm
+2023-02-16T13:37:38.1681986Z [            ] stderr: parent already had regs=0 stack=0 marks
+2023-02-16T13:37:38.1686702Z [            ] stderr: math between map_value pointer and register with unbounded min value is not allowed
+2023-02-16T13:37:38.1692029Z [            ] stderr: processed 3650 insns (limit 1000000) max_states_per_insn 4 total_states 111 peak_states 111 mark_read 36
+2023-02-16T13:37:38.1695260Z [            ] stderr: -- END PROG LOAD LOG --
+2023-02-16T13:37:38.1699031Z [            ] stderr: libbpf: prog 'walk_user_stacktrace_impl': failed to load: -22
+2023-02-16T13:37:38.1702898Z [            ] stderr: libbpf: failed to load object 'parca'
+2023-02-16T13:37:38.1717533Z [   34.749963] kvm: exiting hardware virtualization
+2023-02-16T13:37:38.1735015Z [   34.751703] ACPI: Preparing to enter system sleep state S5
+2023-02-16T13:37:38.1748036Z [   34.753020] reboot: Power down
+```
+
+Weird enough I could not repro locally. I tried not accessing the map
+contents again and this make things pass, but I don't know why this is
+happening :////.
+
+Let's land this change to unblock CI and next week I will spend some
+time troubleshooting tis.
+
+repost of: https://github.com/parca-dev/parca-agent/pull/1356
+
+Signed-off-by: Francisco Javier Honduvilla Coto <javierhonduco@gmail.com>
+
+--- bpf/cpu/cpu.bpf.c
+@@ -684,13 +684,20 @@ int walk_user_stacktrace_impl(struct bpf_perf_event_data *ctx) {
+       return 1;
+     }
+ 
+-    if (unwind_table->rows[table_idx].cfa_type == CFA_TYPE_END_OF_FDE_MARKER) {
++    u64 found_pc = unwind_table->rows[table_idx].pc;
++    u8 found_cfa_type = unwind_table->rows[table_idx].cfa_type;
++    u8 found_rbp_type = unwind_table->rows[table_idx].rbp_type;
++    s16 found_cfa_offset = unwind_table->rows[table_idx].cfa_offset;
++    s16 found_rbp_offset = unwind_table->rows[table_idx].rbp_offset;
++    bpf_printk("\tcfa type: %d, offset: %d (row pc: %llx)", found_cfa_type, found_cfa_offset, found_pc);
++
++    if (found_cfa_type == CFA_TYPE_END_OF_FDE_MARKER) {
+       bpf_printk("[info] PC %llx not contained in the unwind info, found marker", unwind_state->ip);
+       reached_bottom_of_stack = true;
+       break;
+     }
+ 
+-    if (unwind_table->rows[table_idx].rbp_type == RBP_TYPE_UNDEFINED_RETURN_ADDRESS) {
++    if (found_rbp_type == RBP_TYPE_UNDEFINED_RETURN_ADDRESS) {
+       bpf_printk("[info] null return address, end of stack", unwind_state->ip);
+       reached_bottom_of_stack = true;
+       break;
+@@ -705,14 +712,6 @@ int walk_user_stacktrace_impl(struct bpf_perf_event_data *ctx) {
+       unwind_state->stack.addresses[len] = unwind_state->ip;
+     }
+ 
+-    u64 found_pc = unwind_table->rows[table_idx].pc;
+-    u8 found_cfa_type = unwind_table->rows[table_idx].cfa_type;
+-    u8 found_rbp_type = unwind_table->rows[table_idx].rbp_type;
+-    s16 found_cfa_offset = unwind_table->rows[table_idx].cfa_offset;
+-    s16 found_rbp_offset = unwind_table->rows[table_idx].rbp_offset;
+-
+-    bpf_printk("\tcfa type: %d, offset: %d (row pc: %llx)", found_cfa_type, found_cfa_offset, found_pc);
+-
+     if (found_rbp_type == RBP_TYPE_REGISTER || found_rbp_type == RBP_TYPE_EXPRESSION) {
+       bpf_printk("\t[error] frame pointer is %d (register or exp), bailing out", found_rbp_type);
+       BUMP_UNWIND_CATCHALL_ERROR();
+

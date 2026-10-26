@@ -1,0 +1,26 @@
+repo: cilium/tetragon
+commit: e540d11870958a71be87bd29c9c0db47c8e8e035
+rank: 199
+
+bpf: fix verification issue on 5.4
+
+Error:
+generic_tracepoint_process_event: load program: invalid argument: math between map_value pointer and register with unbounded min value is not allowed (619 line(s) omitted) logcapture.go:25: test-sensor-1"
+
+Patch written by Jiri.
+
+Signed-off-by: Jiri Olsa <jolsa@kernel.org>
+Signed-off-by: Kornilios Kourtis <kornilios@isovalent.com>
+
+--- bpf/process/generic_calls.h
+@@ -132,6 +132,9 @@ generic_process_event(void *ctx, struct bpf_map_def *tailcals)
+ 	extract_arg(config, index, &a);
+ 
+ 	/* Read out args1-5 */
++	asm volatile("%[index] &= %1 ;\n"
++		     : [index] "+r"(index)
++		     : "i"(MAX_SELECTORS_MASK));
+ 	ty = (&config->arg0)[index];
+ 	if (total < MAX_TOTAL) {
+ 		long errv;
+

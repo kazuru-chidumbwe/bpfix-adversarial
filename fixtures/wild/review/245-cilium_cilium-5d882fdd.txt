@@ -1,0 +1,36 @@
+repo: cilium/cilium
+commit: 5d882fdd1f8a7ecf4383bce66a76cfa10e41ddff
+rank: 245
+
+bpf: fix verifier error in dameon debug mode with newer LLVM versions
+
+4.9.65 doesn't have narrow ctx access support in verifier, and
+clang generates such patterns occasionally when it thinks only
+up to specific size is accessed anyway. Fix the following error:
+
+  [...]
+  level=warning msg="72: (b7) r5 = 20"
+  level=warning msg="73: (85) call 25"
+  level=warning msg="74: (71) r1 = *(u8 *)(r10 -132)"
+  level=warning msg="75: (71) r3 = *(u8 *)(r6 +44)"
+  level=warning msg="invalid bpf_context access off=44 size=1"
+
+Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
+
+--- bpf/lib/lxc.h
+@@ -185,10 +185,11 @@ ipv6_redirect_to_host_port(struct __sk_buff *skb, struct csum_offset *csum,
+  */
+ static inline bool __inline__ tc_index_skip_proxy(struct __sk_buff *skb)
+ {
++	volatile __u32 tc_index = skb->tc_index;
+ #ifdef DEBUG
+-	if (skb->tc_index & TC_INDEX_F_SKIP_PROXY)
+-		cilium_dbg(skb, DBG_SKIP_PROXY, skb->tc_index, 0);
++	if (tc_index & TC_INDEX_F_SKIP_PROXY)
++		cilium_dbg(skb, DBG_SKIP_PROXY, tc_index, 0);
+ #endif
+ 
+-	return skb->tc_index & TC_INDEX_F_SKIP_PROXY;
++	return tc_index & TC_INDEX_F_SKIP_PROXY;
+ }
+

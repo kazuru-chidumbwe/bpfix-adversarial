@@ -1,0 +1,27 @@
+repo: cilium/cilium
+commit: f51f4dfac5421dcf01b95bf682419b939f91995e
+rank: 68
+
+bpf: Add check for null state in snat_v6_nat
+
+Fixes a verifier issue specific to RHEL 8.6.
+State should always be a valid pointer, however, the verifier
+seems to be able to find a path where it is still possibly null:
+
+; if (a->d1 != b->d1)
+1986: (71) r2 = *(u8 *)(r9 +37)
+R9 invalid mem access 'map_value_or_null'
+
+Signed-off-by: Rastislav Szabo <rastislav.szabo@isovalent.com>
+
+--- bpf/lib/nat.h
+@@ -1808,6 +1808,8 @@ __snat_v6_nat(struct __ctx_buff *ctx, struct ipv6_ct_tuple *tuple, fraginfo_t fr
+ 					 l4_off, target, trace, ext_err);
+ 	if (ret < 0)
+ 		return ret;
++	if (!state)
++		return DROP_NAT_NO_MAPPING;
+ 
+ 	ret = snat_v6_rewrite_headers(ctx, tuple->nexthdr, ETH_HLEN,
+ 				      ipfrag_has_l4_header(fraginfo), l4_off,
+

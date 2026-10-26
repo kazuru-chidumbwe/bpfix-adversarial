@@ -1,0 +1,17 @@
+repo: aquasecurity/tracee
+commit: d2d00619b9f5bcce399d435fe5b7e4c60ebf286e
+rank: 160
+
+fix: verifier error on arm due to register reuse (#2024)
+
+--- pkg/ebpf/c/tracee.bpf.c
+@@ -1628,7 +1628,7 @@ static __always_inline int should_trace(event_data_t *data)
+ 
+ static __always_inline int should_submit(u32 event_id, config_entry_t *config)
+ {
+-    unsigned int index = event_id / 8;
++    volatile unsigned int index = event_id / 8;
+     unsigned int offset = event_id % 8;
+     u8 bitmap = config->events_to_submit[index % 128];
+ 
+

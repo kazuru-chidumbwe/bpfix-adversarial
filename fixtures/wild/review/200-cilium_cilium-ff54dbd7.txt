@@ -1,0 +1,29 @@
+repo: cilium/cilium
+commit: ff54dbd703b6f30140a2671c3e03074bfa4642ed
+rank: 200
+
+datapath: Fix 4.19.57 verifier complaint for bpf_lxc w/ DSR
+
+Add revalidate_data() to avoid verifier complaining on the 4.19.57
+kernel when loading bpf_lxc.o:
+
+level=warning msg=" R0=inv(id=0,umax_value=2147483647,var_off=(0x0; 0x7fffffff)) R1=inv0 R3=inv0 R4=inv(id=0,umax_value=4294967295,var_off=(0x0; 0xffffffff)) R5=inv(id=0) R6=ctx(id=0,off=0,imm=0) R7=inv0 R8=inv(id=0) R9=inv0 R10=fp0,call_-1 fp-104=0 fp-112=0 fp-120=0 fp-152=0 fp-216=0" subsys=datapath-loader
+level=warning msg="1007: (7b) *(u64 *)(r10 -152) = r3" subsys=datapath-loader
+level=warning msg="1008: (b7) r7 = 0" subsys=datapath-loader
+level=warning msg="1009: (71) r1 = *(u8 *)(r8 +0)" subsys=datapath-loader
+level=warning msg="R8 invalid mem access 'inv'" subsys=datapath-loader
+
+Signed-off-by: Martynas Pumputis <m@lambda.lt>
+
+--- bpf/bpf_lxc.c
+@@ -1068,6 +1068,9 @@ ipv4_policy(struct __sk_buff *skb, int ifindex, __u32 src_label, __u8 *reason, _
+ 
+ 	if (ret == CT_NEW) {
+ #ifdef ENABLE_DSR
++		if (!revalidate_data(skb, &data, &data_end, &ip4))
++			return DROP_INVALID;
++
+ 		// Check whether IPv4 header contains a 64-bit option (IPv4 header
+ 		// w/o option (5 x 32-bit words) + the DSR option (2 x 32-bit words))
+ 		if (ip4->ihl == 0x7) {
+

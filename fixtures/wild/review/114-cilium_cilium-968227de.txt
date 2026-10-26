@@ -1,0 +1,24 @@
+repo: cilium/cilium
+commit: 968227de9cc5c447d64fc266b14e55856ee60e4f
+rank: 114
+
+bpf: nat: NULL-initialize the NAT entry in snat_v6_rev_nat()
+
+e9876982b009 ("bpf: nat: share rewrite logic in RevSNAT path") already
+added the same initialization in the IPv4 path. Do the same for IPv6.
+
+This works around a verifier reject in one of the subsequent patches.
+
+Signed-off-by: Julian Wiedmann <jwi@isovalent.com>
+
+--- bpf/lib/nat.h
+@@ -1729,7 +1729,7 @@ snat_v6_rev_nat(struct __ctx_buff *ctx, const struct ipv6_nat_target *target,
+ 		__s8 *ext_err __maybe_unused)
+ {
+ 	struct icmp6hdr icmp6hdr __align_stack_8;
+-	struct ipv6_nat_entry *state;
++	struct ipv6_nat_entry *state = NULL;
+ 	struct ipv6_ct_tuple tuple = {};
+ 	__u32 off, inner_l3_off;
+ 	void *data, *data_end;
+

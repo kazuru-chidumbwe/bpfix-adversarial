@@ -1,0 +1,334 @@
+repo: DataDog/datadog-agent
+commit: 8c0f4fa0003823d45153a959551e580977140516
+rank: 52
+
+[USMON-621] Add HTTP/2 kernel metrics (#21035)
+
+* introduce HTTP2 kernel metrics
+
+* changed metrics type to counters
+
+* some lint issues
+
+* some fixes
+
+* changed OptStatsd to OptPrometheus
+
+* fix doc
+
+* merged main and updated changes
+
+* fixed most of the cr notes
+
+* fixed doc
+
+* fixed types in update_path_size_telemetry
+
+* changed http2Telemetry to be updated better
+
+* used ticker for the telemetry updater
+
+* fixed updateKernelTelemetry func
+
+* added teardown mechanism for ticker
+
+* modify the path buckets mechanism
+
+* fixed chan bug
+
+* fixed cr notes
+
+* fixed path size bucket
+
+* added updateKernelTelemetry and changed some functionality
+
+* reduced path_size_bucket size
+
+* fixed cr notes
+
+* introduce path buckets logic between kernel and user mode space
+
+* the increased number of buckets to 8 buckets with range 10 to cover 120-180 sizes
+
+* fix update_path_size_telemetry function
+
+* added ut to validate the HTTP2 kernel telemetry
+
+* merged main
+
+* fixed cr notes
+
+* changed exported var
+
+* added doc for the exported type
+
+* fix CI with docs for exported function in protocol http2
+
+* fix protocol name doc
+
+* reduce program size
+
+* fixed bug with path validation
+
+* Fixed verification error
+
+* Fixed a bug
+
+---------
+
+Co-authored-by: Guy Arbitman <guy20495@gmail.com>
+
+--- pkg/network/ebpf/c/protocols/http2/decoding-defs.h
+@@ -22,6 +22,15 @@
+ // Maximum size for the path buffer.
+ #define HTTP2_MAX_PATH_LEN 160
+ 
++// Maximum size for the path buffer for telemetry.
++#define HTTP2_TELEMETRY_MAX_PATH_LEN 120
++
++// The amount of buckets we have for the path size telemetry.
++#define HTTP2_TELEMETRY_PATH_BUCKETS 7
++
++// The size of each bucket we have for the path size telemetry.
++#define HTTP2_TELEMETRY_PATH_BUCKETS_SIZE 10
++
+ // The maximum index which may be in the static table.
+ #define MAX_STATIC_TABLE_INDEX 61
+ 
+@@ -138,4 +147,24 @@ typedef struct {
+     char buf[HTTP2_FRAME_HEADER_SIZE];
+ } frame_header_remainder_t;
+ 
++// http2_telemetry_t is used to hold the HTTP/2 kernel telemetry.
++// request_seen                         Count of HTTP/2 requests seen
++// response_seen                        Count of HTTP/2 responses seen
++// end_of_stream                        Count of END STREAM flag seen
++// end_of_stream_rst                    Count of RST flags seen
++// path_exceeds_frame                   Count of times we couldn't retrieve the path due to reaching the end of the frame.
++// exceeding_max_interesting_frames		Count of times we reached the max number of frames per iteration.
++// exceeding_max_frames_to_filter		Count of times we have left with more frames to filter than the max number of frames to filter.
++// path_size_bucket                     Count of path sizes and divided into buckets.
++typedef struct {
++    __u64 request_seen;
++    __u64 response_seen;
++    __u64 end_of_stream;
++    __u64 end_of_stream_rst;
++    __u64 path_exceeds_frame;
++    __u64 exceeding_max_interesting_frames;
++    __u64 exceeding_max_frames_to_filter;
++    __u64 path_size_bucket[HTTP2_TELEMETRY_PATH_BUCKETS+1];
++} http2_telemetry_t;
++
+ #endif
+
+--- pkg/network/ebpf/c/protocols/http2/decoding.h
+@@ -107,13 +107,10 @@ static __always_inline void parse_field_indexed(dynamic_table_index_t *dynamic_i
+     }
+ 
+     // TODO: can improve by declaring MAX_INTERESTING_STATIC_TABLE_INDEX
+-    if (is_interesting_static_entry(index)) {
++    if (is_static_table_entry(index)) {
+         headers_to_process->index = index;
+         headers_to_process->type = kStaticHeader;
+-        (*interesting_headers_counter)++;
+-        return;
+-    }
+-    if (is_static_table_entry(index)) {
++        *interesting_headers_counter += is_interesting_static_entry(index);
+         return;
+     }
+ 
+@@ -131,11 +128,34 @@ static __always_inline void parse_field_indexed(dynamic_table_index_t *dynamic_i
+ 
+ READ_INTO_BUFFER(path, HTTP2_MAX_PATH_LEN, BLK_SIZE)
+ 
++// update_path_size_telemetry updates the path size telemetry.
++static __always_inline void update_path_size_telemetry(http2_telemetry_t *http2_tel, __u64 size) {
++    // This line can be considered as a step function of the difference multiplied by difference.
++    // step function of the difference is 0 if the difference is negative, and 1 if the difference is positive.
++    // Thus, if the difference is negative, we will get 0, and if the difference is positive, we will get the difference.
++    size = size < HTTP2_TELEMETRY_MAX_PATH_LEN ? 0 : size - HTTP2_TELEMETRY_MAX_PATH_LEN;
++    // This line acts as a ceil function, which means that if the size is not a multiple of the bucket size, we will
++    // round it up to the next bucket. Since we don't have float numbers in eBPF, we are adding the (bucket size - 1)
++    // to the size, and then dividing it by the bucket size. This will give us the ceil function.
++#define CEIL_FUNCTION_FACTOR (HTTP2_TELEMETRY_PATH_BUCKETS_SIZE - 1)
++    __u8 bucket_idx = (size + CEIL_FUNCTION_FACTOR) / HTTP2_TELEMETRY_PATH_BUCKETS_SIZE;
++
++    // This line guarantees that the bucket index is between 0 and HTTP2_TELEMETRY_PATH_BUCKETS.
++    // Although, it is not needed, we keep this function to please the verifier, and to have an explicit lower bound.
++    bucket_idx = bucket_idx < 0 ? 0 : bucket_idx;
++    // This line guarantees that the bucket index is between 0 and HTTP2_TELEMETRY_PATH_BUCKETS, and we cannot
++    // exceed the upper bound.
++    bucket_idx = bucket_idx > HTTP2_TELEMETRY_PATH_BUCKETS ? HTTP2_TELEMETRY_PATH_BUCKETS : bucket_idx;
++
++    __sync_fetch_and_add(&http2_tel->path_size_bucket[bucket_idx], 1);
++}
++
++
+ // parse_field_literal parses a header with a literal value.
+ //
+ // We are only interested in path headers, that we will store in our internal
+ // dynamic table, and will skip headers that are not path headers.
+-static __always_inline bool parse_field_literal(struct __sk_buff *skb, skb_info_t *skb_info, http2_header_t *headers_to_process, __u64 index, __u64 global_dynamic_counter, __u8 *interesting_headers_counter) {
++static __always_inline bool parse_field_literal(struct __sk_buff *skb, skb_info_t *skb_info, http2_header_t *headers_to_process, __u64 index, __u64 global_dynamic_counter, __u8 *interesting_headers_counter, http2_telemetry_t *http2_tel) {
+     __u64 str_len = 0;
+     if (!read_hpack_int(skb, skb_info, MAX_6_BITS, &str_len)) {
+         return false;
+@@ -151,19 +171,33 @@ static __always_inline bool parse_field_literal(struct __sk_buff *skb, skb_info_
+         goto end;
+     }
+ 
++    if (index == kIndexPath) {
++        update_path_size_telemetry(http2_tel, str_len);
++    } else {
++        goto end;
++    }
++
++    // We skip if:
++    // - The string is too big
++    // - This is not a path
++    // - We won't be able to store the header info
+     if (headers_to_process == NULL) {
+         goto end;
+     }
+ 
++    if (skb_info->data_off + str_len > skb_info->data_end) {
++        __sync_fetch_and_add(&http2_tel->path_exceeds_frame, 1);
++        goto end;
++    }
++
+     headers_to_process->index = global_dynamic_counter - 1;
+     headers_to_process->type = kNewDynamicHeader;
+     headers_to_process->new_dynamic_value_offset = skb_info->data_off;
+     headers_to_process->new_dynamic_value_size = str_len;
+     // If the string len (`str_len`) is in the range of [0, HTTP2_MAX_PATH_LEN], and we don't exceed packet boundaries
+     // (skb_info->data_off + str_len <= skb_info->data_end) and the index is kIndexPath, then we have a path header,
+     // and we're increasing the counter. In any other case, we're not increasing the counter.
+-    *interesting_headers_counter += (str_len > 0 && str_len <= HTTP2_MAX_PATH_LEN && skb_info->data_off + str_len <= skb_info->data_end && index == kIndexPath);
+-
++    *interesting_headers_counter += (str_len > 0 && str_len <= HTTP2_MAX_PATH_LEN);
+ end:
+     skb_info->data_off += str_len;
+     return true;
+@@ -173,7 +207,7 @@ static __always_inline bool parse_field_literal(struct __sk_buff *skb, skb_info_
+ // that are relevant for us, to be processed later on.
+ // The return value is the number of relevant headers that were found and inserted
+ // in the `headers_to_process` table.
+-static __always_inline __u8 filter_relevant_headers(struct __sk_buff *skb, skb_info_t *skb_info, conn_tuple_t *tup, dynamic_table_index_t *dynamic_index, http2_header_t *headers_to_process, __u32 frame_length) {
++static __always_inline __u8 filter_relevant_headers(struct __sk_buff *skb, skb_info_t *skb_info, conn_tuple_t *tup, dynamic_table_index_t *dynamic_index, http2_header_t *headers_to_process, __u32 frame_length, http2_telemetry_t *http2_tel) {
+     __u8 current_ch;
+     __u8 interesting_headers = 0;
+     http2_header_t *current_header;
+@@ -228,7 +262,7 @@ static __always_inline __u8 filter_relevant_headers(struct __sk_buff *skb, skb_i
+             // 6.2.1 Literal Header Field with Incremental Indexing
+             // top two bits are 11
+             // https://httpwg.org/specs/rfc7541.html#rfc.section.6.2.1
+-            if (!parse_field_literal(skb, skb_info, current_header, index, *global_dynamic_counter, &interesting_headers)) {
++            if (!parse_field_literal(skb, skb_info, current_header, index, *global_dynamic_counter, &interesting_headers, http2_tel)) {
+                 break;
+             }
+         }
+@@ -239,7 +273,7 @@ static __always_inline __u8 filter_relevant_headers(struct __sk_buff *skb, skb_i
+ 
+ // process_headers processes the headers that were filtered in filter_relevant_headers,
+ // looking for requests path, status code, and method.
+-static __always_inline void process_headers(struct __sk_buff *skb, dynamic_table_index_t *dynamic_index, http2_stream_t *current_stream, http2_header_t *headers_to_process, __u8 interesting_headers) {
++static __always_inline void process_headers(struct __sk_buff *skb, dynamic_table_index_t *dynamic_index, http2_stream_t *current_stream, http2_header_t *headers_to_process, __u8 interesting_headers,  http2_telemetry_t *http2_tel) {
+     http2_header_t *current_header;
+     dynamic_table_entry_t dynamic_value = {};
+ 
+@@ -261,8 +295,10 @@ static __always_inline void process_headers(struct __sk_buff *skb, dynamic_table
+                 // TODO: mark request
+                 current_stream->request_started = bpf_ktime_get_ns();
+                 current_stream->request_method = *static_value;
++                __sync_fetch_and_add(&http2_tel->request_seen, 1);
+             } else if (current_header->index >= k200 && current_header->index <= k500) {
+                 current_stream->response_status_code = *static_value;
++                __sync_fetch_and_add(&http2_tel->response_seen, 1);
+             } else if (current_header->index == kEmptyPath) {
+                 current_stream->path_size = HTTP_ROOT_PATH_LEN;
+                 bpf_memcpy(current_stream->request_path, HTTP_ROOT_PATH, HTTP_ROOT_PATH_LEN);
+@@ -293,7 +329,7 @@ static __always_inline void process_headers(struct __sk_buff *skb, dynamic_table
+     }
+ }
+ 
+-static __always_inline void handle_end_of_stream(http2_stream_t *current_stream, http2_stream_key_t *http2_stream_key_template) {
++static __always_inline void handle_end_of_stream(http2_stream_t *current_stream, http2_stream_key_t *http2_stream_key_template, http2_telemetry_t *http2_tel) {
+     // We want to see the EOS twice for a given stream: one for the client, one for the server.
+     if (!current_stream->request_end_of_stream) {
+         current_stream->request_end_of_stream = true;
+@@ -315,7 +351,7 @@ static __always_inline void handle_end_of_stream(http2_stream_t *current_stream,
+     bpf_map_delete_elem(&http2_in_flight, http2_stream_key_template);
+ }
+ 
+-static __always_inline void process_headers_frame(struct __sk_buff *skb, http2_stream_t *current_stream, skb_info_t *skb_info, conn_tuple_t *tup, dynamic_table_index_t *dynamic_index, struct http2_frame *current_frame_header) {
++static __always_inline void process_headers_frame(struct __sk_buff *skb, http2_stream_t *current_stream, skb_info_t *skb_info, conn_tuple_t *tup, dynamic_table_index_t *dynamic_index, struct http2_frame *current_frame_header, http2_telemetry_t *http2_tel) {
+     const __u32 zero = 0;
+ 
+     // Allocating an array of headers, to hold all interesting headers from the frame.
+@@ -325,19 +361,19 @@ static __always_inline void process_headers_frame(struct __sk_buff *skb, http2_s
+     }
+     bpf_memset(headers_to_process, 0, HTTP2_MAX_HEADERS_COUNT_FOR_PROCESSING * sizeof(http2_header_t));
+ 
+-    __u8 interesting_headers = filter_relevant_headers(skb, skb_info, tup, dynamic_index, headers_to_process, current_frame_header->length);
+-    process_headers(skb, dynamic_index, current_stream, headers_to_process, interesting_headers);
++    __u8 interesting_headers = filter_relevant_headers(skb, skb_info, tup, dynamic_index, headers_to_process, current_frame_header->length, http2_tel);
++    process_headers(skb, dynamic_index, current_stream, headers_to_process, interesting_headers, http2_tel);
+ }
+ 
+-static __always_inline void parse_frame(struct __sk_buff *skb, skb_info_t *skb_info, conn_tuple_t *tup, http2_ctx_t *http2_ctx, struct http2_frame *current_frame) {
++static __always_inline void parse_frame(struct __sk_buff *skb, skb_info_t *skb_info, conn_tuple_t *tup, http2_ctx_t *http2_ctx, struct http2_frame *current_frame, http2_telemetry_t *http2_tel) {
+     http2_ctx->http2_stream_key.stream_id = current_frame->stream_id;
+     http2_stream_t *current_stream = http2_fetch_stream(&http2_ctx->http2_stream_key);
+     if (current_stream == NULL) {
+         return;
+     }
+ 
+     if (current_frame->type == kHeadersFrame) {
+-        process_headers_frame(skb, current_stream, skb_info, tup, &http2_ctx->dynamic_index, current_frame);
++        process_headers_frame(skb, current_stream, skb_info, tup, &http2_ctx->dynamic_index, current_frame, http2_tel);
+     }
+ 
+     // When we accept an RST, it means that the current stream is terminated.
+@@ -348,8 +384,18 @@ static __always_inline void parse_frame(struct __sk_buff *skb, skb_info_t *skb_i
+         bpf_map_delete_elem(&http2_in_flight, &http2_ctx->http2_stream_key);
+         return;
+     }
+-    if (is_rst || ((current_frame->flags & HTTP2_END_OF_STREAM) == HTTP2_END_OF_STREAM)) {
+-        handle_end_of_stream(current_stream, &http2_ctx->http2_stream_key);
++
++    bool should_handle_end_of_stream = false;
++    if (is_rst) {
++        __sync_fetch_and_add(&http2_tel->end_of_stream_rst, 1);
++        should_handle_end_of_stream = true;
++    } else if ((current_frame->flags & HTTP2_END_OF_STREAM) == HTTP2_END_OF_STREAM) {
++        __sync_fetch_and_add(&http2_tel->end_of_stream, 1);
++        should_handle_end_of_stream = true;
++    }
++
++    if (should_handle_end_of_stream) {
++        handle_end_of_stream(current_stream, &http2_ctx->http2_stream_key, http2_tel);
+     }
+ 
+     return;
+@@ -421,7 +467,7 @@ static __always_inline void reset_frame(struct http2_frame *out) {
+     *out = (struct http2_frame){ 0 };
+ }
+ 
+-static __always_inline bool get_first_frame(struct __sk_buff *skb, skb_info_t *skb_info, frame_header_remainder_t *frame_state, struct http2_frame *current_frame) {
++static __always_inline bool get_first_fr
+[truncated]
+
+--- pkg/network/ebpf/c/protocols/http2/maps-defs.h
+@@ -42,4 +42,10 @@ BPF_PERCPU_ARRAY_MAP(http2_scratch_buffer, http2_event_t, 1)
+ /* Allocating a ctx on the heap, in order to save the ctx between the current stream. */
+ BPF_PERCPU_ARRAY_MAP(http2_ctx_heap, http2_ctx_t, 1)
+ 
++/* This map is used for telemetry in kernelspace
++ * only key 0 is used
++ * value is a http2 telemetry object
++ */
++BPF_ARRAY_MAP(http2_telemetry, http2_telemetry_t, 1)
++
+ #endif
+

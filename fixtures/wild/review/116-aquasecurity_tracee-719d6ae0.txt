@@ -1,0 +1,18 @@
+repo: aquasecurity/tracee
+commit: 719d6ae0419e83ba42fca856dcac4725a88ec278
+rank: 116
+
+tracee-ebpf: fix verifier issue on kernel 4.19
+
+--- tracee-ebpf/tracee/tracee.bpf.c
+@@ -1206,7 +1206,8 @@ static __always_inline int save_to_submit_buf(event_data_t *data, void *ptr, u32
+         return 0;
+ 
+     // Save argument index
+-    data->submit_p->buf[(data->buf_off) & (MAX_PERCPU_BUFSIZE-1)] = index;
++    volatile int buf_off = data->buf_off;
++    data->submit_p->buf[buf_off & (MAX_PERCPU_BUFSIZE-1)] = index;
+ 
+     // Satisfy validator for probe read
+     if ((data->buf_off+1) <= MAX_PERCPU_BUFSIZE - MAX_ELEMENT_SIZE) {
+

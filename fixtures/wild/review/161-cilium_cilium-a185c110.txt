@@ -1,0 +1,83 @@
+repo: cilium/cilium
+commit: a185c11035188b1338a48174db9746907527a675
+rank: 161
+
+bpf: Annotate maps that could be read-only from datapath
+
+Five BPF maps are only written by the agent but also read by the
+datapath: cilium_lb{4,6}_backends_v3, cilium_lb{4,6}_reverse_nat, and
+cilium_devices. These maps could be marked BPF_F_RDONLY_PROG, but
+bpf_xdp_store_bytes currently does not accept MEM_RDONLY pointers (unlike
+bpf_skb_store_bytes). The verifier rejects XDP programs that pass
+read-only map value pointers to ctx_store_bytes with:
+
+  write into map forbidden, value_size=12 off=0 size=4
+
+Add comments to these map definitions to document the constraint.
+
+Once kernel patch ("bpf: Fix bpf_xdp_store_bytes proto
+for read-only arg") is available in our minimum supported kernel version,
+these maps can be marked read-only from the datapath as well.
+
+Signed-off-by: saiaunghlyanhtet <saiaunghlyanhtet2003@gmail.com>
+
+--- bpf/lib/lb.h
+@@ -179,6 +179,10 @@ struct lb6_src_range_key {
+ 	union v6addr addr;
+ };
+ 
++/* Could be read-only from datapath, but bpf_xdp_store_bytes (unlike
++ * bpf_skb_store_bytes) does not accept MEM_RDONLY pointers, so map values
++ * passed to ctx_store_bytes in XDP programs would be rejected by the verifier.
++ */
+ struct {
+ 	__uint(type, BPF_MAP_TYPE_HASH);
+ 	__type(key, __u16);
+@@ -197,6 +201,10 @@ struct {
+ 	__uint(map_flags, CONDITIONAL_PREALLOC | BPF_F_RDONLY_PROG_COND);
+ } cilium_lb6_services_v2 __section_maps_btf;
+ 
++/* Could be read-only from datapath, but bpf_xdp_store_bytes (unlike
++ * bpf_skb_store_bytes) does not accept MEM_RDONLY pointers, so map values
++ * passed to ctx_store_bytes in XDP programs would be rejected by the verifier.
++ */
+ struct {
+ 	__uint(type, BPF_MAP_TYPE_HASH);
+ 	__type(key, __u32);
+@@ -251,6 +259,10 @@ struct {
+ } cilium_lb6_maglev __section_maps_btf;
+ #endif /* OVERWRITE_MAGLEV_MAP_FROM_TEST */
+ 
++/* Could be read-only from datapath, but bpf_xdp_store_bytes (unlike
++ * bpf_skb_store_bytes) does not accept MEM_RDONLY pointers, so map values
++ * passed to ctx_store_bytes in XDP programs would be rejected by the verifier.
++ */
+ struct {
+ 	__uint(type, BPF_MAP_TYPE_HASH);
+ 	__type(key, __u16);
+@@ -269,6 +281,10 @@ struct {
+ 	__uint(map_flags, CONDITIONAL_PREALLOC | BPF_F_RDONLY_PROG_COND);
+ } cilium_lb4_services_v2 __section_maps_btf;
+ 
++/* Could be read-only from datapath, but bpf_xdp_store_bytes (unlike
++ * bpf_skb_store_bytes) does not accept MEM_RDONLY pointers, so map values
++ * passed to ctx_store_bytes in XDP programs would be rejected by the verifier.
++ */
+ struct {
+ 	__uint(type, BPF_MAP_TYPE_HASH);
+ 	__type(key, __u32);
+
+--- bpf/lib/network_device.h
+@@ -18,6 +18,11 @@ struct device_state {
+ 	__u32 pad3;
+ };
+ 
++/* Could be read-only from datapath, but bpf_xdp_store_bytes (unlike
++ * bpf_skb_store_bytes) does not accept MEM_RDONLY pointers, so map values
++ * passed to eth_store_saddr_aligned in XDP programs would be rejected by the
++ * verifier.
++ */
+ struct {
+ 	__uint(type, BPF_MAP_TYPE_ARRAY);
+ 	__type(key, __u32);
+

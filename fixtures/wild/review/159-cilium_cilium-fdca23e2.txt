@@ -1,0 +1,120 @@
+repo: cilium/cilium
+commit: fdca23e2b23f91f6672211961ee3b0a29449506c
+rank: 159
+
+bpf: fix verifier error due to repulling of skb->data/end
+
+After commit 5aebc46cacba ("bpf: Attempt pulling skb->data if it is not pulled")
+running the agent with nodeport enabled broke with a verifier error as LLVM
+tried to generate code with pkt_end arithmetic which does not work.
+
+  [...]
+  level=info msg="Cilium 1.6.90 2c6863714 2019-08-07T09:06:44-07:00 go version go1.11.2 linux/amd64" subsys=daemon
+  level=info msg="Envoy version check disabled" subsys=daemon
+  level=info msg="clang (7.0.1) and kernel (5.3.0) versions: OK!" subsys=daemon
+  [...]
+  level=warning msg=" R0=inv4294967154 R1_rw=invP4294967154 R2_rw=invP4294967154 R3=inv1155182100513554433 R4=inv0 R5=inv(id=0) R6=invP0 R7=inv40 R8_rw=invP0 R9=invP0 R10=fp0 fp-56=????mmmm fp-104=??0m0000 fp-112=mmmmmmmm fp-120=mmmmmmmm fp-128=mmmmmmmm fp-136=mmmmmmmm fp-144=00000000 fp-152=mmmmmmmm fp-160=mmmmmmmm fp-168=????0000 fp-176=00000000 fp-184=00000000 fp-192=00000000 fp-200_r=ctx" subsys=daemon
+  level=warning msg="parent didn't have regs=100 stack=0 marks" subsys=daemon
+  level=warning msg="last_idx 306 first_idx 297" subsys=daemon
+  level=warning msg="regs=100 stack=0 before 306: (18) r2 = 0xffffff72" subsys=daemon
+  level=warning msg="regs=100 stack=0 before 305: (b7) r8 = 0" subsys=daemon
+  level=warning msg="907: (61) r1 = *(u32 *)(r7 +80)" subsys=daemon
+  level=warning msg="908: (61) r9 = *(u32 *)(r7 +76)" subsys=daemon
+  level=warning msg="909: (18) r8 = 0xffffff7a" subsys=daemon
+  level=warning msg="911: (b7) r6 = 0" subsys=daemon
+  level=warning msg="912: (67) r1 <<= 32" subsys=daemon
+  level=warning msg="R1 pointer arithmetic on pkt_end prohibited" subsys=daemon
+  level=warning msg="processed 191 insns (limit 1000000) max_states_per_insn 0 total_states 8 peak_states 8 mark_read 5" subsys=daemon
+  level=warning subsys=daemon
+  level=warning msg="Error filling program arrays!" subsys=daemon
+  level=warning msg="Unable to load program" subsys=daemon
+  [...]
+
+Fix to force intermediate writes by using WRITE_ONCE() to avoid such code generation
+would work for newer kernels, but I'm getting a verifier rejection on 4.19.57:
+
+  [...]
+  level=warning msg="333: (7b) *(u64 *)(r10 -232) = r2" subsys=daemon
+  level=warning msg="334: (65) if r1 s> 0xa goto pc+373" subsys=daemon
+  level=warning msg=" R0=inv(id=0,umax_value=2147483647,var_off=(0x0; 0x7fffffff)) R1=inv(id=0,umax_value=10,var_off=(0x0; 0xf)) R2=inv1 R6=ctx(id=0,off=0,imm=0) R7=inv0 R8=inv8 R9=inv(id=0) R10=fp0,call_-1 fp-64=? fp-80=pkt fp-88=pkt_end fp-128=? fp-216=map_ptr fp-224=map_value" subsys=daemon
+  level=warning msg="335: (15) if r1 == 0x0 goto pc+436" subsys=daemon
+  level=warning msg=" R0=inv(id=0,umax_value=2147483647,var_off=(0x0; 0x7fffffff)) R1=inv(id=0,umax_value=10,var_off=(0x0; 0xf)) R2=inv1 R6=ctx(id=0,off=0,imm=0) R7=inv0 R8=inv8 R9=inv(id=0) R10=fp0,call_-1 fp-64=? fp-80=pkt fp-88=pkt_end fp-128=? fp-216=map_ptr fp-224=map_value" subsys=daemon
+  level=warning msg="336: (15) if r1 == 0x3 goto pc+373" subsys=daemon
+  level=warning msg=" R0=inv(id=0,umax_value=2147483647,var_off=(0x0; 0x7fffffff)) R1=inv(id=0,umax_value=10,var_off=(0x0; 0xf)) R2=inv1 R6=ctx(id=0,off=0,imm=0) R7=inv0 R8=inv8 R9=inv(id=0) R10=fp0,call_-1 fp-64=? fp-80=pkt fp-88=pkt_end fp-128=? fp-216=map_ptr fp-224=map_value" subsys=daemon
+  level=warning msg="337: (15) if r1 == 0x8 goto pc+1" subsys=daemon
+  level=warning msg=" R0=inv(id=0,umax_value=2147483647,var_off=(0x0; 0x7fffffff)) R1=inv(id=0,umax_value=10,var_off=(0x0; 0xf)) R2=inv1 R6=ctx(id=0,off=0,imm=0) R7=inv0 R8=inv8 R9=inv(id=0) R10=fp0,call_-1 fp-64=? fp-80=pkt fp-88=pkt_end fp-128=? fp-216=map_ptr fp-224=map_value" subsys=daemon
+  level=warning msg="338: (05) goto pc+437" subsys=daemon
+  level=warning msg="776: (71) r1 = *(u8 *)(r10 -127)" subsys=daemon
+  level=warning msg="invalid size of register spill" subsys=daemon
+  [...]
+
+After playing around half a day, the only thing I got to accept is to perform
+the skb_pull_data() unconditionally before the data/data_end fetch, therefore
+the workaround follows this approach until we find something better.
+
+Fixes: 5aebc46cacba ("bpf: Attempt pulling skb->data if it is not pulled")
+Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
+
+--- bpf/lib/common.h
+@@ -118,30 +118,25 @@ static inline bool validate_ethertype(struct __sk_buff *skb, __u16 *proto)
+ 
+ static inline bool __revalidate_data(struct __sk_buff *skb, void **data_,
+ 				     void **data_end_, void **l3,
+-				     size_t l3_len)
++				     const size_t l3_len, const bool pull)
+ {
+-	void *data = (void *) (long) skb->data;
+-	void *data_end = (void *) (long) skb->data_end;
+-
+-	if (data + ETH_HLEN + l3_len > data_end)
++	const size_t tot_len = ETH_HLEN + l3_len;
++	void *data_end;
++	void *data;
++
++	/* Verifier workaround, do this unconditionally: invalid size of register spill. */
++	if (pull)
++		skb_pull_data(skb, tot_len);
++	data_end = (void *)(long)skb->data_end;
++	data = (void *)(long)skb->data;
++	if (data + tot_len > data_end)
+ 		return false;
+ 
++	/* Verifier workaround: pointer arithmetic on pkt_end prohibited. */
+ 	*data_ = data;
+ 	*data_end_ = data_end;
+-	*l3 = data + ETH_HLEN;
+-	return true;
+-}
+-
+-static inline bool __revalidate_data_first(struct __sk_buff *skb, void **data_,
+-				     void **data_end_, void **l3,
+-				     size_t l3_len)
+-{
+-	if (!__revalidate_data(skb, data_, data_end_, l3, l3_len)) {
+-		int err = skb_pull_data(skb, ETH_HLEN + l3_len);
+-		if (err || !__revalidate_data(skb, data_, data_end_, l3, l3_len))
+-			return false;
+-	}
+ 
++	*l3 = data + ETH_HLEN;
+ 	return true;
+ }
+ 
+@@ -152,13 +147,13 @@ static inline bool __revalidate_data_first(struct __sk_buff *skb, void **data_,
+  * Returns true if 'skb' is long enough for an IP header of the provided type,
+  * false otherwise. */
+ #define revalidate_data_first(skb, data, data_end, ip)			\
+-	__revalidate_data_first(skb, data, data_end, (void **)ip, sizeof(**ip))
++	__revalidate_data(skb, data, data_end, (void **)ip, sizeof(**ip), true)
+ 
+ /* revalidate_data() initializes the provided pointers from the skb.
+  * Returns true if 'skb' is long enough for an IP header of the provided type,
+  * false otherwise. */
+-#define revalidate_data(skb, data, data_end, ip)	\
+-	__revalidate_data(skb, data, data_end, (void **)ip, sizeof(**ip))
++#define revalidate_data(skb, data, data_end, ip)			\
++	__revalidate_data(skb, data, data_end, (void **)ip, sizeof(**ip), false)
+ 
+ /* Macros for working with L3 cilium defined IPV6 addresses */
+ #define BPF_V6(dst, ...)	BPF_V6_1(dst, fetch_ipv6(__VA_ARGS__))
+

@@ -1,0 +1,66 @@
+repo: cilium/cilium
+commit: 6e18eb020b68c619dbd6e0f7dc4c194fa885a523
+rank: 208
+
+bpf: Fix compatibility with Clang 17 in __lb6_affinity_backend_id
+
+The K8sAgentPerNodeConfigTest fails on Clang 17 because of its new
+optimizations. The verifier error ends like this:
+
+451: (85) call bpf_map_lookup_elem#1
+invalid indirect read from stack off -56+8 size 24
+processed 2101 insns (limit 1000000) max_states_per_insn 3 total_states 135 peak_states 133 mark_read 34
+
+It happens because `struct lb6_affinity_key key` turns out to be not
+fully initialized in the call chain __sock6_xlate_fwd ->
+lb6_affinity_backend_id_by_netns -> __lb6_affinity_backend_id.
+
+More specifically, union lb6_affinity_client_id has two fields:
+client_ip (16 bytes) and client_cookie (8 bytes). __sock6_xlate_fwd
+initializes only 8 bytes (client_cookie), but __lb6_affinity_backend_id
+attempts to copy the whole 16 bytes by using ipv6_addr_copy_unaligned.
+Clang can track that the latter 8 bytes are not initialized, and it
+decides that there is no need to copy garbage if the latter 8 bytes of
+key.client_id.client_ip already contain some (other) garbage. These 8
+bytes end up not initialized by the time we approach map_lookup_elem.
+
+Old Clang 10 also performs the optimization of ipv6_addr_copy_unaligned,
+but at the same time it empty-initializes key beforehands, while Clang
+17 looks ahead and skips parts of empty-initialization that are going to
+be overwritten by garbage.
+
+Fix it by copying client_cookie or client_ip depending on the actual
+value in the union. If it's the smaller 8-byte client_cookie, the latter
+8 bytes will be zero-initialized, because key has a designated
+initializer, which doesn't explicitly mention the client_id field,
+therefore, it's empty-initialized, which for a union means that its
+first member (the 16-byte one) is empty-initialized.
+
+Signed-off-by: Maxim Mikityanskiy <maxim@isovalent.com>
+
+--- bpf/lib/lb.h
+@@ -746,7 +746,10 @@ __lb6_affinity_backend_id(const struct lb6_service *svc, bool netns_cookie,
+ 	};
+ 	struct lb_affinity_val *val;
+ 
+-	ipv6_addr_copy_unaligned(&key.client_id.client_ip, &id->client_ip);
++	if (netns_cookie)
++		key.client_id.client_cookie = id->client_cookie;
++	else
++		ipv6_addr_copy_unaligned(&key.client_id.client_ip, &id->client_ip);
+ 
+ 	val = map_lookup_elem(&LB6_AFFINITY_MAP, &key);
+ 	if (val != NULL) {
+@@ -795,7 +798,10 @@ __lb6_update_affinity(const struct lb6_service *svc, bool netns_cookie,
+ 		.last_used	= now,
+ 	};
+ 
+-	ipv6_addr_copy_unaligned(&key.client_id.client_ip, &id->client_ip);
++	if (netns_cookie)
++		key.client_id.client_cookie = id->client_cookie;
++	else
++		ipv6_addr_copy_unaligned(&key.client_id.client_ip, &id->client_ip);
+ 
+ 	map_update_elem(&LB6_AFFINITY_MAP, &key, &val, 0);
+ }
+

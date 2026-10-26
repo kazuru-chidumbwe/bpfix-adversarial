@@ -1,0 +1,85 @@
+repo: cilium/cilium
+commit: 394e72478a8d120dab0bff2c41db77695877ce57
+rank: 183
+
+bpf: fix verifier's ctx port access in post bind hooks
+
+Ran into the following verifier error on 4.19.57 kernel:
+
+level=warning msg="+ tc exec bpf pin /sys/fs/bpf/tc/globals/cilium_cgroups_post_bind4 obj bpf_sock.o type sock attach_type post_bind4 sec post-bind-sock4" subsys=datapath-loader
+[...]
+level=warning msg="32: (85) call bpf_map_lookup_elem#1" subsys=datapath-loader
+level=warning msg="33: (15) if r0 == 0x0 goto pc+2" subsys=datapath-loader
+level=warning msg=" R0=map_value(id=0,off=0,ks=12,vs=12,imm=0) R6=ctx(id=0,off=0,imm=0) R10=fp0,call_-1" subsys=datapath-loader
+level=warning msg="34: (69) r1 = *(u16 *)(r0 +4)" subsys=datapath-loader
+level=warning msg=" R0=map_value(id=0,off=0,ks=12,vs=12,imm=0) R6=ctx(id=0,off=0,imm=0) R10=fp0,call_-1" subsys=datapath-loader
+level=warning msg="35: (55) if r1 != 0x0 goto pc+51" subsys=datapath-loader
+level=warning msg=" R0=map_value(id=0,off=0,ks=12,vs=12,imm=0) R1=inv0 R6=ctx(id=0,off=0,imm=0) R10=fp0,call_-1" subsys=datapath-loader
+level=warning msg="36: (69) r2 = *(u16 *)(r6 +44)" subsys=datapath-loader
+level=warning msg="invalid bpf_context access off=44 size=2" subsys=datapath-loader
+level=warning subsys=datapath-loader
+level=warning msg="Error fetching program/map!" subsys=datapath-loader
+level=warning msg="+ RETCODE=255" subsys=datapath-loader
+level=warning msg="+ set -e" subsys=datapath-loader
+level=warning msg="+ cilium-map-migrate -e bpf_sock.o -r 255" subsys=datapath-loader
+level=warning msg="+ '[' 255 -eq 0 ']'" subsys=datapath-loader
+level=warning msg="+ return 255" subsys=datapath-loader
+level=error msg="Error while initializing daemon" error="exit status 255" subsys=daemon
+level=fatal msg="Error while creating daemon" error="exit status 255" subsys=daemon
+
+Fix it via volatile access.
+
+Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
+
+--- bpf/bpf_sock.c
+@@ -80,6 +80,13 @@ ctx_get_port(struct bpf_sock_addr *ctx)
+ 	return (__be16)dport;
+ }
+ 
++static __always_inline __maybe_unused __be16
++ctx_src_port(struct bpf_sock *ctx)
++{
++	volatile __u32 sport = ctx->src_port;
++	return (__be16)bpf_htons(sport);
++}
++
+ static __always_inline __maybe_unused
+ void ctx_set_port(struct bpf_sock_addr *ctx, __be16 dport)
+ {
+@@ -319,7 +326,7 @@ static __always_inline int __sock4_post_bind(struct bpf_sock *ctx)
+ 	struct lb4_service *svc;
+ 	struct lb4_key key = {
+ 		.address	= ctx->src_ip4,
+-		.dport		= bpf_htons(ctx->src_port),
++		.dport		= ctx_src_port(ctx),
+ 	};
+ 
+ 	if (!sock_proto_enabled(ctx->protocol))
+@@ -331,7 +338,7 @@ static __always_inline int __sock4_post_bind(struct bpf_sock *ctx)
+ 		 * to bind to loopback or an address with host identity
+ 		 * (without remote hosts).
+ 		 */
+-		key.dport = bpf_htons(ctx->src_port);
++		key.dport = ctx_src_port(ctx);
+ 		svc = sock4_nodeport_wildcard_lookup(&key, false);
+ 	}
+ 
+@@ -644,7 +651,7 @@ static __always_inline int __sock6_post_bind(struct bpf_sock *ctx)
+ {
+ 	struct lb6_service *svc;
+ 	struct lb6_key key = {
+-		.dport		= bpf_htons(ctx->src_port),
++		.dport		= ctx_src_port(ctx),
+ 	};
+ 
+ 	if (!sock_proto_enabled(ctx->protocol))
+@@ -654,7 +661,7 @@ static __always_inline int __sock6_post_bind(struct bpf_sock *ctx)
+ 
+ 	svc = __lb6_lookup_service(&key);
+ 	if (!svc) {
+-		key.dport = bpf_htons(ctx->src_port);
++		key.dport = ctx_src_port(ctx);
+ 		svc = sock6_nodeport_wildcard_lookup(&key, false);
+ 		if (!svc)
+ 			return sock6_post_bind_v4_in_v6(ctx);
+

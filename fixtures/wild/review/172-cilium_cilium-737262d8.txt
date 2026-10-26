@@ -1,0 +1,253 @@
+repo: cilium/cilium
+commit: 737262d8d52d47c50ef08c1269ae9da6c9fb6e6d
+rank: 172
+
+bpf: Add send_trace_notify hook for redirect_direct_{v4,v6}
+
+When BPF host routing is enabled, Hubble is missing outgoing flows
+from the Pod that are directed to the outside of the node. Add such
+trace point, so they become visible.
+
+Note: This patch was first dismissed because we believed that commit
+322510d4d9f4 ("bpf: Add missing packet tracing for handle_nat_fwd")
+would address it. We thought that adding tracepoints in to-netdev in
+bpf_host would be enough to catch the flows. However, to the
+tracepoints added in that commit, we pass a "monitor" value at 0, and
+when aggregation is on this results in the trace being dismissed by
+emit_trace_notify() called in send_trace_notify().
+
+Here is some sample output, taken from the development setup (Vagrant
+machine), with current net-next, and the following agent configuration
+causing BPF host routing to be selected:
+
+    - KPR strict
+    - tunneling disabled
+    - BPF masquerade (IPv6 and related options disabled)
+    - Monitor aggregation set to medium
+
+Full set of flags (CILIUM_OPTS in /etc/sysconfig/cilium) for
+reproducing:
+
+  [default]
+    --debug --pprof --enable-hubble --hubble-listen-address :4244
+    --enable-k8s-event-handover --k8s-require-ipv4-pod-cidr
+    --enable-bandwidth-manager --enable-remote-node-identity
+    --k8s-kubeconfig-path /var/lib/cilium/cilium.kubeconfig
+    --identity-allocation-mode=crd --enable-k8s-event-handover=false
+  [changed]
+    --kube-proxy-replacement=strict
+    -t disabled --ipv4-native-routing-cidr=10.11.0.0/16
+    --enable-bpf-masquerade
+    --enable-ipv6=false
+    --monitor-aggregation=medium
+
+To reproduce: Boot the VM, make sure Cilium runs, deploy a Pod, run a
+curl request to the outside from that Pod (e.g. "curl www.google.com").
+Observe the resulting flows with Hubble.
+
+Before the patch:
+
+    $ cilium status | grep 'Host Routing'
+    Host Routing:            BPF
+    $ hubble observe --pod my-nginx-6b5c9cc6ff-zh5hd -f
+    Jul 12 11:42:05.331: default/my-nginx-6b5c9cc6ff-zh5hd:35297 -> kube-system/coredns-9777cd7c9-4kxqd:53 to-endpoint FORWARDED (UDP)
+    Jul 12 11:42:05.332: default/my-nginx-6b5c9cc6ff-zh5hd:35297 <- kube-system/coredns-9777cd7c9-4kxqd:53 to-endpoint FORWARDED (UDP)
+    Jul 12 11:42:05.332: default/my-nginx-6b5c9cc6ff-zh5hd:58056 <- kube-system/coredns-9777cd7c9-4kxqd:53 to-endpoint FORWARDED (UDP)
+    Jul 12 11:42:05.332: default/my-nginx-6b5c9cc6ff-zh5hd:58056 -> kube-system/coredns-9777cd7c9-4kxqd:53 to-endpoint FORWARDED (UDP)
+    Jul 12 11:42:05.332: default/my-nginx-6b5c9cc6ff-zh5hd:52504 -> kube-system/coredns-9777cd7c9-4kxqd:53 to-endpoint FORWARDED (UDP)
+    Jul 12 11:42:05.332: default/my-nginx-6b5c9cc6ff-zh5hd:52504 <- kube-system/coredns-9777cd7c9-4kxqd:53 to-endpoint FORWARDED (UDP)
+    Jul 12 11:42:05.332: default/my-nginx-6b5c9cc6ff-zh5hd:56149 -> kube-system/coredns-9777cd7c9-4kxqd:53 to-endpoint FORWARDED (UDP)
+    Jul 12 11:42:05.344: default/my-nginx-6b5c9cc6ff-zh5hd:56149 <- kube-system/coredns-9777cd7c9-4kxqd:53 to-endpoint FORWARDED (UDP)
+    Jul 12 11:42:05.446: default/my-nginx-6b5c9cc6ff-zh5hd:59528 <- 142.250.178.4:80 to-endpoint FORWARDED (TCP Flags: ACK, FIN)
+
+We can observe that the TCP exchange is incomplete.
+After the patch:
+
+    $ hubble observe --pod my-nginx-6b5c9cc6ff-zh5hd -f
+    Jul 12 11:46:23.524: default/my-nginx-6b5c9cc6ff-zh5hd:52493 -> kube-system/coredns-9777cd7c9-4kxqd:53 to-endpoint FORWARDED (UDP)
+    Jul 12 11:46:23.526: default/my-nginx-6b5c9cc6ff-zh5hd:36326 -> kube-system/coredns-9777cd7c9-4kxqd:53 to-endpoint FORWARDED (UDP)
+    Jul 12 11:46:23.526: default/my-nginx-6b5c9cc6ff-zh5hd:52493 <- kube-system/coredns-9777cd7c9-4kxqd:53 to-endpoint FORWARDED (UDP)
+    Jul 12 11:46:23.526: default/my-nginx-6b5c9cc6ff-zh5hd:36326 <- kube-system/coredns-9777cd7c9-4kxqd:53 to-endpoint FORWARDED (UDP)
+    Jul 12 11:46:23.528: default/my-nginx-6b5c9cc6ff-zh5hd:53587 -> kube-system/coredns-9777cd7c9-4kxqd:53 to-endpoint FORWARDED (UDP)
+    Jul 12 11:46:23.529: default/my-nginx-6b5c9cc6ff-zh5hd:53587 <- kube-system/coredns-9777cd7c9-4kxqd:53 to-endpoint FORWARDED (UDP)
+    Jul 12 11:46:23.530: default/my-nginx-6b5c9cc6ff-zh5hd:36108 -> kube-system/coredns-9777cd7c9-4kxqd:53 to-endpoint FORWARDED (UDP)
+    Jul 12 11:46:23.531: default/my-nginx-6b5c9cc6ff-zh5hd:36108 <- kube-system/coredns-9777cd7c9-4kxqd:53 to-endpoint FORWARDED (UDP)
+    Jul 12 11:46:23.532: default/my-nginx-6b5c9cc6ff-zh5hd:43264 -> 142.250.178.4:80 to-network FORWARDED (TCP Flags: SYN)
+    Jul 12 11:46:23.615: default/my-nginx-6b5c9cc6ff-zh5hd:43264 -> 142.250.178.4:80 to-network FORWARDED (TCP Flags: ACK, FIN)
+    Jul 12 11:46:23.625: default/my-nginx-6b5c9cc6ff-zh5hd:43264 <- 142.250.178.4:80 to-endpoint FORWARDED (TCP Flags: ACK, FIN)
+    Jul 12 11:46:23.625: default/my-nginx-6b5c9cc6ff-zh5hd:43264 -> 142.250.178.4:80 to-network FORWARDED (TCP Flags: ACK)
+
+This is what we want.
+
+[Implementation details] Now as a side note, we had to unroll the "nh ?
+sizeof(*nh)" in bpf/lib/fib.h in this commit. This is because following
+the other changes, and for some datapath configurations, tc fails would
+fail to load bpf_lxc's tail_handle_ipv4 with the verifier returning the
+following error:
+
+    [...]
+    2312: (85) call bpf_skb_store_bytes#9         ; R0=scalar()
+    ; if (no_neigh)
+    2313: (16) if w6 == 0x0 goto pc+12    ; R6=P1
+    ; return redirect_neigh(*oif, nh, nh ? sizeof(*nh) : 0, 0);
+    2314: (15) if r9 == 0x0 goto pc+2     ; R9=fp-32
+    2315: (b4) w1 = 20                    ; R1_w=20
+    2316: (63) *(u32 *)(r10 -204) = r1    ; R1_w=20 R10=fp0 fp-208=mmmmmmmm
+    2317: (61) r6 = *(u32 *)(r10 -196)    ; R6_w=scalar(umax=4294967295,var_off=(0x0; 0xffffffff)) R10=fp0
+    ; return redirect_neigh(*oif, nh, nh ? sizeof(*nh) : 0, 0);
+    2318: (bc) w1 = w6                    ; R1_w=scalar(umax=4294967295,var_off=(0x0; 0xffffffff)) R6_w=scalar(umax=4294967295,var_off=(0x0; 0xffffffff))
+    2319: (bf) r2 = r9                    ; R2_w=fp-32 R9=fp-32
+    2320: (61) r3 = *(u32 *)(r10 -204)    ; R3_w=scalar(umax=4294967295,var_off=(0x0; 0xffffffff)) R10=fp0
+    2321: (b4) w4 = 0                     ; R4_w=0
+    2322: (85) call bpf_redirect_neigh#152
+    R3 unbounded memory access, use 'var &= const' or 'if (var < const)'
+    processed 1430 insns (limit 1000000) max_states_per_insn 4 total_states 97 peak_states 97 mark_read 58
+    2022-07-12T18:00:34.424824616Z level=warning subsys=datapath-loader
+    libbpf: -- END LOG --
+    libbpf: failed to load program 'tail_handle_ipv4'
+
+The compiler puts the size for nh (either 0 or the size of the struct)
+onto the stack, and loses track of its bounds when passing it as an
+argument to bpf_redirect_neigh(). Dissociating the cases where nh is
+NULL and non-NULL apparently helped it track the value correctly.
+
+Co-authored-by: Daniel Borkmann <daniel@iogearbox.net>
+Co-authored-by: Quentin Monnet <quentin@isovalent.com>
+Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
+Signed-off-by: Quentin Monnet <quentin@isovalent.com>
+
+--- bpf/bpf_lxc.c
+@@ -516,8 +516,16 @@ static __always_inline int handle_ipv6_from_lxc(struct __ctx_buff *ctx, __u32 *d
+ 			return ret;
+ 	}
+ #endif
+-	if (is_defined(ENABLE_HOST_ROUTING))
+-		return redirect_direct_v6(ctx, ETH_HLEN, ip6);
++	if (is_defined(ENABLE_HOST_ROUTING)) {
++		int oif;
++
++		ret = redirect_direct_v6(ctx, ETH_HLEN, ip6, &oif);
++		if (likely(ret == CTX_ACT_REDIRECT))
++			send_trace_notify(ctx, TRACE_TO_NETWORK, SECLABEL,
++					  *dst_id, 0, oif,
++					  trace.reason, trace.monitor);
++		return ret;
++	}
+ 
+ 	goto pass_to_stack;
+ 
+@@ -1097,8 +1105,16 @@ static __always_inline int handle_ipv4_from_lxc(struct __ctx_buff *ctx, __u32 *d
+ 			return ret;
+ 	}
+ #endif /* TUNNEL_MODE */
+-	if (is_defined(ENABLE_HOST_ROUTING))
+-		return redirect_direct_v4(ctx, ETH_HLEN, ip4);
++	if (is_defined(ENABLE_HOST_ROUTING)) {
++		int oif;
++
++		ret = redirect_direct_v4(ctx, ETH_HLEN, ip4, &oif);
++		if (likely(ret == CTX_ACT_REDIRECT))
++			send_trace_notify(ctx, TRACE_TO_NETWORK, SECLABEL,
++					  *dst_id, 0, oif,
++					  trace.reason, trace.monitor);
++		return ret;
++	}
+ 
+ 	goto pass_to_stack;
+ 
+
+--- bpf/lib/fib.h
+@@ -14,10 +14,10 @@
+ static __always_inline int
+ redirect_direct_v6(struct __ctx_buff *ctx __maybe_unused,
+ 		   int l3_off __maybe_unused,
+-		   struct ipv6hdr *ip6 __maybe_unused)
++		   struct ipv6hdr *ip6 __maybe_unused, int *oif)
+ {
+ 	bool no_neigh = is_defined(ENABLE_SKIP_FIB);
+-	int ret, oif = DIRECT_ROUTING_DEV_IFINDEX;
++	int ret;
+ 	struct bpf_redir_neigh *nh = NULL;
+ # ifndef ENABLE_SKIP_FIB
+ 	struct bpf_redir_neigh nh_params;
+@@ -47,20 +47,26 @@ redirect_direct_v6(struct __ctx_buff *ctx __maybe_unused,
+ 		return CTX_ACT_DROP;
+ 	}
+ 
+-	oif = fib_params.ifindex;
++	*oif = fib_params.ifindex;
++# else
++	*oif = DIRECT_ROUTING_DEV_IFINDEX;
+ # endif /* ENABLE_SKIP_FIB */
+ 
+ 	ret = ipv6_l3(ctx, l3_off, NULL, NULL, METRIC_EGRESS);
+ 	if (unlikely(ret != CTX_ACT_OK))
+ 		return ret;
+-	if (no_neigh)
+-		return redirect_neigh(oif, nh, nh ? sizeof(*nh) : 0, 0);
++	if (no_neigh) {
++		if (nh)
++			return redirect_neigh(*oif, nh, sizeof(*nh), 0);
++		else
++			return redirect_neigh(*oif, NULL, 0, 0);
++	}
+ # ifndef ENABLE_SKIP_FIB
+ 	if (eth_store_daddr(ctx, fib_params.dmac, 0) < 0)
+ 		return CTX_ACT_DROP;
+ 	if (eth_store_saddr(ctx, fib_params.smac, 0) < 0)
+ 		return CTX_ACT_DROP;
+-	return ctx_redirect(ctx, oif, 0);
++	return ctx_redirect(ctx, *oif, 0);
+ # endif /* ENABLE_SKIP_FIB */
+ 	return CTX_ACT_DROP;
+ }
+@@ -70,7 +76,7 @@ redirect_direct_v6(struct __ctx_buff *ctx __maybe_unused,
+ static __always_inline int
+ redirect_direct_v4(struct __ctx_buff *ctx __maybe_unused,
+ 		   int l3_off __maybe_unused,
+-		   struct iphdr *ip4 __maybe_unused)
++		   struct iphdr *ip4 __maybe_unused, int *oif)
+ {
+ 	/* For deployments with just single external dev, redirect_neigh()
+ 	 * will resolve the GW and do L2 resolution for us. For multi-device
+@@ -79,7 +85,7 @@ redirect_direct_v4(struct __ctx_buff *ctx __maybe_unused,
+ 	 * otherwise we can directly call redirect().
+ 	 */
+ 	bool no_neigh = is_defined(ENABLE_SKIP_FIB);
+-	int ret, oif = DIRECT_ROUTING_DEV_IFINDEX;
++	int ret;
+ 	struct bpf_redir_neigh *nh = NULL;
+ # ifndef ENABLE_SKIP_FIB
+ 	struct bpf_redir_neigh nh_params;
+@@ -107,20 +113,26 @@ redirect_direct_v4(struct __ctx_buff *ctx __maybe_unused,
+ 		return CTX_ACT_DROP;
+ 	}
+ 
+-	oif = fib_params.ifindex;
++	*oif = fib_params.ifindex;
++# else
++	*oif = DIRECT_ROUTING_DEV_IFINDEX;
+ # endif /* ENABLE_SKIP_FIB */
+ 
+ 	ret = ipv4_l3(ctx, l3_off, NULL, NULL, ip4);
+ 	if (unlikely(ret != CTX_ACT_OK))
+ 		return ret;
+-	if (no_neigh)
+-		return redirect_neigh(oif, nh, nh ? sizeof(*nh) : 0, 0);
++	if (no_neigh) {
++		if (nh)
++			return redirect_neigh(*oif, nh, sizeof(*nh), 0);
++		else
++			return redirect_neigh(*oif, NULL, 0, 0);
++	}
+ # ifndef ENABLE_SKIP_FIB
+ 	if (eth_store_daddr(ctx, fib_params.dmac, 0) < 0)
+ 		return CTX_ACT_DROP;
+ 	if (eth_store_saddr(ctx, fib_params.smac, 0) < 0)
+ 		return CTX_ACT_DROP;
+-	return ctx_redirect(ctx, oif, 0);
++	return ctx_redirect(ctx, *oif, 0);
+ # endif /* ENABLE_SKIP_FIB */
+ 	return CTX_ACT_DROP;
+ }
+

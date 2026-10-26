@@ -1,0 +1,49 @@
+repo: cilium/cilium
+commit: 3740e9db8fef9adc382f9dfecb5c404bda278afb
+rank: 46
+
+bpf: Fix "R2 !read_ok" verifier error with LLVM 17
+
+Code generation when Clang 17 changed, and it generates some code that
+is problematic for the verifier, even though it should be correct
+logically.
+
+More specifically, when nodeport_lb6 calls lb6_extract_tuple, which
+calls ipv6_hdrlen_offset, the latter might return an error, in which
+case l4_off in nodeport_lb6 remains non-initialized. If that happens,
+nodeport_lb6 returns early. The error code when it can possibly continue
+is DROP_UNSUPP_SERVICE_PROTO, but it's only returned by
+lb6_extract_tuple after l4_off is initialized, so we are safe here.
+Moreover, is_svc_proto is set to false in this case, which blocks
+further l4_off access.
+
+However, Clang 17 generates code which jumps to a common chunk after
+lb6_extract_tuple returns, and this chunk starts from spilling R2 to the
+stack: `*(u32 *)(r10 -176) = r2`. R2 stores l4_off, but only after it
+has been assigned, otherwise it's not initialized, and this is what the
+verifier complains for, even though it's not used afterwards on errors.
+
+Work around it by always assiging l4_off in lb6_extract_tuple.
+
+Signed-off-by: Maxim Mikityanskiy <maxim@isovalent.com>
+
+--- bpf/lib/lb.h
+@@ -535,8 +535,16 @@ lb6_extract_tuple(struct __ctx_buff *ctx, struct ipv6hdr *ip6, int l3_off,
+ 	ipv6_addr_copy(&tuple->saddr, (union v6addr *)&ip6->saddr);
+ 
+ 	ret = ipv6_hdrlen_offset(ctx, &tuple->nexthdr, l3_off);
+-	if (ret < 0)
++	if (ret < 0) {
++		/* Make sure *l4_off is always initialized on return, because
++		 * Clang can spill it from a register to the stack even in error
++		 * flows where this value is no longer used, and this pattern is
++		 * rejected by the verifier.
++		 * Use a prominent value (-1) to highlight any potential misuse.
++		 */
++		*l4_off = -1;
+ 		return ret;
++	}
+ 
+ 	*l4_off = l3_off + ret;
+ 
+
