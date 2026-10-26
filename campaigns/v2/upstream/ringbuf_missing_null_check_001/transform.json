@@ -1,0 +1,67 @@
+{
+  "case_id": "ringbuf_missing_null_check_001",
+  "error_id": "E002",
+  "anchor": 35,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        28,
+        29,
+        34,
+        35,
+        36,
+        37,
+        38
+      ]
+    },
+    "pad8": {
+      "shift_from": 35,
+      "shift": 10,
+      "repair_sites": [
+        28,
+        29,
+        34,
+        45,
+        46,
+        47,
+        48
+      ],
+      "anchor_in_variant": 45
+    },
+    "pad32": {
+      "shift_from": 35,
+      "shift": 34,
+      "repair_sites": [
+        28,
+        29,
+        34,
+        69,
+        70,
+        71,
+        72
+      ],
+      "anchor_in_variant": 69
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        28,
+        29,
+        34,
+        35,
+        36,
+        37,
+        38
+      ],
+      "from": "audit",
+      "to": "ptr",
+      "check_line": 30,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

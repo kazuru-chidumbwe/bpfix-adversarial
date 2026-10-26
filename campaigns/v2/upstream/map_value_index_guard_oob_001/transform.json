@@ -1,0 +1,67 @@
+{
+  "case_id": "map_value_index_guard_oob_001",
+  "error_id": "E005",
+  "anchor": 48,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        21,
+        35,
+        36,
+        41,
+        42,
+        43,
+        48
+      ]
+    },
+    "pad8": {
+      "shift_from": 48,
+      "shift": 10,
+      "repair_sites": [
+        21,
+        35,
+        36,
+        41,
+        42,
+        43,
+        58
+      ],
+      "anchor_in_variant": 58
+    },
+    "pad32": {
+      "shift_from": 48,
+      "shift": 34,
+      "repair_sites": [
+        21,
+        35,
+        36,
+        41,
+        42,
+        43,
+        82
+      ],
+      "anchor_in_variant": 82
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        21,
+        35,
+        36,
+        41,
+        42,
+        43,
+        48
+      ],
+      "from": "cfg",
+      "to": "ptr",
+      "check_line": 45,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

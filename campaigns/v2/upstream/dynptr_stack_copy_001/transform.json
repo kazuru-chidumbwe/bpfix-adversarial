@@ -1,0 +1,53 @@
+{
+  "case_id": "dynptr_stack_copy_001",
+  "error_id": "E012",
+  "anchor": 36,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        27,
+        28,
+        29,
+        31,
+        32,
+        36,
+        37,
+        43
+      ]
+    },
+    "pad8": {
+      "shift_from": 36,
+      "shift": 10,
+      "repair_sites": [
+        27,
+        28,
+        29,
+        31,
+        32,
+        46,
+        47,
+        53
+      ],
+      "anchor_in_variant": 46
+    },
+    "pad32": {
+      "shift_from": 36,
+      "shift": 34,
+      "repair_sites": [
+        27,
+        28,
+        29,
+        31,
+        32,
+        70,
+        71,
+        77
+      ],
+      "anchor_in_variant": 70
+    }
+  }
+}

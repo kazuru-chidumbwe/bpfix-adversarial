@@ -1,0 +1,59 @@
+{
+  "case_id": "map_value_signed_index_001",
+  "error_id": "E005",
+  "anchor": 47,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        33,
+        34,
+        41,
+        42,
+        47
+      ]
+    },
+    "pad8": {
+      "shift_from": 47,
+      "shift": 10,
+      "repair_sites": [
+        33,
+        34,
+        41,
+        42,
+        57
+      ],
+      "anchor_in_variant": 57
+    },
+    "pad32": {
+      "shift_from": 47,
+      "shift": 34,
+      "repair_sites": [
+        33,
+        34,
+        41,
+        42,
+        81
+      ],
+      "anchor_in_variant": 81
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        33,
+        34,
+        41,
+        42,
+        47
+      ],
+      "from": "cfg",
+      "to": "ptr",
+      "check_line": 44,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

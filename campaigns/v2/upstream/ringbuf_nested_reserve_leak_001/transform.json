@@ -1,0 +1,29 @@
+{
+  "case_id": "ringbuf_nested_reserve_leak_001",
+  "error_id": "E004",
+  "anchor": 55,
+  "anchor_source": "primary",
+  "pad_skipped": "anchor starts with '}'",
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        48,
+        50
+      ]
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        48,
+        50
+      ],
+      "from": "audit",
+      "to": "ptr",
+      "check_line": 43,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

@@ -16,6 +16,7 @@ COPY tools ./tools
 COPY tests ./tests
 COPY fixtures ./fixtures
 COPY mutants ./mutants
+COPY campaigns ./campaigns
 COPY results ./results
 COPY figures ./figures
 COPY schemas ./schemas
@@ -29,5 +30,7 @@ RUN apt-get update \
     && pip install --no-cache-dir -e . \
     && pip install --no-cache-dir -r requirements.txt
 
-# Default: smoke + offline inset emitters (no lab SSH, no bpftool).
-CMD ["bash", "-lc", "make smoke && make insets"]
+# Default: smoke + verify that every committed results/ table and figure equals
+# a fresh emitter run (fails on drift). `make insets` would regenerate and
+# overwrite results/ silently, so it cannot detect drift.
+CMD ["bash", "-lc", "make smoke && python tools/check_results_fresh.py"]

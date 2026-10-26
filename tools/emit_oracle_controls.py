@@ -16,14 +16,16 @@ Controls
    not an independent prediction: the ScalarRange template was retuned once
    after an earlier version was accepted (see gen_obligations.scalar_range_src).
 
-2. positive_control
-   Rejecting PacketBounds templates where VerifierState stop-site is *outside*
-   the injection span (terminal/use differs from construction-time injection).
-   Shows scoring still anchors on injection while the stop can diverge.
+2. observation_pb_stop_vs_injection (formerly "positive_control")
+   Rejecting PacketBounds templates where the VerifierState stop site lies
+   *outside* the injection span. This is the measured outcome restated, not a
+   control: "pass" only records that the stop diverges. Kept as an observation
+   so the paper does not count it as independent validation.
 
 3. compiler_preservation
-   For rejecting stamped logs, assert at least one injection-span line
-   (else reject/use code line) appears in verifier ``; … @ path:LINE`` maps.
+   For rejecting stamped logs, assert at least one injection-span line (or the
+   injection code line) appears in verifier ``; … @ path:LINE`` maps. The
+   reject/use line alone no longer satisfies it; it is reported separately.
    Links authored source lines to emitted debug maps without claiming a
    full semantic proof-loss oracle.
 """
@@ -105,7 +107,7 @@ def main() -> None:
             }
         )
 
-    positives = []
+    observations = []
     for r in stamp_rows:
         if not r.get("lab_rejected"):
             continue
@@ -115,7 +117,7 @@ def main() -> None:
         loss = r.get("oracle_loss_code")
         span = r.get("oracle_loss_span") or []
         diverge = vs is not None and not in_span(vs, span, loss)
-        positives.append(
+        observations.append(
             {
                 "case_id": r["case_id"],
                 "obligation": r["obligation"],
@@ -127,8 +129,8 @@ def main() -> None:
                 "stop_diverges_from_injection": bool(diverge),
                 "pass": bool(diverge),
                 "note": (
-                    "VS stop outside injection span; SC may still hit injection "
-                    "(threshold / tier disagreement)"
+                    "observation, not a control: VS stop outside injection span; "
+                    "SC may still hit injection (threshold / tier disagreement)"
                 ),
             }
         )
@@ -150,8 +152,9 @@ def main() -> None:
             targets.add(int(primary))
         hit_injection = bool(targets & set(mapped))
         hit_reject = reject is not None and int(reject) in mapped
-        # Prefer injection-span preservation; fall back to reject/use line in map.
-        ok = hit_injection or hit_reject
+        # The injection site itself must be in the source map; the reject/use
+        # line alone would let the check pass without linking the oracle to it.
+        ok = hit_injection
         preservations.append(
             {
                 "case_id": r["case_id"],
@@ -167,8 +170,7 @@ def main() -> None:
                     "verifier ; @path:LINE map covers injection span"
                     if hit_injection
                     else (
-                        "injection span absent from map; reject/use line present "
-                        "(pad DCE / wash may collapse)"
+                        "FAIL: injection span absent from map (reject/use line present)"
                         if hit_reject
                         else "neither injection span nor reject line in map"
                     )
@@ -183,7 +185,7 @@ def main() -> None:
 
     summary = {
         "negative_control": rate(negatives),
-        "positive_control_pb_stop_vs_injection": rate(positives),
+        "observation_pb_stop_vs_injection": rate(observations),
         "compiler_preservation_source_map": rate(preservations),
         "verdict_matches_construction": rate(verdicts),
     }
@@ -193,7 +195,7 @@ def main() -> None:
         "generator": "tools/emit_oracle_controls.py",
         "summary": summary,
         "negative_control": negatives,
-        "positive_control_pb_stop_vs_injection": positives,
+        "observation_pb_stop_vs_injection": observations,
         "compiler_preservation_source_map": preservations,
         "verdict_matches_construction": verdicts,
         "note": (
@@ -214,7 +216,7 @@ def main() -> None:
     ]
     labels = [
         ("negative_control", "negative (markers + ACCEPT)"),
-        ("positive_control_pb_stop_vs_injection", "positive (PB stop ≠ injection)"),
+        ("observation_pb_stop_vs_injection", "observation, not a control (PB stop ≠ injection)"),
         ("compiler_preservation_source_map", "compiler-preservation (source map)"),
         ("verdict_matches_construction", "verdict = construction (all templates)"),
     ]
@@ -241,14 +243,15 @@ def main() -> None:
         lines.append(f"| `{r['case_id']}` | {r['obligation']} | {r['oracle_loss_code']} |")
     lines += [
         "",
-        "## Positive control (PacketBounds)",
+        "## Observation: PacketBounds stop site (not a control)",
         "",
-        "VerifierState stop-site outside injection span.",
+        "VerifierState stop site outside the injection span. This restates the measured "
+        "outcome; it is not independent validation of the oracle.",
         "",
         "| case_id | loss | VS | SC top1_span | VS top1_span | diverge |",
         "| --- | ---: | ---: | --- | --- | --- |",
     ]
-    for r in positives:
+    for r in observations:
         lines.append(
             f"| `{r['case_id']}` | {r['oracle_loss_code']} | {r['vs_reported_line']} | "
             f"{'yes' if r['sc_top1_vs_loss'] else 'no'} | "
@@ -259,7 +262,7 @@ def main() -> None:
         "",
         "## Compiler-preservation (verifier source map)",
         "",
-        "| case_id | injection span in map | reject line in map | pass |",
+        "| case_id | injection span in map | reject line in map (info) | pass |",
         "| --- | --- | --- | --- |",
     ]
     for r in preservations:

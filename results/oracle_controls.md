@@ -5,7 +5,7 @@ Stamp filter `20260801T181331Z`. Offline only, no new lab captures.
 | Control | Pass | n | Row tally |
 | --- | ---: | ---: | ---: |
 | negative (markers + ACCEPT) | 6 | 6 | 6/6 |
-| positive (PB stop ≠ injection) | 3 | 3 | 3/3 |
+| observation, not a control (PB stop ≠ injection) | 3 | 3 | 3/3 |
 | compiler-preservation (source map) | 10 | 10 | 10/10 |
 | verdict = construction (all templates) | 16 | 16 | 16/16 |
 
@@ -24,9 +24,9 @@ Templates built to be well-formed (selected by construction, not by the observed
 | `NP-idiomatic-pad32` | NullablePointer | 19 |
 | `NP-idiomatic-pad8` | NullablePointer | 19 |
 
-## Positive control (PacketBounds)
+## Observation: PacketBounds stop site (not a control)
 
-VerifierState stop-site outside injection span.
+VerifierState stop site outside the injection span. This restates the measured outcome; it is not independent validation of the oracle.
 
 | case_id | loss | VS | SC top1_span | VS top1_span | diverge |
 | --- | ---: | ---: | --- | --- | --- |
@@ -36,7 +36,7 @@ VerifierState stop-site outside injection span.
 
 ## Compiler-preservation (verifier source map)
 
-| case_id | injection span in map | reject line in map | pass |
+| case_id | injection span in map | reject line in map (info) | pass |
 | --- | --- | --- | --- |
 | `NP-idiomatic-nocheck` | yes | yes | yes |
 | `PB-pad0` | yes | yes | yes |

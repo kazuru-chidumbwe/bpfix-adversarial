@@ -1,0 +1,47 @@
+{
+  "case_id": "ringbuf_branch_cookie_001",
+  "error_id": "E006",
+  "anchor": 59,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        59,
+        60
+      ]
+    },
+    "pad8": {
+      "shift_from": 59,
+      "shift": 10,
+      "repair_sites": [
+        69,
+        70
+      ],
+      "anchor_in_variant": 69
+    },
+    "pad32": {
+      "shift_from": 59,
+      "shift": 34,
+      "repair_sites": [
+        93,
+        94
+      ],
+      "anchor_in_variant": 93
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        59,
+        60
+      ],
+      "from": "rec",
+      "to": "ptr",
+      "check_line": 54,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

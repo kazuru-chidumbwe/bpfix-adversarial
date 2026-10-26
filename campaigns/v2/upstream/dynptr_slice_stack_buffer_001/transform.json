@@ -1,0 +1,53 @@
+{
+  "case_id": "dynptr_slice_stack_buffer_001",
+  "error_id": "E003",
+  "anchor": 30,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        20,
+        21,
+        22,
+        23,
+        25,
+        26,
+        30,
+        34
+      ]
+    },
+    "pad8": {
+      "shift_from": 30,
+      "shift": 10,
+      "repair_sites": [
+        20,
+        21,
+        22,
+        23,
+        25,
+        26,
+        40,
+        44
+      ],
+      "anchor_in_variant": 40
+    },
+    "pad32": {
+      "shift_from": 30,
+      "shift": 34,
+      "repair_sites": [
+        20,
+        21,
+        22,
+        23,
+        25,
+        26,
+        64,
+        68
+      ],
+      "anchor_in_variant": 64
+    }
+  }
+}

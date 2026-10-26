@@ -10,5 +10,7 @@ Lean set for reviewers and reproduce. Paper carries related-work / threat narrat
 | [`UPSTREAM.md`](UPSTREAM.md) | bpfix commit + SourceComment rename boundary |
 | [`TAGS.md`](TAGS.md) | Cite-tag policy (`v1.0.2`) |
 | [`ZENODO.md`](ZENODO.md) | Archive deposit and which DOI belongs to which version |
+| [`LAB-RUN-V2.md`](LAB-RUN-V2.md) | Running campaign v2 on the lab host (one command) |
+| [`UPSTREAM-ISSUES.md`](UPSTREAM-ISSUES.md) | Reports to upstream bpfix |
 
 Start at the root [`README.md`](../README.md).

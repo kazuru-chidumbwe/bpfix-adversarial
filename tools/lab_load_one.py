@@ -113,21 +113,20 @@ def main() -> int:
     with sftp.file(remote_c, "w") as f:
         f.write(text)
     # Prefer passworded sudo when LAB_TEST_PASSWORD is set (app-test-server);
-    # fall back to passwordless sudo -n (cite pin host).
+    # fall back to passwordless sudo -n (cite pin host). The password goes over
+    # the SSH channel's stdin into a shell variable; it is never written to a
+    # remote file (a file created before chmod is readable through an fd opened
+    # in that window).
     if password:
-        pw_file = f"/tmp/.bpfix_one_pw_{stamp}"
-        with sftp.file(pw_file, "w") as f:
-            f.chmod(0o600)  # before the password is written
-            f.write(password + "\n")
-        c.exec_command(f"chmod 600 {pw_file}", timeout=10)
-        sudo_bpf = f'PW=$(cat {pw_file}); printf "%s\\n" "$PW" | sudo -S -p "" /usr/sbin/bpftool'
-        sudo_rm = f'PW=$(cat {pw_file}); printf "%s\\n" "$PW" | sudo -S -p "" rm -f'
-        cleanup_pw = f"rm -f {pw_file}"
+        prelude = "IFS= read -rs PW; "
+        sudo_bpf = 'printf "%s\\n" "$PW" | sudo -S -p "" /usr/sbin/bpftool'
+        sudo_rm = 'printf "%s\\n" "$PW" | sudo -S -p "" rm -f'
     else:
+        prelude = ""
         sudo_bpf = "sudo -n /usr/sbin/bpftool"
         sudo_rm = "sudo -n rm -f"
-        cleanup_pw = "true"
-    cmd = (
+    cleanup_pw = "true"
+    cmd = prelude + (
         f"export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; "
         f"clang -O2 -g -target bpf -I/usr/include/x86_64-linux-gnu "
         f"-idirafter /usr/include -c {remote_c} -o {remote_o} 2>{remote_log}.ce; "
@@ -141,7 +140,10 @@ def main() -> int:
         f"then echo REJECT; else echo ACCEPT; fi; "
         f"echo EXIT:$load_ec; tail -n 40 {remote_log}"
     )
-    _i, o, _e = c.exec_command(cmd, timeout=90, get_pty=True)
+    i_, o, _e = c.exec_command(cmd, timeout=90, get_pty=True)
+    if password:
+        i_.write(password + "\n")
+        i_.flush()
     out = o.read().decode(errors="replace")
     if password:
         out = out.replace(password, "***")

@@ -151,6 +151,15 @@ Makefile              smoke / insets
 CODE_METADATA.md      code-metadata table (C1–C8)
 ```
 
+## Campaign v2 (after v1.0.2)
+
+Post-review experiments that reach bpfix's real output live in
+[`campaigns/v2/`](campaigns/v2/README.md). They cover rename pairs on *rejecting*
+programs, padding that survives `-O2`, a retargeted PointerProvenance template,
+and metamorphic variants of upstream's own cases scored against upstream's own
+fixes (`results/upstream_repair_site.*`, offline). Lab run:
+[`docs/LAB-RUN-V2.md`](docs/LAB-RUN-V2.md). Published numbers remain those of `v1.0.2`.
+
 ## Scope note
 
 Validated paper evidence is the **template** four-obligation reject-oracles,

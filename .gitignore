@@ -9,3 +9,6 @@ __pycache__/
 .DS_Store
 .env
 lab/.env
+
+# lab/run_v2_campaign.sh vmlinux.h cache
+.cache/

@@ -1,0 +1,44 @@
+{
+  "case_id": "packet_macro_cookie_001",
+  "error_id": "E006",
+  "anchor": 39,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        38,
+        39,
+        40,
+        41,
+        42
+      ]
+    },
+    "pad8": {
+      "shift_from": 39,
+      "shift": 10,
+      "repair_sites": [
+        38,
+        49,
+        50,
+        51,
+        52
+      ],
+      "anchor_in_variant": 49
+    },
+    "pad32": {
+      "shift_from": 39,
+      "shift": 34,
+      "repair_sites": [
+        38,
+        73,
+        74,
+        75,
+        76
+      ],
+      "anchor_in_variant": 73
+    }
+  }
+}

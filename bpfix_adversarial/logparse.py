@@ -21,6 +21,45 @@ SOURCE_COMMENT_RE = re.compile(
 )
 
 
+INSN_OR_STATE_RE = re.compile(r"^\s*\d+:")
+# Verifier debug output that sits between the last instruction and the error
+# message (precision backtracking, state-pruning notes); never the message.
+NON_MESSAGE_RE = re.compile(r"^(mark_precise:|from \d+ to \d+:|propagating |frame\d+:|last_idx )")
+TRAILER_RE = re.compile(r"^\s*(verification time \d+ usec|processed \d+ insns)")
+
+
+def verifier_error_block(lines: list[str]) -> tuple[int, list[str]] | None:
+    """Locate the verifier's terminal error message by log structure.
+
+    The kernel prints the rejecting instruction, then one or more message lines,
+    then ``verification time`` / ``processed N insns``. Walking back from the
+    first trailer line over non-instruction, non-source-map lines yields that
+    message, whatever its wording. Returns (index of the first message line,
+    message lines) or None when there is no message (accepted programs, or a
+    log without the trailer).
+    """
+    end = next((i for i, ln in enumerate(lines) if TRAILER_RE.match(ln)), None)
+    if end is None:
+        return None
+    msg: list[int] = []
+    for i in range(end - 1, -1, -1):
+        s = lines[i].strip()
+        if not s:
+            continue
+        if (
+            INSN_OR_STATE_RE.match(lines[i])
+            or s.startswith(";")
+            or NON_MESSAGE_RE.match(s)
+            or "BEGIN PROG LOAD LOG" in s
+        ):
+            break
+        msg.append(i)
+    if not msg:
+        return None
+    msg.reverse()
+    return msg[0], [lines[i].strip() for i in msg]
+
+
 @dataclass
 class ParsedLog:
     terminal_error: str
@@ -33,7 +72,9 @@ def parse_verifier_log(text: str) -> ParsedLog:
     terminal_error = ""
     terminal_pc: Optional[int] = None
     pc_re = re.compile(r"^\s*(\d+):\s*")
-    for line in text.splitlines():
+    all_lines = text.splitlines()
+    block = verifier_error_block(all_lines)
+    for line in all_lines:
         m = SOURCE_COMMENT_RE.search(line)
         if m:
             locs.append(
@@ -43,11 +84,14 @@ def parse_verifier_log(text: str) -> ParsedLog:
                     text=m.group(1).strip(),
                 )
             )
-        if "R" in line and "invalid" in line.lower():
+        # Fallback for logs without a verification trailer (synthetic fixtures).
+        if block is None and "R" in line and "invalid" in line.lower():
             terminal_error = line.strip()
         pm = pc_re.match(line)
         if pm:
             terminal_pc = int(pm.group(1))
+    if block is not None:
+        terminal_error = "; ".join(block[1])
     # last numbered insn before end often is reject pc
     return ParsedLog(
         terminal_error=terminal_error or "rejected",

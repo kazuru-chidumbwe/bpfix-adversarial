@@ -1,0 +1,47 @@
+{
+  "case_id": "dynptr_uninitialized_slice_arg_001",
+  "error_id": "E012",
+  "anchor": 27,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        19,
+        20,
+        23,
+        24,
+        25,
+        26
+      ]
+    },
+    "pad8": {
+      "shift_from": 27,
+      "shift": 10,
+      "repair_sites": [
+        19,
+        20,
+        23,
+        24,
+        25,
+        26
+      ],
+      "anchor_in_variant": 37
+    },
+    "pad32": {
+      "shift_from": 27,
+      "shift": 34,
+      "repair_sites": [
+        19,
+        20,
+        23,
+        24,
+        25,
+        26
+      ],
+      "anchor_in_variant": 61
+    }
+  }
+}

@@ -115,6 +115,13 @@ def recorded_bpfix_version() -> str:
     return text.split()[-1]
 
 
+def recorded_bpfix_commit() -> dict:
+    path = RAW_DIR / "bpfix-commit.txt"
+    if not path.is_file():
+        return {}
+    return {"bpfix_source_commit": path.read_text(encoding="utf-8").strip()}
+
+
 def main() -> None:
     honesty = json.loads(HONESTY.read_text(encoding="utf-8"))["rows"]
     rows = []
@@ -183,6 +190,8 @@ def main() -> None:
             "in sc_vs_honesty.*"
         ),
         "bpfix_version": recorded_bpfix_version(),
+        # Present only when run_rq1_bpfix_cli.sh recorded it (added after v1.0.2).
+        **recorded_bpfix_commit(),
         "bpfix_pin": "81d97e4a528456e0082a77f4fb6edd13fa092b7b",
         "stamp_family": "20260801T181331Z",
         "host": "WSL (offline log replay; not lab-server)",

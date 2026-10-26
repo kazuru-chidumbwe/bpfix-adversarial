@@ -1,0 +1,53 @@
+{
+  "case_id": "helper_csum_diff_stack_len_001",
+  "error_id": "E003",
+  "anchor": 61,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        34,
+        35,
+        36,
+        37,
+        59,
+        61,
+        65,
+        66
+      ]
+    },
+    "pad8": {
+      "shift_from": 61,
+      "shift": 10,
+      "repair_sites": [
+        34,
+        35,
+        36,
+        37,
+        59,
+        71,
+        75,
+        76
+      ],
+      "anchor_in_variant": 71
+    },
+    "pad32": {
+      "shift_from": 61,
+      "shift": 34,
+      "repair_sites": [
+        34,
+        35,
+        36,
+        37,
+        59,
+        95,
+        99,
+        100
+      ],
+      "anchor_in_variant": 95
+    }
+  }
+}

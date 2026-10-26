@@ -28,21 +28,14 @@ from bpfix_adversarial.heuristics import (  # noqa: E402
     looks_like_packet_bounds_check,
     looks_like_scalar_guard,
 )
-from bpfix_adversarial.logparse import parse_verifier_log  # noqa: E402
+from bpfix_adversarial.logparse import parse_verifier_log, verifier_error_block  # noqa: E402
 from bpfix_adversarial.oracle import oracle_sites  # noqa: E402
 from bpfix_adversarial.score import score_honesty  # noqa: E402
 
 SOURCE_AT_RE = re.compile(r";\s*(.*?)\s*@\s*([^:]+):(\d+)\s*$")
-REJECT_HINTS = (
-    "invalid",
-    "math between",
-    "unbounded",
-    "permission denied",
-    "failed to load",
-    "r0 invalid",
-    "r1 unbounded",
-    "r1 offset",
-)
+# Keyword fallback only, for logs without a verification trailer. The primary
+# path locates the error block structurally (logparse.verifier_error_block).
+REJECT_HINTS = ("invalid", "math between", "unbounded")
 
 # Rejecting rows whose SC outcome is fixed by construction, in takeaway order.
 # The takeaway counts are derived from the scored rows via this table, and
@@ -90,19 +83,29 @@ def lab_rejected(text: str) -> bool:
 
 
 def vs_stop_line(text: str) -> tuple[int | None, str | None, str]:
-    """Last source-mapped line before terminal reject; else last mapped line."""
+    """Last source-mapped line before the verifier's error message; else last mapped line.
+
+    The error message is found from log structure (the lines between the last
+    instruction and the ``verification time`` trailer), so a reject message
+    with unfamiliar wording is still found. Keyword matching is a fallback for
+    logs without that trailer.
+    """
     locs: list[tuple[int, str]] = []
     reject_idx: int | None = None
     raw_lines = text.splitlines()
+    block = verifier_error_block(raw_lines)
+    if block is not None:
+        reject_idx = block[0]
     for idx, line in enumerate(raw_lines):
         m = SOURCE_AT_RE.search(line)
         if m:
             locs.append((int(m.group(3)), m.group(1).strip()))
+        if reject_idx is not None:
+            continue
         low = line.lower()
         if any(h in low for h in REJECT_HINTS) and not LIBBPF_LINE_RE.match(line):
-            if "invalid" in low or "math between" in low or "unbounded" in low:
-                reject_idx = idx
-                break
+            reject_idx = idx
+            break
     if not locs:
         return None, None, "VS: no source mappings in log"
     if reject_idx is not None:

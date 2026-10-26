@@ -29,3 +29,9 @@ Vagrantfile text eol=lf
 .gitattributes text eol=lf
 LICENSE text eol=lf
 .githooks/* text eol=lf
+
+# Campaign v2 sources and captures (same byte-stability rules as fixtures/).
+campaigns/**/*.c text eol=lf
+campaigns/**/*.log text eol=lf
+campaigns/**/*.compile text eol=lf
+campaigns/**/*.err text eol=lf

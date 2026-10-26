@@ -66,6 +66,25 @@ Implemented in `bpfix_adversarial/oracle.py` (`oracle_sites`) and `bpfix_adversa
 
 Lab captures use clang **`-O2 -g -target bpf`** so the verifier log carries BTF-backed source maps for VS; scalar pads still DCE under `-O2`, which is why distance is source-line based.
 
+## Repair-site agreement (campaign v2)
+
+`tools/score_upstream_repair_site.py` / `tools/score_v2_campaign.py` §C. The
+oracle is upstream's buggy → fixed diff
+(`bpfix_adversarial/repair_site.py`). Sites are buggy-file lines touched by
+semantic hunks, and a pure insertion marks the lines on both sides of the gap.
+Comment-, blank- and preprocessor-only hunks are dropped.
+
+| Metric | Definition |
+| --- | --- |
+| primary_in_repair | bpfix `-->` line ∈ repair sites (`-->` 0 counts as no primary) |
+| any_label_in_repair | some snippet line (primary or secondary label) ∈ repair sites |
+| primary_within_3 | min \|`-->` − site\| ≤ 3 |
+| chance baseline | Σ over cases of (repair-site executable lines / executable lines) |
+
+Intervals are Wilson 95% over distinct cases. Paired transform comparisons use
+the exact McNemar test on discordant pairs. This is hunk-level agreement with a
+fix, not root-cause ground truth.
+
 ## Log normalization contract (marker A/B)
 
 Implemented by `tools/lab_marker_isolation_ab.py::normalize_log_body`. Used only to compare bearing vs neutral verifier logs for reporter/log invariance, not as a second scoring channel.

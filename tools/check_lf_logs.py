@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def main() -> int:
     paths = [Path(p) for p in sys.argv[1:]]
     if not paths:
-        paths = sorted((ROOT / "fixtures").rglob("*.log"))
+        paths = sorted((ROOT / "fixtures").rglob("*.log")) + sorted((ROOT / "campaigns").rglob("*.log"))
     bad: list[str] = []
     for p in paths:
         if not p.is_file():

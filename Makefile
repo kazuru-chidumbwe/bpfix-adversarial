@@ -1,7 +1,7 @@
-.PHONY: help smoke test rename-demo insets figures version
+.PHONY: help smoke test rename-demo insets figures version v2-mutants
 
 help:
-	@echo "Targets: smoke | test | rename-demo | insets | figures | version"
+	@echo "Targets: smoke | test | rename-demo | insets | figures | version | v2-mutants"
 
 version:
 	python -c "import bpfix_adversarial as m; print(m.__version__)"
@@ -20,6 +20,7 @@ insets:
 	python tools/emit_tier_table.py
 	python tools/emit_four_obligation_matrix.py
 	python tools/emit_upstream_obligations.py
+	python tools/score_upstream_repair_site.py
 	python tools/score_sc_vs_honesty.py
 	python tools/emit_rq1_lab_distance.py
 	python tools/emit_pad_rename_invariance.py
@@ -30,6 +31,11 @@ insets:
 	python tools/emit_marker_isolation.py
 	python tools/emit_rq1_bpfix_cli.py
 	python tools/emit_figures.py
+
+# Campaign v2 sources (campaigns/v2/README.md); committed, checked by tests.
+v2-mutants:
+	python tools/generate_v2_mutants.py
+	python tools/gen_upstream_metamorphic.py
 
 figures:
 	python tools/emit_figures.py

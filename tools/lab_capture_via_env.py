@@ -118,10 +118,15 @@ def main() -> None:
 
     client = connect(cfg)
 
-    def run(cmd: str, timeout: int = 120) -> tuple[int, str, str]:
-        _stdin, stdout, stderr = client.exec_command(cmd, timeout=timeout, get_pty=True)
+    def run(cmd: str, timeout: int = 120, stdin_data: str | None = None) -> tuple[int, str, str]:
+        stdin, stdout, stderr = client.exec_command(cmd, timeout=timeout, get_pty=True)
+        if stdin_data is not None:
+            stdin.write(stdin_data)
+            stdin.flush()
         out = stdout.read().decode("utf-8", errors="replace")
         err = stderr.read().decode("utf-8", errors="replace")
+        if sudo_pw:
+            out, err = out.replace(sudo_pw, "***"), err.replace(sudo_pw, "***")
         return stdout.channel.recv_exit_status(), out, err
 
     _rc, out, err = run(
@@ -161,14 +166,12 @@ def main() -> None:
 
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     if sudo_pw:
-        with sftp.file(f"{home}/.bpfix_sudo_pw", "w") as f:
-            f.chmod(0o600)  # before the password is written
-            f.write(sudo_pw + "\n")
-        run(f"chmod 600 {home}/.bpfix_sudo_pw")
+        # The password arrives on the SSH channel's stdin and lives only in a
+        # shell variable; it is never written to a file on the lab host.
         sudo_bpf = 'printf \'%s\\n\' "$PW" | sudo -S bpftool'
         sudo_rm = 'printf \'%s\\n\' "$PW" | sudo -S rm -f'
-        pw_line = "PW=$(cat ~/.bpfix_sudo_pw)"
-        cleanup_pw = "rm -f ~/.bpfix_sudo_pw"
+        pw_line = "IFS= read -rs PW"
+        cleanup_pw = "true"
     else:
         sudo_bpf = "sudo -n /usr/sbin/bpftool"
         sudo_rm = "sudo -n rm -f"
@@ -184,7 +187,6 @@ META_DIR=results/env_pins
 OBJ_DIR=/tmp/bpfix-adv-objs
 export PATH="/usr/sbin:/usr/bin:$PATH"
 {pw_line}
-# Always drop the sudo password file on exit (success or failure).
 trap '{cleanup_pw}' EXIT
 mkdir -p "$OUT_DIR" "$META_DIR" "$OBJ_DIR"
 {{
@@ -224,12 +226,15 @@ done
 echo DONE stamp=$STAMP
 wc -l "$MANIFEST"
 """
-    # Note: cleanup_pw runs via trap EXIT (not duplicated at end).
     with sftp.file(f"{home}/run_bpfix_capture.sh", "w") as f:
         f.write(remote_script.replace("\r\n", "\n"))
     run("chmod +x ~/run_bpfix_capture.sh")
     print("running batch capture...")
-    rc, out, err = run("bash ~/run_bpfix_capture.sh", timeout=600)
+    rc, out, err = run(
+        "bash ~/run_bpfix_capture.sh",
+        timeout=600,
+        stdin_data=(sudo_pw + "\n") if sudo_pw else None,
+    )
     print(out[-6000:] if len(out) > 6000 else out)
     if err.strip():
         print("stderr_tail:", err[-1500:])

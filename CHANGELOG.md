@@ -1,5 +1,38 @@
 # Changelog
 
+## Unreleased
+
+No v1.0.2 scored value changes. Changed committed tables: `oracle_controls.*`
+(observation relabel, injection-only source-map check, still 10/10) and
+`marker_isolation*.*` (VS/map agreement counted only over comparable pairs: 0
+comparable on the Ubuntu A/B; host named). New: `results/upstream_repair_site.*`.
+
+### New experiments (campaign v2)
+- Repair-site oracle: upstream's committed diagnostics scored against upstream's
+  own buggy → fixed diffs (`tools/score_upstream_repair_site.py`). `-->` on a
+  repair site 16/21 (Wilson 95% 0.55–0.89) vs 3.6 expected by chance.
+- `campaigns/v2/mutants/`: RenameReject (7 rejecting rename pairs), VolatilePad
+  (padding that survives -O2), ProvenanceMap (pointer round-tripped through a
+  map; stop site after the padding).
+- `campaigns/v2/upstream/`: pad8 / pad32 / rename variants of the 21 vendored
+  upstream cases with mapped repair sites.
+- Host-local capture (`tools/capture_local.py`), bpfix replay with source-commit
+  provenance (`tools/replay_bpfix_dir.py`), scorer (`tools/score_v2_campaign.py`),
+  v1 pin-reproduction check (`tools/compare_v1_recapture.py`), one-command lab
+  driver (`lab/run_v2_campaign.sh`).
+
+### Fixes
+- Docker image verifies committed results (`check_results_fresh.py`) instead
+  of overwriting them.
+- CLI replay records the bpfix source commit, not only `bpfix 0.1.9`.
+- Verifier error message located by log structure; keyword list kept as a
+  fallback (finds messages such as "Unreleased reference" that the keywords missed).
+- Lab SSH helpers pass the sudo password over the channel's stdin instead of a
+  remote file.
+- `templates.pad_nops_c` docstring corrected (the v1 pads compile away);
+  `.[all]` includes `dev`; LF rules cover `campaigns/`.
+- `tools/check_zenodo_archive.py` compares a Zenodo zip with a git tag.
+
 ## v1.0.2 - 2026-09-30
 
 Minor-revision cite pin for the software paper (SOFTX-D-26-01022).

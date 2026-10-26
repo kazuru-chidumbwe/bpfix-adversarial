@@ -1,0 +1,38 @@
+{
+  "case_id": "helper_map_arg_stack_001",
+  "error_id": "E008",
+  "anchor": 57,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        27,
+        54,
+        57
+      ]
+    },
+    "pad8": {
+      "shift_from": 57,
+      "shift": 10,
+      "repair_sites": [
+        27,
+        54,
+        67
+      ],
+      "anchor_in_variant": 67
+    },
+    "pad32": {
+      "shift_from": 57,
+      "shift": 34,
+      "repair_sites": [
+        27,
+        54,
+        91
+      ],
+      "anchor_in_variant": 91
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "case_id": "packet_l4_branch_cookie_001",
+  "error_id": "E006",
+  "anchor": 61,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        60,
+        61,
+        62,
+        63
+      ]
+    },
+    "pad8": {
+      "shift_from": 61,
+      "shift": 10,
+      "repair_sites": [
+        60,
+        71,
+        72,
+        73
+      ],
+      "anchor_in_variant": 71
+    },
+    "pad32": {
+      "shift_from": 61,
+      "shift": 34,
+      "repair_sites": [
+        60,
+        95,
+        96,
+        97
+      ],
+      "anchor_in_variant": 95
+    }
+  }
+}

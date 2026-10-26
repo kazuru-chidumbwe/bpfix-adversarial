@@ -18,7 +18,14 @@ struct {
 
 
 def pad_nops_c(n: int, indent: str = "\t") -> str:
-    """Emit verifier-visible but semantically inert scalar ops as distance padding."""
+    """Emit semantically inert scalar ops as *source-line* distance padding.
+
+    clang -O2 removes these (the verifier-listed instruction sequence is
+    identical across pads 0/8/32, results/pad_rename_invariance.md), so they
+    move source line numbers only. Padding that survives compilation is
+    ``bpfix_adversarial.gen_v2.volatile_pad_c``. Kept unchanged because the
+    committed v1.0.2 mutants and logs were generated from it.
+    """
     if n <= 0:
         return ""
     lines = [f"{indent}/* distance pad: {n} scalar ops */", f"{indent}__u64 __pad = 0;"]

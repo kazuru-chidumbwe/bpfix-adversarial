@@ -55,6 +55,11 @@ ENV = Path(os.environ.get("BPFIX_LAB_ENV_FILE", str(ROOT / "lab" / ".env")))
 # Written into marker_isolation_lab.json by both the capture path and --rescore,
 # so the committed note always states the criterion pair_match() applies.
 PASS_NOTE = (
+    "Host: the A/B ran on the Ubuntu 6.8 host (host_probe), not the Debian 6.12.86 cite pin. "
+    "vs_match / source_map_match count only comparable pairs (vs_comparable / "
+    "source_map_comparable); with no @file:line maps in the logs both are 0 comparable. "
+    "Marker text sits on comment-only lines, so compile identity is expected from C "
+    "semantics; this checks the toolchain, not a subtle confound. "
     "Marker-neutral = ORACLE_* comments replaced with /* */ (line-preserving). "
     "pass = identical verdict + normalized -O2 -g load log (timing/ASLR stripped) + "
     "source-comment texts + same-path -O2 (no -g) ELF sha256 identity, and no "
@@ -222,8 +227,13 @@ def nodbg_object_sha(
 
 def pair_match(b: dict, n: dict) -> dict:
     same_verdict = b["verdict"] == n["verdict"]
-    same_vs = b["vs_reported_line"] == n["vs_reported_line"]
-    same_maps = b["source_map_pairs"] == n["source_map_pairs"]
+    # A comparison of two empty observations is not a match. On the Ubuntu 6.8
+    # A/B host bpftool printed no `@ file:line` maps, so every VS line was None
+    # and every map list empty; those fields are recorded as None (n/a).
+    vs_comparable = b["vs_reported_line"] is not None or n["vs_reported_line"] is not None
+    maps_comparable = bool(b["source_map_pairs"]) or bool(n["source_map_pairs"])
+    same_vs = (b["vs_reported_line"] == n["vs_reported_line"]) if vs_comparable else None
+    same_maps = (b["source_map_pairs"] == n["source_map_pairs"]) if maps_comparable else None
     same_comments = b.get("source_comment_texts") == n.get("source_comment_texts")
     same_norm = b["normalized_log_sha256"] == n["normalized_log_sha256"]
     same_nodbg = (
@@ -281,16 +291,17 @@ def load_pair(
         f.write(src_text)
 
     if password:
-        pw_file = f"/tmp/.bpfix_iso_pw_{run_stamp}"
-        # password file written once by caller
-        sudo_bpf = f'PW=$(cat {pw_file}); printf "%s\\n" "$PW" | sudo -S -p "" /usr/sbin/bpftool'
-        sudo_rm = f'PW=$(cat {pw_file}); printf "%s\\n" "$PW" | sudo -S -p "" rm -f'
+        # Read from the SSH channel's stdin (see below); never stored in a file.
+        prelude = "IFS= read -rs PW; "
+        sudo_bpf = 'printf "%s\\n" "$PW" | sudo -S -p "" /usr/sbin/bpftool'
+        sudo_rm = 'printf "%s\\n" "$PW" | sudo -S -p "" rm -f'
     else:
+        prelude = ""
         sudo_bpf = "sudo -n /usr/sbin/bpftool"
         sudo_rm = "sudo -n rm -f"
 
     pin = f"bpfix_iso_{run_stamp}_{case_id}_{variant}".replace("-", "_")[:80]
-    cmd = (
+    cmd = prelude + (
         f"export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; "
         f"clang -O2 -g -target bpf -I/usr/include/x86_64-linux-gnu "
         f"-idirafter /usr/include -c {remote_c} -o {remote_o} 2>{remote_log}.ce; "
@@ -306,7 +317,10 @@ def load_pair(
         f"then echo REJECT; else echo ACCEPT; fi; "
         f"echo EXIT:$load_ec; cat {remote_log}"
     )
-    _i, o, _e = client.exec_command(cmd, timeout=120, get_pty=True)
+    i_, o, _e = client.exec_command(cmd, timeout=120, get_pty=True)
+    if password:
+        i_.write(password + "\n")
+        i_.flush()
     out = o.read().decode(errors="replace")
     if password:
         out = out.replace(password, "***")
@@ -347,6 +361,26 @@ def carried_object_meta(entry: dict) -> dict:
     return {k: entry[k] for k in OBJECT_META_KEYS if entry.get(k) is not None}
 
 
+def match_summary(pairs: list[dict]) -> dict:
+    """Pass/match counts; vs/map counts only over comparable (non-empty) pairs."""
+    n = len(pairs)
+    hits = sum(1 for p in pairs if p["match"]["pass"])
+    return {
+        "pass": hits,
+        "n": n,
+        "pass_rate": round(hits / n, 4) if n else 0.0,
+        "verdict_match": sum(1 for p in pairs if p["match"]["verdict"]),
+        "vs_match": sum(1 for p in pairs if p["match"]["vs_reported_line"] is True),
+        "vs_comparable": sum(1 for p in pairs if p["match"]["vs_reported_line"] is not None),
+        "source_map_match": sum(1 for p in pairs if p["match"]["source_map_pairs"] is True),
+        "source_map_comparable": sum(1 for p in pairs if p["match"]["source_map_pairs"] is not None),
+        "source_comment_match": sum(1 for p in pairs if p["match"]["source_comment_texts"]),
+        "normalized_log_match": sum(1 for p in pairs if p["match"]["normalized_log"]),
+        "nodbg_obj_match": sum(1 for p in pairs if p["match"].get("nodbg_obj_sha256")),
+        "dbg_obj_match": sum(1 for p in pairs if p["match"].get("dbg_obj_sha256")),
+    }
+
+
 def rescore_existing(lab_path: Path) -> dict:
     """Recompute match fields from already-captured markeriso logs."""
     lab = json.loads(lab_path.read_text(encoding="utf-8"))
@@ -380,22 +414,9 @@ def rescore_existing(lab_path: Path) -> dict:
                 "match": pair_match(b, n),
             }
         )
-    n = len(pairs)
-    hits = sum(1 for p in pairs if p["match"]["pass"])
     lab["pairs"] = pairs
-    lab["n_pairs"] = n
-    lab["summary"] = {
-        "pass": hits,
-        "n": n,
-        "pass_rate": round(hits / n, 4) if n else 0.0,
-        "verdict_match": sum(1 for p in pairs if p["match"]["verdict"]),
-        "vs_match": sum(1 for p in pairs if p["match"]["vs_reported_line"]),
-        "source_map_match": sum(1 for p in pairs if p["match"]["source_map_pairs"]),
-        "source_comment_match": sum(1 for p in pairs if p["match"]["source_comment_texts"]),
-        "normalized_log_match": sum(1 for p in pairs if p["match"]["normalized_log"]),
-        "nodbg_obj_match": sum(1 for p in pairs if p["match"].get("nodbg_obj_sha256")),
-        "dbg_obj_match": sum(1 for p in pairs if p["match"].get("dbg_obj_sha256")),
-    }
+    lab["n_pairs"] = len(pairs)
+    lab["summary"] = match_summary(pairs)
     lab["note"] = PASS_NOTE
     lab_path.write_text(json.dumps(lab, indent=2) + "\n", encoding="utf-8", newline="\n")
     return lab
@@ -444,13 +465,6 @@ def main(argv: list[str] | None = None) -> int:
     )
     host_probe = o.read().decode(errors="replace").strip()
     print(host_probe)
-
-    if password:
-        pw_file = f"/tmp/.bpfix_iso_pw_{run_stamp}"
-        with sftp.file(pw_file, "w") as f:
-            f.chmod(0o600)  # before the password is written
-            f.write(password + "\n")
-        client.exec_command(f"chmod 600 {pw_file}", timeout=10)
 
     pairs = []
     try:
@@ -503,8 +517,6 @@ def main(argv: list[str] | None = None) -> int:
                 flush=True,
             )
     finally:
-        if password:
-            client.exec_command(f"rm -f /tmp/.bpfix_iso_pw_{run_stamp}", timeout=10)
         client.close()
 
     n = len(pairs)
@@ -515,20 +527,7 @@ def main(argv: list[str] | None = None) -> int:
         "stamp_filter": STAMP_FILTER,
         "host_probe": host_probe,
         "n_pairs": n,
-        "summary": {
-            "pass": hits,
-            "n": n,
-            "pass_rate": round(hits / n, 4) if n else 0.0,
-            "verdict_match": sum(1 for p in pairs if p["match"]["verdict"]),
-            "vs_match": sum(1 for p in pairs if p["match"]["vs_reported_line"]),
-            "source_map_match": sum(1 for p in pairs if p["match"]["source_map_pairs"]),
-            "source_comment_match": sum(
-                1 for p in pairs if p["match"]["source_comment_texts"]
-            ),
-            "normalized_log_match": sum(1 for p in pairs if p["match"]["normalized_log"]),
-            "nodbg_obj_match": sum(1 for p in pairs if p["match"].get("nodbg_obj_sha256")),
-            "dbg_obj_match": sum(1 for p in pairs if p["match"].get("dbg_obj_sha256")),
-        },
+        "summary": match_summary(pairs),
         "pairs": pairs,
         "note": PASS_NOTE,
     }

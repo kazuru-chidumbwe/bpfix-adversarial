@@ -7,7 +7,7 @@
       "n": 6,
       "pass_rate": 1.0
     },
-    "positive_control_pb_stop_vs_injection": {
+    "observation_pb_stop_vs_injection": {
       "hits": 3,
       "n": 3,
       "pass_rate": 1.0
@@ -79,7 +79,7 @@
       "note": "markers present; lab ACCEPT, injection did not induce reject"
     }
   ],
-  "positive_control_pb_stop_vs_injection": [
+  "observation_pb_stop_vs_injection": [
     {
       "case_id": "PB-pad0",
       "obligation": "PacketBounds",
@@ -93,7 +93,7 @@
       "vs_top1_vs_loss": false,
       "stop_diverges_from_injection": true,
       "pass": true,
-      "note": "VS stop outside injection span; SC may still hit injection (threshold / tier disagreement)"
+      "note": "observation, not a control: VS stop outside injection span; SC may still hit injection (threshold / tier disagreement)"
     },
     {
       "case_id": "PB-pad32",
@@ -108,7 +108,7 @@
       "vs_top1_vs_loss": false,
       "stop_diverges_from_injection": true,
       "pass": true,
-      "note": "VS stop outside injection span; SC may still hit injection (threshold / tier disagreement)"
+      "note": "observation, not a control: VS stop outside injection span; SC may still hit injection (threshold / tier disagreement)"
     },
     {
       "case_id": "PB-pad8",
@@ -123,7 +123,7 @@
       "vs_top1_vs_loss": false,
       "stop_diverges_from_injection": true,
       "pass": true,
-      "note": "VS stop outside injection span; SC may still hit injection (threshold / tier disagreement)"
+      "note": "observation, not a control: VS stop outside injection span; SC may still hit injection (threshold / tier disagreement)"
     }
   ],
   "compiler_preservation_source_map": [

@@ -4,6 +4,9 @@
 set -euo pipefail
 source "${HOME}/.cargo/env" 2>/dev/null || true
 BPFIX="${BPFIX:-${HOME}/src/bpfix/target/release/bpfix}"
+# Source checkout the binary was built from (default: two levels above target/release).
+BPFIX_SRC="${BPFIX_SRC:-$(cd "$(dirname "$BPFIX")/../.." 2>/dev/null && pwd)}"
+PIN=81d97e4a528456e0082a77f4fb6edd13fa092b7b
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # Allow Windows/WSL mount path override
 ROOT="${BPFIX_ADV_ROOT:-$ROOT}"
@@ -28,7 +31,13 @@ BPFIX_VERSION="$("$BPFIX" --version 2>&1)"
 # and the emitter reads this file rather than carrying a literal.
 printf '%s
 ' "$BPFIX_VERSION" > "$OUTDIR/bpfix-version.txt"
-echo "bpfix=$BPFIX_VERSION"
+# A version string does not identify a commit; record the source commit too.
+BPFIX_COMMIT="$(git -C "$BPFIX_SRC" rev-parse HEAD 2>/dev/null || echo unknown)"
+printf '%s\n' "$BPFIX_COMMIT" > "$OUTDIR/bpfix-commit.txt"
+if [[ "$BPFIX_COMMIT" != "$PIN" ]]; then
+  echo "WARNING: bpfix source commit $BPFIX_COMMIT != pin $PIN" >&2
+fi
+echo "bpfix=$BPFIX_VERSION commit=$BPFIX_COMMIT"
 echo "root=$ROOT"
 echo "stamp=$STAMP"
 

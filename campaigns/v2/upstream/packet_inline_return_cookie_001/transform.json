@@ -1,0 +1,43 @@
+{
+  "case_id": "packet_inline_return_cookie_001",
+  "error_id": "E006",
+  "anchor": 54,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        54
+      ]
+    },
+    "pad8": {
+      "shift_from": 54,
+      "shift": 10,
+      "repair_sites": [
+        64
+      ],
+      "anchor_in_variant": 64
+    },
+    "pad32": {
+      "shift_from": 54,
+      "shift": 34,
+      "repair_sites": [
+        88
+      ],
+      "anchor_in_variant": 88
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        54
+      ],
+      "from": "udp",
+      "to": "ptr",
+      "check_line": 50,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

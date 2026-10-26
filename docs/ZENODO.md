@@ -17,6 +17,14 @@ https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2
 
 The v1.0.2 archive was minted by hand on 15 Sep 2026 (Zenodo's API was unavailable at tag time) as a **new version** under the existing concept, so the concept DOI is unchanged. Its DOI is recorded in C7, `CITATION.cff` and `codemeta.json`. The file on the record is `git archive --format=zip --prefix=bpfix-adversarial-v1.0.2/ v1.0.2` of the cited tag. Do not relabel 21860453.
 
+## Open check
+
+This note dates the mint to 15 Sep 2026; the `v1.0.2` tag commit
+(`172ca43`) is dated 30 Sep 2026. Download the record's zip and run
+`python tools/check_zenodo_archive.py --zip <file> --tag v1.0.2`. It compares
+the files of the zip and the tag. If they differ, mint a new Zenodo version
+rather than moving the tag.
+
 ## Cite
 
 Kazuru, S. (2026). bpfix-adversarial (v1.0.2). GitHub. https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2

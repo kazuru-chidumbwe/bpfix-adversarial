@@ -191,11 +191,11 @@ class OracleControlsInsetTests(unittest.TestCase):
             self.assertFalse(r["lab_rejected"])
             self.assertIsNotNone(r["oracle_loss_code"])
 
-    def test_positive_control_pb_stop_diverges(self) -> None:
-        rows = self.payload["positive_control_pb_stop_vs_injection"]
+    def test_observation_pb_stop_diverges(self) -> None:
+        rows = self.payload["observation_pb_stop_vs_injection"]
         self.assertEqual(len(rows), 3)
         self.assertEqual(
-            self.payload["summary"]["positive_control_pb_stop_vs_injection"]["pass_rate"],
+            self.payload["summary"]["observation_pb_stop_vs_injection"]["pass_rate"],
             1.0,
         )
         for r in rows:
@@ -210,6 +210,7 @@ class OracleControlsInsetTests(unittest.TestCase):
         )
         for r in rows:
             self.assertTrue(r["pass"])
+            self.assertTrue(r["injection_span_in_map"])
             self.assertTrue(r["mapped_source_lines"])
 
 

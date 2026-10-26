@@ -1,0 +1,41 @@
+{
+  "case_id": "packet_checked_wrong_base_001",
+  "error_id": "E001",
+  "anchor": 31,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        24,
+        27,
+        30,
+        31
+      ]
+    },
+    "pad8": {
+      "shift_from": 31,
+      "shift": 10,
+      "repair_sites": [
+        24,
+        27,
+        30,
+        41
+      ],
+      "anchor_in_variant": 41
+    },
+    "pad32": {
+      "shift_from": 31,
+      "shift": 34,
+      "repair_sites": [
+        24,
+        27,
+        30,
+        65
+      ],
+      "anchor_in_variant": 65
+    }
+  }
+}

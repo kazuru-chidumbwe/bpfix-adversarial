@@ -1,0 +1,35 @@
+{
+  "case_id": "packet_eth_off_by_one_001",
+  "error_id": "E001",
+  "anchor": 36,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        33,
+        42
+      ]
+    },
+    "pad8": {
+      "shift_from": 36,
+      "shift": 10,
+      "repair_sites": [
+        33,
+        52
+      ],
+      "anchor_in_variant": 46
+    },
+    "pad32": {
+      "shift_from": 36,
+      "shift": 34,
+      "repair_sites": [
+        33,
+        76
+      ],
+      "anchor_in_variant": 70
+    }
+  }
+}

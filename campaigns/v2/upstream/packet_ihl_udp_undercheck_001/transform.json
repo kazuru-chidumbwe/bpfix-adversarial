@@ -1,0 +1,47 @@
+{
+  "case_id": "packet_ihl_udp_undercheck_001",
+  "error_id": "E001",
+  "anchor": 66,
+  "anchor_source": "first_snippet_line",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        63,
+        67,
+        68,
+        69,
+        75,
+        76
+      ]
+    },
+    "pad8": {
+      "shift_from": 66,
+      "shift": 10,
+      "repair_sites": [
+        63,
+        77,
+        78,
+        79,
+        85,
+        86
+      ],
+      "anchor_in_variant": 76
+    },
+    "pad32": {
+      "shift_from": 66,
+      "shift": 34,
+      "repair_sites": [
+        63,
+        101,
+        102,
+        103,
+        109,
+        110
+      ],
+      "anchor_in_variant": 100
+    }
+  }
+}
