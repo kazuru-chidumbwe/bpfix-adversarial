@@ -44,6 +44,24 @@ A case is informative for the primary-location metric when a uniformly random ex
 - Wilson 95% intervals over distinct cases; exact McNemar between reporters on the same cases; paired orig to variant McNemar per transform.
 - Strata: upstream obligation (upstream's own classifier) and case kind (`rs_` prefix: upstream's real-project seeds; otherwise canary).
 
+## 7. Verifier-visible rewrites (added 26 Oct 2026, before any rewrite was generated)
+
+Five source rewrites, each applied to **both** `buggy.bpf.c` and `fixed.bpf.c` of a case (`tools/gen_main75_rewrites.py`). The anchor is the statement on bpfix's primary line in the pin capture of `buggy`, which is the verifier's stop statement. A rewrite applies to a case only where its precondition holds. Otherwise the case is listed as not applicable, with the reason.
+
+| ID | Rewrite | Precondition |
+| --- | --- | --- |
+| VPAD | 8 lines of verifier-visible padding (`{ volatile __u32 __adv_pad = 0; __adv_pad++; }`) inserted before the anchor statement | anchor line found once in each file; the previous code line ends a statement (`;`, `{` or `}`) |
+| MACRO | the anchor statement wrapped as `ADV_STMT(<stmt>);` with a multi-line `#define ADV_STMT(...)` placed after the last `#include` | anchor is one complete statement on one line, ending in `;`, and is not a declaration, `return` or `break`/`continue` |
+| INLINE | the nearest `if (COND)` above the anchor in the same function moved into `static __always_inline int __adv_guard(...) { return (COND); }`, called as `if (__adv_guard(args))` | every identifier in COND is a local or parameter declared on one line with a simple type, and COND has no assignment, call or `sizeof` |
+| REORDER | the anchor statement swapped with the statement on the previous code line | both are single-line statements ending in `;`; neither contains a call, `return`, a label or a brace; they share no identifier |
+| SPLIT | a one-line `if (A && B)` above the anchor rewritten as `if (A) if (B)`, or `if (A \|\| B) return X;` as `if (A) return X; if (B) return X;` | top-level `&&` or `\|\|` only; the `if` has no `else`; the `\|\|` form only with a `return` body |
+
+**Validity (two-sided):** a rewritten pair is scored only if rewritten `buggy` REJECTS and rewritten `fixed` ACCEPTS on the pin. Otherwise it is excluded and listed with its verdicts. This tests empirically that the rewrite keeps what the verifier checks for that pair.
+
+**Oracle:** recomputed from the rewritten pair (the R0, R1 and R2 rules applied to the rewritten `buggy` to rewritten `fixed` diff), not mapped by hand.
+
+**Scoring:** for every reporter, paired McNemar of on-site hit (original pair vs rewritten pair, R0), and the share of pairs whose primary line moved, mapped through the diff from `buggy` to rewritten `buggy`. Positive control: `StaleLine` as in Section 6.
+
 ## Changes after the freeze
 
 - **26 Oct 2026, before any pin result was scored. R2 clarified.** As first written, R2 ("every buggy line from the first to the last line of each semantic hunk") is identical to R0, because each difflib hunk is already a contiguous run of changed lines. R2 now uses the unified-diff hunk, as `git diff` groups it: changes within 3 lines of each other form one hunk (`difflib.SequenceMatcher.get_grouped_opcodes(3)`), and R2 covers every buggy line from the first to the last changed line of each hunk that contains a semantic change. Insertions mark both neighbours, as in R0.
