@@ -1,0 +1,201 @@
+libbpf: loading object from /tmp/bpfix-cap-lz6ey3fr/xdp_adjust_tail_stale_001__pad32.o
+libbpf: elf: section(3) xdp, size 1048, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'xdp_adjust_tail_stale' at insn offset 0 (0 bytes), code size 131 insns (1048 bytes)
+libbpf: elf: section(4) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-lz6ey3fr/xdp_adjust_tail_stale_001__pad32.o is GPL
+libbpf: elf: section(14) .BTF, size 2463, link 0, flags 0, type=1
+libbpf: elf: section(16) .BTF.ext, size 988, link 0, flags 0, type=1
+libbpf: elf: section(24) .symtab, size 312, link 1, flags 0, type=2
+libbpf: looking for externs among 13 symbols...
+libbpf: collected 0 externs total
+libbpf: object 'xdp_adjust_tail': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'xdp': found 6 CO-RE relocations
+libbpf: CO-RE relocating [2] struct xdp_md: found target candidate [13583] struct xdp_md in [vmlinux]
+libbpf: prog 'xdp_adjust_tail_stale': relo #0: <byte_off> [2] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'xdp_adjust_tail_stale': relo #0: matching candidate #0 <byte_off> [13583] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'xdp_adjust_tail_stale': relo #0: patched insn #1 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'xdp_adjust_tail_stale': relo #1: <byte_off> [2] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'xdp_adjust_tail_stale': relo #1: matching candidate #0 <byte_off> [13583] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'xdp_adjust_tail_stale': relo #1: patched insn #2 (LDX/ST/STX) off 0 -> 0
+libbpf: CO-RE relocating [8] struct ethhdr: found target candidate [20213] struct ethhdr in [vmlinux]
+libbpf: prog 'xdp_adjust_tail_stale': relo #2: <byte_off> [8] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'xdp_adjust_tail_stale': relo #2: matching candidate #0 <byte_off> [20213] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'xdp_adjust_tail_stale': relo #2: patched insn #6 (LDX/ST/STX) off 12 -> 12
+libbpf: CO-RE relocating [15] struct iphdr: found target candidate [20569] struct iphdr in [vmlinux]
+libbpf: prog 'xdp_adjust_tail_stale': relo #3: <byte_off> [15] struct iphdr.protocol (0:7 @ offset 9)
+libbpf: prog 'xdp_adjust_tail_stale': relo #3: matching candidate #0 <byte_off> [20569] struct iphdr.protocol (0:7 @ offset 9)
+libbpf: prog 'xdp_adjust_tail_stale': relo #3: patched insn #114 (LDX/ST/STX) off 9 -> 9
+libbpf: prog 'xdp_adjust_tail_stale': relo #4: <byte_off> [15] struct iphdr.ihl (0:0 @ offset 0)
+libbpf: prog 'xdp_adjust_tail_stale': relo #4: matching candidate #0 <byte_off> [20569] struct iphdr.ihl (0:0 @ offset 0)
+libbpf: prog 'xdp_adjust_tail_stale': relo #4: patched insn #116 (LDX/ST/STX) off 0 -> 0
+libbpf: CO-RE relocating [22] struct udphdr: found target candidate [20577] struct udphdr in [vmlinux]
+libbpf: prog 'xdp_adjust_tail_stale': relo #5: <byte_off> [22] struct udphdr.dest (0:1 @ offset 2)
+libbpf: prog 'xdp_adjust_tail_stale': relo #5: matching candidate #0 <byte_off> [20577] struct udphdr.dest (0:1 @ offset 2)
+libbpf: prog 'xdp_adjust_tail_stale': relo #5: patched insn #126 (LDX/ST/STX) off 2 -> 2
+libbpf: prog 'xdp_adjust_tail_stale': BPF program load failed: Permission denied
+libbpf: prog 'xdp_adjust_tail_stale': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int xdp_adjust_tail_stale(struct xdp_md *ctx) @ pad32.bpf.c:23
+0: (b7) r0 = 2                        ; R0_w=2
+; void *data_end = (void *)(long)ctx->data_end; @ pad32.bpf.c:26
+1: (61) r7 = *(u32 *)(r1 +4)          ; R1=ctx() R7_w=pkt_end()
+; void *data = (void *)(long)ctx->data; @ pad32.bpf.c:25
+2: (61) r8 = *(u32 *)(r1 +0)          ; R1=ctx() R8_w=pkt(r=0)
+; if ((void *)(eth + 1) > data_end) @ pad32.bpf.c:32
+3: (bf) r6 = r8                       ; R6_w=pkt(r=0) R8_w=pkt(r=0)
+4: (07) r6 += 14                      ; R6_w=pkt(off=14,r=0)
+5: (2d) if r6 > r7 goto pc+124        ; R6_w=pkt(off=14,r=14) R7_w=pkt_end()
+; if (bpf_ntohs(eth->h_proto) != ETH_P_IP) @ pad32.bpf.c:34
+6: (69) r2 = *(u16 *)(r8 +12)         ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R8_w=pkt(r=14)
+7: (55) if r2 != 0x8 goto pc+122      ; R2_w=8
+; if (bpf_xdp_adjust_tail(ctx, -4)) @ pad32.bpf.c:37
+8: (18) r2 = 0xfffffffc               ; R2_w=0xfffffffc
+10: (85) call bpf_xdp_adjust_tail#65          ; R0=scalar()
+11: (bf) r1 = r0                      ; R0=scalar(id=1) R1_w=scalar(id=1)
+12: (b7) r0 = 2                       ; R0_w=2
+13: (55) if r1 != 0x0 goto pc+116     ; R1_w=0
+14: (07) r8 += 34                     ; R8_w=scalar()
+15: (2d) if r8 > r7 goto pc+114       ; R7=scalar() R8_w=scalar()
+16: (b7) r1 = 0                       ; R1_w=0
+; volatile __u64 __bpfix_pad = 0; @ pad32.bpf.c:44
+17: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=0 R10=fp0 fp-8_w=0
+; __bpfix_pad += 1; @ pad32.bpf.c:45
+18: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8_w=0
+19: (07) r1 += 1                      ; R1_w=1
+20: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8_w=1
+; __bpfix_pad += 2; @ pad32.bpf.c:46
+21: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=1 R10=fp0 fp-8_w=1
+22: (07) r1 += 2                      ; R1_w=3
+23: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=3 R10=fp0 fp-8_w=3
+; __bpfix_pad += 3; @ pad32.bpf.c:47
+24: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=3 R10=fp0 fp-8_w=3
+25: (07) r1 += 3                      ; R1_w=6
+26: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=6 R10=fp0 fp-8_w=6
+; __bpfix_pad += 4; @ pad32.bpf.c:48
+27: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=6 R10=fp0 fp-8_w=6
+28: (07) r1 += 4                      ; R1_w=10
+29: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=10 R10=fp0 fp-8_w=10
+; __bpfix_pad += 5; @ pad32.bpf.c:49
+30: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=10 R10=fp0 fp-8_w=10
+31: (07) r1 += 5                      ; R1_w=15
+32: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=15 R10=fp0 fp-8_w=15
+; __bpfix_pad += 6; @ pad32.bpf.c:50
+33: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=15 R10=fp0 fp-8_w=15
+34: (07) r1 += 6                      ; R1_w=21
+35: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=21 R10=fp0 fp-8_w=21
+; __bpfix_pad += 7; @ pad32.bpf.c:51
+36: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=21 R10=fp0 fp-8_w=21
+37: (07) r1 += 7                      ; R1_w=28
+38: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=28 R10=fp0 fp-8_w=28
+; __bpfix_pad += 8; @ pad32.bpf.c:52
+39: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=28 R10=fp0 fp-8_w=28
+40: (07) r1 += 8                      ; R1_w=36
+41: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=36 R10=fp0 fp-8_w=36
+; __bpfix_pad += 9; @ pad32.bpf.c:53
+42: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=36 R10=fp0 fp-8_w=36
+43: (07) r1 += 9                      ; R1_w=45
+44: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=45 R10=fp0 fp-8_w=45
+; __bpfix_pad += 10; @ pad32.bpf.c:54
+45: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=45 R10=fp0 fp-8_w=45
+46: (07) r1 += 10                     ; R1_w=55
+47: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=55 R10=fp0 fp-8_w=55
+; __bpfix_pad += 11; @ pad32.bpf.c:55
+48: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=55 R10=fp0 fp-8_w=55
+49: (07) r1 += 11                     ; R1_w=66
+50: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=66 R10=fp0 fp-8_w=66
+; __bpfix_pad += 12; @ pad32.bpf.c:56
+51: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=66 R10=fp0 fp-8_w=66
+52: (07) r1 += 12                     ; R1_w=78
+53: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=78 R10=fp0 fp-8_w=78
+; __bpfix_pad += 13; @ pad32.bpf.c:57
+54: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=78 R10=fp0 fp-8_w=78
+55: (07) r1 += 13                     ; R1_w=91
+56: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=91 R10=fp0 fp-8_w=91
+; __bpfix_pad += 14; @ pad32.bpf.c:58
+57: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=91 R10=fp0 fp-8_w=91
+58: (07) r1 += 14                     ; R1_w=105
+59: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=105 R10=fp0 fp-8_w=105
+; __bpfix_pad += 15; @ pad32.bpf.c:59
+60: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=105 R10=fp0 fp-8_w=105
+61: (07) r1 += 15                     ; R1_w=120
+62: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=120 R10=fp0 fp-8_w=120
+; __bpfix_pad += 16; @ pad32.bpf.c:60
+63: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=120 R10=fp0 fp-8_w=120
+64: (07) r1 += 16                     ; R1_w=136
+65: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=136 R10=fp0 fp-8_w=136
+; __bpfix_pad += 17; @ pad32.bpf.c:61
+66: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=136 R10=fp0 fp-8_w=136
+67: (07) r1 += 17                     ; R1_w=153
+68: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=153 R10=fp0 fp-8_w=153
+; __bpfix_pad += 18; @ pad32.bpf.c:62
+69: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=153 R10=fp0 fp-8_w=153
+70: (07) r1 += 18                     ; R1_w=171
+71: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=171 R10=fp0 fp-8_w=171
+; __bpfix_pad += 19; @ pad32.bpf.c:63
+72: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=171 R10=fp0 fp-8_w=171
+73: (07) r1 += 19                     ; R1_w=190
+74: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=190 R10=fp0 fp-8_w=190
+; __bpfix_pad += 20; @ pad32.bpf.c:64
+75: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=190 R10=fp0 fp-8_w=190
+76: (07) r1 += 20                     ; R1_w=210
+77: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=210 R10=fp0 fp-8_w=210
+; __bpfix_pad += 21; @ pad32.bpf.c:65
+78: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=210 R10=fp0 fp-8_w=210
+79: (07) r1 += 21                     ; R1_w=231
+80: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=231 R10=fp0 fp-8_w=231
+; __bpfix_pad += 22; @ pad32.bpf.c:66
+81: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=231 R10=fp0 fp-8_w=231
+82: (07) r1 += 22                     ; R1_w=253
+83: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=253 R10=fp0 fp-8_w=253
+; __bpfix_pad += 23; @ pad32.bpf.c:67
+84: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=253 R10=fp0 fp-8_w=253
+85: (07) r1 += 23                     ; R1_w=276
+86: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=276 R10=fp0 fp-8_w=276
+; __bpfix_pad += 24; @ pad32.bpf.c:68
+87: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=276 R10=fp0 fp-8_w=276
+88: (07) r1 += 24                     ; R1_w=300
+89: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=300 R10=fp0 fp-8_w=300
+; __bpfix_pad += 25; @ pad32.bpf.c:69
+90: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=300 R10=fp0 fp-8_w=300
+91: (07) r1 += 25                     ; R1_w=325
+92: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=325 R10=fp0 fp-8_w=325
+; __bpfix_pad += 26; @ pad32.bpf.c:70
+93: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=325 R10=fp0 fp-8_w=325
+94: (07) r1 += 26                     ; R1_w=351
+95: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=351 R10=fp0 fp-8_w=351
+; __bpfix_pad += 27; @ pad32.bpf.c:71
+96: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=351 R10=fp0 fp-8_w=351
+97: (07) r1 += 27                     ; R1_w=378
+98: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=378 R10=fp0 fp-8_w=378
+; __bpfix_pad += 28; @ pad32.bpf.c:72
+99: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=378 R10=fp0 fp-8_w=378
+100: (07) r1 += 28                    ; R1_w=406
+101: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=406 R10=fp0 fp-8_w=406
+; __bpfix_pad += 29; @ pad32.bpf.c:73
+102: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=406 R10=fp0 fp-8_w=406
+103: (07) r1 += 29                    ; R1_w=435
+104: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=435 R10=fp0 fp-8_w=435
+; __bpfix_pad += 30; @ pad32.bpf.c:74
+105: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=435 R10=fp0 fp-8_w=435
+106: (07) r1 += 30                    ; R1_w=465
+107: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=465 R10=fp0 fp-8_w=465
+; __bpfix_pad += 31; @ pad32.bpf.c:75
+108: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=465 R10=fp0 fp-8_w=465
+109: (07) r1 += 31                    ; R1_w=496
+110: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=496 R10=fp0 fp-8_w=496
+; __bpfix_pad += 32; @ pad32.bpf.c:76
+111: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=496 R10=fp0 fp-8_w=496
+112: (07) r1 += 32                    ; R1_w=528
+113: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=528 R10=fp0 fp-8_w=528
+; if (iph->protocol != IPPROTO_UDP) @ pad32.bpf.c:77
+114: (71) r1 = *(u8 *)(r6 +9)
+R6 invalid mem access 'scalar'
+verification time 344 usec
+stack depth 8
+processed 114 insns (limit 1000000) max_states_per_insn 0 total_states 1 peak_states 1 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'xdp_adjust_tail_stale': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-lz6ey3fr/xdp_adjust_tail_stale_001__pad32.o'
+Error: failed to load object file

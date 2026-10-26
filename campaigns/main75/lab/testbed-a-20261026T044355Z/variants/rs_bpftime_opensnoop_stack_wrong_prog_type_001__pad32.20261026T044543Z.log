@@ -1,0 +1,221 @@
+libbpf: loading object from /tmp/bpfix-cap-lz6ey3fr/rs_bpftime_opensnoop_stack_wrong_prog_type_001__pad32.o
+libbpf: elf: section(3) xdp, size 1120, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'rs_bpftime_opensnoop_stack_wrong_prog_type' at insn offset 0 (0 bytes), code size 140 insns (1120 bytes)
+libbpf: elf: section(4) .relxdp, size 32, link 27, flags 40, type=9
+libbpf: elf: section(5) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-lz6ey3fr/rs_bpftime_opensnoop_stack_wrong_prog_type_001__pad32.o is GPL
+libbpf: elf: section(6) .maps, size 56, link 0, flags 3, type=1
+libbpf: elf: section(17) .BTF, size 2288, link 0, flags 0, type=1
+libbpf: elf: section(19) .BTF.ext, size 880, link 0, flags 0, type=1
+libbpf: elf: section(27) .symtab, size 384, link 1, flags 0, type=2
+libbpf: looking for externs among 16 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'start': at sec_idx 6, offset 0.
+libbpf: map 'start': found type = 1.
+libbpf: map 'start': found key [8], sz = 4.
+libbpf: map 'start': found value [11], sz = 4.
+libbpf: map 'start': found max_entries = 1024.
+libbpf: map 'events': at sec_idx 6, offset 32.
+libbpf: map 'events': found type = 4.
+libbpf: map 'events': found key_size = 4.
+libbpf: map 'events': found value_size = 4.
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #5 against 'start'
+libbpf: prog 'rs_bpftime_opensnoop_stack_wrong_prog_type': found map 0 (start, sec 6, off 0) for insn #5
+libbpf: sec '.relxdp': relo #1: insn #129 against 'events'
+libbpf: prog 'rs_bpftime_opensnoop_stack_wrong_prog_type': found map 1 (events, sec 6, off 32) for insn #129
+libbpf: object 'rs_bpftime_open': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: map 'start': created successfully, fd=4
+libbpf: map 'events': setting size to 4
+libbpf: map 'events': created successfully, fd=5
+libbpf: prog 'rs_bpftime_opensnoop_stack_wrong_prog_type': BPF program load failed: Invalid argument
+libbpf: prog 'rs_bpftime_opensnoop_stack_wrong_prog_type': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_bpftime_opensnoop_stack_wrong_prog_type(struct xdp_md *ctx) @ pad32.bpf.c:92
+0: (bf) r6 = r1                       ; R1=ctx() R6_w=ctx()
+; __u32 pid = bpf_get_current_pid_tgid(); @ pad32.bpf.c:40
+1: (85) call bpf_get_current_pid_tgid#14      ; R0_w=scalar()
+2: (63) *(u32 *)(r10 -4) = r0         ; R0_w=scalar() R10=fp0 fp-8=mmmm????
+3: (bf) r2 = r10                      ; R2_w=fp0 R10=fp0
+4: (07) r2 += -4                      ; R2_w=fp-4
+; struct args_t *args = bpf_map_lookup_elem(&start, &pid); @ pad32.bpf.c:41
+5: (18) r1 = 0xffff8d0e22b32c00       ; R1_w=map_ptr(map=start,ks=4,vs=4)
+7: (85) call bpf_map_lookup_elem#1    ; R0=map_value_or_null(id=1,map=start,ks=4,vs=4)
+8: (bf) r7 = r0                       ; R0=map_value_or_null(id=1,map=start,ks=4,vs=4) R7_w=map_value_or_null(id=1,map=start,ks=4,vs=4)
+9: (b7) r8 = 0                        ; R8_w=0
+; __u64 stack[3] = {}; @ pad32.bpf.c:43
+10: (7b) *(u64 *)(r10 -40) = r8       ; R8_w=0 R10=fp0 fp-40_w=0
+11: (7b) *(u64 *)(r10 -48) = r8       ; R8_w=0 R10=fp0 fp-48_w=0
+12: (7b) *(u64 *)(r10 -56) = r8       ; R8_w=0 R10=fp0 fp-56_w=0
+; if (!args) @ pad32.bpf.c:45
+13: (55) if r7 != 0x0 goto pc+1       ; R7_w=0
+14: (05) goto pc+123
+; return args->flags; @ pad32.bpf.c:88
+138: (b7) r0 = 2                      ; R0=2
+; } @ pad32.bpf.c:97
+139: (95) exit
+
+from 13 to 15: R0=map_value(map=start,ks=4,vs=4) R6=ctx() R7_w=map_value(map=start,ks=4,vs=4) R8_w=0 R10=fp0 fp-8=mmmm???? fp-40_w=0 fp-48_w=0 fp-56_w=0
+15: R0=map_value(map=start,ks=4,vs=4) R6=ctx() R7_w=map_value(map=start,ks=4,vs=4) R8_w=0 R10=fp0 fp-8=mmmm???? fp-40_w=0 fp-48_w=0 fp-56_w=0
+; event.pid = bpf_get_current_pid_tgid() >> 32; @ pad32.bpf.c:48
+15: (85) call bpf_get_current_pid_tgid#14     ; R0_w=scalar()
+16: (77) r0 >>= 32                    ; R0_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+17: (63) *(u32 *)(r10 -32) = r0       ; R0_w=scalar(id=2,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-32=????scalar(id=2,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; event.ret = ret; @ pad32.bpf.c:49
+18: (63) *(u32 *)(r10 -28) = r8
+mark_precise: frame0: last_idx 18 first_idx 8 subseq_idx -1 
+mark_precise: frame0: regs=r8 stack= before 17: (63) *(u32 *)(r10 -32) = r0
+mark_precise: frame0: regs=r8 stack= before 16: (77) r0 >>= 32
+mark_precise: frame0: regs=r8 stack= before 15: (85) call bpf_get_current_pid_tgid#14
+mark_precise: frame0: regs=r8 stack= before 13: (55) if r7 != 0x0 goto pc+1
+mark_precise: frame0: regs=r8 stack= before 12: (7b) *(u64 *)(r10 -56) = r8
+mark_precise: frame0: regs=r8 stack= before 11: (7b) *(u64 *)(r10 -48) = r8
+mark_precise: frame0: regs=r8 stack= before 10: (7b) *(u64 *)(r10 -40) = r8
+mark_precise: frame0: regs=r8 stack= before 9: (b7) r8 = 0
+19: R8_w=0 R10=fp0 fp-32=0000mmmm
+; volatile __u64 __bpfix_pad = 0; @ pad32.bpf.c:51
+19: (7b) *(u64 *)(r10 -64) = r8       ; R8_w=0 R10=fp0 fp-64_w=0
+; __bpfix_pad += 1; @ pad32.bpf.c:52
+20: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=0 R10=fp0 fp-64_w=0
+21: (07) r1 += 1                      ; R1_w=1
+22: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=1 R10=fp0 fp-64_w=1
+; __bpfix_pad += 2; @ pad32.bpf.c:53
+23: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=1 R10=fp0 fp-64_w=1
+24: (07) r1 += 2                      ; R1_w=3
+25: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=3 R10=fp0 fp-64_w=3
+; __bpfix_pad += 3; @ pad32.bpf.c:54
+26: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=3 R10=fp0 fp-64_w=3
+27: (07) r1 += 3                      ; R1_w=6
+28: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=6 R10=fp0 fp-64_w=6
+; __bpfix_pad += 4; @ pad32.bpf.c:55
+29: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=6 R10=fp0 fp-64_w=6
+30: (07) r1 += 4                      ; R1_w=10
+31: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=10 R10=fp0 fp-64_w=10
+; __bpfix_pad += 5; @ pad32.bpf.c:56
+32: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=10 R10=fp0 fp-64_w=10
+33: (07) r1 += 5                      ; R1_w=15
+34: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=15 R10=fp0 fp-64_w=15
+; __bpfix_pad += 6; @ pad32.bpf.c:57
+35: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=15 R10=fp0 fp-64_w=15
+36: (07) r1 += 6                      ; R1_w=21
+37: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=21 R10=fp0 fp-64_w=21
+; __bpfix_pad += 7; @ pad32.bpf.c:58
+38: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=21 R10=fp0 fp-64_w=21
+39: (07) r1 += 7                      ; R1_w=28
+40: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=28 R10=fp0 fp-64_w=28
+; __bpfix_pad += 8; @ pad32.bpf.c:59
+41: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=28 R10=fp0 fp-64_w=28
+42: (07) r1 += 8                      ; R1_w=36
+43: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=36 R10=fp0 fp-64_w=36
+; __bpfix_pad += 9; @ pad32.bpf.c:60
+44: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=36 R10=fp0 fp-64_w=36
+45: (07) r1 += 9                      ; R1_w=45
+46: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=45 R10=fp0 fp-64_w=45
+; __bpfix_pad += 10; @ pad32.bpf.c:61
+47: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=45 R10=fp0 fp-64_w=45
+48: (07) r1 += 10                     ; R1_w=55
+49: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=55 R10=fp0 fp-64_w=55
+; __bpfix_pad += 11; @ pad32.bpf.c:62
+50: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=55 R10=fp0 fp-64_w=55
+51: (07) r1 += 11                     ; R1_w=66
+52: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=66 R10=fp0 fp-64_w=66
+; __bpfix_pad += 12; @ pad32.bpf.c:63
+53: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=66 R10=fp0 fp-64_w=66
+54: (07) r1 += 12                     ; R1_w=78
+55: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=78 R10=fp0 fp-64_w=78
+; __bpfix_pad += 13; @ pad32.bpf.c:64
+56: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=78 R10=fp0 fp-64_w=78
+57: (07) r1 += 13                     ; R1_w=91
+58: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=91 R10=fp0 fp-64_w=91
+; __bpfix_pad += 14; @ pad32.bpf.c:65
+59: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=91 R10=fp0 fp-64_w=91
+60: (07) r1 += 14                     ; R1_w=105
+61: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=105 R10=fp0 fp-64_w=105
+; __bpfix_pad += 15; @ pad32.bpf.c:66
+62: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=105 R10=fp0 fp-64_w=105
+63: (07) r1 += 15                     ; R1_w=120
+64: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=120 R10=fp0 fp-64_w=120
+; __bpfix_pad += 16; @ pad32.bpf.c:67
+65: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=120 R10=fp0 fp-64_w=120
+66: (07) r1 += 16                     ; R1_w=136
+67: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=136 R10=fp0 fp-64_w=136
+; __bpfix_pad += 17; @ pad32.bpf.c:68
+68: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=136 R10=fp0 fp-64_w=136
+69: (07) r1 += 17                     ; R1_w=153
+70: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=153 R10=fp0 fp-64_w=153
+; __bpfix_pad += 18; @ pad32.bpf.c:69
+71: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=153 R10=fp0 fp-64_w=153
+72: (07) r1 += 18                     ; R1_w=171
+73: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=171 R10=fp0 fp-64_w=171
+; __bpfix_pad += 19; @ pad32.bpf.c:70
+74: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=171 R10=fp0 fp-64_w=171
+75: (07) r1 += 19                     ; R1_w=190
+76: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=190 R10=fp0 fp-64_w=190
+; __bpfix_pad += 20; @ pad32.bpf.c:71
+77: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=190 R10=fp0 fp-64_w=190
+78: (07) r1 += 20                     ; R1_w=210
+79: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=210 R10=fp0 fp-64_w=210
+; __bpfix_pad += 21; @ pad32.bpf.c:72
+80: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=210 R10=fp0 fp-64_w=210
+81: (07) r1 += 21                     ; R1_w=231
+82: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=231 R10=fp0 fp-64_w=231
+; __bpfix_pad += 22; @ pad32.bpf.c:73
+83: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=231 R10=fp0 fp-64_w=231
+84: (07) r1 += 22                     ; R1_w=253
+85: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=253 R10=fp0 fp-64_w=253
+; __bpfix_pad += 23; @ pad32.bpf.c:74
+86: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=253 R10=fp0 fp-64_w=253
+87: (07) r1 += 23                     ; R1_w=276
+88: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=276 R10=fp0 fp-64_w=276
+; __bpfix_pad += 24; @ pad32.bpf.c:75
+89: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=276 R10=fp0 fp-64_w=276
+90: (07) r1 += 24                     ; R1_w=300
+91: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=300 R10=fp0 fp-64_w=300
+; __bpfix_pad += 25; @ pad32.bpf.c:76
+92: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=300 R10=fp0 fp-64_w=300
+93: (07) r1 += 25                     ; R1_w=325
+94: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=325 R10=fp0 fp-64_w=325
+; __bpfix_pad += 26; @ pad32.bpf.c:77
+95: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=325 R10=fp0 fp-64_w=325
+96: (07) r1 += 26                     ; R1_w=351
+97: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=351 R10=fp0 fp-64_w=351
+; __bpfix_pad += 27; @ pad32.bpf.c:78
+98: (79) r1 = *(u64 *)(r10 -64)       ; R1_w=351 R10=fp0 fp-64_w=351
+99: (07) r1 += 27                     ; R1_w=378
+100: (7b) *(u64 *)(r10 -64) = r1      ; R1_w=378 R10=fp0 fp-64_w=378
+; __bpfix_pad += 28; @ pad32.bpf.c:79
+101: (79) r1 = *(u64 *)(r10 -64)      ; R1_w=378 R10=fp0 fp-64_w=378
+102: (07) r1 += 28                    ; R1_w=406
+103: (7b) *(u64 *)(r10 -64) = r1      ; R1_w=406 R10=fp0 fp-64_w=406
+; __bpfix_pad += 29; @ pad32.bpf.c:80
+104: (79) r1 = *(u64 *)(r10 -64)      ; R1_w=406 R10=fp0 fp-64_w=406
+105: (07) r1 += 29                    ; R1_w=435
+106: (7b) *(u64 *)(r10 -64) = r1      ; R1_w=435 R10=fp0 fp-64_w=435
+; __bpfix_pad += 30; @ pad32.bpf.c:81
+107: (79) r1 = *(u64 *)(r10 -64)      ; R1_w=435 R10=fp0 fp-64_w=435
+108: (07) r1 += 30                    ; R1_w=465
+109: (7b) *(u64 *)(r10 -64) = r1      ; R1_w=465 R10=fp0 fp-64_w=465
+; __bpfix_pad += 31; @ pad32.bpf.c:82
+110: (79) r1 = *(u64 *)(r10 -64)      ; R1_w=465 R10=fp0 fp-64_w=465
+111: (07) r1 += 31                    ; R1_w=496
+112: (7b) *(u64 *)(r10 -64) = r1      ; R1_w=496 R10=fp0 fp-64_w=496
+; __bpfix_pad += 32; @ pad32.bpf.c:83
+113: (79) r1 = *(u64 *)(r10 -64)      ; R1_w=496 R10=fp0 fp-64_w=496
+114: (07) r1 += 32                    ; R1_w=528
+115: (7b) *(u64 *)(r10 -64) = r1      ; R1_w=528 R10=fp0 fp-64_w=528
+116: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+117: (07) r2 += -56                   ; R2_w=fp-56
+; bpf_get_stack(ctx, &stack, sizeof(stack), BPF_F_USER_STACK); @ pad32.bpf.c:84
+118: (bf) r1 = r6                     ; R1_w=ctx() R6=ctx()
+119: (b7) r3 = 24                     ; R3_w=24
+120: (b7) r4 = 256                    ; R4_w=256
+121: (85) call bpf_get_stack#67
+program of this type cannot use helper bpf_get_stack#67
+verification time 456 usec
+stack depth 64
+processed 123 insns (limit 1000000) max_states_per_insn 0 total_states 2 peak_states 2 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_bpftime_opensnoop_stack_wrong_prog_type': failed to load: -22
+libbpf: failed to load object '/tmp/bpfix-cap-lz6ey3fr/rs_bpftime_opensnoop_stack_wrong_prog_type_001__pad32.o'
+Error: failed to load object file

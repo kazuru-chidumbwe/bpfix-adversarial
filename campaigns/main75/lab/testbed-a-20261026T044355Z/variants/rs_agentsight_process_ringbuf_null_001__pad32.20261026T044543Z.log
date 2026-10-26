@@ -1,0 +1,203 @@
+libbpf: loading object from /tmp/bpfix-cap-lz6ey3fr/rs_agentsight_process_ringbuf_null_001__pad32.o
+libbpf: elf: section(3) tc, size 1016, link 0, flags 6, type=1
+libbpf: sec 'tc': found program 'rs_agentsight_process_ringbuf_null' at insn offset 0 (0 bytes), code size 127 insns (1016 bytes)
+libbpf: elf: section(4) .reltc, size 16, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 16, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-lz6ey3fr/rs_agentsight_process_ringbuf_null_001__pad32.o is GPL
+libbpf: elf: section(16) .BTF, size 2985, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 940, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 336, link 1, flags 0, type=2
+libbpf: looking for externs among 14 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'rb': at sec_idx 5, offset 0.
+libbpf: map 'rb': found type = 27.
+libbpf: map 'rb': found max_entries = 4096.
+libbpf: sec '.reltc': collecting relocation for section(3) 'tc'
+libbpf: sec '.reltc': relo #0: insn #8 against 'rb'
+libbpf: prog 'rs_agentsight_process_ringbuf_null': found map 0 (rb, sec 5, off 0) for insn #8
+libbpf: object 'rs_agentsight_p': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'tc': found 4 CO-RE relocations
+libbpf: CO-RE relocating [10] struct __sk_buff: found target candidate [13824] struct __sk_buff in [vmlinux]
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #0: <byte_off> [10] struct __sk_buff.data_end (0:16 @ offset 80)
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #0: matching candidate #0 <byte_off> [13824] struct __sk_buff.data_end (0:16 @ offset 80)
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #0: patched insn #2 (LDX/ST/STX) off 80 -> 80
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #1: <byte_off> [10] struct __sk_buff.data (0:15 @ offset 76)
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #1: matching candidate #0 <byte_off> [13824] struct __sk_buff.data (0:15 @ offset 76)
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #1: patched insn #3 (LDX/ST/STX) off 76 -> 76
+libbpf: CO-RE relocating [25] struct ethhdr: found target candidate [20213] struct ethhdr in [vmlinux]
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #2: <byte_off> [25] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #2: matching candidate #0 <byte_off> [20213] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #2: patched insn #7 (LDX/ST/STX) off 12 -> 12
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #3: <byte_off> [10] struct __sk_buff.mark (0:2 @ offset 8)
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #3: matching candidate #0 <byte_off> [13824] struct __sk_buff.mark (0:2 @ offset 8)
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #3: patched insn #112 (LDX/ST/STX) off 8 -> 8
+libbpf: map 'rb': created successfully, fd=4
+libbpf: prog 'rs_agentsight_process_ringbuf_null': BPF program load failed: Permission denied
+libbpf: prog 'rs_agentsight_process_ringbuf_null': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_agentsight_process_ringbuf_null(struct __sk_buff *skb) @ pad32.bpf.c:32
+0: (bf) r6 = r1                       ; R1=ctx() R6_w=ctx()
+1: (b7) r7 = 0                        ; R7_w=0
+; void *data_end = (void *)(long)skb->data_end; @ pad32.bpf.c:35
+2: (61) r2 = *(u32 *)(r6 +80)         ; R2_w=pkt_end() R6_w=ctx()
+; void *data = (void *)(long)skb->data; @ pad32.bpf.c:34
+3: (61) r1 = *(u32 *)(r6 +76)         ; R1_w=pkt(r=0) R6_w=ctx()
+; if ((void *)(eth + 1) > data_end) @ pad32.bpf.c:40
+4: (bf) r3 = r1                       ; R1_w=pkt(r=0) R3_w=pkt(r=0)
+5: (07) r3 += 14                      ; R3_w=pkt(off=14,r=0)
+6: (2d) if r3 > r2 goto pc+118        ; R2_w=pkt_end() R3_w=pkt(off=14,r=14)
+; proto = bpf_ntohs(eth->h_proto); @ pad32.bpf.c:43
+7: (69) r8 = *(u16 *)(r1 +12)         ; R1_w=pkt(r=14) R8_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+; e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0); @ pad32.bpf.c:44
+8: (18) r1 = 0xffff8d0e31bb5d00       ; R1_w=map_ptr(map=rb,ks=0,vs=0)
+10: (b7) r2 = 16                      ; R2_w=16
+11: (b7) r3 = 0                       ; R3_w=0
+12: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 12 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 11: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 10: (b7) r2 = 16
+13: R0=ringbuf_mem_or_null(id=2,ref_obj_id=2,sz=16) refs=2
+; volatile __u64 __bpfix_pad = 0; @ pad32.bpf.c:46
+13: (7b) *(u64 *)(r10 -8) = r7        ; R7=0 R10=fp0 fp-8_w=0 refs=2
+; __bpfix_pad += 1; @ pad32.bpf.c:47
+14: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8_w=0 refs=2
+15: (07) r1 += 1                      ; R1_w=1 refs=2
+16: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8_w=1 refs=2
+; __bpfix_pad += 2; @ pad32.bpf.c:48
+17: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=1 R10=fp0 fp-8_w=1 refs=2
+18: (07) r1 += 2                      ; R1_w=3 refs=2
+19: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=3 R10=fp0 fp-8_w=3 refs=2
+; __bpfix_pad += 3; @ pad32.bpf.c:49
+20: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=3 R10=fp0 fp-8_w=3 refs=2
+21: (07) r1 += 3                      ; R1_w=6 refs=2
+22: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=6 R10=fp0 fp-8_w=6 refs=2
+; __bpfix_pad += 4; @ pad32.bpf.c:50
+23: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=6 R10=fp0 fp-8_w=6 refs=2
+24: (07) r1 += 4                      ; R1_w=10 refs=2
+25: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=10 R10=fp0 fp-8_w=10 refs=2
+; __bpfix_pad += 5; @ pad32.bpf.c:51
+26: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=10 R10=fp0 fp-8_w=10 refs=2
+27: (07) r1 += 5                      ; R1_w=15 refs=2
+28: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=15 R10=fp0 fp-8_w=15 refs=2
+; __bpfix_pad += 6; @ pad32.bpf.c:52
+29: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=15 R10=fp0 fp-8_w=15 refs=2
+30: (07) r1 += 6                      ; R1_w=21 refs=2
+31: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=21 R10=fp0 fp-8_w=21 refs=2
+; __bpfix_pad += 7; @ pad32.bpf.c:53
+32: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=21 R10=fp0 fp-8_w=21 refs=2
+33: (07) r1 += 7                      ; R1_w=28 refs=2
+34: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=28 R10=fp0 fp-8_w=28 refs=2
+; __bpfix_pad += 8; @ pad32.bpf.c:54
+35: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=28 R10=fp0 fp-8_w=28 refs=2
+36: (07) r1 += 8                      ; R1_w=36 refs=2
+37: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=36 R10=fp0 fp-8_w=36 refs=2
+; __bpfix_pad += 9; @ pad32.bpf.c:55
+38: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=36 R10=fp0 fp-8_w=36 refs=2
+39: (07) r1 += 9                      ; R1_w=45 refs=2
+40: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=45 R10=fp0 fp-8_w=45 refs=2
+; __bpfix_pad += 10; @ pad32.bpf.c:56
+41: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=45 R10=fp0 fp-8_w=45 refs=2
+42: (07) r1 += 10                     ; R1_w=55 refs=2
+43: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=55 R10=fp0 fp-8_w=55 refs=2
+; __bpfix_pad += 11; @ pad32.bpf.c:57
+44: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=55 R10=fp0 fp-8_w=55 refs=2
+45: (07) r1 += 11                     ; R1_w=66 refs=2
+46: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=66 R10=fp0 fp-8_w=66 refs=2
+; __bpfix_pad += 12; @ pad32.bpf.c:58
+47: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=66 R10=fp0 fp-8_w=66 refs=2
+48: (07) r1 += 12                     ; R1_w=78 refs=2
+49: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=78 R10=fp0 fp-8_w=78 refs=2
+; __bpfix_pad += 13; @ pad32.bpf.c:59
+50: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=78 R10=fp0 fp-8_w=78 refs=2
+51: (07) r1 += 13                     ; R1_w=91 refs=2
+52: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=91 R10=fp0 fp-8_w=91 refs=2
+; __bpfix_pad += 14; @ pad32.bpf.c:60
+53: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=91 R10=fp0 fp-8_w=91 refs=2
+54: (07) r1 += 14                     ; R1_w=105 refs=2
+55: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=105 R10=fp0 fp-8_w=105 refs=2
+; __bpfix_pad += 15; @ pad32.bpf.c:61
+56: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=105 R10=fp0 fp-8_w=105 refs=2
+57: (07) r1 += 15                     ; R1_w=120 refs=2
+58: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=120 R10=fp0 fp-8_w=120 refs=2
+; __bpfix_pad += 16; @ pad32.bpf.c:62
+59: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=120 R10=fp0 fp-8_w=120 refs=2
+60: (07) r1 += 16                     ; R1_w=136 refs=2
+61: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=136 R10=fp0 fp-8_w=136 refs=2
+; __bpfix_pad += 17; @ pad32.bpf.c:63
+62: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=136 R10=fp0 fp-8_w=136 refs=2
+63: (07) r1 += 17                     ; R1_w=153 refs=2
+64: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=153 R10=fp0 fp-8_w=153 refs=2
+; __bpfix_pad += 18; @ pad32.bpf.c:64
+65: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=153 R10=fp0 fp-8_w=153 refs=2
+66: (07) r1 += 18                     ; R1_w=171 refs=2
+67: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=171 R10=fp0 fp-8_w=171 refs=2
+; __bpfix_pad += 19; @ pad32.bpf.c:65
+68: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=171 R10=fp0 fp-8_w=171 refs=2
+69: (07) r1 += 19                     ; R1_w=190 refs=2
+70: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=190 R10=fp0 fp-8_w=190 refs=2
+; __bpfix_pad += 20; @ pad32.bpf.c:66
+71: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=190 R10=fp0 fp-8_w=190 refs=2
+72: (07) r1 += 20                     ; R1_w=210 refs=2
+73: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=210 R10=fp0 fp-8_w=210 refs=2
+; __bpfix_pad += 21; @ pad32.bpf.c:67
+74: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=210 R10=fp0 fp-8_w=210 refs=2
+75: (07) r1 += 21                     ; R1_w=231 refs=2
+76: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=231 R10=fp0 fp-8_w=231 refs=2
+; __bpfix_pad += 22; @ pad32.bpf.c:68
+77: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=231 R10=fp0 fp-8_w=231 refs=2
+78: (07) r1 += 22                     ; R1_w=253 refs=2
+79: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=253 R10=fp0 fp-8_w=253 refs=2
+; __bpfix_pad += 23; @ pad32.bpf.c:69
+80: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=253 R10=fp0 fp-8_w=253 refs=2
+81: (07) r1 += 23                     ; R1_w=276 refs=2
+82: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=276 R10=fp0 fp-8_w=276 refs=2
+; __bpfix_pad += 24; @ pad32.bpf.c:70
+83: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=276 R10=fp0 fp-8_w=276 refs=2
+84: (07) r1 += 24                     ; R1_w=300 refs=2
+85: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=300 R10=fp0 fp-8_w=300 refs=2
+; __bpfix_pad += 25; @ pad32.bpf.c:71
+86: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=300 R10=fp0 fp-8_w=300 refs=2
+87: (07) r1 += 25                     ; R1_w=325 refs=2
+88: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=325 R10=fp0 fp-8_w=325 refs=2
+; __bpfix_pad += 26; @ pad32.bpf.c:72
+89: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=325 R10=fp0 fp-8_w=325 refs=2
+90: (07) r1 += 26                     ; R1_w=351 refs=2
+91: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=351 R10=fp0 fp-8_w=351 refs=2
+; __bpfix_pad += 27; @ pad32.bpf.c:73
+92: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=351 R10=fp0 fp-8_w=351 refs=2
+93: (07) r1 += 27                     ; R1_w=378 refs=2
+94: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=378 R10=fp0 fp-8_w=378 refs=2
+; __bpfix_pad += 28; @ pad32.bpf.c:74
+95: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=378 R10=fp0 fp-8_w=378 refs=2
+96: (07) r1 += 28                     ; R1_w=406 refs=2
+97: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=406 R10=fp0 fp-8_w=406 refs=2
+; __bpfix_pad += 29; @ pad32.bpf.c:75
+98: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=406 R10=fp0 fp-8_w=406 refs=2
+99: (07) r1 += 29                     ; R1_w=435 refs=2
+100: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=435 R10=fp0 fp-8_w=435 refs=2
+; __bpfix_pad += 30; @ pad32.bpf.c:76
+101: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=435 R10=fp0 fp-8_w=435 refs=2
+102: (07) r1 += 30                    ; R1_w=465 refs=2
+103: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=465 R10=fp0 fp-8_w=465 refs=2
+; __bpfix_pad += 31; @ pad32.bpf.c:77
+104: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=465 R10=fp0 fp-8_w=465 refs=2
+105: (07) r1 += 31                    ; R1_w=496 refs=2
+106: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=496 R10=fp0 fp-8_w=496 refs=2
+; __bpfix_pad += 32; @ pad32.bpf.c:78
+107: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=496 R10=fp0 fp-8_w=496 refs=2
+108: (07) r1 += 32                    ; R1_w=528 refs=2
+109: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=528 R10=fp0 fp-8_w=528 refs=2
+110: (b7) r7 = 1                      ; R7_w=1 refs=2
+; e->type = 1; @ pad32.bpf.c:79
+111: (63) *(u32 *)(r0 +0) = r7
+R0 invalid mem access 'ringbuf_mem_or_null'
+verification time 480 usec
+stack depth 8
+processed 111 insns (limit 1000000) max_states_per_insn 0 total_states 1 peak_states 1 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_agentsight_process_ringbuf_null': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-lz6ey3fr/rs_agentsight_process_ringbuf_null_001__pad32.o'
+Error: failed to load object file

@@ -1,0 +1,483 @@
+libbpf: loading object from /tmp/bpfix-cap-4slni654/rs_actplane_mmap_pending_merge_001__fixed.o
+libbpf: elf: section(2) .text, size 520, link 0, flags 6, type=1
+libbpf: sec '.text': found program 'rs_mmap_index_remember' at insn offset 0 (0 bytes), code size 65 insns (520 bytes)
+libbpf: elf: section(3) .rel.text, size 32, link 28, flags 40, type=9
+libbpf: elf: section(4) xdp, size 840, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'rs_actplane_mmap_pending_merge' at insn offset 0 (0 bytes), code size 105 insns (840 bytes)
+libbpf: elf: section(5) .relxdp, size 112, link 28, flags 40, type=9
+libbpf: elf: section(6) .maps, size 160, link 0, flags 3, type=1
+libbpf: elf: section(7) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-4slni654/rs_actplane_mmap_pending_merge_001__fixed.o is GPL
+libbpf: elf: section(18) .BTF, size 3818, link 0, flags 0, type=1
+libbpf: elf: section(20) .BTF.ext, size 1268, link 0, flags 0, type=1
+libbpf: elf: section(28) .symtab, size 504, link 1, flags 0, type=2
+libbpf: looking for externs among 21 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'ts_mmappend': at sec_idx 6, offset 0.
+libbpf: map 'ts_mmappend': found type = 1.
+libbpf: map 'ts_mmappend': found key [8], sz = 8.
+libbpf: map 'ts_mmappend': found value [11], sz = 32.
+libbpf: map 'ts_mmappend': found max_entries = 16.
+libbpf: map 'ts_fd': at sec_idx 6, offset 32.
+libbpf: map 'ts_fd': found type = 1.
+libbpf: map 'ts_fd': found key [18], sz = 8.
+libbpf: map 'ts_fd': found value [20], sz = 32.
+libbpf: map 'ts_fd': found max_entries = 16.
+libbpf: map 'ts_mmap': at sec_idx 6, offset 64.
+libbpf: map 'ts_mmap': found type = 1.
+libbpf: map 'ts_mmap': found key [27], sz = 16.
+libbpf: map 'ts_mmap': found value [29], sz = 64.
+libbpf: map 'ts_mmap': found max_entries = 16.
+libbpf: map 'ts_mmap_index': at sec_idx 6, offset 96.
+libbpf: map 'ts_mmap_index': found type = 1.
+libbpf: map 'ts_mmap_index': found key [12], sz = 4.
+libbpf: map 'ts_mmap_index': found value [34], sz = 40.
+libbpf: map 'ts_mmap_index': found max_entries = 16.
+libbpf: map 'ts_mmap_scratch': at sec_idx 6, offset 128.
+libbpf: map 'ts_mmap_scratch': found type = 6.
+libbpf: map 'ts_mmap_scratch': found key [13], sz = 4.
+libbpf: map 'ts_mmap_scratch': found value [29], sz = 64.
+libbpf: map 'ts_mmap_scratch': found max_entries = 1.
+libbpf: sec '.rel.text': collecting relocation for section(2) '.text'
+libbpf: sec '.rel.text': relo #0: insn #4 against 'ts_mmap_index'
+libbpf: prog 'rs_mmap_index_remember': found map 3 (ts_mmap_index, sec 6, off 96) for insn #4
+libbpf: sec '.rel.text': relo #1: insn #59 against 'ts_mmap_index'
+libbpf: prog 'rs_mmap_index_remember': found map 3 (ts_mmap_index, sec 6, off 96) for insn #59
+libbpf: sec '.relxdp': collecting relocation for section(4) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #12 against 'ts_mmappend'
+libbpf: prog 'rs_actplane_mmap_pending_merge': found map 0 (ts_mmappend, sec 6, off 0) for insn #12
+libbpf: sec '.relxdp': relo #1: insn #22 against 'ts_fd'
+libbpf: prog 'rs_actplane_mmap_pending_merge': found map 1 (ts_fd, sec 6, off 32) for insn #22
+libbpf: sec '.relxdp': relo #2: insn #31 against 'ts_mmap_scratch'
+libbpf: prog 'rs_actplane_mmap_pending_merge': found map 4 (ts_mmap_scratch, sec 6, off 128) for insn #31
+libbpf: sec '.relxdp': relo #3: insn #51 against '.text'
+libbpf: sec '.relxdp': relo #4: insn #59 against 'ts_mmap'
+libbpf: prog 'rs_actplane_mmap_pending_merge': found map 2 (ts_mmap, sec 6, off 64) for insn #59
+libbpf: sec '.relxdp': relo #5: insn #92 against 'ts_mmap'
+libbpf: prog 'rs_actplane_mmap_pending_merge': found map 2 (ts_mmap, sec 6, off 64) for insn #92
+libbpf: sec '.relxdp': relo #6: insn #100 against 'ts_mmappend'
+libbpf: prog 'rs_actplane_mmap_pending_merge': found map 0 (ts_mmappend, sec 6, off 0) for insn #100
+libbpf: object 'rs_actplane_mma': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'xdp': found 2 CO-RE relocations
+libbpf: CO-RE relocating [44] struct xdp_md: found target candidate [13583] struct xdp_md in [vmlinux]
+libbpf: prog 'rs_actplane_mmap_pending_merge': relo #0: <byte_off> [44] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_actplane_mmap_pending_merge': relo #0: matching candidate #0 <byte_off> [13583] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_actplane_mmap_pending_merge': relo #0: patched insn #1 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'rs_actplane_mmap_pending_merge': relo #1: <byte_off> [44] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_actplane_mmap_pending_merge': relo #1: matching candidate #0 <byte_off> [13583] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_actplane_mmap_pending_merge': relo #1: patched insn #2 (LDX/ST/STX) off 0 -> 0
+libbpf: prog 'rs_actplane_mmap_pending_merge': added 65 insns from sub-prog 'rs_mmap_index_remember'
+libbpf: prog 'rs_actplane_mmap_pending_merge': insn #51 relocated, imm 53 points to subprog 'rs_mmap_index_remember' (now at 105 offset)
+libbpf: map 'ts_mmappend': created successfully, fd=4
+libbpf: map 'ts_fd': created successfully, fd=5
+libbpf: map 'ts_mmap': created successfully, fd=6
+libbpf: map 'ts_mmap_index': created successfully, fd=7
+libbpf: map 'ts_mmap_scratch': created successfully, fd=8
+libbpf: prog 'rs_actplane_mmap_pending_merge': -- BEGIN PROG LOAD LOG --
+func#0 @0
+func#1 @105
+0: R1=ctx() R10=fp0
+; int rs_actplane_mmap_pending_merge(struct xdp_md *ctx) @ fixed.bpf.c:182
+0: (b7) r8 = 2                        ; R8_w=2
+; void *data_end = (void *)(long)ctx->data_end; @ fixed.bpf.c:185
+1: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data; @ fixed.bpf.c:184
+2: (61) r1 = *(u32 *)(r1 +0)          ; R1_w=pkt(r=0)
+; if ((void *)(bytes + 5) > data_end) @ fixed.bpf.c:196
+3: (bf) r3 = r1                       ; R1_w=pkt(r=0) R3_w=pkt(r=0)
+4: (07) r3 += 5                       ; R3_w=pkt(off=5,r=0)
+5: (2d) if r3 > r2 goto pc+97         ; R2_w=pkt_end() R3_w=pkt(off=5,r=5)
+; pid = bytes[0]; @ fixed.bpf.c:199
+6: (71) r9 = *(u8 *)(r1 +0)           ; R1_w=pkt(r=5) R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; tid = bytes[1]; @ fixed.bpf.c:200
+7: (71) r2 = *(u8 *)(r1 +1)           ; R1_w=pkt(r=5) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+8: (7b) *(u64 *)(r10 -40) = r2        ; R2_w=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-40_w=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; start = RS_MMAP_BASE + ((__u64)bytes[4] << 12); @ fixed.bpf.c:203
+9: (71) r7 = *(u8 *)(r1 +4)           ; R1_w=pkt(r=5) R7_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+10: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+11: (07) r2 += -40                    ; R2_w=fp-40
+; p = bpf_map_lookup_elem(&ts_mmappend, &tid); @ fixed.bpf.c:205
+12: (18) r1 = 0xffff8d0ddbafd800      ; R1_w=map_ptr(map=ts_mmappend,ks=8,vs=32)
+14: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=2,map=ts_mmappend,ks=8,vs=32)
+15: (bf) r6 = r0                      ; R0=map_value_or_null(id=2,map=ts_mmappend,ks=8,vs=32) R6_w=map_value_or_null(id=2,map=ts_mmappend,ks=8,vs=32)
+; if (!p) @ fixed.bpf.c:206
+16: (15) if r6 == 0x0 goto pc+86      ; R6_w=map_value(map=ts_mmappend,ks=8,vs=32)
+; fd = p->fd; @ fixed.bpf.c:212
+17: (61) r1 = *(u32 *)(r6 +0)         ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R6_w=map_value(map=ts_mmappend,ks=8,vs=32)
+; fkey.fd = fd; @ fixed.bpf.c:214
+18: (63) *(u32 *)(r10 -28) = r1       ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-32=mmmm????
+; fkey.pid = pid; @ fixed.bpf.c:213
+19: (63) *(u32 *)(r10 -32) = r9       ; R9=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-32=mmmmscalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+20: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+21: (07) r2 += -32                    ; R2_w=fp-32
+; ref = bpf_map_lookup_elem(&ts_fd, &fkey); @ fixed.bpf.c:215
+22: (18) r1 = 0xffff8d0ddbafc800      ; R1_w=map_ptr(map=ts_fd,ks=8,vs=32)
+24: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=4,map=ts_fd,ks=8,vs=32)
+; if (ref) @ fixed.bpf.c:216
+25: (15) if r0 == 0x0 goto pc+72      ; R0=map_value(map=ts_fd,ks=8,vs=32)
+26: (7b) *(u64 *)(r10 -48) = r0       ; R0=map_value(map=ts_fd,ks=8,vs=32) R10=fp0 fp-48_w=map_value(map=ts_fd,ks=8,vs=32)
+27: (b7) r1 = 0                       ; R1_w=0
+; __u32 zero = 0; @ fixed.bpf.c:155
+28: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 28 first_idx 25 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 27: (b7) r1 = 0
+29: R1_w=0 R10=fp0 fp-8=0000????
+29: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+30: (07) r2 += -4                     ; R2_w=fp-4
+; struct rs_mmap_ref *mref = bpf_map_lookup_elem(&ts_mmap_scratch, &zero); @ fixed.bpf.c:156
+31: (18) r1 = 0xffff8d0e375d5400      ; R1_w=map_ptr(map=ts_mmap_scratch,ks=4,vs=64)
+33: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=5,map=ts_mmap_scratch,ks=4,vs=64)
+34: (bf) r8 = r0                      ; R0=map_value_or_null(id=5,map=ts_mmap_scratch,ks=4,vs=64) R8_w=map_value_or_null(id=5,map=ts_mmap_scratch,ks=4,vs=64)
+; if (!mref || !p || !fdref || !p->len || !start) @ fixed.bpf.c:160
+35: (15) if r8 == 0x0 goto pc+61      ; R8_w=map_value(map=ts_mmap_scratch,ks=4,vs=64)
+36: (79) r1 = *(u64 *)(r6 +8)         ; R1_w=scalar() R6=map_value(map=ts_mmappend,ks=8,vs=32)
+37: (15) if r1 == 0x0 goto pc+59      ; R1_w=scalar(umin=1)
+38: (67) r7 <<= 12                    ; R7_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xff000,var_off=(0x0; 0xff000))
+39: (47) r7 |= 1048576                ; R7_w=scalar(smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000))
+40: (b7) r1 = 0                       ; R1_w=0
+; __builtin_memset(mref, 0, sizeof(*mref)); @ fixed.bpf.c:162
+41: (7b) *(u64 *)(r8 +56) = r1        ; R1_w=0 R8_w=map_value(map=ts_mmap_scratch,ks=4,vs=64)
+42: (7b) *(u64 *)(r8 +48) = r1        ; R1_w=0 R8_w=map_value(map=ts_mmap_scratch,ks=4,vs=64)
+43: (7b) *(u64 *)(r8 +40) = r1        ; R1_w=0 R8_w=map_value(map=ts_mmap_scratch,ks=4,vs=64)
+44: (7b) *(u64 *)(r8 +32) = r1        ; R1_w=0 R8_w=map_value(map=ts_mmap_scratch,ks=4,vs=64)
+45: (7b) *(u64 *)(r8 +24) = r1        ; R1_w=0 R8_w=map_value(map=ts_mmap_scratch,ks=4,vs=64)
+46: (7b) *(u64 *)(r8 +16) = r1        ; R1_w=0 R8_w=map_value(map=ts_mmap_scratch,ks=4,vs=64)
+47: (7b) *(u64 *)(r8 +8) = r1         ; R1_w=0 R8_w=map_value(map=ts_mmap_scratch,ks=4,vs=64)
+48: (7b) *(u64 *)(r8 +0) = r1         ; R1_w=0 R8_w=map_value(map=ts_mmap_scratch,ks=4,vs=64)
+; overwritten = rs_mmap_index_remember(pid, start); @ fixed.bpf.c:163
+49: (bf) r1 = r9                      ; R1_w=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R9=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+50: (bf) r2 = r7                      ; R2=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R7=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000))
+51: (85) call pc+53
+caller:
+ R6=map_value(map=ts_mmappend,ks=8,vs=32) R7=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R8=map_value(map=ts_mmap_scratch,ks=4,vs=64) R9=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmm???? fp-32=mmmmmmmm fp-40=mmmmmmmm fp-48=map_value(map=ts_fd,ks=8,vs=32)
+callee:
+ frame1: R1=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R10=fp0
+105: frame1: R1=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R10=fp0
+; static __noinline __u64 rs_mmap_index_remember(__s32 pid, __u64 start) @ fixed.bpf.c:116
+105: (bf) r6 = r2                     ; frame1: R2=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R6_w=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000))
+106: (63) *(u32 *)(r10 -4) = r1       ; frame1: R1=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmm????
+107: (bf) r2 = r10                    ; frame1: R2_w=fp0 R10=fp0
+108: (07) r2 += -4                    ; frame1: R2_w=fp-4
+; struct rs_mmap_index *idx = bpf_map_lookup_elem(&ts_mmap_index, &pid); @ fixed.bpf.c:118
+109: (18) r1 = 0xffff8d0daf9f3000     ; frame1: R1_w=map_ptr(map=ts_mmap_index,ks=4,vs=40)
+111: (85) call bpf_map_lookup_elem#1          ; frame1: R0_w=map_value_or_null(id=7,map=ts_mmap_index,ks=4,vs=40)
+; if (!idx) { @ fixed.bpf.c:125
+112: (15) if r0 == 0x0 goto pc+39     ; frame1: R0_w=map_value(map=ts_mmap_index,ks=4,vs=40)
+113: (bf) r1 = r0                     ; frame1: R0_w=map_value(map=ts_mmap_index,ks=4,vs=40) R1_w=map_value(map=ts_mmap_index,ks=4,vs=40)
+; if (idx->starts[i] == start) @ fixed.bpf.c:134
+114: (79) r2 = *(u64 *)(r1 +0)        ; frame1: R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2=scalar()
+115: (1d) if r2 == r6 goto pc+1       ; frame1: R2=scalar() R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000))
+116: (05) goto pc+2
+119: (79) r2 = *(u64 *)(r1 +8)        ; frame1: R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2_w=scalar()
+120: (5d) if r2 != r6 goto pc+2       ; frame1: R2_w=scalar(smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000))
+121: (b7) r2 = 0                      ; frame1: R2_w=0
+; idx->starts[i] = 0; @ fixed.bpf.c:135
+122: (7b) *(u64 *)(r1 +8) = r2        ; frame1: R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2_w=0
+; if (idx->starts[i] == start) @ fixed.bpf.c:134
+123: (79) r2 = *(u64 *)(r1 +16)       ; frame1: R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2_w=scalar()
+124: (5d) if r2 != r6 goto pc+2       ; frame1: R2_w=scalar(smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000))
+125: (b7) r2 = 0                      ; frame1: R2_w=0
+; idx->starts[i] = 0; @ fixed.bpf.c:135
+126: (7b) *(u64 *)(r1 +16) = r2       ; frame1: R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2=0
+; if (idx->starts[i] == start) @ fixed.bpf.c:134
+127: (79) r2 = *(u64 *)(r1 +24)       ; frame1: R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2_w=scalar()
+128: (5d) if r2 != r6 goto pc+2       ; frame1: R2_w=scalar(smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000))
+129: (b7) r2 = 0                      ; frame1: R2_w=0
+; idx->starts[i] = 0; @ fixed.bpf.c:135
+130: (7b) *(u64 *)(r1 +24) = r2       ; frame1: R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2_w=0
+; slot = idx->next; @ fixed.bpf.c:137
+131: (61) r3 = *(u32 *)(r1 +32)       ; frame1: R1=map_value(map=ts_mmap_index,ks=4,vs=40) R3_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+132: (b7) r7 = 0                      ; frame1: R7_w=0
+133: (b7) r2 = 0                      ; frame1: R2_w=0
+; if (slot >= RS_MMAP_INDEX_SLOTS) @ fixed.bpf.c:138
+134: (25) if r3 > 0x3 goto pc+1       ; frame1: R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=3,var_off=(0x0; 0x3))
+135: (bf) r2 = r3                     ; frame1: R2=scalar(id=8,smin=smin32=0,smax=umax=smax32=umax32=3,var_off=(0x0; 0x3)) R3=scalar(id=8,smin=smin32=0,smax=umax=smax32=umax32=3,var_off=(0x0; 0x3))
+; overwritten = idx->starts[slot]; @ fixed.bpf.c:140
+136: (bf) r3 = r2                     ; frame1: R2=scalar(id=8,smin=smin32=0,smax=umax=smax32=umax32=3,var_off=(0x0; 0x3)) R3_w=scalar(id=8,smin=smin32=0,smax=umax=smax32=umax32=3,var_off=(0x0; 0x3))
+137: (67) r3 <<= 3                    ; frame1: R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=24,var_off=(0x0; 0x18))
+138: (0f) r0 += r3
+mark_precise: frame1: last_idx 138 first_idx 136 subseq_idx -1 
+mark_precise: frame1: regs=r3 stack= before 137: (67) r3 <<= 3
+mark_precise: frame1: regs=r3 stack= before 136: (bf) r3 = r2
+mark_precise: frame1: parent state regs=r2 stack=:  frame1: R0_r=map_value(map=ts_mmap_index,ks=4,vs=40) R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2_rw=Pscalar(id=8,smin=smin32=0,smax=umax=smax32=umax32=3,var_off=(0x0; 0x3)) R3_w=scalar(id=8,smin=smin32=0,smax=umax=smax32=umax32=3,var_off=(0x0; 0x3)) R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R7_w=0 R10=fp0 fp-8=mmmm????
+mark_precise: frame0: parent state regs= stack=:  R6=map_value(map=ts_mmappend,ks=8,vs=32) R7=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R8=map_value(map=ts_mmap_scratch,ks=4,vs=64) R9=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmm???? fp-32=mmmmmmmm fp-40=mmmmmmmm fp-48=map_value(map=ts_fd,ks=8,vs=32)
+mark_precise: frame1: last_idx 135 first_idx 127 subseq_idx 136 
+mark_precise: frame1: regs=r2 stack= before 135: (bf) r2 = r3
+mark_precise: frame1: regs=r3 stack= before 134: (25) if r3 > 0x3 goto pc+1
+mark_precise: frame1: regs=r3 stack= before 133: (b7) r2 = 0
+mark_precise: frame1: regs=r3 stack= before 132: (b7) r7 = 0
+mark_precise: frame1: regs=r3 stack= before 131: (61) r3 = *(u32 *)(r1 +32)
+139: frame1: R0_w=map_value(map=ts_mmap_index,ks=4,vs=40,smin=smin32=0,smax=umax=smax32=umax32=24,var_off=(0x0; 0x18)) R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=24,var_off=(0x0; 0x18))
+139: (79) r3 = *(u64 *)(r0 +0)        ; frame1: R0_w=map_value(map=ts_mmap_index,ks=4,vs=40,smin=smin32=0,smax=umax=smax32=umax32=24,var_off=(0x0; 0x18)) R3_w=scalar()
+; idx->starts[slot] = start; @ fixed.bpf.c:141
+140: (7b) *(u64 *)(r0 +0) = r6        ; frame1: R0_w=map_value(map=ts_mmap_index,ks=4,vs=40,smin=smin32=0,smax=umax=smax32=umax32=24,var_off=(0x0; 0x18)) R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000))
+; next_slot = slot + 1; @ fixed.bpf.c:142
+141: (07) r2 += 1                     ; frame1: R2_w=scalar(id=8+1,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7))
+142: (bf) r5 = r2                     ; frame1: R2_w=scalar(id=9,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R5_w=scalar(id=9,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7))
+143: (67) r5 <<= 32                   ; frame1: R5_w=scalar(smin=umin=0x100000000,smax=umax=0x400000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0x700000000))
+144: (77) r5 >>= 32                   ; frame1: R5_w=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7))
+145: (b7) r4 = 0                      ; frame1: R4_w=0
+; if (next_slot >= RS_MMAP_INDEX_SLOTS) @ fixed.bpf.c:143
+146: (25) if r5 > 0x3 goto pc+1       ; frame1: R5_w=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=3,var_off=(0x0; 0x3))
+147: (bf) r4 = r2                     ; frame1: R2_w=scalar(id=9,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R4_w=scalar(id=9,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7))
+; idx->next = next_slot; @ fixed.bpf.c:145
+148: (63) *(u32 *)(r1 +32) = r4       ; frame1: R1=map_value(map=ts_mmap_index,ks=4,vs=40) R4_w=scalar(id=9,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7))
+149: (1d) if r3 == r6 goto pc+18      ; frame1: R3_w=scalar() R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000))
+150: (bf) r7 = r3                     ; frame1: R3_w=scalar(id=10) R7_w=scalar(id=10)
+151: (05) goto pc+16
+; } @ fixed.bpf.c:149
+168: (bf) r0 = r7                     ; frame1: R0_w=scalar(id=10) R7=scalar(id=10)
+169: (95) exit
+returning from callee:
+ frame1: R0_w=scalar(id=10) R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2=scalar(id=9,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R3=scalar(id=10) R4=scalar(id=9,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R5=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=3,var_off=(0x0; 0x3)) R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R7=scalar(id=10) R10=fp0 fp-8=mmmm????
+to caller at 52:
+ R0_w=scalar(id=10) R6=map_value(map=ts_mmappend,ks=8,vs=32) R7=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R8=map_value(map=ts_mmap_scratch,ks=4,vs=64) R9=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmm???? fp-32=mmmmmmmm fp-40=mmmmmmmm fp-48=map_value(map=ts_fd,ks=8,vs=32)
+
+from 169 to 52: R0_w=scalar(id=10) R6=map_value(map=ts_mmappend,ks=8,vs=32) R7=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R8=map_value(map=ts_mmap_scratch,ks=4,vs=64) R9=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmm???? fp-32=mmmmmmmm fp-40=mmmmmmmm fp-48=map_value(map=ts_fd,ks=8,vs=32)
+; if (overwritten) { @ fixed.bpf.c:164
+52: (15) if r0 == 0x0 goto pc+9       ; R0_w=scalar(id=10,umin=1)
+; out->start = start; @ fixed.bpf.c:104
+53: (7b) *(u64 *)(r10 -16) = r0       ; R0_w=scalar(id=10,umin=1) R10=fp0 fp-16_w=scalar(id=10,umin=1)
+; out->pad = 0; @ fixed.bpf.c:103
+54: (b7) r1 = 0                       ; R1_w=0
+55: (63) *(u32 *)(r10 -20) = r1
+mark_precise: frame0: last_idx 55 first_idx 168 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 54: (b7) r1 = 0
+56: R1_w=0 R10=fp0 fp-24=0000????
+; out->pid = pid; @ fixed.bpf.c:102
+56: (63) *(u32 *)(r10 -24) = r9       ; R9=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-24=0000scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+57: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+58: (07) r2 += -24                    ; R2_w=fp-24
+; bpf_map_delete_elem(&ts_mmap, &old_key); @ fixed.bpf.c:168
+59: (18) r1 = 0xffff8d0d96154c00      ; R1_w=map_ptr(map=ts_mmap,ks=16,vs=64)
+61: (85) call bpf_map_delete_elem#3   ; R0=scalar()
+; out->pid = pid; @ fixed.bpf.c:102
+62: (63) *(u32 *)(r10 -24) = r9       ; R9=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-24=mmmmscalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; out->start = start; @ fixed.bpf.c:104
+63: (7b) *(u64 *)(r10 -16) = r7       ; R7=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R10=fp0 fp-16_w=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000))
+; out->pad = 0; @ fixed.bpf.c:103
+64: (b7) r1 = 0                       ; R1_w=0
+65: (63) *(u32 *)(r10 -20) = r1
+mark_precise: frame0: last_idx 65 first_idx 62 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 64: (b7) r1 = 0
+66: R1_w=0 R10=fp0 fp-24=0000mmmm
+; mref->start = start; @ fixed.bpf.c:171
+66: (7b) *(u64 *)(r8 +16) = r7        ; R7=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R8=map_value(map=ts_mmap_scratch,ks=4,vs=64)
+; mref->end = rs_range_end(start, p->len); @ fixed.bpf.c:172
+67: (79) r2 = *(u64 *)(r6 +8)         ; R2_w=scalar() R6=map_value(map=ts_mmappend,ks=8,vs=32)
+68: (bf) r1 = r7                      ; R1_w=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R7=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000))
+69: (0f) r1 += r2                     ; R1_w=scalar() R2_w=scalar()
+70: (b7) r2 = 1                       ; R2_w=1
+71: (2d) if r7 > r1 goto pc+1         ; R1_w=scalar(umin=0x100000) R7=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000))
+72: (b7) r2 = 0                       ; R2_w=0
+73: (b7) r3 = -1                      ; R3_w=-1
+74: (79) r4 = *(u64 *)(r10 -48)       ; R4_w=map_value(map=ts_fd,ks=8,vs=32) R10=fp0 fp-48=map_value(map=ts_fd,ks=8,vs=32)
+75: (55) if r2 != 0x0 goto pc+1
+mark_precise: frame0: last_idx 75 first_idx 62 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 74: (79) r4 = *(u64 *)(r10 -48)
+mark_precise: frame0: regs=r2 stack= before 73: (b7) r3 = -1
+mark_precise: frame0: regs=r2 stack= before 72: (b7) r2 = 0
+75: R2_w=0
+76: (bf) r3 = r1                      ; R1=scalar(id=11,umin=0x100000) R3=scalar(id=11,umin=0x100000)
+77: (7b) *(u64 *)(r8 +24) = r3        ; R3=scalar(id=11,umin=0x100000) R8=map_value(map=ts_mmap_scratch,ks=4,vs=64)
+; mref->prot = p->prot; @ fixed.bpf.c:173
+78: (79) r1 = *(u64 *)(r6 +16)        ; R1_w=scalar() R6=map_value(map=ts_mmappend,ks=8,vs=32)
+79: (7b) *(u64 *)(r8 +32) = r1        ; R1_w=scalar() R8=map_value(map=ts_mmap_scratch,ks=4,vs=64)
+; mref->flags = p->flags; @ fixed.bpf.c:174
+80: (79) r1 = *(u64 *)(r6 +24)        ; R1_w=scalar() R6=map_value(map=ts_mmappend,ks=8,vs=32)
+81: (7b) *(u64 *)(r8 +40) = r1        ; R1_w=scalar() R8=map_value(map=ts_mmap_scratch,ks=4,vs=64)
+; mref->fid = fdref->fid; @ fixed.bpf.c:175
+82: (79) r1 = *(u64 *)(r4 +16)        ; R1_w=scalar() R4=map_value(map=ts_fd,ks=8,vs=32)
+83: (7b) *(u64 *)(r8 +48) = r1        ; R1_w=scalar() R8=map_value(map=ts_mmap_scratch,ks=4,vs=64)
+84: (79) r1 = *(u64 *)(r4 +24)        ; R1_w=scalar() R4=map_value(map=ts_fd,ks=8,vs=32)
+85: (7b) *(u64 *)(r8 +56) = r1        ; R1_w=scalar() R8=map_value(map=ts_mmap_scratch,ks=4,vs=64)
+; __builtin_memcpy(mref->path, fdref->path, sizeof(mref->path)); @ fixed.bpf.c:176
+86: (79) r1 = *(u64 *)(r4 +0)         ; R1_w=scalar() R4=map_value(map=ts_fd,ks=8,vs=32)
+87: (7b) *(u64 *)(r8 +0) = r1         ; R1_w=scalar() R8=map_value(map=ts_mmap_scratch,ks=4,vs=64)
+88: (79) r1 = *(u64 *)(r4 +8)         ; R1_w=scalar() R4=map_value(map=ts_fd,ks=8,vs=32)
+89: (7b) *(u64 *)(r8 +8) = r1         ; R1_w=scalar() R8=map_value(map=ts_mmap_scratch,ks=4,vs=64)
+90: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+91: (07) r2 += -24                    ; R2_w=fp-24
+; bpf_map_update_elem(&ts_mmap, &key, mref, BPF_ANY); @ fixed.bpf.c:177
+92: (18) r1 = 0xffff8d0d96154c00      ; R1_w=map_ptr(map=ts_mmap,ks=16,vs=64)
+94: (bf) r3 = r8                      ; R3_w=map_value(map=ts_mmap_scratch,ks=4,vs=64) R8=map_value(map=ts_mmap_scratch,ks=4,vs=64)
+95: (b7) r4 = 0                       ; R4_w=0
+96: (85) call bpf_map_update_elem#2   ; R0_w=scalar()
+97: (b7) r8 = 1                       ; R8_w=1
+98: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+99: (07) r2 += -40                    ; R2_w=fp-40
+; bpf_map_delete_elem(&ts_mmappend, &tid); @ fixed.bpf.c:218
+100: (18) r1 = 0xffff8d0ddbafd800     ; R1_w=map_ptr(map=ts_mmappend,ks=8,vs=32)
+102: (85) call bpf_map_delete_elem#3          ; R0=scalar()
+; } @ fixed.bpf.c:221
+103: (bf) r0 = r8                     ; R0_w=1 R8=1
+104: (95) exit
+
+from 71 to 73: R0=scalar() R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0x1fefff,var_off=(0x0; 0x1fffff)) R2_w=1 R6=map_value(map=ts_mmappend,ks=8,vs=32) R7=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R8=map_value(map=ts_mmap_scratch,ks=4,vs=64) R9=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmm???? fp-16_w=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) fp-24=0000mmmm fp-32=mmmmmmmm fp-40=mmmmmmmm fp-48=map_value(map=ts_fd,ks=8,vs=32)
+73: R0=scalar() R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0x1fefff,var_off=(0x0; 0x1fffff)) R2_w=1 R6=map_value(map=ts_mmappend,ks=8,vs=32) R7=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R8=map_value(map=ts_mmap_scratch,ks=4,vs=64) R9=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmm???? fp-16_w=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) fp-24=0000mmmm fp-32=mmmmmmmm fp-40=mmmmmmmm fp-48=map_value(map=ts_fd,ks=8,vs=32)
+; mref->end = rs_range_end(start, p->len); @ fixed.bpf.c:172
+73: (b7) r3 = -1                      ; R3_w=-1
+74: (79) r4 = *(u64 *)(r10 -48)       ; R4_w=map_value(map=ts_fd,ks=8,vs=32) R10=fp0 fp-48=map_value(map=ts_fd,ks=8,vs=32)
+75: (55) if r2 != 0x0 goto pc+1
+mark_precise: frame0: last_idx 75 first_idx 62 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 74: (79) r4 = *(u64 *)(r10 -48)
+mark_precise: frame0: regs=r2 stack= before 73: (b7) r3 = -1
+mark_precise: frame0: regs=r2 stack= before 71: (2d) if r7 > r1 goto pc+1
+mark_precise: frame0: regs=r2 stack= before 70: (b7) r2 = 1
+75: R2_w=1
+77: safe
+
+from 52 to 62: safe
+
+from 149 to 168: safe
+
+from 146 to 148: frame1: R0=map_value(map=ts_mmap_index,ks=4,vs=40,smin=smin32=0,smax=umax=smax32=umax32=24,var_off=(0x0; 0x18)) R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2=scalar(id=9,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R3=scalar() R4=0 R5=4 R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R7=0 R10=fp0 fp-8=mmmm????
+148: frame1: R0=map_value(map=ts_mmap_index,ks=4,vs=40,smin=smin32=0,smax=umax=smax32=umax32=24,var_off=(0x0; 0x18)) R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2=scalar(id=9,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R3=scalar() R4=0 R5=4 R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R7=0 R10=fp0 fp-8=mmmm????
+; idx->next = next_slot; @ fixed.bpf.c:145
+148: (63) *(u32 *)(r1 +32) = r4       ; frame1: R1=map_value(map=ts_mmap_index,ks=4,vs=40) R4=0
+149: (1d) if r3 == r6 goto pc+18      ; frame1: R3=scalar() R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000))
+150: (bf) r7 = r3                     ; frame1: R3=scalar(id=12) R7_w=scalar(id=12)
+151: (05) goto pc+16
+168: safe
+
+from 149 to 168: safe
+frame 1: propagating r2
+mark_precise: frame1: last_idx 136 first_idx 127 subseq_idx -1 
+mark_precise: frame1: regs=r2 stack= before 134: (25) if r3 > 0x3 goto pc+1
+mark_precise: frame1: regs=r2 stack= before 133: (b7) r2 = 0
+
+from 134 to 136: safe
+
+from 128 to 131: frame1: R0=map_value(map=ts_mmap_index,ks=4,vs=40) R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2_w=scalar() R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R10=fp0 fp-8=mmmm????
+131: frame1: R0=map_value(map=ts_mmap_index,ks=4,vs=40) R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2_w=scalar() R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R10=fp0 fp-8=mmmm????
+; slot = idx->next; @ fixed.bpf.c:137
+131: (61) r3 = *(u32 *)(r1 +32)       ; frame1: R1=map_value(map=ts_mmap_index,ks=4,vs=40) R3_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+132: (b7) r7 = 0                      ; frame1: R7_w=0
+133: (b7) r2 = 0                      ; frame1: R2=0
+; if (slot >= RS_MMAP_INDEX_SLOTS) @ fixed.bpf.c:138
+134: (25) if r3 > 0x3 goto pc+1       ; frame1: R3=scalar(smin=smin32=0,smax=umax=smax32=umax32=3,var_off=(0x0; 0x3))
+135: (bf) r2 = r3
+frame 1: propagating r2
+mark_precise: frame1: last_idx 136 first_idx 134 subseq_idx -1 
+mark_precise: frame1: regs=r2 stack= before 135: (bf) r2 = r3
+mark_precise: frame1: regs=r3 stack= before 134: (25) if r3 > 0x3 goto pc+1
+mark_precise: frame1: parent state regs=r3 stack=:  frame1: R0_r=map_value(map=ts_mmap_index,ks=4,vs=40) R1_r=map_value(map=ts_mmap_index,ks=4,vs=40) R2_w=0 R3_rw=Pscalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R6_r=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R7_rw=0 R10=fp0 fp-8=mmmm????
+mark_precise: frame0: parent state regs= stack=:  R6_r=map_value(map=ts_mmappend,ks=8,vs=32) R7_r=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R8_r=map_value(map=ts_mmap_scratch,ks=4,vs=64) R9_r=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmm???? fp-32=mmmmmmmm fp-40_r=mmmmmmmm fp-48_r=map_value(map=ts_fd,ks=8,vs=32)
+mark_precise: frame1: last_idx 133 first_idx 127 subseq_idx 134 
+mark_precise: frame1: regs=r3 stack= before 133: (b7) r2 = 0
+mark_precise: frame1: regs=r3 stack= before 132: (b7) r7 = 0
+mark_precise: frame1: regs=r3 stack= before 131: (61) r3 = *(u32 *)(r1 +32)
+136: safe
+frame 1: propagating r2
+mark_precise: frame1: last_idx 136 first_idx 134 subseq_idx -1 
+mark_precise: frame1: regs=r2 stack= before 134: (25) if r3 > 0x3 goto pc+1
+mark_precise: frame1: parent state regs=r2 stack=:  frame1: R0_r=map_value(map=ts_mmap_index,ks=4,vs=40) R1_r=map_value(map=ts_mmap_index,ks=4,vs=40) R2_rw=P0 R3_rw=Pscalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R6_r=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R7_rw=0 R10=fp0 fp-8=mmmm????
+mark_precise: frame0: parent state regs= stack=:  R6_r=map_value(map=ts_mmappend,ks=8,vs=32) R7_r=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R8_r=map_value(map=ts_mmap_scratch,ks=4,vs=64) R9_r=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmm???? fp-32=mmmmmmmm fp-40_r=mmmmmmmm fp-48_r=map_value(map=ts_fd,ks=8,vs=32)
+mark_precise: frame1: last_idx 133 first_idx 127 subseq_idx 134 
+mark_precise: frame1: regs=r2 stack= before 133: (b7) r2 = 0
+
+from 134 to 136: safe
+
+from 124 to 127: safe
+
+from 120 to 123: frame1: R0=map_value(map=ts_mmap_index,ks=4,vs=40) R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2_w=scalar() R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R10=fp0 fp-8=mmmm????
+123: frame1: R0=map_value(map=ts_mmap_index,ks=4,vs=40) R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2_w=scalar() R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R10=fp0 fp-8=mmmm????
+; if (idx->starts[i] == start) @ fixed.bpf.c:134
+123: (79) r2 = *(u64 *)(r1 +16)       ; frame1: R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2_w=scalar()
+124: (5d) if r2 != r6 goto pc+2       ; frame1: R2_w=scalar(smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000))
+125: (b7) r2 = 0                      ; frame1: R2_w=0
+; idx->starts[i] = 0; @ fixed.bpf.c:135
+126: (7b) *(u64 *)(r1 +16) = r2
+127: safe
+
+from 124 to 127: safe
+
+from 115 to 117: frame1: R0=map_value(map=ts_mmap_index,ks=4,vs=40) R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2=scalar(smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R10=fp0 fp-8=mmmm????
+117: frame1: R0=map_value(map=ts_mmap_index,ks=4,vs=40) R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2=scalar(smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R10=fp0 fp-8=mmmm????
+; if (idx->starts[i] == start) @ fixed.bpf.c:134
+117: (b7) r2 = 0                      ; frame1: R2_w=0
+; idx->starts[i] = 0; @ fixed.bpf.c:135
+118: (7b) *(u64 *)(r1 +0) = r2        ; frame1: R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2_w=0
+; if (idx->starts[i] == start) @ fixed.bpf.c:134
+119: (79) r2 = *(u64 *)(r1 +8)        ; frame1: R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2_w=scalar()
+120: (5d) if r2 != r6 goto pc+2       ; frame1: R2_w=scalar(smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000))
+121: (b7) r2 = 0                      ; frame1: R2_w=0
+; idx->starts[i] = 0; @ fixed.bpf.c:135
+122: (7b) *(u64 *)(r1 +8) = r2        ; frame1: R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2_w=0
+; if (idx->starts[i] == start) @ fixed.bpf.c:134
+123: (79) r2 = *(u64 *)(r1 +16)       ; frame1: R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2_w=scalar()
+124: (5d) if r2 != r6 goto pc+2       ; frame1: R2_w=scalar(smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000))
+125: (b7) r2 = 0                      ; frame1: R2_w=0
+; idx->starts[i] = 0; @ fixed.bpf.c:135
+126: (7b) *(u64 *)(r1 +16) = r2
+127: safe
+
+from 124 to 127: safe
+
+from 120 to 123: frame1: R0=map_value(map=ts_mmap_index,ks=4,vs=40) R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2=scalar() R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R10=fp0 fp-8=mmmm????
+123: frame1: R0=map_value(map=ts_mmap_index,ks=4,vs=40) R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2=scalar() R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R10=fp0 fp-8=mmmm????
+; if (idx->starts[i] == start) @ fixed.bpf.c:134
+123: (79) r2 = *(u64 *)(r1 +16)       ; frame1: R1=map_value(map=ts_mmap_index,ks=4,vs=40) R2_w=scalar()
+124: (5d) if r2 != r6 goto pc+2       ; frame1: R2_w=scalar(smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R6=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000))
+125: (b7) r2 = 0                      ; frame1: R2_w=0
+; idx->starts[i] = 0; @ fixed.bpf.c:135
+126: (7b) *(u64 *)(r1 +16) = r2
+127: safe
+
+from 124 to 127: safe
+
+from 112 to 152: frame1: R0_w=0 R6_w=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R10=fp0 fp-8=mmmm????
+152: frame1: R0_w=0 R6_w=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R10=fp0 fp-8=mmmm????
+; fresh.starts[0] = start; @ fixed.bpf.c:128
+152: (7b) *(u64 *)(r10 -48) = r6      ; frame1: R6_w=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000)) R10=fp0 fp-48_w=scalar(id=6,smin=umin=smin32=umin32=0x100000,smax=umax=smax32=umax32=0x1ff000,var_off=(0x100000; 0xff000))
+153: (b7) r7 = 0                      ; frame1: R7_w=0
+; struct rs_mmap_index fresh = {}; @ fixed.bpf.c:126
+154: (7b) *(u64 *)(r10 -16) = r7      ; frame1: R7_w=0 R10=fp0 fp-16_w=0
+155: (b7) r1 = 1                      ; frame1: R1_w=1
+; fresh.next = 1; @ fixed.bpf.c:129
+156: (63) *(u32 *)(r10 -16) = r1      ; frame1: R1_w=1 R10=fp0 fp-16_w=mmmm1
+; struct rs_mmap_index fresh = {}; @ fixed.bpf.c:126
+157: (7b) *(u64 *)(r10 -24) = r7      ; frame1: R7_w=0 R10=fp0 fp-24_w=0
+158: (7b) *(u64 *)(r10 -32) = r7      ; frame1: R7_w=0 R10=fp0 fp-32_w=0
+159: (7b) *(u64 *)(r10 -40) = r7      ; frame1: R7_w=0 R10=fp0 fp-40_w=0
+160: (bf) r2 = r10                    ; frame1: R2_w=fp0 R10=fp0
+161: (07) r2 += -4                    ; frame1: R2_w=fp-4
+162: (bf) r3 = r10                    ; frame1: R3_w=fp0 R10=fp0
+163: (07) r3 += -48                   ; frame1: R3_w=fp-48
+; bpf_map_update_elem(&ts_mmap_index, &pid, &fresh, BPF_ANY); @ fixed.bpf.c:130
+164: (18) r1 = 0xffff8d0daf9f3000     ; frame1: R1_w=map_ptr(map=ts_mmap_index,ks=4,vs=40)
+166: (b7) r4 = 0                      ; frame1: R4_w=0
+167: (85) call bpf_map_update_elem#2
+168: safe
+
+from 37 to 97: R0=map_value(map=ts_mmap_scratch,ks=4,vs=64) R1=0 R6=map_value(map=ts_mmappend,ks=8,vs=32) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=map_value(map=ts_mmap_scratch,ks=4,vs=64) R9=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmm???? fp-32=mmmmmmmm fp-40=mmmmmmmm fp-48=map_value(map=ts_fd,ks=8,vs=32)
+97: R0=map_value(map=ts_mmap_scratch,ks=4,vs=64) R1=0 R6=map_value(map=ts_mmappend,ks=8,vs=32) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=map_value(map=ts_mmap_scratch,ks=4,vs=64) R9=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmm???? fp-32=mmmmmmmm fp-40=mmmmmmmm fp-48=map_value(map=ts_fd,ks=8,vs=32)
+; bpf_map_update_elem(&ts_mmap, &key, mref, BPF_ANY); @ fixed.bpf.c:177
+97: (b7) r8 = 1                       ; R8_w=1
+98: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+99: (07) r2 += -40                    ; R2_w=fp-40
+; bpf_map_delete_elem(&ts_mmappend, &tid); @ fixed.bpf.c:218
+100: (18) r1 = 0xffff8d0ddbafd800     ; R1_w=map_ptr(map=ts_mmappend,ks=8,vs=32)
+102: (85) call bpf_map_delete_elem#3
+103: safe
+
+from 35 to 97: safe
+
+from 25 to 98: R0=0 R6=map_value(map=ts_mmappend,ks=8,vs=32) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-32=mmmmmmmm fp-40=mmmmmmmm
+98: R0=0 R6=map_value(map=ts_mmappend,ks=8,vs=32) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-32=mmmmmmmm fp-40=mmmmmmmm
+; bpf_map_update_elem(&ts_mmap, &key, mref, BPF_ANY); @ fixed.bpf.c:177
+98: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+99: (07) r2 += -40                    ; R2_w=fp-40
+; bpf_map_delete_elem(&ts_mmappend, &tid); @ fixed.bpf.c:218
+100: (18) r1 = 0xffff8d0ddbafd800     ; R1_w=map_ptr(map=ts_mmappend,ks=8,vs=32)
+102: (85) call bpf_map_delete_elem#3
+103: safe
+
+from 16 to 103: safe
+
+from 5 to 103: safe
+verification time 1147 usec
+stack depth 48+48
+processed 220 insns (limit 1000000) max_states_per_insn 1 total_states 16 peak_states 16 mark_read 10
+-- END PROG LOAD LOG --

@@ -1,0 +1,203 @@
+libbpf: loading object from /tmp/bpfix-cap-lz6ey3fr/rs_xdp_tools_xdpsock_redirect_map_type_001__pad32.o
+libbpf: elf: section(3) xdp, size 936, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'rs_xdp_tools_xdpsock_redirect_map_type' at insn offset 0 (0 bytes), code size 117 insns (936 bytes)
+libbpf: elf: section(4) .relxdp, size 32, link 27, flags 40, type=9
+libbpf: elf: section(5) .bss, size 4, link 0, flags 3, type=8
+libbpf: elf: section(6) .maps, size 32, link 0, flags 3, type=1
+libbpf: elf: section(7) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-lz6ey3fr/rs_xdp_tools_xdpsock_redirect_map_type_001__pad32.o is GPL
+libbpf: elf: section(17) .BTF, size 1934, link 0, flags 0, type=1
+libbpf: elf: section(19) .BTF.ext, size 844, link 0, flags 0, type=1
+libbpf: elf: section(27) .symtab, size 384, link 1, flags 0, type=2
+libbpf: looking for externs among 16 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'xsks_map': at sec_idx 6, offset 0.
+libbpf: map 'xsks_map': found type = 2.
+libbpf: map 'xsks_map': found key_size = 4.
+libbpf: map 'xsks_map': found value_size = 4.
+libbpf: map 'xsks_map': found max_entries = 4.
+libbpf: map 'rs_xdp_t.bss' (global data): at sec_idx 5, offset 0, flags 0.
+libbpf: map 1 is "rs_xdp_t.bss"
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #8 against '.bss'
+libbpf: prog 'rs_xdp_tools_xdpsock_redirect_map_type': found data map 1 (rs_xdp_t.bss, sec 5, off 0) for insn 8
+libbpf: sec '.relxdp': relo #1: insn #112 against 'xsks_map'
+libbpf: prog 'rs_xdp_tools_xdpsock_redirect_map_type': found map 0 (xsks_map, sec 6, off 0) for insn #112
+libbpf: object 'rs_xdp_tools_xd': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'xdp': found 2 CO-RE relocations
+libbpf: CO-RE relocating [10] struct xdp_md: found target candidate [13583] struct xdp_md in [vmlinux]
+libbpf: prog 'rs_xdp_tools_xdpsock_redirect_map_type': relo #0: <byte_off> [10] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_xdp_tools_xdpsock_redirect_map_type': relo #0: matching candidate #0 <byte_off> [13583] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_xdp_tools_xdpsock_redirect_map_type': relo #0: patched insn #1 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'rs_xdp_tools_xdpsock_redirect_map_type': relo #1: <byte_off> [10] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_xdp_tools_xdpsock_redirect_map_type': relo #1: matching candidate #0 <byte_off> [13583] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_xdp_tools_xdpsock_redirect_map_type': relo #1: patched insn #2 (LDX/ST/STX) off 0 -> 0
+libbpf: map 'xsks_map': created successfully, fd=4
+libbpf: map 'rs_xdp_t.bss': created successfully, fd=5
+libbpf: prog 'rs_xdp_tools_xdpsock_redirect_map_type': BPF program load failed: Invalid argument
+libbpf: prog 'rs_xdp_tools_xdpsock_redirect_map_type': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_xdp_tools_xdpsock_redirect_map_type(struct xdp_md *ctx) @ pad32.bpf.c:27
+0: (b7) r0 = 2                        ; R0_w=2
+; void *data_end = (void *)(long)ctx->data_end; @ pad32.bpf.c:30
+1: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data; @ pad32.bpf.c:29
+2: (61) r1 = *(u32 *)(r1 +0)          ; R1_w=pkt(r=0)
+; if (data + 1 > data_end) @ pad32.bpf.c:32
+3: (bf) r3 = r1                       ; R1_w=pkt(r=0) R3_w=pkt(r=0)
+4: (07) r3 += 1                       ; R3_w=pkt(off=1,r=0)
+5: (2d) if r3 > r2 goto pc+110        ; R2_w=pkt_end() R3_w=pkt(off=1,r=1)
+; if (*(__u8 *)data == 0xff) @ pad32.bpf.c:34
+6: (71) r1 = *(u8 *)(r1 +0)           ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+7: (15) if r1 == 0xff goto pc+108     ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=254,var_off=(0x0; 0xff))
+; rr = (rr + 1) & (MAX_SOCKS - 1); @ pad32.bpf.c:37
+8: (18) r1 = 0xffff8d0e3187a708       ; R1_w=map_value(map=rs_xdp_t.bss,ks=4,vs=4)
+10: (61) r2 = *(u32 *)(r1 +0)         ; R1_w=map_value(map=rs_xdp_t.bss,ks=4,vs=4) R2_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+11: (07) r2 += 1                      ; R2_w=scalar(smin=umin=1,smax=umax=0x100000000,var_off=(0x0; 0x1ffffffff))
+12: (57) r2 &= 3                      ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=3,var_off=(0x0; 0x3))
+13: (63) *(u32 *)(r1 +0) = r2         ; R1_w=map_value(map=rs_xdp_t.bss,ks=4,vs=4) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=3,var_off=(0x0; 0x3))
+14: (b7) r1 = 0                       ; R1_w=0
+; volatile __u64 __bpfix_pad = 0; @ pad32.bpf.c:39
+15: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=0 R10=fp0 fp-8_w=0
+; __bpfix_pad += 1; @ pad32.bpf.c:40
+16: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8_w=0
+17: (07) r1 += 1                      ; R1_w=1
+18: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8_w=1
+; __bpfix_pad += 2; @ pad32.bpf.c:41
+19: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=1 R10=fp0 fp-8_w=1
+20: (07) r1 += 2                      ; R1_w=3
+21: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=3 R10=fp0 fp-8_w=3
+; __bpfix_pad += 3; @ pad32.bpf.c:42
+22: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=3 R10=fp0 fp-8_w=3
+23: (07) r1 += 3                      ; R1_w=6
+24: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=6 R10=fp0 fp-8_w=6
+; __bpfix_pad += 4; @ pad32.bpf.c:43
+25: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=6 R10=fp0 fp-8_w=6
+26: (07) r1 += 4                      ; R1_w=10
+27: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=10 R10=fp0 fp-8_w=10
+; __bpfix_pad += 5; @ pad32.bpf.c:44
+28: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=10 R10=fp0 fp-8_w=10
+29: (07) r1 += 5                      ; R1_w=15
+30: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=15 R10=fp0 fp-8_w=15
+; __bpfix_pad += 6; @ pad32.bpf.c:45
+31: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=15 R10=fp0 fp-8_w=15
+32: (07) r1 += 6                      ; R1_w=21
+33: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=21 R10=fp0 fp-8_w=21
+; __bpfix_pad += 7; @ pad32.bpf.c:46
+34: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=21 R10=fp0 fp-8_w=21
+35: (07) r1 += 7                      ; R1_w=28
+36: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=28 R10=fp0 fp-8_w=28
+; __bpfix_pad += 8; @ pad32.bpf.c:47
+37: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=28 R10=fp0 fp-8_w=28
+38: (07) r1 += 8                      ; R1_w=36
+39: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=36 R10=fp0 fp-8_w=36
+; __bpfix_pad += 9; @ pad32.bpf.c:48
+40: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=36 R10=fp0 fp-8_w=36
+41: (07) r1 += 9                      ; R1_w=45
+42: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=45 R10=fp0 fp-8_w=45
+; __bpfix_pad += 10; @ pad32.bpf.c:49
+43: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=45 R10=fp0 fp-8_w=45
+44: (07) r1 += 10                     ; R1_w=55
+45: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=55 R10=fp0 fp-8_w=55
+; __bpfix_pad += 11; @ pad32.bpf.c:50
+46: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=55 R10=fp0 fp-8_w=55
+47: (07) r1 += 11                     ; R1_w=66
+48: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=66 R10=fp0 fp-8_w=66
+; __bpfix_pad += 12; @ pad32.bpf.c:51
+49: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=66 R10=fp0 fp-8_w=66
+50: (07) r1 += 12                     ; R1_w=78
+51: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=78 R10=fp0 fp-8_w=78
+; __bpfix_pad += 13; @ pad32.bpf.c:52
+52: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=78 R10=fp0 fp-8_w=78
+53: (07) r1 += 13                     ; R1_w=91
+54: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=91 R10=fp0 fp-8_w=91
+; __bpfix_pad += 14; @ pad32.bpf.c:53
+55: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=91 R10=fp0 fp-8_w=91
+56: (07) r1 += 14                     ; R1_w=105
+57: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=105 R10=fp0 fp-8_w=105
+; __bpfix_pad += 15; @ pad32.bpf.c:54
+58: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=105 R10=fp0 fp-8_w=105
+59: (07) r1 += 15                     ; R1_w=120
+60: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=120 R10=fp0 fp-8_w=120
+; __bpfix_pad += 16; @ pad32.bpf.c:55
+61: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=120 R10=fp0 fp-8_w=120
+62: (07) r1 += 16                     ; R1_w=136
+63: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=136 R10=fp0 fp-8_w=136
+; __bpfix_pad += 17; @ pad32.bpf.c:56
+64: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=136 R10=fp0 fp-8_w=136
+65: (07) r1 += 17                     ; R1_w=153
+66: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=153 R10=fp0 fp-8_w=153
+; __bpfix_pad += 18; @ pad32.bpf.c:57
+67: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=153 R10=fp0 fp-8_w=153
+68: (07) r1 += 18                     ; R1_w=171
+69: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=171 R10=fp0 fp-8_w=171
+; __bpfix_pad += 19; @ pad32.bpf.c:58
+70: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=171 R10=fp0 fp-8_w=171
+71: (07) r1 += 19                     ; R1_w=190
+72: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=190 R10=fp0 fp-8_w=190
+; __bpfix_pad += 20; @ pad32.bpf.c:59
+73: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=190 R10=fp0 fp-8_w=190
+74: (07) r1 += 20                     ; R1_w=210
+75: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=210 R10=fp0 fp-8_w=210
+; __bpfix_pad += 21; @ pad32.bpf.c:60
+76: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=210 R10=fp0 fp-8_w=210
+77: (07) r1 += 21                     ; R1_w=231
+78: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=231 R10=fp0 fp-8_w=231
+; __bpfix_pad += 22; @ pad32.bpf.c:61
+79: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=231 R10=fp0 fp-8_w=231
+80: (07) r1 += 22                     ; R1_w=253
+81: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=253 R10=fp0 fp-8_w=253
+; __bpfix_pad += 23; @ pad32.bpf.c:62
+82: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=253 R10=fp0 fp-8_w=253
+83: (07) r1 += 23                     ; R1_w=276
+84: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=276 R10=fp0 fp-8_w=276
+; __bpfix_pad += 24; @ pad32.bpf.c:63
+85: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=276 R10=fp0 fp-8_w=276
+86: (07) r1 += 24                     ; R1_w=300
+87: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=300 R10=fp0 fp-8_w=300
+; __bpfix_pad += 25; @ pad32.bpf.c:64
+88: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=300 R10=fp0 fp-8_w=300
+89: (07) r1 += 25                     ; R1_w=325
+90: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=325 R10=fp0 fp-8_w=325
+; __bpfix_pad += 26; @ pad32.bpf.c:65
+91: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=325 R10=fp0 fp-8_w=325
+92: (07) r1 += 26                     ; R1_w=351
+93: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=351 R10=fp0 fp-8_w=351
+; __bpfix_pad += 27; @ pad32.bpf.c:66
+94: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=351 R10=fp0 fp-8_w=351
+95: (07) r1 += 27                     ; R1_w=378
+96: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=378 R10=fp0 fp-8_w=378
+; __bpfix_pad += 28; @ pad32.bpf.c:67
+97: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=378 R10=fp0 fp-8_w=378
+98: (07) r1 += 28                     ; R1_w=406
+99: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=406 R10=fp0 fp-8_w=406
+; __bpfix_pad += 29; @ pad32.bpf.c:68
+100: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=406 R10=fp0 fp-8_w=406
+101: (07) r1 += 29                    ; R1_w=435
+102: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=435 R10=fp0 fp-8_w=435
+; __bpfix_pad += 30; @ pad32.bpf.c:69
+103: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=435 R10=fp0 fp-8_w=435
+104: (07) r1 += 30                    ; R1_w=465
+105: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=465 R10=fp0 fp-8_w=465
+; __bpfix_pad += 31; @ pad32.bpf.c:70
+106: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=465 R10=fp0 fp-8_w=465
+107: (07) r1 += 31                    ; R1_w=496
+108: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=496 R10=fp0 fp-8_w=496
+; __bpfix_pad += 32; @ pad32.bpf.c:71
+109: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=496 R10=fp0 fp-8_w=496
+110: (07) r1 += 32                    ; R1_w=528
+111: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=528 R10=fp0 fp-8_w=528
+; return bpf_redirect_map(&xsks_map, rr, XDP_DROP); @ pad32.bpf.c:72
+112: (18) r1 = 0xffff8d0e3187b200     ; R1_w=map_ptr(map=xsks_map,ks=4,vs=4)
+114: (b7) r3 = 1                      ; R3_w=1
+115: (85) call bpf_redirect_map#51
+cannot pass map_type 2 into func bpf_redirect_map#51
+verification time 356 usec
+stack depth 8
+processed 114 insns (limit 1000000) max_states_per_insn 0 total_states 0 peak_states 0 mark_read 0
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_xdp_tools_xdpsock_redirect_map_type': failed to load: -22
+libbpf: failed to load object '/tmp/bpfix-cap-lz6ey3fr/rs_xdp_tools_xdpsock_redirect_map_type_001__pad32.o'
+Error: failed to load object file

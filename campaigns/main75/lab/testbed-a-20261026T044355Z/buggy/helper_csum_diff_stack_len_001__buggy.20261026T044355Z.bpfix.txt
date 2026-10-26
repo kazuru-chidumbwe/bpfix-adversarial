@@ -1,0 +1,16 @@
+error[BPFIX-E099]: verifier rejection needs manual triage
+  = class: unsupported_verifier_message
+  = confidence: low
+  = diagnostic: unsupported_verifier_message, help: triage_only, span: exact_pc
+  = next action: other
+  --> buggy.bpf.c:61
+   |
+61 | sum = bpf_csum_diff(0, 0, (__be32 *)&pseudo, 12, 0);
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ rejected here: required verifier proof is missing
+   |
+   = verifier[63]: invalid indirect access to stack R3 off=-8 size=12
+   = note: nearest BPF instruction pc 35
+   = note: parsed 29 verifier state snapshots
+   = required proof: inspect the terminal verifier message and collect a full verifier log for this unsupported message shape
+help: Pass the full verifier log with instruction states and source annotations if available.
+help: File an issue with the terminal verifier message so BPFix can add a safe diagnostic family.

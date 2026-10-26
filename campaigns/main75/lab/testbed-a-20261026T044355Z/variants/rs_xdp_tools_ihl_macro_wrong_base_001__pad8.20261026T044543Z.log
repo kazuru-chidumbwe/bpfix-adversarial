@@ -1,0 +1,126 @@
+libbpf: loading object from /tmp/bpfix-cap-lz6ey3fr/rs_xdp_tools_ihl_macro_wrong_base_001__pad8.o
+libbpf: elf: section(3) xdp, size 400, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'rs_xdp_tools_ihl_macro_wrong_base' at insn offset 0 (0 bytes), code size 50 insns (400 bytes)
+libbpf: elf: section(4) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-lz6ey3fr/rs_xdp_tools_ihl_macro_wrong_base_001__pad8.o is GPL
+libbpf: elf: section(15) .BTF, size 1906, link 0, flags 0, type=1
+libbpf: elf: section(17) .BTF.ext, size 572, link 0, flags 0, type=1
+libbpf: elf: section(25) .symtab, size 336, link 1, flags 0, type=2
+libbpf: looking for externs among 14 symbols...
+libbpf: collected 0 externs total
+libbpf: object 'rs_xdp_tools_ih': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'xdp': found 6 CO-RE relocations
+libbpf: CO-RE relocating [2] struct xdp_md: found target candidate [13583] struct xdp_md in [vmlinux]
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': relo #0: <byte_off> [2] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': relo #0: matching candidate #0 <byte_off> [13583] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': relo #0: patched insn #1 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': relo #1: <byte_off> [2] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': relo #1: matching candidate #0 <byte_off> [13583] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': relo #1: patched insn #2 (LDX/ST/STX) off 0 -> 0
+libbpf: CO-RE relocating [8] struct ethhdr: found target candidate [20213] struct ethhdr in [vmlinux]
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': relo #2: <byte_off> [8] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': relo #2: matching candidate #0 <byte_off> [20213] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': relo #2: patched insn #6 (LDX/ST/STX) off 12 -> 12
+libbpf: CO-RE relocating [15] struct iphdr: found target candidate [20569] struct iphdr in [vmlinux]
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': relo #3: <byte_off> [15] struct iphdr.protocol (0:7 @ offset 9)
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': relo #3: matching candidate #0 <byte_off> [20569] struct iphdr.protocol (0:7 @ offset 9)
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': relo #3: patched insn #11 (LDX/ST/STX) off 9 -> 9
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': relo #4: <byte_off> [15] struct iphdr.ihl (0:0 @ offset 0)
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': relo #4: matching candidate #0 <byte_off> [20569] struct iphdr.ihl (0:0 @ offset 0)
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': relo #4: patched insn #15 (LDX/ST/STX) off 0 -> 0
+libbpf: CO-RE relocating [22] struct udphdr: found target candidate [20577] struct udphdr in [vmlinux]
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': relo #5: <byte_off> [22] struct udphdr.dest (0:1 @ offset 2)
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': relo #5: matching candidate #0 <byte_off> [20577] struct udphdr.dest (0:1 @ offset 2)
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': relo #5: patched insn #45 (LDX/ST/STX) off 2 -> 2
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': BPF program load failed: Permission denied
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_xdp_tools_ihl_macro_wrong_base(struct xdp_md *ctx) @ pad8.bpf.c:44
+0: (b7) r0 = 2                        ; R0_w=2
+; void *data_end = (void *)(long)ctx->data_end; @ pad8.bpf.c:47
+1: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data; @ pad8.bpf.c:46
+2: (61) r3 = *(u32 *)(r1 +0)          ; R1=ctx() R3_w=pkt(r=0)
+; XDPFILT_REQUIRE_ROOM(eth, sizeof(*eth)); @ pad8.bpf.c:54
+3: (bf) r1 = r3                       ; R1_w=pkt(r=0) R3_w=pkt(r=0)
+4: (07) r1 += 14                      ; R1_w=pkt(off=14,r=0)
+5: (2d) if r1 > r2 goto pc+43         ; R1_w=pkt(off=14,r=14) R2_w=pkt_end()
+; if (bpf_ntohs(eth->h_proto) != ETH_P_IP) @ pad8.bpf.c:55
+6: (69) r4 = *(u16 *)(r3 +12)         ; R3_w=pkt(r=14) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+7: (55) if r4 != 0x8 goto pc+41       ; R4_w=8
+8: (bf) r4 = r3                       ; R3_w=pkt(r=14) R4_w=pkt(r=14)
+9: (07) r4 += 34                      ; R4=pkt(off=34,r=14)
+10: (2d) if r4 > r2 goto pc+38        ; R2=pkt_end() R4=pkt(off=34,r=34)
+; if (iph->protocol != IPPROTO_UDP) @ pad8.bpf.c:60
+11: (71) r4 = *(u8 *)(r1 +9)          ; R1=pkt(off=14,r=34) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+12: (55) if r4 != 0x11 goto pc+36     ; R4_w=17
+; XDPFILT_REQUIRE_ROOM(checked_l4, sizeof(*udp)); @ pad8.bpf.c:65
+13: (07) r3 += 42                     ; R3_w=pkt(off=42,r=34)
+14: (2d) if r3 > r2 goto pc+34        ; R2=pkt_end() R3_w=pkt(off=42,r=42)
+; actual_l4 = (void *)iph + ((__u32)iph->ihl << 2); @ pad8.bpf.c:64
+15: (71) r2 = *(u8 *)(r1 +0)          ; R1=pkt(off=14,r=42) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+16: (b7) r3 = 0                       ; R3_w=0
+; volatile __u64 __bpfix_pad = 0; @ pad8.bpf.c:31
+17: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=0 R10=fp0 fp-8_w=0
+; __bpfix_pad += 1; @ pad8.bpf.c:32
+18: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=0 R10=fp0 fp-8_w=0
+19: (07) r3 += 1                      ; R3_w=1
+20: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=1 R10=fp0 fp-8_w=1
+; __bpfix_pad += 2; @ pad8.bpf.c:33
+21: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=1 R10=fp0 fp-8_w=1
+22: (07) r3 += 2                      ; R3_w=3
+23: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=3 R10=fp0 fp-8_w=3
+; actual_l4 = (void *)iph + ((__u32)iph->ihl << 2); @ pad8.bpf.c:64
+24: (67) r2 <<= 2                     ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1020,var_off=(0x0; 0x3fc))
+25: (57) r2 &= 60                     ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+26: (0f) r1 += r2
+mark_precise: frame0: last_idx 26 first_idx 10 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 25: (57) r2 &= 60
+mark_precise: frame0: regs=r2 stack= before 24: (67) r2 <<= 2
+mark_precise: frame0: regs=r2 stack= before 23: (7b) *(u64 *)(r10 -8) = r3
+mark_precise: frame0: regs=r2 stack= before 22: (07) r3 += 2
+mark_precise: frame0: regs=r2 stack= before 21: (79) r3 = *(u64 *)(r10 -8)
+mark_precise: frame0: regs=r2 stack= before 20: (7b) *(u64 *)(r10 -8) = r3
+mark_precise: frame0: regs=r2 stack= before 19: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 18: (79) r3 = *(u64 *)(r10 -8)
+mark_precise: frame0: regs=r2 stack= before 17: (7b) *(u64 *)(r10 -8) = r3
+mark_precise: frame0: regs=r2 stack= before 16: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 15: (71) r2 = *(u8 *)(r1 +0)
+27: R1_w=pkt(id=1,off=14,r=0,smin=smin32=0,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+; __bpfix_pad += 3; @ pad8.bpf.c:34
+27: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=3 R10=fp0 fp-8_w=3
+28: (07) r2 += 3                      ; R2_w=6
+29: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=6 R10=fp0 fp-8_w=6
+; __bpfix_pad += 4; @ pad8.bpf.c:35
+30: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=6 R10=fp0 fp-8_w=6
+31: (07) r2 += 4                      ; R2_w=10
+32: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=10 R10=fp0 fp-8_w=10
+; __bpfix_pad += 5; @ pad8.bpf.c:36
+33: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=10 R10=fp0 fp-8_w=10
+34: (07) r2 += 5                      ; R2_w=15
+35: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=15 R10=fp0 fp-8_w=15
+; __bpfix_pad += 6; @ pad8.bpf.c:37
+36: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=15 R10=fp0 fp-8_w=15
+37: (07) r2 += 6                      ; R2_w=21
+38: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=21 R10=fp0 fp-8_w=21
+; __bpfix_pad += 7; @ pad8.bpf.c:38
+39: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=21 R10=fp0 fp-8_w=21
+40: (07) r2 += 7                      ; R2_w=28
+41: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=28 R10=fp0 fp-8_w=28
+; __bpfix_pad += 8; @ pad8.bpf.c:39
+42: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=28 R10=fp0 fp-8_w=28
+43: (07) r2 += 8                      ; R2_w=36
+44: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=36 R10=fp0 fp-8_w=36
+; return bpf_ntohs(udp->dest) == 53 ? XDP_DROP : XDP_PASS; @ pad8.bpf.c:40
+45: (69) r1 = *(u16 *)(r1 +2)
+invalid access to packet, off=16 size=2, R1(id=1,off=16,r=0)
+R1 offset is outside of the packet
+verification time 167 usec
+stack depth 8
+processed 46 insns (limit 1000000) max_states_per_insn 0 total_states 1 peak_states 1 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_xdp_tools_ihl_macro_wrong_base': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-lz6ey3fr/rs_xdp_tools_ihl_macro_wrong_base_001__pad8.o'
+Error: failed to load object file

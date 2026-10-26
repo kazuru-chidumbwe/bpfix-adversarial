@@ -1,0 +1,409 @@
+libbpf: loading object from /tmp/bpfix-cap-lz6ey3fr/rs_agentsight_fs_overflow_counter_merge_001__pad32.o
+libbpf: elf: section(3) xdp, size 1880, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'rs_agentsight_fs_overflow_counter_merge' at insn offset 0 (0 bytes), code size 235 insns (1880 bytes)
+libbpf: elf: section(4) .relxdp, size 64, link 26, flags 40, type=9
+libbpf: elf: section(5) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-lz6ey3fr/rs_agentsight_fs_overflow_counter_merge_001__pad32.o is GPL
+libbpf: elf: section(6) .maps, size 64, link 0, flags 3, type=1
+libbpf: elf: section(16) .BTF, size 3350, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 1740, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 360, link 1, flags 0, type=2
+libbpf: looking for externs among 15 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'event_agg_map': at sec_idx 6, offset 0.
+libbpf: map 'event_agg_map': found type = 1.
+libbpf: map 'event_agg_map': found key [8], sz = 16.
+libbpf: map 'event_agg_map': found value [14], sz = 24.
+libbpf: map 'event_agg_map': found max_entries = 4.
+libbpf: map 'agg_overflow_count': at sec_idx 6, offset 32.
+libbpf: map 'agg_overflow_count': found type = 1.
+libbpf: map 'agg_overflow_count': found key [9], sz = 4.
+libbpf: map 'agg_overflow_count': found value [15], sz = 8.
+libbpf: map 'agg_overflow_count': found max_entries = 1.
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #70 against 'event_agg_map'
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': found map 0 (event_agg_map, sec 6, off 0) for insn #70
+libbpf: sec '.relxdp': relo #1: insn #109 against 'event_agg_map'
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': found map 0 (event_agg_map, sec 6, off 0) for insn #109
+libbpf: sec '.relxdp': relo #2: insn #118 against 'agg_overflow_count'
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': found map 1 (agg_overflow_count, sec 6, off 32) for insn #118
+libbpf: sec '.relxdp': relo #3: insn #128 against 'agg_overflow_count'
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': found map 1 (agg_overflow_count, sec 6, off 32) for insn #128
+libbpf: object 'rs_agentsight_f': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'xdp': found 2 CO-RE relocations
+libbpf: CO-RE relocating [24] struct xdp_md: found target candidate [13583] struct xdp_md in [vmlinux]
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': relo #0: <byte_off> [24] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': relo #0: matching candidate #0 <byte_off> [13583] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': relo #0: patched insn #1 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': relo #1: <byte_off> [24] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': relo #1: matching candidate #0 <byte_off> [13583] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': relo #1: patched insn #2 (LDX/ST/STX) off 0 -> 0
+libbpf: map 'event_agg_map': created successfully, fd=4
+libbpf: map 'agg_overflow_count': created successfully, fd=5
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': BPF program load failed: Permission denied
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_agentsight_fs_overflow_counter_merge(struct xdp_md *ctx) @ pad32.bpf.c:164
+0: (b7) r0 = 2                        ; R0_w=2
+; void *data_end = (void *)(long)ctx->data_end; @ pad32.bpf.c:167
+1: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data; @ pad32.bpf.c:166
+2: (61) r4 = *(u32 *)(r1 +0)          ; R1=ctx() R4_w=pkt(r=0)
+; if (data + 3 + MAX_FILENAME_LEN > data_end) @ pad32.bpf.c:76
+3: (bf) r1 = r4                       ; R1_w=pkt(r=0) R4_w=pkt(r=0)
+4: (07) r1 += 35                      ; R1_w=pkt(off=35,r=0)
+5: (2d) if r1 > r2 goto pc+228        ; R1_w=pkt(off=35,r=35) R2_w=pkt_end()
+; __u8 event_selector = *(__u8 *)(data + 1); @ pad32.bpf.c:80
+6: (71) r1 = *(u8 *)(r4 +1)           ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=pkt(r=35)
+; if (event_selector == 0) @ pad32.bpf.c:84
+7: (15) if r1 == 0x0 goto pc+226      ; R1_w=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+8: (71) r6 = *(u8 *)(r4 +2)           ; R4_w=pkt(r=35) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+9: (71) r7 = *(u8 *)(r4 +0)           ; R4_w=pkt(r=35) R7_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; filepath[i] = packet_path[i]; @ pad32.bpf.c:90
+10: (71) r1 = *(u8 *)(r4 +9)          ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=pkt(r=35)
+11: (71) r2 = *(u8 *)(r4 +8)          ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=pkt(r=35)
+12: (71) r3 = *(u8 *)(r4 +7)          ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=pkt(r=35)
+13: (71) r5 = *(u8 *)(r4 +6)          ; R4_w=pkt(r=35) R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+14: (71) r0 = *(u8 *)(r4 +5)          ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=pkt(r=35)
+15: (71) r8 = *(u8 *)(r4 +4)          ; R4_w=pkt(r=35) R8_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+16: (71) r4 = *(u8 *)(r4 +3)          ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+17: (b7) r9 = 0                       ; R9_w=0
+; struct agg_key key = {}; @ pad32.bpf.c:92
+18: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: last_idx 18 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r9 stack= before 17: (b7) r9 = 0
+19: R9_w=0 R10=fp0 fp-8=0000????
+19: (63) *(u32 *)(r10 -8) = r9        ; R9_w=0 R10=fp0 fp-8=00000
+20: (b7) r9 = 15                      ; R9_w=15
+; key.event_type = EVENT_TYPE_FILE_DELETE; @ pad32.bpf.c:94
+21: (63) *(u32 *)(r10 -12) = r9       ; R9_w=15 R10=fp0 fp-16=mmmm????
+; key.pid = pid_byte; @ pad32.bpf.c:93
+22: (63) *(u32 *)(r10 -16) = r7       ; R7=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-16=mmmmscalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (c == '\0') @ pad32.bpf.c:61
+23: (15) if r4 == 0x0 goto pc+44      ; R4=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; out[i] = c; @ pad32.bpf.c:65
+24: (73) *(u8 *)(r10 -8) = r4         ; R4=scalar(id=2,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=0000mmmscalar(id=2,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (c == '\0') @ pad32.bpf.c:61
+25: (15) if r8 == 0x0 goto pc+42      ; R8=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+26: (b7) r4 = 1                       ; R4_w=1
+; if (c == '/') @ pad32.bpf.c:63
+27: (15) if r8 == 0x2f goto pc+1      ; R8=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+28: (b7) r4 = 0                       ; R4_w=0
+; out[i] = c; @ pad32.bpf.c:65
+29: (73) *(u8 *)(r10 -7) = r8         ; R8=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0') @ pad32.bpf.c:61
+30: (15) if r0 == 0x0 goto pc+25      ; R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+31: (b7) r8 = 2                       ; R8=2
+; if (c == '/') @ pad32.bpf.c:63
+32: (15) if r0 == 0x2f goto pc+1      ; R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+33: (bf) r8 = r4                      ; R4=0 R8_w=0
+; out[i] = c; @ pad32.bpf.c:65
+34: (73) *(u8 *)(r10 -6) = r0         ; R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+35: (bf) r4 = r8                      ; R4_w=0 R8_w=0
+; if (c == '\0') @ pad32.bpf.c:61
+36: (15) if r5 == 0x0 goto pc+19      ; R5=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+37: (b7) r4 = 3                       ; R4_w=3
+; if (c == '/') @ pad32.bpf.c:63
+38: (15) if r5 == 0x2f goto pc+1      ; R5=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+39: (bf) r4 = r8                      ; R4=0 R8=0
+; out[i] = c; @ pad32.bpf.c:65
+40: (73) *(u8 *)(r10 -5) = r5         ; R5=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0') @ pad32.bpf.c:61
+41: (15) if r3 == 0x0 goto pc+14      ; R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+42: (b7) r5 = 4                       ; R5_w=4
+; if (c == '/') @ pad32.bpf.c:63
+43: (15) if r3 == 0x2f goto pc+1      ; R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+44: (bf) r5 = r4                      ; R4=0 R5_w=0
+; out[i] = c; @ pad32.bpf.c:65
+45: (73) *(u8 *)(r10 -4) = r3         ; R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+46: (bf) r4 = r5                      ; R4_w=0 R5_w=0
+; if (c == '\0') @ pad32.bpf.c:61
+47: (15) if r2 == 0x0 goto pc+8       ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+48: (b7) r4 = 5                       ; R4=5
+; if (c == '/') @ pad32.bpf.c:63
+49: (15) if r2 == 0x2f goto pc+1      ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+50: (bf) r4 = r5                      ; R4_w=0 R5=0
+; out[i] = c; @ pad32.bpf.c:65
+51: (73) *(u8 *)(r10 -3) = r2         ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0') @ pad32.bpf.c:61
+52: (15) if r1 == 0x0 goto pc+3       ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+53: (b7) r2 = 6                       ; R2_w=6
+; out[i] = c; @ pad32.bpf.c:65
+54: (73) *(u8 *)(r10 -2) = r1         ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+55: (15) if r1 == 0x2f goto pc+5      ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (last_slash > 0) @ pad32.bpf.c:68
+56: (bf) r1 = r4                      ; R1_w=0 R4_w=0
+57: (67) r1 <<= 32                    ; R1_w=0
+58: (77) r1 >>= 32                    ; R1_w=0
+59: (bf) r2 = r4                      ; R2=0 R4=0
+60: (15) if r1 == 0x0 goto pc+7
+mark_precise: frame0: last_idx 60 first_idx 60 subseq_idx -1 
+mark_precise: frame0: parent state regs=r1 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_rw=P0 R2_w=0 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=0 R5=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 59 first_idx 49 subseq_idx 60 
+mark_precise: frame0: regs=r1 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r1 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r1 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r1 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: regs=r4 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r4 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r4 stack= before 53: (b7) r2 = 6
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 50: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs=r5 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=5 R5_rw=P0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 48 first_idx 40 subseq_idx 49 
+mark_precise: frame0: regs=r5 stack= before 48: (b7) r4 = 5
+mark_precise: frame0: regs=r5 stack= before 47: (15) if r2 == 0x0 goto pc+8
+mark_precise: frame0: regs=r5 stack= before 46: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 45: (73) *(u8 *)(r10 -4) = r3
+mark_precise: frame0: regs=r5 stack= before 44: (bf) r5 = r4
+mark_precise: frame0: regs=r4 stack= before 43: (15) if r3 == 0x2f goto pc+1
+mark_precise: frame0: regs=r4 stack= before 42: (b7) r5 = 4
+mark_precise: frame0: regs=r4 stack= before 41: (15) if r3 == 0x0 goto pc+14
+mark_precise: frame0: regs=r4 stack= before 40: (73) *(u8 *)(r10 -5) = r5
+mark_precise: frame0: parent state regs=r4 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P0 R5_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 39 first_idx 32 subseq_idx 40 
+mark_precise: frame0: regs=r4 stack= before 39: (bf) r4 = r8
+mark_precise: frame0: regs=r8 stack= before 38: (15) if r5 == 0x2f goto pc+1
+mark_precise: frame0: regs=r8 stack= before 37: (b7) r4 = 3
+mark_precise: frame0: regs=r8 stack= before 36: (15) if r5 == 0x0 goto pc+19
+mark_precise: frame0: regs=r8 stack= before 35: (bf) r4 = r8
+mark_precise: frame0: regs=r8 stack= before 34: (73) *(u8 *)(r10 -6) = r0
+mark_precise: frame0: regs=r8 stack= before 33: (bf) r8 = r4
+mark_precise: frame0: regs=r4 stack= before 32: (15) if r0 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs=r4 stack=:  R0_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P0 R5_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 31 first_idx 23 subseq_idx 32 
+mark_precise: frame0: regs=r4 stack= before 31: (b7) r8 = 2
+mark_precise: frame0: regs=r4 stack= before 30: (15) if r0 == 0x0 goto pc+25
+mark_precise: frame0: regs=r4 stack= before 29: (73) *(u8 *)(r10 -7) = r8
+mark_precise: frame0: regs=r4 stack= before 28: (b7) r4 = 0
+60: R1=0
+; out[last_slash] = '\0'; @ pad32.bpf.c:69
+68: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+69: (07) r2 += -16                    ; R2_w=fp-16
+; struct agg_value *val = bpf_map_lookup_elem(&event_agg_map, &key); @ pad32.bpf.c:97
+70: (18) r1 = 0xffff8d0d96154400      ; R1_w=map_ptr(map=event_agg_map,ks=16,vs=24)
+72: (85) call bpf_map_lookup_elem#1   ; R0_w=map_value_or_null(id=3,map=event_agg_map,ks=16,vs=24)
+73: (bf) r1 = r0                      ; R0_w=map_value_or_null(id=3,map=event_agg_map,ks=16,vs=24) R1_w=map_value_or_null(id=3,map=event_agg_map,ks=16,vs=24)
+; if (val) { @ pad32.bpf.c:98
+74: (15) if r1 == 0x0 goto pc+21      ; R1_w=map_value(map=event_agg_map,ks=16,vs=24)
+75: (b7) r0 = 1                       ; R0_w=1
+; __sync_fetch_and_add(&val->count, 1); @ pad32.bpf.c:99
+76: (b7) r2 = 1                       ; R2_w=1
+77: (db) lock *(u64 *)(r1 +0) += r2   ; R1_w=map_value(map=event_agg_map,ks=16,vs=24) R2_w=1
+; val->last_marker = pid_byte; @ pad32.bpf.c:100
+78: (7b) *(u64 *)(r1 +8) = r7         ; R1_w=map_value(map=event_agg_map,ks=16,vs=24) R7=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i]; @ pad32.bpf.c:51
+79: (71) r2 = *(u8 *)(r10 -8)         ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+80: (73) *(u8 *)(r1 +16) = r2         ; R1_w=map_value(map=event_agg_map,ks=16,vs=24) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+81: (71) r2 = *(u8 *)(r10 -7)         ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+82: (73) *(u8 *)(r1 +17) = r2         ; R1_w=map_value(map=event_agg_map,ks=16,vs=24) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+83: (71) r2 = *(u8 *)(r10 -6)         ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+84: (73) *(u8 *)(r1 +18) = r2         ; R1_w=map_value(map=event_agg_map,ks=16,vs=24) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+85: (71) r2 = *(u8 *)(r10 -5)         ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+86: (73) *(u8 *)(r1 +19) = r2         ; R1_w=map_value(map=event_agg_map,ks=16,vs=24) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+87: (71) r2 = *(u8 *)(r10 -4)         ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+88: (73) *(u8 *)(r1 +20) = r2         ; R1_w=map_value(map=event_agg_map,ks=16,vs=24) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+89: (71) r2 = *(u8 *)(r10 -3)         ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+90: (73) *(u8 *)(r1 +21) = r2         ; R1_w=map_value(map=event_agg_map,ks=16,vs=24) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+91: (71) r2 = *(u8 *)(r10 -2)         ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+92: (73) *(u8 *)(r1 +22) = r2         ; R1_w=map_value(map=event_agg_map,ks=16,vs=24) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+93: (71) r2 = *(u8 *)(r10 -1)         ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+94: (73) *(u8 *)(r1 +23) = r2         ; R1_w=map_value(map=event_agg_map,ks=16,vs=24) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; } @ pad32.bpf.c:161
+95: (05) goto pc+138
+; return aggregate_path_event(data, data_end); @ pad32.bpf.c:169
+234: (95) exit
+
+from 74 to 96: R0_w=0 R1_w=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmmmmm
+96: R0_w=0 R1_w=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmmmmm
+; new_val.last_marker = pid_byte; @ pad32.bpf.c:107
+96: (7b) *(u64 *)(r10 -32) = r7       ; R7=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-32_w=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i]; @ pad32.bpf.c:51
+97: (61) r1 = *(u32 *)(r10 -4)        ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-8=mmmmmmmm
+98: (67) r1 <<= 32                    ; R1_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+99: (61) r2 = *(u32 *)(r10 -8)        ; R2_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-8=mmmmmmmm
+100: (4f) r1 |= r2                    ; R1_w=scalar() R2_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+101: (7b) *(u64 *)(r10 -24) = r1      ; R1_w=scalar(id=4) R10=fp0 fp-24_w=scalar(id=4)
+102: (b7) r1 = 1                      ; R1_w=1
+103: (b7) r7 = 1                      ; R7_w=1
+; new_val.count = 1; @ pad32.bpf.c:106
+104: (7b) *(u64 *)(r10 -40) = r1      ; R1_w=1 R10=fp0 fp-40_w=1
+105: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+106: (07) r2 += -16                   ; R2_w=fp-16
+107: (bf) r3 = r10                    ; R3_w=fp0 R10=fp0
+108: (07) r3 += -40                   ; R3_w=fp-40
+; if (bpf_map_update_elem(&event_agg_map, &key, &new_val, BPF_NOEXIST) < 0) { @ pad32.bpf.c:110
+109: (18) r1 = 0xffff8d0d96154400     ; R1_w=map_ptr(map=event_agg_map,ks=16,vs=24)
+111: (b7) r4 = 1                      ; R4_w=1
+112: (85) call bpf_map_update_elem#2          ; R0=scalar()
+113: (65) if r0 s> 0xffffffff goto pc+119     ; R0=scalar(smax=-1,umin=0x8000000000000000,var_off=(0x8000000000000000; 0x7fffffffffffffff))
+114: (b7) r1 = 0                      ; R1_w=0
+; __u32 zero = 0; @ pad32.bpf.c:111
+115: (63) *(u32 *)(r10 -44) = r1
+mark_precise: frame0: last_idx 115 first_idx 113 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 114: (b7) r1 = 0
+116: R1_w=0 R10=fp0 fp-48=0000????
+116: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+117: (07) r2 += -44                   ; R2_w=fp-44
+; __u64 *overflow = bpf_map_lookup_elem(&agg_overflow_count, &zero); @ pad32.bpf.c:112
+118: (18) r1 = 0xffff8d0dd0b54c00     ; R1_w=map_ptr(map=agg_overflow_co,ks=4,vs=8)
+120: (85) call bpf_map_lookup_elem#1          ; R0_w=map_value_or_null(id=5,map=agg_overflow_co,ks=4,vs=8)
+; if (!overflow) @ pad32.bpf.c:114
+121: (15) if r0 == 0x0 goto pc+110    ; R0_w=map_value(map=agg_overflow_co,ks=4,vs=8)
+; if (guarded_overflow & 1) { @ pad32.bpf.c:117
+122: (bf) r1 = r6                     ; R1_w=scalar(id=6,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(id=6,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+123: (57) r1 &= 1                     ; R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+124: (15) if r1 == 0x0 goto pc+6      ; R1=1
+; __u32 shadow_zero = guarded_overflow; @ pad32.bpf.c:118
+125: (63) *(u32 *)(r10 -56) = r6      ; R6=scalar(id=6,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-56=????scalar(id=6,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+126: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+127: (07) r2 += -56                   ; R2_w=fp-56
+; overflow = bpf_map_lookup_elem(&agg_overflow_count, &shadow_zero); @ pad32.bpf.c:120
+128: (18) r1 = 0xffff8d0dd0b54c00     ; R1_w=map_ptr(map=agg_overflow_co,ks=4,vs=8)
+130: (85) call bpf_map_lookup_elem#1          ; R0_w=map_value_or_null(id=7,map=agg_overflow_co,ks=4,vs=8)
+131: (b7) r1 = 0                      ; R1_w=0
+; volatile __u64 __bpfix_pad = 0; @ pad32.bpf.c:124
+132: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=0 R10=fp0 fp-56_w=0
+; __bpfix_pad += 1; @ pad32.bpf.c:125
+133: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=0 R10=fp0 fp-56_w=0
+134: (07) r1 += 1                     ; R1_w=1
+135: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=1 R10=fp0 fp-56_w=1
+; __bpfix_pad += 2; @ pad32.bpf.c:126
+136: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=1 R10=fp0 fp-56_w=1
+137: (07) r1 += 2                     ; R1_w=3
+138: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=3 R10=fp0 fp-56_w=3
+; __bpfix_pad += 3; @ pad32.bpf.c:127
+139: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=3 R10=fp0 fp-56_w=3
+140: (07) r1 += 3                     ; R1_w=6
+141: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=6 R10=fp0 fp-56_w=6
+; __bpfix_pad += 4; @ pad32.bpf.c:128
+142: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=6 R10=fp0 fp-56_w=6
+143: (07) r1 += 4                     ; R1_w=10
+144: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=10 R10=fp0 fp-56_w=10
+; __bpfix_pad += 5; @ pad32.bpf.c:129
+145: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=10 R10=fp0 fp-56_w=10
+146: (07) r1 += 5                     ; R1_w=15
+147: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=15 R10=fp0 fp-56_w=15
+; __bpfix_pad += 6; @ pad32.bpf.c:130
+148: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=15 R10=fp0 fp-56_w=15
+149: (07) r1 += 6                     ; R1_w=21
+150: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=21 R10=fp0 fp-56_w=21
+; __bpfix_pad += 7; @ pad32.bpf.c:131
+151: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=21 R10=fp0 fp-56_w=21
+152: (07) r1 += 7                     ; R1_w=28
+153: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=28 R10=fp0 fp-56_w=28
+; __bpfix_pad += 8; @ pad32.bpf.c:132
+154: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=28 R10=fp0 fp-56_w=28
+155: (07) r1 += 8                     ; R1_w=36
+156: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=36 R10=fp0 fp-56_w=36
+; __bpfix_pad += 9; @ pad32.bpf.c:133
+157: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=36 R10=fp0 fp-56_w=36
+158: (07) r1 += 9                     ; R1_w=45
+159: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=45 R10=fp0 fp-56_w=45
+; __bpfix_pad += 10; @ pad32.bpf.c:134
+160: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=45 R10=fp0 fp-56_w=45
+161: (07) r1 += 10                    ; R1_w=55
+162: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=55 R10=fp0 fp-56_w=55
+; __bpfix_pad += 11; @ pad32.bpf.c:135
+163: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=55 R10=fp0 fp-56_w=55
+164: (07) r1 += 11                    ; R1_w=66
+165: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=66 R10=fp0 fp-56_w=66
+; __bpfix_pad += 12; @ pad32.bpf.c:136
+166: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=66 R10=fp0 fp-56_w=66
+167: (07) r1 += 12                    ; R1_w=78
+168: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=78 R10=fp0 fp-56_w=78
+; __bpfix_pad += 13; @ pad32.bpf.c:137
+169: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=78 R10=fp0 fp-56_w=78
+170: (07) r1 += 13                    ; R1_w=91
+171: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=91 R10=fp0 fp-56_w=91
+; __bpfix_pad += 14; @ pad32.bpf.c:138
+172: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=91 R10=fp0 fp-56_w=91
+173: (07) r1 += 14                    ; R1_w=105
+174: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=105 R10=fp0 fp-56_w=105
+; __bpfix_pad += 15; @ pad32.bpf.c:139
+175: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=105 R10=fp0 fp-56_w=105
+176: (07) r1 += 15                    ; R1_w=120
+177: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=120 R10=fp0 fp-56_w=120
+; __bpfix_pad += 16; @ pad32.bpf.c:140
+178: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=120 R10=fp0 fp-56_w=120
+179: (07) r1 += 16                    ; R1_w=136
+180: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=136 R10=fp0 fp-56_w=136
+; __bpfix_pad += 17; @ pad32.bpf.c:141
+181: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=136 R10=fp0 fp-56_w=136
+182: (07) r1 += 17                    ; R1_w=153
+183: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=153 R10=fp0 fp-56_w=153
+; __bpfix_pad += 18; @ pad32.bpf.c:142
+184: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=153 R10=fp0 fp-56_w=153
+185: (07) r1 += 18                    ; R1_w=171
+186: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=171 R10=fp0 fp-56_w=171
+; __bpfix_pad += 19; @ pad32.bpf.c:143
+187: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=171 R10=fp0 fp-56_w=171
+188: (07) r1 += 19                    ; R1_w=190
+189: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=190 R10=fp0 fp-56_w=190
+; __bpfix_pad += 20; @ pad32.bpf.c:144
+190: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=190 R10=fp0 fp-56_w=190
+191: (07) r1 += 20                    ; R1_w=210
+192: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=210 R10=fp0 fp-56_w=210
+; __bpfix_pad += 21; @ pad32.bpf.c:145
+193: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=210 R10=fp0 fp-56_w=210
+194: (07) r1 += 21                    ; R1_w=231
+195: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=231 R10=fp0 fp-56_w=231
+; __bpfix_pad += 22; @ pad32.bpf.c:146
+196: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=231 R10=fp0 fp-56_w=231
+197: (07) r1 += 22                    ; R1_w=253
+198: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=253 R10=fp0 fp-56_w=253
+; __bpfix_pad += 23; @ pad32.bpf.c:147
+199: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=253 R10=fp0 fp-56_w=253
+200: (07) r1 += 23                    ; R1_w=276
+201: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=276 R10=fp0 fp-56_w=276
+; __bpfix_pad += 24; @ pad32.bpf.c:148
+202: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=276 R10=fp0 fp-56_w=276
+203: (07) r1 += 24                    ; R1_w=300
+204: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=300 R10=fp0 fp-56_w=300
+; __bpfix_pad += 25; @ pad32.bpf.c:149
+205: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=300 R10=fp0 fp-56_w=300
+206: (07) r1 += 25                    ; R1_w=325
+207: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=325 R10=fp0 fp-56_w=325
+; __bpfix_pad += 26; @ pad32.bpf.c:150
+208: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=325 R10=fp0 fp-56_w=325
+209: (07) r1 += 26                    ; R1_w=351
+210: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=351 R10=fp0 fp-56_w=351
+; __bpfix_pad += 27; @ pad32.bpf.c:151
+211: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=351 R10=fp0 fp-56_w=351
+212: (07) r1 += 27                    ; R1_w=378
+213: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=378 R10=fp0 fp-56_w=378
+; __bpfix_pad += 28; @ pad32.bpf.c:152
+214: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=378 R10=fp0 fp-56_w=378
+215: (07) r1 += 28                    ; R1_w=406
+216: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=406 R10=fp0 fp-56_w=406
+; __bpfix_pad += 29; @ pad32.bpf.c:153
+217: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=406 R10=fp0 fp-56_w=406
+218: (07) r1 += 29                    ; R1_w=435
+219: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=435 R10=fp0 fp-56_w=435
+; __bpfix_pad += 30; @ pad32.bpf.c:154
+220: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=435 R10=fp0 fp-56_w=435
+221: (07) r1 += 30                    ; R1_w=465
+222: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=465 R10=fp0 fp-56_w=465
+; __bpfix_pad += 31; @ pad32.bpf.c:155
+223: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=465 R10=fp0 fp-56_w=465
+224: (07) r1 += 31                    ; R1_w=496
+225: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=496 R10=fp0 fp-56_w=496
+; __bpfix_pad += 32; @ pad32.bpf.c:156
+226: (79) r1 = *(u64 *)(r10 -56)      ; R1_w=496 R10=fp0 fp-56_w=496
+227: (07) r1 += 32                    ; R1_w=528
+228: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=528 R10=fp0 fp-56_w=528
+; __sync_fetch_and_add(overflow, 1); @ pad32.bpf.c:157
+229: (b7) r1 = 1                      ; R1_w=1
+230: (db) lock *(u64 *)(r0 +0) += r1
+R0 invalid mem access 'map_value_or_null'
+verification time 858 usec
+stack depth 56
+processed 221 insns (limit 1000000) max_states_per_insn 0 total_states 8 peak_states 8 mark_read 6
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-lz6ey3fr/rs_agentsight_fs_overflow_counter_merge_001__pad32.o'
+Error: failed to load object file

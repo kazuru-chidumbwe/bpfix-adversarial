@@ -1,0 +1,114 @@
+libbpf: loading object from /tmp/bpfix-cap-lz6ey3fr/rs_agentsight_write_ctx_merge_001__orig.o
+libbpf: elf: section(3) xdp, size 864, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'rs_agentsight_write_ctx_merge' at insn offset 0 (0 bytes), code size 108 insns (864 bytes)
+libbpf: elf: section(4) .relxdp, size 96, link 27, flags 40, type=9
+libbpf: elf: section(5) .maps, size 96, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-lz6ey3fr/rs_agentsight_write_ctx_merge_001__orig.o is GPL
+libbpf: elf: section(17) .BTF, size 2750, link 0, flags 0, type=1
+libbpf: elf: section(19) .BTF.ext, size 940, link 0, flags 0, type=1
+libbpf: elf: section(27) .symtab, size 408, link 1, flags 0, type=2
+libbpf: looking for externs among 17 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'write_ctx_map': at sec_idx 5, offset 0.
+libbpf: map 'write_ctx_map': found type = 1.
+libbpf: map 'write_ctx_map': found key [8], sz = 8.
+libbpf: map 'write_ctx_map': found value [11], sz = 4.
+libbpf: map 'write_ctx_map': found max_entries = 32.
+libbpf: map 'event_agg_map': at sec_idx 5, offset 32.
+libbpf: map 'event_agg_map': found type = 1.
+libbpf: map 'event_agg_map': found key [15], sz = 16.
+libbpf: map 'event_agg_map': found value [21], sz = 24.
+libbpf: map 'event_agg_map': found max_entries = 32.
+libbpf: map 'agg_overflow_count': at sec_idx 5, offset 64.
+libbpf: map 'agg_overflow_count': found type = 2.
+libbpf: map 'agg_overflow_count': found key [16], sz = 4.
+libbpf: map 'agg_overflow_count': found value [8], sz = 8.
+libbpf: map 'agg_overflow_count': found max_entries = 1.
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #18 against 'write_ctx_map'
+libbpf: prog 'rs_agentsight_write_ctx_merge': found map 0 (write_ctx_map, sec 5, off 0) for insn #18
+libbpf: sec '.relxdp': relo #1: insn #30 against 'write_ctx_map'
+libbpf: prog 'rs_agentsight_write_ctx_merge': found map 0 (write_ctx_map, sec 5, off 0) for insn #30
+libbpf: sec '.relxdp': relo #2: insn #36 against 'write_ctx_map'
+libbpf: prog 'rs_agentsight_write_ctx_merge': found map 0 (write_ctx_map, sec 5, off 0) for insn #36
+libbpf: sec '.relxdp': relo #3: insn #66 against 'event_agg_map'
+libbpf: prog 'rs_agentsight_write_ctx_merge': found map 1 (event_agg_map, sec 5, off 32) for insn #66
+libbpf: sec '.relxdp': relo #4: insn #92 against 'event_agg_map'
+libbpf: prog 'rs_agentsight_write_ctx_merge': found map 1 (event_agg_map, sec 5, off 32) for insn #92
+libbpf: sec '.relxdp': relo #5: insn #100 against 'agg_overflow_count'
+libbpf: prog 'rs_agentsight_write_ctx_merge': found map 2 (agg_overflow_count, sec 5, off 64) for insn #100
+libbpf: object 'rs_agentsight_w': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'xdp': found 2 CO-RE relocations
+libbpf: CO-RE relocating [30] struct xdp_md: found target candidate [13583] struct xdp_md in [vmlinux]
+libbpf: prog 'rs_agentsight_write_ctx_merge': relo #0: <byte_off> [30] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_agentsight_write_ctx_merge': relo #0: matching candidate #0 <byte_off> [13583] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_agentsight_write_ctx_merge': relo #0: patched insn #1 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'rs_agentsight_write_ctx_merge': relo #1: <byte_off> [30] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_agentsight_write_ctx_merge': relo #1: matching candidate #0 <byte_off> [13583] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_agentsight_write_ctx_merge': relo #1: patched insn #2 (LDX/ST/STX) off 0 -> 0
+libbpf: map 'write_ctx_map': created successfully, fd=4
+libbpf: map 'event_agg_map': created successfully, fd=5
+libbpf: map 'agg_overflow_count': created successfully, fd=6
+libbpf: prog 'rs_agentsight_write_ctx_merge': BPF program load failed: Permission denied
+libbpf: prog 'rs_agentsight_write_ctx_merge': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_agentsight_write_ctx_merge(struct xdp_md *ctx) @ orig.bpf.c:96
+0: (b7) r6 = 2                        ; R6_w=2
+; void *data_end = (void *)(long)ctx->data_end; @ orig.bpf.c:99
+1: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data; @ orig.bpf.c:98
+2: (61) r8 = *(u32 *)(r1 +0)          ; R1=ctx() R8_w=pkt(r=0)
+; if ((void *)(bytes + 5) > data_end) @ orig.bpf.c:110
+3: (bf) r1 = r8                       ; R1_w=pkt(r=0) R8_w=pkt(r=0)
+4: (07) r1 += 5                       ; R1_w=pkt(off=5,r=0)
+5: (2d) if r1 > r2 goto pc+73         ; R1_w=pkt(off=5,r=5) R2_w=pkt_end()
+; tid = bytes[1]; @ orig.bpf.c:114
+6: (71) r1 = *(u8 *)(r8 +1)           ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=pkt(r=5)
+; pid = bytes[0]; @ orig.bpf.c:113
+7: (71) r9 = *(u8 *)(r8 +0)           ; R8_w=pkt(r=5) R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; id = ((__u64)pid << 32) | tid; @ orig.bpf.c:117
+8: (bf) r2 = r9                       ; R2_w=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R9_w=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+9: (67) r2 <<= 32                     ; R2_w=scalar(smin=smin32=0,smax=umax=0xff00000000,smax32=umax32=0,var_off=(0x0; 0xff00000000))
+10: (4f) r2 |= r1                     ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_w=scalar(smin=smin32=0,smax=umax=0xff000000ff,smax32=umax32=255,var_off=(0x0; 0xff000000ff))
+; guarded = bytes[3]; @ orig.bpf.c:116
+11: (71) r7 = *(u8 *)(r8 +3)          ; R7_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=pkt(r=5)
+; ret = bytes[2]; @ orig.bpf.c:115
+12: (71) r1 = *(u8 *)(r8 +2)          ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=pkt(r=5)
+; id = ((__u64)pid << 32) | tid; @ orig.bpf.c:117
+13: (7b) *(u64 *)(r10 -56) = r2       ; R2_w=scalar(id=2,smin=smin32=0,smax=umax=0xff000000ff,smax32=umax32=255,var_off=(0x0; 0xff000000ff)) R10=fp0 fp-56_w=scalar(id=2,smin=smin32=0,smax=umax=0xff000000ff,smax32=umax32=255,var_off=(0x0; 0xff000000ff))
+14: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-64_w=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (ret == 0) @ orig.bpf.c:119
+15: (15) if r1 == 0x0 goto pc+63      ; R1_w=scalar(id=3,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+16: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+17: (07) r2 += -56                    ; R2_w=fp-56
+; fd_ptr = bpf_map_lookup_elem(&write_ctx_map, &id); @ orig.bpf.c:122
+18: (18) r1 = 0xffff8d0d96154400      ; R1_w=map_ptr(map=write_ctx_map,ks=8,vs=4)
+20: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=4,map=write_ctx_map,ks=8,vs=4)
+; if (!fd_ptr) @ orig.bpf.c:123
+21: (15) if r0 == 0x0 goto pc+57      ; R0=map_value(map=write_ctx_map,ks=8,vs=4)
+; if (!(guarded & 1)) { @ orig.bpf.c:126
+22: (57) r7 &= 1                      ; R7_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+23: (55) if r7 != 0x0 goto pc+9       ; R7_w=0
+; __u64 shadow_id = id + bytes[4]; @ orig.bpf.c:127
+24: (71) r1 = *(u8 *)(r8 +4)          ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=pkt(r=5)
+25: (79) r2 = *(u64 *)(r10 -56)       ; R2_w=scalar() R10=fp0 fp-56=mmmmmmmm
+26: (0f) r2 += r1                     ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_w=scalar()
+27: (7b) *(u64 *)(r10 -24) = r2       ; R2_w=scalar(id=5) R10=fp0 fp-24_w=scalar(id=5)
+28: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+29: (07) r2 += -24                    ; R2_w=fp-24
+; fd_ptr = bpf_map_lookup_elem(&write_ctx_map, &shadow_id); @ orig.bpf.c:129
+30: (18) r1 = 0xffff8d0d96154400      ; R1_w=map_ptr(map=write_ctx_map,ks=8,vs=4)
+32: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=6,map=write_ctx_map,ks=8,vs=4)
+; fd = *fd_ptr; @ orig.bpf.c:132
+33: (61) r8 = *(u32 *)(r0 +0)
+R0 invalid mem access 'map_value_or_null'
+verification time 209 usec
+stack depth 64
+processed 32 insns (limit 1000000) max_states_per_insn 0 total_states 2 peak_states 2 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_agentsight_write_ctx_merge': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-lz6ey3fr/rs_agentsight_write_ctx_merge_001__orig.o'
+Error: failed to load object file

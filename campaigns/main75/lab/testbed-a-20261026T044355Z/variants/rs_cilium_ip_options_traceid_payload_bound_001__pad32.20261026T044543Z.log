@@ -1,0 +1,319 @@
+libbpf: loading object from /tmp/bpfix-cap-lz6ey3fr/rs_cilium_ip_options_traceid_payload_bound_001__pad32.o
+libbpf: elf: section(3) xdp, size 1456, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'rs_cilium_ip_options_traceid_payload_bound' at insn offset 0 (0 bytes), code size 182 insns (1456 bytes)
+libbpf: elf: section(4) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-lz6ey3fr/rs_cilium_ip_options_traceid_payload_bound_001__pad32.o is GPL
+libbpf: elf: section(15) .BTF, size 3000, link 0, flags 0, type=1
+libbpf: elf: section(17) .BTF.ext, size 1532, link 0, flags 0, type=1
+libbpf: elf: section(25) .symtab, size 336, link 1, flags 0, type=2
+libbpf: looking for externs among 14 symbols...
+libbpf: collected 0 externs total
+libbpf: object 'rs_cilium_ip_op': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'xdp': found 5 CO-RE relocations
+libbpf: CO-RE relocating [2] struct xdp_md: found target candidate [13583] struct xdp_md in [vmlinux]
+libbpf: prog 'rs_cilium_ip_options_traceid_payload_bound': relo #0: <byte_off> [2] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_cilium_ip_options_traceid_payload_bound': relo #0: matching candidate #0 <byte_off> [13583] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_cilium_ip_options_traceid_payload_bound': relo #0: patched insn #1 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'rs_cilium_ip_options_traceid_payload_bound': relo #1: <byte_off> [2] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_cilium_ip_options_traceid_payload_bound': relo #1: matching candidate #0 <byte_off> [13583] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_cilium_ip_options_traceid_payload_bound': relo #1: patched insn #2 (LDX/ST/STX) off 0 -> 0
+libbpf: CO-RE relocating [8] struct ethhdr: found target candidate [20213] struct ethhdr in [vmlinux]
+libbpf: prog 'rs_cilium_ip_options_traceid_payload_bound': relo #2: <byte_off> [8] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'rs_cilium_ip_options_traceid_payload_bound': relo #2: matching candidate #0 <byte_off> [20213] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'rs_cilium_ip_options_traceid_payload_bound': relo #2: patched insn #6 (LDX/ST/STX) off 12 -> 12
+libbpf: CO-RE relocating [15] struct iphdr: found target candidate [20569] struct iphdr in [vmlinux]
+libbpf: prog 'rs_cilium_ip_options_traceid_payload_bound': relo #3: <byte_off> [15] struct iphdr.protocol (0:7 @ offset 9)
+libbpf: prog 'rs_cilium_ip_options_traceid_payload_bound': relo #3: matching candidate #0 <byte_off> [20569] struct iphdr.protocol (0:7 @ offset 9)
+libbpf: prog 'rs_cilium_ip_options_traceid_payload_bound': relo #3: patched insn #11 (LDX/ST/STX) off 9 -> 9
+libbpf: prog 'rs_cilium_ip_options_traceid_payload_bound': relo #4: <byte_off> [15] struct iphdr.ihl (0:0 @ offset 0)
+libbpf: prog 'rs_cilium_ip_options_traceid_payload_bound': relo #4: matching candidate #0 <byte_off> [20569] struct iphdr.ihl (0:0 @ offset 0)
+libbpf: prog 'rs_cilium_ip_options_traceid_payload_bound': relo #4: patched insn #13 (LDX/ST/STX) off 0 -> 0
+libbpf: prog 'rs_cilium_ip_options_traceid_payload_bound': BPF program load failed: Permission denied
+libbpf: prog 'rs_cilium_ip_options_traceid_payload_bound': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_cilium_ip_options_traceid_payload_bound(struct xdp_md *ctx) @ pad32.bpf.c:138
+0: (b7) r0 = 2                        ; R0_w=2
+; void *data_end = (void *)(long)ctx->data_end; @ pad32.bpf.c:141
+1: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data; @ pad32.bpf.c:140
+2: (61) r4 = *(u32 *)(r1 +0)          ; R1=ctx() R4_w=pkt(r=0)
+; if ((void *)(eth + 1) > data_end) @ pad32.bpf.c:146
+3: (bf) r1 = r4                       ; R1_w=pkt(r=0) R4_w=pkt(r=0)
+4: (07) r1 += 14                      ; R1_w=pkt(off=14,r=0)
+5: (2d) if r1 > r2 goto pc+175        ; R1_w=pkt(off=14,r=14) R2_w=pkt_end()
+; if (bpf_ntohs(eth->h_proto) != ETH_P_IP) @ pad32.bpf.c:148
+6: (69) r3 = *(u16 *)(r4 +12)         ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R4_w=pkt(r=14)
+7: (55) if r3 != 0x8 goto pc+173      ; R3_w=8
+8: (bf) r3 = r4                       ; R3_w=pkt(r=14) R4_w=pkt(r=14)
+9: (07) r3 += 34                      ; R3=pkt(off=34,r=14)
+10: (2d) if r3 > r2 goto pc+170       ; R2=pkt_end() R3=pkt(off=34,r=34)
+; if (ip4->protocol != IPPROTO_UDP) @ pad32.bpf.c:154
+11: (71) r5 = *(u8 *)(r1 +9)          ; R1=pkt(off=14,r=34) R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+12: (55) if r5 != 0x11 goto pc+168    ; R5_w=17
+; void *end = data + sizeof(struct ethhdr) + ((__u32)ip4->ihl << 2); @ pad32.bpf.c:100
+13: (71) r6 = *(u8 *)(r1 +0)          ; R1=pkt(off=14,r=34) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (ip4->ihl <= IHL_WITH_NO_OPTS) @ pad32.bpf.c:105
+14: (bf) r1 = r6                      ; R1_w=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6_w=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+15: (57) r1 &= 14                     ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=14,var_off=(0x0; 0xe))
+16: (b7) r5 = 6                       ; R5_w=6
+17: (2d) if r5 > r1 goto pc+163       ; R1_w=scalar(smin=umin=smin32=umin32=6,smax=umax=smax32=umax32=14,var_off=(0x0; 0xe)) R5_w=6
+18: (67) r6 <<= 2                     ; R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1020,var_off=(0x0; 0x3fc))
+19: (57) r6 &= 60                     ; R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+20: (b7) r1 = 21                      ; R1=21
+21: (2d) if r1 > r6 goto pc+159       ; R1=21 R6=scalar(smin=umin=smin32=umin32=21,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+; if (opt + 1 > data_end) @ pad32.bpf.c:110
+22: (bf) r5 = r4                      ; R4=pkt(r=34) R5_w=pkt(r=34)
+23: (07) r5 += 35                     ; R5_w=pkt(off=35,r=34)
+24: (2d) if r5 > r2 goto pc+156       ; R2=pkt_end() R5_w=pkt(off=35,r=35)
+; opt_type = *(__u8 *)opt; @ pad32.bpf.c:113
+25: (71) r8 = *(u8 *)(r3 +0)          ; R3=pkt(off=34,r=35) R8_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (opt_type == IPOPT_END) @ pad32.bpf.c:114
+26: (15) if r8 == 0x0 goto pc+154     ; R8_w=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+27: (15) if r8 == 0x1 goto pc+7       ; R8_w=scalar(smin=umin=smin32=umin32=2,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (opt + 2 > data_end) @ pad32.bpf.c:122
+28: (bf) r1 = r4                      ; R1_w=pkt(r=35) R4=pkt(r=35)
+29: (07) r1 += 36                     ; R1=pkt(off=36,r=35)
+30: (2d) if r1 > r2 goto pc+150       ; R1=pkt(off=36,r=36) R2=pkt_end()
+; optlen = *(__u8 *)(opt + 1); @ pad32.bpf.c:125
+31: (71) r7 = *(u8 *)(r5 +0)          ; R5=pkt(off=35,r=36) R7_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (opt_type != CILIUM_TRACE_OPT) { @ pad32.bpf.c:126
+32: (15) if r8 == 0x9e goto pc+31     ; R8=scalar(smin=umin=smin32=umin32=2,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; opt += optlen; @ pad32.bpf.c:127
+33: (0f) r3 += r7
+mark_precise: frame0: last_idx 33 first_idx 30 subseq_idx -1 
+mark_precise: frame0: regs=r7 stack= before 32: (15) if r8 == 0x9e goto pc+31
+mark_precise: frame0: regs=r7 stack= before 31: (71) r7 = *(u8 *)(r5 +0)
+34: R3_w=pkt(id=2,off=34,r=0,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+34: (bf) r5 = r3                      ; R3_w=pkt(id=2,off=34,r=0,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R5_w=pkt(id=2,off=34,r=0,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+35: (0f) r4 += r6
+mark_precise: frame0: last_idx 35 first_idx 30 subseq_idx -1 
+mark_precise: frame0: regs=r6 stack= before 34: (bf) r5 = r3
+mark_precise: frame0: regs=r6 stack= before 33: (0f) r3 += r7
+mark_precise: frame0: regs=r6 stack= before 32: (15) if r8 == 0x9e goto pc+31
+mark_precise: frame0: regs=r6 stack= before 31: (71) r7 = *(u8 *)(r5 +0)
+mark_precise: frame0: regs=r6 stack= before 30: (2d) if r1 > r2 goto pc+150
+mark_precise: frame0: parent state regs=r6 stack=:  R0=2 R1_rw=pkt(off=36,r=35) R2_r=pkt_end() R3_r=pkt(off=34,r=35) R4_r=pkt(r=35) R5_rw=pkt(off=35,r=35) R6_r=Pscalar(smin=umin=smin32=umin32=21,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R8_rw=scalar(smin=umin=smin32=umin32=2,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0
+mark_precise: frame0: last_idx 29 first_idx 21 subseq_idx 30 
+mark_precise: frame0: regs=r6 stack= before 29: (07) r1 += 36
+mark_precise: frame0: regs=r6 stack= before 28: (bf) r1 = r4
+mark_precise: frame0: regs=r6 stack= before 27: (15) if r8 == 0x1 goto pc+7
+mark_precise: frame0: regs=r6 stack= before 26: (15) if r8 == 0x0 goto pc+154
+mark_precise: frame0: regs=r6 stack= before 25: (71) r8 = *(u8 *)(r3 +0)
+mark_precise: frame0: regs=r6 stack= before 24: (2d) if r5 > r2 goto pc+156
+mark_precise: frame0: regs=r6 stack= before 23: (07) r5 += 35
+mark_precise: frame0: regs=r6 stack= before 22: (bf) r5 = r4
+mark_precise: frame0: regs=r6 stack= before 21: (2d) if r1 > r6 goto pc+159
+mark_precise: frame0: parent state regs=r1,r6 stack=:  R0=2 R1_rw=P21 R2_r=pkt_end() R3_r=pkt(off=34,r=34) R4_r=pkt(r=34) R5_w=6 R6_rw=Pscalar(smin=smin32=0,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R10=fp0
+mark_precise: frame0: last_idx 20 first_idx 10 subseq_idx 21 
+mark_precise: frame0: regs=r1,r6 stack= before 20: (b7) r1 = 21
+mark_precise: frame0: regs=r6 stack= before 19: (57) r6 &= 60
+mark_precise: frame0: regs=r6 stack= before 18: (67) r6 <<= 2
+mark_precise: frame0: regs=r6 stack= before 17: (2d) if r5 > r1 goto pc+163
+mark_precise: frame0: regs=r6 stack= before 16: (b7) r5 = 6
+mark_precise: frame0: regs=r6 stack= before 15: (57) r1 &= 14
+mark_precise: frame0: regs=r6 stack= before 14: (bf) r1 = r6
+mark_precise: frame0: regs=r6 stack= before 13: (71) r6 = *(u8 *)(r1 +0)
+36: R4_w=pkt(id=3,r=0,smin=umin=smin32=umin32=21,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R6=scalar(smin=umin=smin32=umin32=21,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+36: (07) r4 += 14                     ; R4_w=pkt(id=3,off=14,r=0,smin=umin=smin32=umin32=21,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+; for (i = 0; i < MAX_IPV4_OPTS && opt < end; i++) { @ pad32.bpf.c:109
+37: (3d) if r5 >= r4 goto pc+143      ; R4_w=pkt(id=3,off=14,r=0,smin=umin=smin32=umin32=21,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R5_w=pkt(id=2,off=34,r=0,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (opt + 1 > data_end) @ pad32.bpf.c:110
+38: (bf) r3 = r5                      ; R3_w=pkt(id=2,off=34,r=0,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R5_w=pkt(id=2,off=34,r=0,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+39: (07) r3 += 1                      ; R3=pkt(id=2,off=35,r=0,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+40: (2d) if r3 > r2 goto pc+140       ; R2=pkt_end() R3=pkt(id=2,off=35,r=35,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; opt_type = *(__u8 *)opt; @ pad32.bpf.c:113
+41: (71) r6 = *(u8 *)(r5 +0)          ; R5=pkt(id=2,off=34,r=35,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (opt_type == IPOPT_END) @ pad32.bpf.c:114
+42: (15) if r6 == 0x0 goto pc+138     ; R6_w=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+43: (15) if r6 == 0x1 goto pc+8       ; R6_w=scalar(smin=umin=smin32=umin32=2,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (opt + 2 > data_end) @ pad32.bpf.c:122
+44: (bf) r1 = r5                      ; R1_w=pkt(id=2,off=34,r=35,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R5=pkt(id=2,off=34,r=35,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+45: (07) r1 += 2                      ; R1_w=pkt(id=2,off=36,r=35,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+46: (2d) if r1 > r2 goto pc+134       ; R1_w=pkt(id=2,off=36,r=36,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=pkt_end()
+; optlen = *(__u8 *)(opt + 1); @ pad32.bpf.c:125
+47: (71) r7 = *(u8 *)(r3 +0)          ; R3=pkt(id=2,off=35,r=36,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+48: (bf) r3 = r5                      ; R3=pkt(id=2,off=34,r=36,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R5=pkt(id=2,off=34,r=36,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (opt_type != CILIUM_TRACE_OPT) { @ pad32.bpf.c:126
+49: (15) if r6 == 0x9e goto pc+14     ; R6=scalar(smin=umin=smin32=umin32=2,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; opt += optlen; @ pad32.bpf.c:127
+50: (0f) r5 += r7
+mark_precise: frame0: last_idx 50 first_idx 49 subseq_idx -1 
+mark_precise: frame0: regs=r7 stack= before 49: (15) if r6 == 0x9e goto pc+14
+mark_precise: frame0: parent state regs=r7 stack=:  R0=2 R1_w=pkt(id=2,off=36,r=36,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=pkt_end() R3_w=pkt(id=2,off=34,r=36,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=pkt(id=3,off=14,r=0,smin=umin=smin32=umin32=21,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R5_r=pkt(id=2,off=34,r=36,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6_rw=scalar(smin=umin=smin32=umin32=2,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_rw=Pscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=scalar(smin=umin=smin32=umin32=2,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0
+mark_precise: frame0: last_idx 48 first_idx 40 subseq_idx 49 
+mark_precise: frame0: regs=r7 stack= before 48: (bf) r3 = r5
+mark_precise: frame0: regs=r7 stack= before 47: (71) r7 = *(u8 *)(r3 +0)
+51: R5_w=pkt(id=4,off=34,r=0,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+51: (bf) r3 = r5                      ; R3_w=pkt(id=4,off=34,r=0,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff)) R5_w=pkt(id=4,off=34,r=0,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff))
+; for (i = 0; i < MAX_IPV4_OPTS && opt < end; i++) { @ pad32.bpf.c:109
+52: (3d) if r3 >= r4 goto pc+128      ; R3_w=pkt(id=4,off=34,r=0,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff)) R4=pkt(id=3,off=14,r=0,smin=umin=smin32=umin32=21,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+; if (opt + 1 > data_end) @ pad32.bpf.c:110
+53: (bf) r4 = r3                      ; R3_w=pkt(id=4,off=34,r=0,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff)) R4_w=pkt(id=4,off=34,r=0,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff))
+54: (07) r4 += 1                      ; R4_w=pkt(id=4,off=35,r=0,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff))
+55: (2d) if r4 > r2 goto pc+125       ; R2=pkt_end() R4_w=pkt(id=4,off=35,r=35,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff))
+; opt_type = *(__u8 *)opt; @ pad32.bpf.c:113
+56: (71) r5 = *(u8 *)(r3 +0)          ; R3=pkt(id=4,off=34,r=35,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff)) R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (opt_type == IPOPT_END) @ pad32.bpf.c:114
+57: (2d) if r0 > r5 goto pc+123       ; R0=2 R5=scalar(smin=umin=smin32=umin32=2,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (opt + 2 > data_end) @ pad32.bpf.c:122
+58: (bf) r1 = r3                      ; R1_w=pkt(id=4,off=34,r=35,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff)) R3=pkt(id=4,off=34,r=35,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff))
+59: (07) r1 += 2                      ; R1_w=pkt(id=4,off=36,r=35,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff))
+60: (2d) if r1 > r2 goto pc+120       ; R1_w=pkt(id=4,off=36,r=36,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff)) R2=pkt_end()
+; optlen = *(__u8 *)(opt + 1); @ pad32.bpf.c:125
+61: (71) r7 = *(u8 *)(r4 +0)          ; R4=pkt(id=4,off=35,r=36,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff)) R7_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (opt_type != CILIUM_TRACE_OPT) { @ pad32.bpf.c:126
+62: (15) if r5 == 0x9e goto pc+1      ; R5=scalar(smin=umin=smin32=umin32=2,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+63: (05) goto pc+117
+; } @ pad32.bpf.c:161
+181: (95) exit
+
+from 62 to 64: R0=2 R1=pkt(id=4,off=36,r=36,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff)) R2=pkt_end() R3=pkt(id=4,off=34,r=36,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff)) R4=pkt(id=4,off=35,r=36,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff)) R5=158 R6=scalar(smin=umin=smin32=umin32=2,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=scalar(smin=umin=smin32=umin32=2,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0
+64: R0=2 R1=pkt(id=4,off=36,r=36,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff)) R2=pkt_end() R3=pkt(id=4,off=34,r=36,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff)) R4=pkt(id=4,off=35,r=36,smin=smin32=0,smax=umax=smax32=umax32=510,var_off=(0x0; 0x1ff)) R5=158 R6=scalar(smin=umin=smin32=umin32=2,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=scalar(smin=umin=smin32=umin32=2,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0
+; if (optlen == OPT16_LEN) { @ pad32.bpf.c:34
+64: (15) if r7 == 0xa goto pc+110     ; R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+65: (15) if r7 == 0x6 goto pc+103     ; R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+66: (55) if r7 != 0x4 goto pc+114     ; R7=4
+67: (b7) r2 = 0                       ; R2_w=0
+; volatile __u64 __bpfix_pad = 0; @ pad32.bpf.c:38
+68: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=0 R10=fp0 fp-8_w=0
+; __bpfix_pad += 1; @ pad32.bpf.c:39
+69: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=0 R10=fp0 fp-8_w=0
+70: (07) r2 += 1                      ; R2_w=1
+71: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=1 R10=fp0 fp-8_w=1
+; __bpfix_pad += 2; @ pad32.bpf.c:40
+72: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=1 R10=fp0 fp-8_w=1
+73: (07) r2 += 2                      ; R2_w=3
+74: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=3 R10=fp0 fp-8_w=3
+; __bpfix_pad += 3; @ pad32.bpf.c:41
+75: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=3 R10=fp0 fp-8_w=3
+76: (07) r2 += 3                      ; R2_w=6
+77: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=6 R10=fp0 fp-8_w=6
+; __bpfix_pad += 4; @ pad32.bpf.c:42
+78: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=6 R10=fp0 fp-8_w=6
+79: (07) r2 += 4                      ; R2_w=10
+80: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=10 R10=fp0 fp-8_w=10
+; __bpfix_pad += 5; @ pad32.bpf.c:43
+81: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=10 R10=fp0 fp-8_w=10
+82: (07) r2 += 5                      ; R2_w=15
+83: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=15 R10=fp0 fp-8_w=15
+; __bpfix_pad += 6; @ pad32.bpf.c:44
+84: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=15 R10=fp0 fp-8_w=15
+85: (07) r2 += 6                      ; R2_w=21
+86: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=21 R10=fp0 fp-8_w=21
+; __bpfix_pad += 7; @ pad32.bpf.c:45
+87: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=21 R10=fp0 fp-8_w=21
+88: (07) r2 += 7                      ; R2_w=28
+89: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=28 R10=fp0 fp-8_w=28
+; __bpfix_pad += 8; @ pad32.bpf.c:46
+90: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=28 R10=fp0 fp-8_w=28
+91: (07) r2 += 8                      ; R2_w=36
+92: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=36 R10=fp0 fp-8_w=36
+; __bpfix_pad += 9; @ pad32.bpf.c:47
+93: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=36 R10=fp0 fp-8_w=36
+94: (07) r2 += 9                      ; R2_w=45
+95: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=45 R10=fp0 fp-8_w=45
+; __bpfix_pad += 10; @ pad32.bpf.c:48
+96: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=45 R10=fp0 fp-8_w=45
+97: (07) r2 += 10                     ; R2_w=55
+98: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=55 R10=fp0 fp-8_w=55
+; __bpfix_pad += 11; @ pad32.bpf.c:49
+99: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=55 R10=fp0 fp-8_w=55
+100: (07) r2 += 11                    ; R2_w=66
+101: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=66 R10=fp0 fp-8_w=66
+; __bpfix_pad += 12; @ pad32.bpf.c:50
+102: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=66 R10=fp0 fp-8_w=66
+103: (07) r2 += 12                    ; R2_w=78
+104: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=78 R10=fp0 fp-8_w=78
+; __bpfix_pad += 13; @ pad32.bpf.c:51
+105: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=78 R10=fp0 fp-8_w=78
+106: (07) r2 += 13                    ; R2_w=91
+107: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=91 R10=fp0 fp-8_w=91
+; __bpfix_pad += 14; @ pad32.bpf.c:52
+108: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=91 R10=fp0 fp-8_w=91
+109: (07) r2 += 14                    ; R2_w=105
+110: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=105 R10=fp0 fp-8_w=105
+; __bpfix_pad += 15; @ pad32.bpf.c:53
+111: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=105 R10=fp0 fp-8_w=105
+112: (07) r2 += 15                    ; R2_w=120
+113: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=120 R10=fp0 fp-8_w=120
+; __bpfix_pad += 16; @ pad32.bpf.c:54
+114: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=120 R10=fp0 fp-8_w=120
+115: (07) r2 += 16                    ; R2_w=136
+116: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=136 R10=fp0 fp-8_w=136
+; __bpfix_pad += 17; @ pad32.bpf.c:55
+117: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=136 R10=fp0 fp-8_w=136
+118: (07) r2 += 17                    ; R2_w=153
+119: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=153 R10=fp0 fp-8_w=153
+; __bpfix_pad += 18; @ pad32.bpf.c:56
+120: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=153 R10=fp0 fp-8_w=153
+121: (07) r2 += 18                    ; R2_w=171
+122: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=171 R10=fp0 fp-8_w=171
+; __bpfix_pad += 19; @ pad32.bpf.c:57
+123: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=171 R10=fp0 fp-8_w=171
+124: (07) r2 += 19                    ; R2_w=190
+125: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=190 R10=fp0 fp-8_w=190
+; __bpfix_pad += 20; @ pad32.bpf.c:58
+126: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=190 R10=fp0 fp-8_w=190
+127: (07) r2 += 20                    ; R2_w=210
+128: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=210 R10=fp0 fp-8_w=210
+; __bpfix_pad += 21; @ pad32.bpf.c:59
+129: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=210 R10=fp0 fp-8_w=210
+130: (07) r2 += 21                    ; R2_w=231
+131: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=231 R10=fp0 fp-8_w=231
+; __bpfix_pad += 22; @ pad32.bpf.c:60
+132: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=231 R10=fp0 fp-8_w=231
+133: (07) r2 += 22                    ; R2_w=253
+134: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=253 R10=fp0 fp-8_w=253
+; __bpfix_pad += 23; @ pad32.bpf.c:61
+135: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=253 R10=fp0 fp-8_w=253
+136: (07) r2 += 23                    ; R2_w=276
+137: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=276 R10=fp0 fp-8_w=276
+; __bpfix_pad += 24; @ pad32.bpf.c:62
+138: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=276 R10=fp0 fp-8_w=276
+139: (07) r2 += 24                    ; R2_w=300
+140: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=300 R10=fp0 fp-8_w=300
+; __bpfix_pad += 25; @ pad32.bpf.c:63
+141: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=300 R10=fp0 fp-8_w=300
+142: (07) r2 += 25                    ; R2_w=325
+143: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=325 R10=fp0 fp-8_w=325
+; __bpfix_pad += 26; @ pad32.bpf.c:64
+144: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=325 R10=fp0 fp-8_w=325
+145: (07) r2 += 26                    ; R2_w=351
+146: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=351 R10=fp0 fp-8_w=351
+; __bpfix_pad += 27; @ pad32.bpf.c:65
+147: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=351 R10=fp0 fp-8_w=351
+148: (07) r2 += 27                    ; R2_w=378
+149: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=378 R10=fp0 fp-8_w=378
+; __bpfix_pad += 28; @ pad32.bpf.c:66
+150: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=378 R10=fp0 fp-8_w=378
+151: (07) r2 += 28                    ; R2_w=406
+152: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=406 R10=fp0 fp-8_w=406
+; __bpfix_pad += 29; @ pad32.bpf.c:67
+153: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=406 R10=fp0 fp-8_w=406
+154: (07) r2 += 29                    ; R2_w=435
+155: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=435 R10=fp0 fp-8_w=435
+; __bpfix_pad += 30; @ pad32.bpf.c:68
+156: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=435 R10=fp0 fp-8_w=435
+157: (07) r2 += 30                    ; R2_w=465
+158: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=465 R10=fp0 fp-8_w=465
+; __bpfix_pad += 31; @ pad32.bpf.c:69
+159: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=465 R10=fp0 fp-8_w=465
+160: (07) r2 += 31                    ; R2_w=496
+161: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=496 R10=fp0 fp-8_w=496
+; __bpfix_pad += 32; @ pad32.bpf.c:70
+162: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=496 R10=fp0 fp-8_w=496
+163: (07) r2 += 32                    ; R2_w=528
+164: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=528 R10=fp0 fp-8_w=528
+; *value = bpf_ntohs(*raw); @ pad32.bpf.c:71
+165: (69) r1 = *(u16 *)(r1 +0)
+invalid access to packet, off=36 size=2, R1(id=4,off=36,r=36)
+R1 offset is outside of the packet
+verification time 656 usec
+stack depth 8
+processed 167 insns (limit 1000000) max_states_per_insn 0 total_states 7 peak_states 7 mark_read 6
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_cilium_ip_options_traceid_payload_bound': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-lz6ey3fr/rs_cilium_ip_options_traceid_payload_bound_001__pad32.o'
+Error: failed to load object file

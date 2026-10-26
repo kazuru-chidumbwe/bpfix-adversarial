@@ -1,0 +1,192 @@
+libbpf: loading object from /tmp/bpfix-cap-lz6ey3fr/ringbuf_stack_discard_001__pad32.o
+libbpf: elf: section(3) xdp, size 952, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'ringbuf_stack_discard' at insn offset 0 (0 bytes), code size 119 insns (952 bytes)
+libbpf: elf: section(4) .relxdp, size 16, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 16, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-lz6ey3fr/ringbuf_stack_discard_001__pad32.o is GPL
+libbpf: elf: section(16) .BTF, size 1749, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 736, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 336, link 1, flags 0, type=2
+libbpf: looking for externs among 14 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'events': at sec_idx 5, offset 0.
+libbpf: map 'events': found type = 27.
+libbpf: map 'events': found max_entries = 4096.
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #99 against 'events'
+libbpf: prog 'ringbuf_stack_discard': found map 0 (events, sec 5, off 0) for insn #99
+libbpf: object 'ringbuf_stack_d': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: map 'events': created successfully, fd=4
+libbpf: prog 'ringbuf_stack_discard': BPF program load failed: Permission denied
+libbpf: prog 'ringbuf_stack_discard': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int ringbuf_stack_discard(struct xdp_md *ctx) @ pad32.bpf.c:22
+0: (b7) r1 = 0                        ; R1_w=0
+; struct event rec = {}; @ pad32.bpf.c:25
+1: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 1 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 0: (b7) r1 = 0
+2: R1_w=0 R10=fp0 fp-8=0000????
+; volatile __u64 __bpfix_pad = 0; @ pad32.bpf.c:28
+2: (7b) *(u64 *)(r10 -16) = r1        ; R1_w=0 R10=fp0 fp-16_w=0
+; __bpfix_pad += 1; @ pad32.bpf.c:29
+3: (79) r1 = *(u64 *)(r10 -16)        ; R1_w=0 R10=fp0 fp-16_w=0
+4: (07) r1 += 1                       ; R1_w=1
+5: (7b) *(u64 *)(r10 -16) = r1        ; R1_w=1 R10=fp0 fp-16_w=1
+; __bpfix_pad += 2; @ pad32.bpf.c:30
+6: (79) r1 = *(u64 *)(r10 -16)        ; R1_w=1 R10=fp0 fp-16_w=1
+7: (07) r1 += 2                       ; R1_w=3
+8: (7b) *(u64 *)(r10 -16) = r1        ; R1_w=3 R10=fp0 fp-16_w=3
+; __bpfix_pad += 3; @ pad32.bpf.c:31
+9: (79) r1 = *(u64 *)(r10 -16)        ; R1_w=3 R10=fp0 fp-16_w=3
+10: (07) r1 += 3                      ; R1_w=6
+11: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=6 R10=fp0 fp-16_w=6
+; __bpfix_pad += 4; @ pad32.bpf.c:32
+12: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=6 R10=fp0 fp-16_w=6
+13: (07) r1 += 4                      ; R1_w=10
+14: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=10 R10=fp0 fp-16_w=10
+; __bpfix_pad += 5; @ pad32.bpf.c:33
+15: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=10 R10=fp0 fp-16_w=10
+16: (07) r1 += 5                      ; R1_w=15
+17: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=15 R10=fp0 fp-16_w=15
+; __bpfix_pad += 6; @ pad32.bpf.c:34
+18: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=15 R10=fp0 fp-16_w=15
+19: (07) r1 += 6                      ; R1_w=21
+20: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=21 R10=fp0 fp-16_w=21
+; __bpfix_pad += 7; @ pad32.bpf.c:35
+21: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=21 R10=fp0 fp-16_w=21
+22: (07) r1 += 7                      ; R1_w=28
+23: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=28 R10=fp0 fp-16_w=28
+; __bpfix_pad += 8; @ pad32.bpf.c:36
+24: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=28 R10=fp0 fp-16_w=28
+25: (07) r1 += 8                      ; R1_w=36
+26: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=36 R10=fp0 fp-16_w=36
+; __bpfix_pad += 9; @ pad32.bpf.c:37
+27: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=36 R10=fp0 fp-16_w=36
+28: (07) r1 += 9                      ; R1_w=45
+29: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=45 R10=fp0 fp-16_w=45
+; __bpfix_pad += 10; @ pad32.bpf.c:38
+30: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=45 R10=fp0 fp-16_w=45
+31: (07) r1 += 10                     ; R1_w=55
+32: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=55 R10=fp0 fp-16_w=55
+; __bpfix_pad += 11; @ pad32.bpf.c:39
+33: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=55 R10=fp0 fp-16_w=55
+34: (07) r1 += 11                     ; R1_w=66
+35: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=66 R10=fp0 fp-16_w=66
+; __bpfix_pad += 12; @ pad32.bpf.c:40
+36: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=66 R10=fp0 fp-16_w=66
+37: (07) r1 += 12                     ; R1_w=78
+38: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=78 R10=fp0 fp-16_w=78
+; __bpfix_pad += 13; @ pad32.bpf.c:41
+39: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=78 R10=fp0 fp-16_w=78
+40: (07) r1 += 13                     ; R1_w=91
+41: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=91 R10=fp0 fp-16_w=91
+; __bpfix_pad += 14; @ pad32.bpf.c:42
+42: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=91 R10=fp0 fp-16_w=91
+43: (07) r1 += 14                     ; R1_w=105
+44: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=105 R10=fp0 fp-16_w=105
+; __bpfix_pad += 15; @ pad32.bpf.c:43
+45: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=105 R10=fp0 fp-16_w=105
+46: (07) r1 += 15                     ; R1_w=120
+47: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=120 R10=fp0 fp-16_w=120
+; __bpfix_pad += 16; @ pad32.bpf.c:44
+48: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=120 R10=fp0 fp-16_w=120
+49: (07) r1 += 16                     ; R1_w=136
+50: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=136 R10=fp0 fp-16_w=136
+; __bpfix_pad += 17; @ pad32.bpf.c:45
+51: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=136 R10=fp0 fp-16_w=136
+52: (07) r1 += 17                     ; R1_w=153
+53: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=153 R10=fp0 fp-16_w=153
+; __bpfix_pad += 18; @ pad32.bpf.c:46
+54: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=153 R10=fp0 fp-16_w=153
+55: (07) r1 += 18                     ; R1_w=171
+56: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=171 R10=fp0 fp-16_w=171
+; __bpfix_pad += 19; @ pad32.bpf.c:47
+57: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=171 R10=fp0 fp-16_w=171
+58: (07) r1 += 19                     ; R1_w=190
+59: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=190 R10=fp0 fp-16_w=190
+; __bpfix_pad += 20; @ pad32.bpf.c:48
+60: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=190 R10=fp0 fp-16_w=190
+61: (07) r1 += 20                     ; R1_w=210
+62: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=210 R10=fp0 fp-16_w=210
+; __bpfix_pad += 21; @ pad32.bpf.c:49
+63: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=210 R10=fp0 fp-16_w=210
+64: (07) r1 += 21                     ; R1_w=231
+65: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=231 R10=fp0 fp-16_w=231
+; __bpfix_pad += 22; @ pad32.bpf.c:50
+66: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=231 R10=fp0 fp-16_w=231
+67: (07) r1 += 22                     ; R1_w=253
+68: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=253 R10=fp0 fp-16_w=253
+; __bpfix_pad += 23; @ pad32.bpf.c:51
+69: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=253 R10=fp0 fp-16_w=253
+70: (07) r1 += 23                     ; R1_w=276
+71: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=276 R10=fp0 fp-16_w=276
+; __bpfix_pad += 24; @ pad32.bpf.c:52
+72: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=276 R10=fp0 fp-16_w=276
+73: (07) r1 += 24                     ; R1_w=300
+74: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=300 R10=fp0 fp-16_w=300
+; __bpfix_pad += 25; @ pad32.bpf.c:53
+75: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=300 R10=fp0 fp-16_w=300
+76: (07) r1 += 25                     ; R1_w=325
+77: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=325 R10=fp0 fp-16_w=325
+; __bpfix_pad += 26; @ pad32.bpf.c:54
+78: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=325 R10=fp0 fp-16_w=325
+79: (07) r1 += 26                     ; R1_w=351
+80: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=351 R10=fp0 fp-16_w=351
+; __bpfix_pad += 27; @ pad32.bpf.c:55
+81: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=351 R10=fp0 fp-16_w=351
+82: (07) r1 += 27                     ; R1_w=378
+83: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=378 R10=fp0 fp-16_w=378
+; __bpfix_pad += 28; @ pad32.bpf.c:56
+84: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=378 R10=fp0 fp-16_w=378
+85: (07) r1 += 28                     ; R1_w=406
+86: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=406 R10=fp0 fp-16_w=406
+; __bpfix_pad += 29; @ pad32.bpf.c:57
+87: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=406 R10=fp0 fp-16_w=406
+88: (07) r1 += 29                     ; R1_w=435
+89: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=435 R10=fp0 fp-16_w=435
+; __bpfix_pad += 30; @ pad32.bpf.c:58
+90: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=435 R10=fp0 fp-16_w=435
+91: (07) r1 += 30                     ; R1_w=465
+92: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=465 R10=fp0 fp-16_w=465
+; __bpfix_pad += 31; @ pad32.bpf.c:59
+93: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=465 R10=fp0 fp-16_w=465
+94: (07) r1 += 31                     ; R1_w=496
+95: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=496 R10=fp0 fp-16_w=496
+; __bpfix_pad += 32; @ pad32.bpf.c:60
+96: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=496 R10=fp0 fp-16_w=496
+97: (07) r1 += 32                     ; R1_w=528
+98: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=528 R10=fp0 fp-16_w=528
+; audit = bpf_ringbuf_reserve(&events, sizeof(*audit), 0); @ pad32.bpf.c:61
+99: (18) r1 = 0xffff8d0e31bb5e00      ; R1_w=map_ptr(map=events,ks=0,vs=0)
+101: (b7) r2 = 4                      ; R2_w=4
+102: (b7) r3 = 0                      ; R3_w=0
+103: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 103 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 102: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 101: (b7) r2 = 4
+104: R0=ringbuf_mem_or_null(id=2,ref_obj_id=2,sz=4) refs=2
+; if (!audit) @ pad32.bpf.c:62
+104: (15) if r0 == 0x0 goto pc+12     ; R0=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+105: (b7) r1 = 3                      ; R1_w=3 refs=2
+; audit->mark = 3; @ pad32.bpf.c:64
+106: (63) *(u32 *)(r0 +0) = r1        ; R0=ringbuf_mem(ref_obj_id=2,sz=4) R1_w=3 refs=2
+107: (b7) r1 = 7                      ; R1_w=7 refs=2
+; rec.mark = 7; @ pad32.bpf.c:66
+108: (63) *(u32 *)(r10 -4) = r1       ; R1_w=7 R10=fp0 fp-8=mmmm???? refs=2
+109: (bf) r1 = r10                    ; R1_w=fp0 R10=fp0 refs=2
+110: (07) r1 += -4                    ; R1_w=fp-4 refs=2
+; bpf_ringbuf_discard(&rec, 0); @ pad32.bpf.c:67
+111: (b7) r2 = 0                      ; R2_w=0 refs=2
+112: (bf) r6 = r0                     ; R0=ringbuf_mem(ref_obj_id=2,sz=4) R6_w=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+113: (85) call bpf_ringbuf_discard#133
+R1 type=fp expected=ringbuf_mem
+verification time 646 usec
+stack depth 16
+processed 113 insns (limit 1000000) max_states_per_insn 0 total_states 1 peak_states 1 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'ringbuf_stack_discard': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-lz6ey3fr/ringbuf_stack_discard_001__pad32.o'
+Error: failed to load object file
