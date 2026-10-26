@@ -2,8 +2,8 @@
 """Adapter for PREVAIL (Gershuni et al., vbpf/prevail), an independent eBPF verifier.
 
 PREVAIL does not read the kernel's log: it analyses the compiled object with
-its own abstract interpreter and prints the source location of the first
-failed assertion as ``; <path>:<line>``. Its verdict can therefore differ from
+its own abstract interpreter and, with ``--line-info``, prints the source
+location of the first failed assertion as ``; <path>:<line>``. Its verdict can therefore differ from
 the kernel's; a program PREVAIL accepts scores as a miss and is noted.
 
 Environment: ``PREVAIL`` (binary path, default ``prevail``), ``PREVAIL_SRC``
@@ -41,7 +41,8 @@ class Prevail:
                 "input": "compiled object only; the kernel log is not read"}
 
     def replay(self, ctx: CaseContext, obj: Path) -> str:
-        p = subprocess.run([self.bin, str(obj)], capture_output=True, text=True, timeout=600, check=False)
+        p = subprocess.run([self.bin, str(obj), "--line-info"], capture_output=True, text=True, timeout=600,
+                           check=False)
         return f"{HEADER} exit={p.returncode}\n{p.stdout}{p.stderr}"
 
     def predict(self, ctx: CaseContext) -> Prediction:

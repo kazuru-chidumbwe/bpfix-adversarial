@@ -1,5 +1,0 @@
-PREVAIL exit=1
-FAIL: xdp/helper_map_arg_stack
-113: Invalid type (r1.type == map_fd)
-
-Hint: run with --failure-slice for a causal trace, or -v for full invariants.

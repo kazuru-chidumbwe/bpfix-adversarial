@@ -1,6 +1,0 @@
-PREVAIL exit=64
-please specify a program
-available programs:
-section=.text function=wq_callback
-section=xdp function=rs_eunomia_wq_container_map
-

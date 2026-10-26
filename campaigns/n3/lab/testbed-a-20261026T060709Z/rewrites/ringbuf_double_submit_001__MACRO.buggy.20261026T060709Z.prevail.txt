@@ -1,2 +1,0 @@
-PREVAIL exit=0
-PASS: xdp/ringbuf_double_submit

@@ -1,5 +1,0 @@
-PREVAIL exit=1
-FAIL: tp/syscalls/sys_exit_read/rs_agentsight_stdiocap_user_copy_len
-30: Invalid type (r1.type in {number, ctx, stack, packet, shared})
-
-Hint: run with --failure-slice for a causal trace, or -v for full invariants.

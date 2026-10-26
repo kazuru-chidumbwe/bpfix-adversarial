@@ -1,5 +1,0 @@
-PREVAIL exit=1
-FAIL: xdp/map_value_index_guard_oob
-25: Upper bound must be at most r1.shared_region_size (valid_access(r1.offset, width=4) for read)
-
-Hint: run with --failure-slice for a causal trace, or -v for full invariants.

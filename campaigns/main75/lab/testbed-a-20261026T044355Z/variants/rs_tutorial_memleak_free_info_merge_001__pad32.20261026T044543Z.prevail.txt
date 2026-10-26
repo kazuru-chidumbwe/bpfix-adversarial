@@ -1,5 +1,0 @@
-PREVAIL exit=1
-FAIL: xdp/rs_tutorial_memleak_free_info_merge
-122: Possible null access (valid_access(r6.offset, width=8) for read)
-
-Hint: run with --failure-slice for a causal trace, or -v for full invariants.

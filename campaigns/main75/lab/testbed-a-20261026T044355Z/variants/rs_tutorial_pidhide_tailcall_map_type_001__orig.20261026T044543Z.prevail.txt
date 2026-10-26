@@ -1,6 +1,0 @@
-PREVAIL exit=64
-please specify a program
-available programs:
-section=xdp function=entry_tailcall_dispatch
-section=xdp function=tail_target_drop
-

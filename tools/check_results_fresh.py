@@ -32,6 +32,8 @@ OFFLINE_EMITTERS: list[tuple[str, list[str]]] = [
     ("results/upstream_repair_site.json", ["tools/score_upstream_repair_site.py"]),
     ("results/main75_pin.json",
      ["tools/score_main75_pin.py", "--run", "campaigns/main75/lab/testbed-a-20261026T044355Z"]),
+    ("results/main75_rewrites.json",
+     ["tools/score_main75_rewrites.py", "--run", "campaigns/n3/lab/testbed-a-20261026T060709Z"]),
     ("results/pad_rename_invariance.json", ["tools/emit_pad_rename_invariance.py"]),
     ("results/depth21_selection.json", ["tools/emit_depth21_selection.py"]),
     ("results/sc_vs_honesty.json", ["tools/score_sc_vs_honesty.py"]),

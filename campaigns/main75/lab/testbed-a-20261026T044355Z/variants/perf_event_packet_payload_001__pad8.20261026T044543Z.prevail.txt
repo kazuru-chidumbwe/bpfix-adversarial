@@ -1,2 +1,0 @@
-PREVAIL exit=0
-PASS: xdp/perf_event_packet_payload

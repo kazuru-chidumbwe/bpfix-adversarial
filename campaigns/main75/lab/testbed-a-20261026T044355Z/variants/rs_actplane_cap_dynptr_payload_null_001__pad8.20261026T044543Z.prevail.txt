@@ -1,2 +1,0 @@
-PREVAIL exit=1
-error: rejected: helper function is unavailable on this platform (at 234)

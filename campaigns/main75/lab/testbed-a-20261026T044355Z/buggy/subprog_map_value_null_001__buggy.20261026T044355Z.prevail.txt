@@ -1,6 +1,0 @@
-PREVAIL exit=64
-please specify a program
-available programs:
-section=.text function=lookup_config
-section=xdp function=subprog_map_value_null
-

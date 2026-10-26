@@ -1,6 +1,0 @@
-PREVAIL exit=64
-please specify a program
-available programs:
-section=tracepoint/syscalls/sys_enter_openat function=rs_bpftime_opensnoop_enter
-section=tracepoint/syscalls/sys_exit_openat function=rs_bpftime_opensnoop_exit
-

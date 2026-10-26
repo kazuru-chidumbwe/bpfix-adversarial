@@ -1,5 +1,0 @@
-PREVAIL exit=1
-FAIL: xdp/ringbuf_missing_null
-115: Possible null access (valid_access(r7.offset, width=4) for write)
-
-Hint: run with --failure-slice for a causal trace, or -v for full invariants.

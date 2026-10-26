@@ -1,5 +1,0 @@
-PREVAIL exit=1
-FAIL: xdp/map_value_pointer_cookie
-27: Possible null access (valid_access(r0.offset+4, width=4) for read)
-
-Hint: run with --failure-slice for a causal trace, or -v for full invariants.

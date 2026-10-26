@@ -1,5 +1,0 @@
-PREVAIL exit=1
-FAIL: xdp/xdp_adjust_head_ringbuf
-131: Invalid type (r7.type in {ctx, stack, packet, shared, socket, alloc_mem})
-
-Hint: run with --failure-slice for a causal trace, or -v for full invariants.

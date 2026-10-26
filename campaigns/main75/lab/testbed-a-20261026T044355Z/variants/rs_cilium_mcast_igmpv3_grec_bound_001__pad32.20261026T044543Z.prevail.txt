@@ -1,5 +1,0 @@
-PREVAIL exit=1
-FAIL: xdp/cilium_mcast_igmpv3_grec_bound
-124: Upper bound must be at most packet_size (valid_access(r4.offset, width=1) for read)
-
-Hint: run with --failure-slice for a causal trace, or -v for full invariants.

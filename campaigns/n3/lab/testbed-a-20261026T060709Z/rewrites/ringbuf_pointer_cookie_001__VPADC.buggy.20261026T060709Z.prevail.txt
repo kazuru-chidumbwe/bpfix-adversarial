@@ -1,5 +1,0 @@
-PREVAIL exit=1
-FAIL: xdp/ringbuf_pointer_cookie
-74: Invalid type (r0.type == number)
-
-Hint: run with --failure-slice for a causal trace, or -v for full invariants.
