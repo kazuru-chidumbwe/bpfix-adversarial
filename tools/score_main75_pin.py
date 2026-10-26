@@ -37,8 +37,8 @@ from bpfix_adversarial.repair_site import (  # noqa: E402
     repair_sites_r2,
     wilson,
 )
+from bpfix_adversarial.reporters import CaseContext, registry  # noqa: E402
 from bpfix_adversarial.upstream_corpus import UPSTREAM_ERROR_OBLIGATION  # noqa: E402
-from tools.score_sc_vs_honesty import sc_report, vs_stop_line  # noqa: E402
 
 CASES = ROOT / "fixtures" / "upstream" / "bpfix-bench-cases"
 VARIANTS = ROOT / "campaigns" / "v2" / "upstream"
@@ -47,7 +47,8 @@ OUT_MD = ROOT / "results" / "main75_pin.md"
 NEAR = 3
 INFORMATIVE_CHANCE = 0.25
 RULES = ("R0", "R1", "R2")
-REPORTERS = ("bpfix", "VerifierState", "SourceComment")
+REGISTRY = registry()
+REPORTERS = tuple(REGISTRY)
 METRICS = ("primary_on_site", "label_on_site", "primary_within_3")
 
 
@@ -63,10 +64,6 @@ def load_manifest(d: Path) -> dict[str, dict]:
                 r = json.loads(line)
                 rows[r["case_id"]] = r
     return rows
-
-
-def read_rel(p: str) -> str:
-    return (ROOT / p).read_text(encoding="utf-8", errors="replace")
 
 
 def bpfix_for(log_rel: str):
@@ -123,36 +120,37 @@ def score_case(cid: str, buggy_m: dict, fixed_m: dict) -> dict:
     row["chance"] = {r: round(chance(code, s), 4) for r, s in sites.items()}
     row["informative"] = row["chance"]["R0"] < INFORMATIVE_CHANCE
 
-    log_text = read_rel(bm["log"])
     diag = bpfix_for(bm["log"])
     obligation = UPSTREAM_ERROR_OBLIGATION.get((diag.error_id if diag else None) or "")
     row["bpfix_error_id"] = diag.error_id if diag else None
     row["upstream_obligation"] = obligation
 
-    vs_line, _txt, vs_note = vs_stop_line(log_text)
-    sc_line, sc_note = sc_report(cdir / "buggy.bpf.c", obligation or "", cid) if obligation else (None, "SC: unmapped")
-    pred = {
-        "bpfix": (diag.primary if diag else None, diag.label_lines if diag else []),
-        "VerifierState": (vs_line, []),
-        "SourceComment": (sc_line, []),
-    }
+    ctx = CaseContext(cid, cdir / "buggy.bpf.c", ROOT / bm["log"], obligation)
+    pred = {name: rep.predict(ctx) for name, rep in REGISTRY.items()}
     row["predictions"] = {
-        "bpfix": {"primary": pred["bpfix"][0], "labels": pred["bpfix"][1]},
-        "VerifierState": {"primary": vs_line, "note": vs_note},
-        "SourceComment": {"primary": sc_line, "note": sc_note},
+        name: {"primary": p.primary, "labels": p.labels, "note": p.note} for name, p in pred.items()
     }
     row["outcomes"] = {
-        rep: {rule: outcome(p, labs, sites[rule]) for rule in RULES} for rep, (p, labs) in pred.items()
+        name: {rule: outcome(p.primary, p.labels, sites[rule]) for rule in RULES} for name, p in pred.items()
     }
     return row
 
 
+CONTROL = "StaleLine (control)"
+
+
 def variant_pairs(rows: list[dict], var_m: dict[str, dict]) -> dict:
-    """orig vs pad8 / pad32 / rename for bpfix and VerifierState, R0 sites mapped per variant."""
+    """orig vs pad8 / pad32 / rename for every reporter, R0 sites mapped per variant.
+
+    ``StaleLine (control)`` is a positive control: in the variant it repeats
+    bpfix's primary line number from the original, unmapped. It must lose hits
+    wherever a transform moves the repair site; if it did not, the pair test
+    could not see movement.
+    """
     out: dict = {}
     for variant in ("pad8", "pad32", "rename"):
         per_rep: dict = {}
-        for rep in ("bpfix", "VerifierState"):
+        for rep in (*REPORTERS, CONTROL):
             pairs, excluded = [], []
             for r in rows:
                 if r.get("excluded"):
@@ -171,13 +169,16 @@ def variant_pairs(rows: list[dict], var_m: dict[str, dict]) -> dict:
                     continue
                 tv = tf["variants"][variant]
                 o_sites, v_sites = tf["variants"]["orig"]["repair_sites"], tv["repair_sites"]
-                if rep == "bpfix":
-                    od, vd = bpfix_for(o_m["log"]), bpfix_for(v_m["log"])
-                    op = od.primary if od else None
-                    vp = vd.primary if vd else None
+                cdir = VARIANTS / r["case_id"]
+                ob = r.get("upstream_obligation")
+                ctx_o = CaseContext(r["case_id"], cdir / "orig.bpf.c", ROOT / o_m["log"], ob)
+                ctx_v = CaseContext(r["case_id"], cdir / f"{variant}.bpf.c", ROOT / v_m["log"], ob)
+                if rep == CONTROL:
+                    op = REGISTRY["bpfix"].predict(ctx_o).primary
+                    vp = op
                 else:
-                    op = vs_stop_line(read_rel(o_m["log"]))[0]
-                    vp = vs_stop_line(read_rel(v_m["log"]))[0]
+                    op = REGISTRY[rep].predict(ctx_o).primary
+                    vp = REGISTRY[rep].predict(ctx_v).primary
                 shift_from, shift = tv.get("shift_from"), tv.get("shift", 0)
                 mapped = op + shift if (op is not None and shift_from is not None and op >= shift_from) else op
                 pairs.append({

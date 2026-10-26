@@ -1038,6 +1038,34 @@
      0.1478
     ],
     "excluded": []
+   },
+   "SourceComment": {
+    "pairs": 65,
+    "orig_on_site": 9,
+    "variant_on_site": 9,
+    "lost": 0,
+    "gained": 0,
+    "mcnemar_p": null,
+    "primary_moved": 0,
+    "primary_moved_wilson95": [
+     0.0,
+     0.0558
+    ],
+    "excluded": []
+   },
+   "StaleLine (control)": {
+    "pairs": 65,
+    "orig_on_site": 33,
+    "variant_on_site": 0,
+    "lost": 33,
+    "gained": 0,
+    "mcnemar_p": 0.0,
+    "primary_moved": 65,
+    "primary_moved_wilson95": [
+     0.9442,
+     1.0
+    ],
+    "excluded": []
    }
   },
   "pad32": {
@@ -1068,6 +1096,34 @@
      0.1478
     ],
     "excluded": []
+   },
+   "SourceComment": {
+    "pairs": 65,
+    "orig_on_site": 9,
+    "variant_on_site": 9,
+    "lost": 0,
+    "gained": 0,
+    "mcnemar_p": null,
+    "primary_moved": 0,
+    "primary_moved_wilson95": [
+     0.0,
+     0.0558
+    ],
+    "excluded": []
+   },
+   "StaleLine (control)": {
+    "pairs": 65,
+    "orig_on_site": 33,
+    "variant_on_site": 0,
+    "lost": 33,
+    "gained": 0,
+    "mcnemar_p": 0.0,
+    "primary_moved": 65,
+    "primary_moved_wilson95": [
+     0.9442,
+     1.0
+    ],
+    "excluded": []
    }
   },
   "rename": {
@@ -1091,6 +1147,44 @@
     ]
    },
    "VerifierState": {
+    "pairs": 35,
+    "orig_on_site": 12,
+    "variant_on_site": 12,
+    "lost": 0,
+    "gained": 0,
+    "mcnemar_p": null,
+    "primary_moved": 0,
+    "primary_moved_wilson95": [
+     0.0,
+     0.0989
+    ],
+    "excluded": [
+     {
+      "case_id": "rs_actplane_mmap_pending_merge_001",
+      "reason": "orig REJECT / rename COMPILE_FAIL"
+     }
+    ]
+   },
+   "SourceComment": {
+    "pairs": 35,
+    "orig_on_site": 5,
+    "variant_on_site": 1,
+    "lost": 4,
+    "gained": 0,
+    "mcnemar_p": 0.125,
+    "primary_moved": 14,
+    "primary_moved_wilson95": [
+     0.2555,
+     0.5643
+    ],
+    "excluded": [
+     {
+      "case_id": "rs_actplane_mmap_pending_merge_001",
+      "reason": "orig REJECT / rename COMPILE_FAIL"
+     }
+    ]
+   },
+   "StaleLine (control)": {
     "pairs": 35,
     "orig_on_site": 12,
     "variant_on_site": 12,
@@ -1158,14 +1252,17 @@
       30,
       38,
       42
-     ]
+     ],
+     "note": "E006"
     },
     "VerifierState": {
      "primary": 42,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
     }
    },
@@ -1294,14 +1391,17 @@
      "labels": [
       32,
       33
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 33,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: no NP heuristic hit"
     }
    },
@@ -1428,14 +1528,17 @@
      "labels": [
       29,
       35
-     ]
+     ],
+     "note": "E005"
     },
     "VerifierState": {
      "primary": 35,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 35,
+     "labels": [],
      "note": "SC: scalar-guard establish"
     }
    },
@@ -1565,14 +1668,17 @@
      "primary": 30,
      "labels": [
       30
-     ]
+     ],
+     "note": "E010"
     },
     "VerifierState": {
      "primary": 30,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (HelperArgument)"
     }
    },
@@ -1704,14 +1810,17 @@
      "primary": 36,
      "labels": [
       36
-     ]
+     ],
+     "note": "E012"
     },
     "VerifierState": {
      "primary": 36,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (DynptrSafety)"
     }
    },
@@ -1826,14 +1935,17 @@
      "primary": 27,
      "labels": [
       27
-     ]
+     ],
+     "note": "E012"
     },
     "VerifierState": {
      "primary": 27,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (DynptrSafety)"
     }
    },
@@ -1959,15 +2071,18 @@
      "primary": 61,
      "labels": [
       61
-     ]
+     ],
+     "note": "E099"
     },
     "VerifierState": {
      "primary": 61,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
-     "note": "SC: unmapped"
+     "labels": [],
+     "note": "SC: no obligation label"
     }
    },
    "outcomes": {
@@ -2074,14 +2189,17 @@
      "primary": 57,
      "labels": [
       57
-     ]
+     ],
+     "note": "E008"
     },
     "VerifierState": {
      "primary": 57,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (TypeContract)"
     }
    },
@@ -2199,14 +2317,17 @@
      "labels": [
       60,
       65
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 65,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 39,
+     "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
     }
    },
@@ -2336,14 +2457,17 @@
      "labels": [
       41,
       48
-     ]
+     ],
+     "note": "E005"
     },
     "VerifierState": {
      "primary": 48,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 41,
+     "labels": [],
      "note": "SC: scalar-guard establish"
     }
    },
@@ -2447,14 +2571,17 @@
      "labels": [
       39,
       67
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 67,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 39,
+     "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
     }
    },
@@ -2558,14 +2685,17 @@
      "labels": [
       63,
       67
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 67,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 57,
+     "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
     }
    },
@@ -2683,14 +2813,17 @@
      "labels": [
       40,
       47
-     ]
+     ],
+     "note": "E005"
     },
     "VerifierState": {
      "primary": 47,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 40,
+     "labels": [],
      "note": "SC: scalar-guard establish"
     }
    },
@@ -2791,14 +2924,17 @@
      "labels": [
       58,
       62
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 62,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 38,
+     "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
     }
    },
@@ -2911,14 +3047,17 @@
      "labels": [
       27,
       31
-     ]
+     ],
+     "note": "E001"
     },
     "VerifierState": {
      "primary": 31,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 27,
+     "labels": [],
      "note": "SC: data_end establish"
     }
    },
@@ -3021,14 +3160,17 @@
      "labels": [
       33,
       36
-     ]
+     ],
+     "note": "E001"
     },
     "VerifierState": {
      "primary": 36,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 33,
+     "labels": [],
      "note": "SC: data_end establish"
     }
    },
@@ -3154,14 +3296,17 @@
       63,
       66,
       72
-     ]
+     ],
+     "note": "E001"
     },
     "VerifierState": {
      "primary": 72,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 47,
+     "labels": [],
      "note": "SC: data_end establish"
     }
    },
@@ -3260,14 +3405,17 @@
       34,
       47,
       54
-     ]
+     ],
+     "note": "E006"
     },
     "VerifierState": {
      "primary": 54,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
     }
    },
@@ -3376,14 +3524,17 @@
       44,
       47,
       61
-     ]
+     ],
+     "note": "E006"
     },
     "VerifierState": {
      "primary": 61,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
     }
    },
@@ -3494,14 +3645,17 @@
       29,
       31,
       39
-     ]
+     ],
+     "note": "E006"
     },
     "VerifierState": {
      "primary": 39,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
     }
    },
@@ -3599,14 +3753,17 @@
      "labels": [
       46,
       52
-     ]
+     ],
+     "note": "E001"
     },
     "VerifierState": {
      "primary": 52,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 21,
+     "labels": [],
      "note": "SC: data_end establish"
     }
    },
@@ -3717,14 +3874,17 @@
       57,
       59,
       67
-     ]
+     ],
+     "note": "E006"
     },
     "VerifierState": {
      "primary": 67,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
     }
    },
@@ -3829,14 +3989,17 @@
      "primary": 43,
      "labels": [
       43
-     ]
+     ],
+     "note": "E010"
     },
     "VerifierState": {
      "primary": 43,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (HelperArgument)"
     }
    },
@@ -3939,14 +4102,17 @@
       47,
       54,
       59
-     ]
+     ],
+     "note": "E006"
     },
     "VerifierState": {
      "primary": 59,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
     }
    },
@@ -4051,14 +4217,17 @@
       39,
       51,
       53
-     ]
+     ],
+     "note": "E006"
     },
     "VerifierState": {
      "primary": 53,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
     }
    },
@@ -4180,14 +4349,17 @@
      "labels": [
       34,
       35
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 35,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 29,
+     "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
     }
    },
@@ -4285,14 +4457,17 @@
      "labels": [
       47,
       48
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 48,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 42,
+     "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
     }
    },
@@ -4396,14 +4571,17 @@
       47,
       53,
       55
-     ]
+     ],
+     "note": "E004"
     },
     "VerifierState": {
      "primary": 55,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (ReferenceLifecycle)"
     }
    },
@@ -4525,14 +4703,17 @@
       66,
       67,
       72
-     ]
+     ],
+     "note": "E006"
     },
     "VerifierState": {
      "primary": 72,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
     }
    },
@@ -4637,14 +4818,17 @@
       43,
       50,
       53
-     ]
+     ],
+     "note": "E004"
     },
     "VerifierState": {
      "primary": 53,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (ReferenceLifecycle)"
     }
    },
@@ -4755,14 +4939,17 @@
      "primary": 33,
      "labels": [
       33
-     ]
+     ],
+     "note": "E008"
     },
     "VerifierState": {
      "primary": 33,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (TypeContract)"
     }
    },
@@ -4881,14 +5068,17 @@
      "primary": 37,
      "labels": [
       37
-     ]
+     ],
+     "note": "E008"
     },
     "VerifierState": {
      "primary": 37,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (TypeContract)"
     }
    },
@@ -5006,14 +5196,17 @@
      "primary": 49,
      "labels": [
       49
-     ]
+     ],
+     "note": "E008"
     },
     "VerifierState": {
      "primary": 49,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (TypeContract)"
     }
    },
@@ -5122,14 +5315,17 @@
       49,
       55,
       63
-     ]
+     ],
+     "note": "E006"
     },
     "VerifierState": {
      "primary": 63,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
     }
    },
@@ -5244,14 +5440,17 @@
      "labels": [
       64,
       94
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 94,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 64,
+     "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
     }
    },
@@ -5361,14 +5560,17 @@
      "labels": [
       49,
       54
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 54,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 32,
+     "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
     }
    },
@@ -5501,14 +5703,17 @@
      "labels": [
       214,
       217
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 217,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 118,
+     "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
     }
    },
@@ -5615,14 +5820,17 @@
      "labels": [
       54,
       57
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 57,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 45,
+     "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
     }
    },
@@ -5723,14 +5931,17 @@
      "labels": [
       29,
       42
-     ]
+     ],
+     "note": "E005"
     },
     "VerifierState": {
      "primary": 29,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 31,
+     "labels": [],
      "note": "SC: scalar-guard establish"
     }
    },
@@ -5835,14 +6046,17 @@
       84,
       120,
       123
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 123,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 84,
+     "labels": [],
      "note": "SC: null-check establish"
     }
    },
@@ -5943,14 +6157,17 @@
      "labels": [
       44,
       45
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 45,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 44,
+     "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
     }
    },
@@ -6052,14 +6269,17 @@
       46,
       56,
       57
-     ]
+     ],
+     "note": "E005"
     },
     "VerifierState": {
      "primary": 57,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 46,
+     "labels": [],
      "note": "SC: scalar-guard establish"
     }
    },
@@ -6173,14 +6393,17 @@
       119,
       129,
       132
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 132,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 119,
+     "labels": [],
      "note": "SC: null-check establish"
     }
    },
@@ -6295,14 +6518,17 @@
       63,
       77,
       82
-     ]
+     ],
+     "note": "E004"
     },
     "VerifierState": {
      "primary": 82,
+     "labels": [],
      "note": "VS: last source map in log"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (ReferenceLifecycle)"
     }
    },
@@ -6413,14 +6639,17 @@
      "primary": 50,
      "labels": [
       50
-     ]
+     ],
+     "note": "E009"
     },
     "VerifierState": {
      "primary": 50,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (EnvironmentCapability)"
     }
    },
@@ -6527,14 +6756,17 @@
       33,
       40,
       43
-     ]
+     ],
+     "note": "E011"
     },
     "VerifierState": {
      "primary": 43,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (ContextAccess)"
     }
    },
@@ -6631,15 +6863,18 @@
      "primary": 46,
      "labels": [
       46
-     ]
+     ],
+     "note": "E099"
     },
     "VerifierState": {
      "primary": 46,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
-     "note": "SC: unmapped"
+     "labels": [],
+     "note": "SC: no obligation label"
     }
    },
    "outcomes": {
@@ -6739,14 +6974,17 @@
      "labels": [
       34,
       37
-     ]
+     ],
+     "note": "E001"
     },
     "VerifierState": {
      "primary": 37,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 44,
+     "labels": [],
      "note": "SC: data_end establish"
     }
    },
@@ -6878,14 +7116,17 @@
       47,
       77,
       87
-     ]
+     ],
+     "note": "E001"
     },
     "VerifierState": {
      "primary": 87,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 43,
+     "labels": [],
      "note": "SC: data_end establish"
     }
    },
@@ -6986,14 +7227,17 @@
      "labels": [
       74,
       86
-     ]
+     ],
+     "note": "E001"
     },
     "VerifierState": {
      "primary": 86,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 60,
+     "labels": [],
      "note": "SC: data_end establish"
     }
    },
@@ -7101,14 +7345,17 @@
       24,
       32,
       34
-     ]
+     ],
+     "note": "E004"
     },
     "VerifierState": {
      "primary": 34,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (ReferenceLifecycle)"
     }
    },
@@ -7206,14 +7453,17 @@
      "labels": [
       50,
       60
-     ]
+     ],
+     "note": "E001"
     },
     "VerifierState": {
      "primary": 60,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 50,
+     "labels": [],
      "note": "SC: data_end establish"
     }
    },
@@ -7321,14 +7571,17 @@
       60,
       65,
       69
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 69,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 60,
+     "labels": [],
      "note": "SC: null-check establish"
     }
    },
@@ -7425,15 +7678,18 @@
      "primary": 42,
      "labels": [
       42
-     ]
+     ],
+     "note": "E099"
     },
     "VerifierState": {
      "primary": 42,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
-     "note": "SC: unmapped"
+     "labels": [],
+     "note": "SC: no obligation label"
     }
    },
    "outcomes": {
@@ -7545,14 +7801,17 @@
      "labels": [
       127,
       130
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 130,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 71,
+     "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
     }
    },
@@ -7653,14 +7912,17 @@
      "labels": [
       107,
       131
-     ]
+     ],
+     "note": "E001"
     },
     "VerifierState": {
      "primary": 131,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 77,
+     "labels": [],
      "note": "SC: data_end establish"
     }
    },
@@ -7762,14 +8024,17 @@
      "primary": 100,
      "labels": [
       100
-     ]
+     ],
+     "note": "E010"
     },
     "VerifierState": {
      "primary": 100,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (HelperArgument)"
     }
    },
@@ -7879,14 +8144,17 @@
       77,
       94,
       102
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 102,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 77,
+     "labels": [],
      "note": "SC: null-check establish"
     }
    },
@@ -7983,14 +8251,17 @@
      "primary": 51,
      "labels": [
       51
-     ]
+     ],
+     "note": "E005"
     },
     "VerifierState": {
      "primary": 51,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 52,
+     "labels": [],
      "note": "SC: scalar-guard establish"
     }
    },
@@ -8106,14 +8377,17 @@
       119,
       135,
       137
-     ]
+     ],
+     "note": "E004"
     },
     "VerifierState": {
      "primary": 137,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (ReferenceLifecycle)"
     }
    },
@@ -8226,14 +8500,17 @@
      "labels": [
       65,
       73
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 73,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 45,
+     "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
     }
    },
@@ -8330,14 +8607,17 @@
      "primary": 34,
      "labels": [
       34
-     ]
+     ],
+     "note": "E009"
     },
     "VerifierState": {
      "primary": 34,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (EnvironmentCapability)"
     }
    },
@@ -8451,14 +8731,17 @@
       36,
       40,
       50
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 50,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 40,
+     "labels": [],
      "note": "SC: null-check establish"
     }
    },
@@ -8565,14 +8848,17 @@
      "primary": 30,
      "labels": [
       30
-     ]
+     ],
+     "note": "E001"
     },
     "VerifierState": {
      "primary": 30,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 24,
+     "labels": [],
      "note": "SC: data_end establish"
     }
    },
@@ -8669,15 +8955,18 @@
      "primary": 30,
      "labels": [
       30
-     ]
+     ],
+     "note": "E099"
     },
     "VerifierState": {
      "primary": 30,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
-     "note": "SC: unmapped"
+     "labels": [],
+     "note": "SC: no obligation label"
     }
    },
    "outcomes": {
@@ -8778,14 +9067,17 @@
      "primary": 62,
      "labels": [
       62
-     ]
+     ],
+     "note": "E009"
     },
     "VerifierState": {
      "primary": 62,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (EnvironmentCapability)"
     }
    },
@@ -8886,14 +9178,17 @@
      "labels": [
       61,
       92
-     ]
+     ],
+     "note": "E001"
     },
     "VerifierState": {
      "primary": 92,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 43,
+     "labels": [],
      "note": "SC: data_end establish"
     }
    },
@@ -8990,14 +9285,17 @@
      "primary": 38,
      "labels": [
       38
-     ]
+     ],
+     "note": "E009"
     },
     "VerifierState": {
      "primary": 38,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (EnvironmentCapability)"
     }
    },
@@ -9099,14 +9397,17 @@
       31,
       34,
       37
-     ]
+     ],
+     "note": "E011"
     },
     "VerifierState": {
      "primary": 37,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (ContextAccess)"
     }
    },
@@ -9207,14 +9508,17 @@
      "labels": [
       35,
       55
-     ]
+     ],
+     "note": "E002"
     },
     "VerifierState": {
      "primary": 55,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": 35,
+     "labels": [],
      "note": "SC: nullable-return (fallback / nocheck)"
     }
    },
@@ -9326,14 +9630,17 @@
       43,
       55,
       59
-     ]
+     ],
+     "note": "E011"
     },
     "VerifierState": {
      "primary": 59,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (ContextAccess)"
     }
    },
@@ -9436,14 +9743,17 @@
       51,
       53,
       59
-     ]
+     ],
+     "note": "E011"
     },
     "VerifierState": {
      "primary": 59,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (ContextAccess)"
     }
    },
@@ -9542,14 +9852,17 @@
       41,
       45,
       47
-     ]
+     ],
+     "note": "E011"
     },
     "VerifierState": {
      "primary": 47,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (ContextAccess)"
     }
    },
@@ -9651,14 +9964,17 @@
       32,
       37,
       43
-     ]
+     ],
+     "note": "E011"
     },
     "VerifierState": {
      "primary": 43,
+     "labels": [],
      "note": "VS: stop-site source map before reject"
     },
     "SourceComment": {
      "primary": null,
+     "labels": [],
      "note": "SC: unknown obligation (ContextAccess)"
     }
    },
@@ -10511,6 +10827,790 @@
      "variant_on_site": false,
      "primary_moved": false
     }
+   ],
+   "SourceComment": [
+    {
+     "case_id": "alu32_pointer_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_slice_missing_null_check_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_slice_short_mem_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_slice_stack_buffer_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_stack_copy_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_uninitialized_slice_arg_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "helper_csum_diff_stack_len_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "helper_map_arg_stack_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_branch_merge_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_index_guard_oob_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_inline_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_pointer_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_signed_index_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_spill_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_checked_wrong_base_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_eth_off_by_one_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_ihl_udp_undercheck_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_inline_return_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_l4_branch_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_macro_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_macro_payload_undercheck_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_vlan_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "perf_event_packet_payload_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_branch_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_double_submit_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_missing_null_check_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_nested_missing_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_stack_discard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_stack_submit_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_submit_after_discard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_two_record_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_cap_dynptr_payload_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_lsm_bpf_ringbuf_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_mmap_pending_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_policy_map_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_taint_loop_count_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_fs_overflow_counter_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_process_ringbuf_null_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_stdiocap_user_copy_len_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_write_ctx_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_bpftime_opensnoop_stack_wrong_prog_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_change_proto_stale_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_fib_lookup_param_len_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_ip_options_traceid_payload_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_ipv6_exthdr_l4_offset_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_mcast_igmpv3_grec_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_srv6_segment_bound_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_datrail_browsertrace_start_ns_merge_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_datrail_cgroup_filter_key_width_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_eunomia_energy_runtime_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_eunomia_wq_container_map_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_nccl_cpu_observer_slot_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_tetragon_data_event_size_guard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_tutorial_memleak_free_info_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_tutorial_user_ringbuf_dynptr_merge_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_ihl_macro_wrong_base_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_load_bytes_stack_len_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_xdpdump_perf_map_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_xdpfilt_udp_macro_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_xdpsock_redirect_map_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "subprog_adjust_tail_stale_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "subprog_map_value_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "xdp_adjust_head_map_value_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "xdp_adjust_head_ringbuf_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "xdp_adjust_tail_stale_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    }
+   ],
+   "StaleLine (control)": [
+    {
+     "case_id": "alu32_pointer_cookie_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "dynptr_slice_missing_null_check_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "dynptr_slice_short_mem_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "dynptr_slice_stack_buffer_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "dynptr_stack_copy_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "dynptr_uninitialized_slice_arg_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "helper_csum_diff_stack_len_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "helper_map_arg_stack_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "map_value_branch_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "map_value_index_guard_oob_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "map_value_inline_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "map_value_pointer_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "map_value_signed_index_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "map_value_spill_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "packet_checked_wrong_base_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "packet_eth_off_by_one_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "packet_ihl_udp_undercheck_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "packet_inline_return_cookie_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "packet_l4_branch_cookie_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "packet_macro_cookie_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "packet_macro_payload_undercheck_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "packet_vlan_cookie_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "perf_event_packet_payload_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "ringbuf_branch_cookie_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "ringbuf_double_submit_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "ringbuf_missing_null_check_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "ringbuf_nested_missing_null_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "ringbuf_stack_discard_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "ringbuf_stack_submit_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "ringbuf_submit_after_discard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "ringbuf_two_record_cookie_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_actplane_cap_dynptr_payload_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_actplane_lsm_bpf_ringbuf_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_actplane_mmap_pending_merge_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_actplane_policy_map_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_actplane_taint_loop_count_bound_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_agentsight_fs_overflow_counter_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_agentsight_process_ringbuf_null_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_agentsight_stdiocap_user_copy_len_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_agentsight_write_ctx_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_bpftime_opensnoop_stack_wrong_prog_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_cilium_change_proto_stale_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_cilium_fib_lookup_param_len_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_cilium_ip_options_traceid_payload_bound_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_cilium_ipv6_exthdr_l4_offset_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_cilium_mcast_igmpv3_grec_bound_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_cilium_srv6_segment_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_datrail_browsertrace_start_ns_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_datrail_cgroup_filter_key_width_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_eunomia_energy_runtime_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_eunomia_wq_container_map_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_nccl_cpu_observer_slot_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_tetragon_data_event_size_guard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_tutorial_memleak_free_info_merge_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_tutorial_user_ringbuf_dynptr_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_xdp_tools_ihl_macro_wrong_base_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_xdp_tools_load_bytes_stack_len_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_xdp_tools_xdpdump_perf_map_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_xdp_tools_xdpfilt_udp_macro_bound_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_xdp_tools_xdpsock_redirect_map_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "subprog_adjust_tail_stale_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "subprog_map_value_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "xdp_adjust_head_map_value_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "xdp_adjust_head_ringbuf_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "xdp_adjust_tail_stale_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    }
    ]
   },
   "pad32": {
@@ -11297,6 +12397,790 @@
      "variant_on_site": false,
      "primary_moved": false
     }
+   ],
+   "SourceComment": [
+    {
+     "case_id": "alu32_pointer_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_slice_missing_null_check_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_slice_short_mem_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_slice_stack_buffer_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_stack_copy_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "dynptr_uninitialized_slice_arg_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "helper_csum_diff_stack_len_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "helper_map_arg_stack_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_branch_merge_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_index_guard_oob_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_inline_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_pointer_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_signed_index_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_spill_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_checked_wrong_base_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_eth_off_by_one_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_ihl_udp_undercheck_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_inline_return_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_l4_branch_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_macro_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_macro_payload_undercheck_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_vlan_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "perf_event_packet_payload_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_branch_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_double_submit_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_missing_null_check_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_nested_missing_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_stack_discard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_stack_submit_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_submit_after_discard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_two_record_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_cap_dynptr_payload_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_lsm_bpf_ringbuf_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_mmap_pending_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_policy_map_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_taint_loop_count_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_fs_overflow_counter_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_process_ringbuf_null_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_stdiocap_user_copy_len_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_write_ctx_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_bpftime_opensnoop_stack_wrong_prog_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_change_proto_stale_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_fib_lookup_param_len_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_ip_options_traceid_payload_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_ipv6_exthdr_l4_offset_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_mcast_igmpv3_grec_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_srv6_segment_bound_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_datrail_browsertrace_start_ns_merge_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_datrail_cgroup_filter_key_width_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_eunomia_energy_runtime_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_eunomia_wq_container_map_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_nccl_cpu_observer_slot_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_tetragon_data_event_size_guard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_tutorial_memleak_free_info_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_tutorial_user_ringbuf_dynptr_merge_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_ihl_macro_wrong_base_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_load_bytes_stack_len_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_xdpdump_perf_map_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_xdpfilt_udp_macro_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_xdp_tools_xdpsock_redirect_map_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "subprog_adjust_tail_stale_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "subprog_map_value_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "xdp_adjust_head_map_value_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "xdp_adjust_head_ringbuf_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "xdp_adjust_tail_stale_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    }
+   ],
+   "StaleLine (control)": [
+    {
+     "case_id": "alu32_pointer_cookie_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "dynptr_slice_missing_null_check_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "dynptr_slice_short_mem_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "dynptr_slice_stack_buffer_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "dynptr_stack_copy_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "dynptr_uninitialized_slice_arg_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "helper_csum_diff_stack_len_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "helper_map_arg_stack_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "map_value_branch_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "map_value_index_guard_oob_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "map_value_inline_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "map_value_pointer_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "map_value_signed_index_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "map_value_spill_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "packet_checked_wrong_base_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "packet_eth_off_by_one_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "packet_ihl_udp_undercheck_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "packet_inline_return_cookie_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "packet_l4_branch_cookie_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "packet_macro_cookie_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "packet_macro_payload_undercheck_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "packet_vlan_cookie_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "perf_event_packet_payload_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "ringbuf_branch_cookie_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "ringbuf_double_submit_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "ringbuf_missing_null_check_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "ringbuf_nested_missing_null_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "ringbuf_stack_discard_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "ringbuf_stack_submit_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "ringbuf_submit_after_discard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "ringbuf_two_record_cookie_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_actplane_cap_dynptr_payload_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_actplane_lsm_bpf_ringbuf_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_actplane_mmap_pending_merge_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_actplane_policy_map_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_actplane_taint_loop_count_bound_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_agentsight_fs_overflow_counter_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_agentsight_process_ringbuf_null_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_agentsight_stdiocap_user_copy_len_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_agentsight_write_ctx_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_bpftime_opensnoop_stack_wrong_prog_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_cilium_change_proto_stale_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_cilium_fib_lookup_param_len_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_cilium_ip_options_traceid_payload_bound_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_cilium_ipv6_exthdr_l4_offset_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_cilium_mcast_igmpv3_grec_bound_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_cilium_srv6_segment_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_datrail_browsertrace_start_ns_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_datrail_cgroup_filter_key_width_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_eunomia_energy_runtime_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_eunomia_wq_container_map_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_nccl_cpu_observer_slot_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_tetragon_data_event_size_guard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_tutorial_memleak_free_info_merge_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_tutorial_user_ringbuf_dynptr_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_xdp_tools_ihl_macro_wrong_base_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_xdp_tools_load_bytes_stack_len_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_xdp_tools_xdpdump_perf_map_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_xdp_tools_xdpfilt_udp_macro_bound_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_xdp_tools_xdpsock_redirect_map_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "subprog_adjust_tail_stale_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "subprog_map_value_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "xdp_adjust_head_map_value_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "xdp_adjust_head_ringbuf_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "xdp_adjust_tail_stale_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    }
    ]
   },
   "rename": {
@@ -11513,6 +13397,430 @@
     }
    ],
    "VerifierState": [
+    {
+     "case_id": "map_value_branch_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_index_guard_oob_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_inline_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_pointer_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_signed_index_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_spill_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "packet_inline_return_cookie_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_branch_cookie_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_double_submit_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_missing_null_check_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_nested_missing_null_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_nested_reserve_leak_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_pointer_cookie_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_ref_leak_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_stack_submit_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_submit_after_discard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_two_record_cookie_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_cap_dynptr_payload_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_policy_map_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_fs_overflow_counter_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_stdiocap_user_copy_len_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_write_ctx_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_bpftime_opensnoop_ringbuf_filter_ref_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_bpftime_opensnoop_stack_wrong_prog_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_proxy_skc_assign_ref_leak_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_datrail_browsertrace_start_ns_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_datrail_cgroup_filter_key_width_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_eunomia_energy_runtime_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_eunomia_http_doff_copy_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_eunomia_wq_container_map_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_nccl_cpu_observer_slot_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_tutorial_memleak_free_info_merge_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_tutorial_user_ringbuf_dynptr_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "xdp_adjust_head_map_value_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "xdp_adjust_head_ringbuf_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    }
+   ],
+   "SourceComment": [
+    {
+     "case_id": "map_value_branch_merge_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "map_value_index_guard_oob_001",
+     "orig_on_site": true,
+     "variant_on_site": true,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_inline_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "map_value_pointer_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "map_value_signed_index_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "map_value_spill_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "packet_inline_return_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_branch_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_double_submit_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_missing_null_check_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "ringbuf_nested_missing_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "ringbuf_nested_reserve_leak_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_pointer_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_ref_leak_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_stack_submit_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_submit_after_discard_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "ringbuf_two_record_cookie_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_actplane_cap_dynptr_payload_null_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_actplane_policy_map_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_agentsight_fs_overflow_counter_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_agentsight_stdiocap_user_copy_len_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_agentsight_write_ctx_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_bpftime_opensnoop_ringbuf_filter_ref_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_bpftime_opensnoop_stack_wrong_prog_type_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_cilium_proxy_skc_assign_ref_leak_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_datrail_browsertrace_start_ns_merge_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_datrail_cgroup_filter_key_width_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_eunomia_energy_runtime_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_eunomia_http_doff_copy_bound_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_eunomia_wq_container_map_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "rs_nccl_cpu_observer_slot_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_tutorial_memleak_free_info_merge_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "rs_tutorial_user_ringbuf_dynptr_merge_001",
+     "orig_on_site": true,
+     "variant_on_site": false,
+     "primary_moved": true
+    },
+    {
+     "case_id": "xdp_adjust_head_map_value_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    },
+    {
+     "case_id": "xdp_adjust_head_ringbuf_001",
+     "orig_on_site": false,
+     "variant_on_site": false,
+     "primary_moved": false
+    }
+   ],
+   "StaleLine (control)": [
     {
      "case_id": "map_value_branch_merge_001",
      "orig_on_site": false,

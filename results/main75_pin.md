@@ -71,9 +71,15 @@ bpfix, any label on a repair site (informative): R0 46/69 (0.55–0.77), R1 59/6
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | pad8 | bpfix | 65 | 33 | 33 | 0 | 0 | n/a | 4/65 (0.02–0.15) |
 | pad8 | VerifierState | 65 | 33 | 33 | 0 | 0 | n/a | 4/65 (0.02–0.15) |
+| pad8 | SourceComment | 65 | 9 | 9 | 0 | 0 | n/a | 0/65 (0.00–0.06) |
+| pad8 | StaleLine (control) | 65 | 33 | 0 | 33 | 0 | 0.0000 | 65/65 (0.94–1.00) |
 | pad32 | bpfix | 65 | 33 | 33 | 0 | 0 | n/a | 4/65 (0.02–0.15) |
 | pad32 | VerifierState | 65 | 33 | 33 | 0 | 0 | n/a | 4/65 (0.02–0.15) |
+| pad32 | SourceComment | 65 | 9 | 9 | 0 | 0 | n/a | 0/65 (0.00–0.06) |
+| pad32 | StaleLine (control) | 65 | 33 | 0 | 33 | 0 | 0.0000 | 65/65 (0.94–1.00) |
 | rename | bpfix | 35 | 12 | 12 | 0 | 0 | n/a | 0/35 (0.00–0.10) |
 | rename | VerifierState | 35 | 12 | 12 | 0 | 0 | n/a | 0/35 (0.00–0.10) |
+| rename | SourceComment | 35 | 5 | 1 | 4 | 0 | 0.1250 | 14/35 (0.26–0.56) |
+| rename | StaleLine (control) | 35 | 12 | 12 | 0 | 0 | n/a | 0/35 (0.00–0.10) |
 
 Metamorphic pairs excluded: `rs_actplane_mmap_pending_merge_001` rename (orig REJECT / rename COMPILE_FAIL)
