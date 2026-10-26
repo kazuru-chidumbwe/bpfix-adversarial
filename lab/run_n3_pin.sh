@@ -5,7 +5,7 @@
 # and every registered external reporter that is installed. Run ON the lab host.
 #
 # Environment (optional): LABEL, BPFTOOL, BPFIX_SRC, BPFIX, ALLOW_OTHER_KERNEL,
-# PRETTY_VERIFIER (+ _SRC). bpfix must already be built (lab/run_v2_campaign.sh).
+# PRETTY_VERIFIER, PREVAIL (+ _SRC). bpfix must already be built (lab/run_v2_campaign.sh).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -46,6 +46,12 @@ $PY tools/replay_bpfix_dir.py --captured "$OUT/rewrites" --bpfix "$BPFIX" --bpfi
 if [[ -n "${PRETTY_VERIFIER:-}" ]]; then
   say "Pretty Verifier replay"
   $PY tools/replay_reporter.py --reporter PrettyVerifier --captured "$OUT/rewrites" \
+    --vmlinux-dir "$VMLINUX_DIR" | grep -E 'n_replayed|n_compile_failed'
+fi
+
+if [[ -n "${PREVAIL:-}" ]]; then
+  say "PREVAIL replay"
+  $PY tools/replay_reporter.py --reporter PREVAIL --captured "$OUT/rewrites" \
     --vmlinux-dir "$VMLINUX_DIR" | grep -E 'n_replayed|n_compile_failed'
 fi
 
