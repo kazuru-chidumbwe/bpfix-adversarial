@@ -79,8 +79,9 @@ def main(argv: list[str] | None = None) -> int:
             for rep in reporters:
                 if rep == CONTROL:
                     op = main75[cid]["predictions"]["bpfix"]["primary"]
-                    orig = main75[cid]["outcomes"]["bpfix"]["R0"]
-                    vp, vlabels = op, [op] if op else []
+                    hit = main75[cid]["outcomes"]["bpfix"]["R0"]["primary_on_site"]
+                    orig = {"primary_on_site": hit, "label_on_site": hit}  # the control has no labels
+                    vp, vlabels = op, []
                 else:
                     op = main75[cid]["predictions"][rep]["primary"]
                     orig = main75[cid]["outcomes"][rep]["R0"]
@@ -105,9 +106,13 @@ def main(argv: list[str] | None = None) -> int:
             moved = sum(1 for r in rs if r["primary_moved"])
             l_lost = sum(1 for r in rs if r["orig_label_on_site"] and not r["rewrite_label_on_site"])
             l_gained = sum(1 for r in rs if not r["orig_label_on_site"] and r["rewrite_label_on_site"])
+            # A lost hit whose primary did not move means the rewrite moved the repair site away from an
+            # unchanged report (e.g. padding between an inserted check and the stop statement).
+            lost_unmoved = sum(1 for r in rs if r["orig_on_site"] and not r["rewrite_on_site"] and not r["primary_moved"])
             summary[rep] = {"pairs": len(rs), "orig_on_site": sum(1 for r in rs if r["orig_on_site"]),
                             "rewrite_on_site": sum(1 for r in rs if r["rewrite_on_site"]),
                             "lost": lost, "gained": gained, "mcnemar_p": mcnemar_exact(lost, gained),
+                            "lost_primary_unmoved": lost_unmoved, "lost_primary_moved": lost - lost_unmoved,
                             "label_orig_on_site": sum(1 for r in rs if r["orig_label_on_site"]),
                             "label_rewrite_on_site": sum(1 for r in rs if r["rewrite_label_on_site"]),
                             "label_lost": l_lost, "label_gained": l_gained,
@@ -144,6 +149,13 @@ def main(argv: list[str] | None = None) -> int:
                      f"{s['lost']} / {s['gained']} | {pv(s['mcnemar_p'])} | "
                      f"{s['label_orig_on_site']} → {s['label_rewrite_on_site']} | "
                      f"{s['label_lost']} / {s['label_gained']} | {pv(s['label_mcnemar_p'])} | {moved} |")
+    L += ["", "Lost primary hits by mechanism: *unmoved* = the reporter's line is the same statement as before "
+          "and the rewrite moved the repair site away from it; *moved* = the reporter's line changed.", "",
+          "| rewrite | reporter | lost | unmoved | moved |", "| --- | --- | ---: | ---: | ---: |"]
+    for rid, d in per_rewrite.items():
+        for rep, s in d["summary"].items():
+            if s["lost"]:
+                L.append(f"| {rid} | {rep} | {s['lost']} | {s['lost_primary_unmoved']} | {s['lost_primary_moved']} |")
     inv = [(rid, x) for rid, d in per_rewrite.items() for x in d["invalid"]]
     if inv:
         L += ["", "Invalid pairs: " + "; ".join(f"{rid} `{x['case_id']}` (buggy {x['buggy']}, fixed {x['fixed']})"

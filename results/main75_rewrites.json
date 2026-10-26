@@ -15,6 +15,8 @@
      "lost": 9,
      "gained": 1,
      "mcnemar_p": 0.021484,
+     "lost_primary_unmoved": 9,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 26,
      "label_rewrite_on_site": 19,
      "label_lost": 8,
@@ -33,6 +35,8 @@
      "lost": 9,
      "gained": 1,
      "mcnemar_p": 0.021484,
+     "lost_primary_unmoved": 9,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 11,
      "label_rewrite_on_site": 3,
      "label_lost": 9,
@@ -51,6 +55,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 7,
      "label_rewrite_on_site": 7,
      "label_lost": 0,
@@ -69,6 +75,8 @@
      "lost": 8,
      "gained": 1,
      "mcnemar_p": 0.039062,
+     "lost_primary_unmoved": 8,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 10,
      "label_rewrite_on_site": 3,
      "label_lost": 8,
@@ -87,6 +95,8 @@
      "lost": 6,
      "gained": 0,
      "mcnemar_p": 0.03125,
+     "lost_primary_unmoved": 6,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 8,
      "label_rewrite_on_site": 2,
      "label_lost": 6,
@@ -105,11 +115,13 @@
      "lost": 1,
      "gained": 0,
      "mcnemar_p": 1.0,
-     "label_orig_on_site": 26,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 1,
+     "label_orig_on_site": 11,
      "label_rewrite_on_site": 10,
-     "label_lost": 16,
+     "label_lost": 1,
      "label_gained": 0,
-     "label_mcnemar_p": 3.1e-05,
+     "label_mcnemar_p": 1.0,
      "primary_moved": 45,
      "primary_moved_wilson95": [
       0.9213,
@@ -235,7 +247,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 35,
        "primary_moved": true
@@ -358,7 +370,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 65,
        "primary_moved": true
@@ -473,7 +485,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 67,
        "primary_moved": true
@@ -530,7 +542,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 62,
        "primary_moved": true
@@ -587,7 +599,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 36,
        "primary_moved": true
@@ -648,7 +660,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 72,
        "primary_moved": true
@@ -1063,7 +1075,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 57,
        "primary_moved": true
@@ -1178,7 +1190,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 123,
        "primary_moved": true
@@ -1353,7 +1365,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 132,
        "primary_moved": true
@@ -1704,7 +1716,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 34,
        "primary_moved": true
@@ -1760,7 +1772,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 60,
        "primary_moved": true
@@ -1819,7 +1831,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 69,
        "primary_moved": true
@@ -1936,7 +1948,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 130,
        "primary_moved": true
@@ -2052,7 +2064,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 102,
        "primary_moved": true
@@ -2169,7 +2181,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 50,
        "primary_moved": true
@@ -2761,6 +2773,8 @@
      "lost": 9,
      "gained": 1,
      "mcnemar_p": 0.021484,
+     "lost_primary_unmoved": 9,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 45,
      "label_rewrite_on_site": 38,
      "label_lost": 8,
@@ -2779,6 +2793,8 @@
      "lost": 9,
      "gained": 1,
      "mcnemar_p": 0.021484,
+     "lost_primary_unmoved": 9,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 29,
      "label_rewrite_on_site": 21,
      "label_lost": 9,
@@ -2797,6 +2813,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 9,
      "label_rewrite_on_site": 9,
      "label_lost": 0,
@@ -2815,6 +2833,8 @@
      "lost": 8,
      "gained": 1,
      "mcnemar_p": 0.039062,
+     "lost_primary_unmoved": 8,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 22,
      "label_rewrite_on_site": 15,
      "label_lost": 8,
@@ -2833,6 +2853,8 @@
      "lost": 6,
      "gained": 0,
      "mcnemar_p": 0.03125,
+     "lost_primary_unmoved": 6,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 22,
      "label_rewrite_on_site": 16,
      "label_lost": 6,
@@ -2851,11 +2873,13 @@
      "lost": 19,
      "gained": 0,
      "mcnemar_p": 4e-06,
-     "label_orig_on_site": 45,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 19,
+     "label_orig_on_site": 29,
      "label_rewrite_on_site": 10,
-     "label_lost": 35,
+     "label_lost": 19,
      "label_gained": 0,
-     "label_mcnemar_p": 0.0,
+     "label_mcnemar_p": 4e-06,
      "primary_moved": 67,
      "primary_moved_wilson95": [
       0.9458,
@@ -3041,7 +3065,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 35,
        "primary_moved": true
@@ -3353,7 +3377,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 65,
        "primary_moved": true
@@ -3530,7 +3554,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 67,
        "primary_moved": true
@@ -3647,7 +3671,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 62,
        "primary_moved": true
@@ -3763,7 +3787,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 36,
        "primary_moved": true
@@ -3824,7 +3848,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 72,
        "primary_moved": true
@@ -4831,7 +4855,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 57,
        "primary_moved": true
@@ -4946,7 +4970,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 123,
        "primary_moved": true
@@ -5121,7 +5145,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 132,
        "primary_moved": true
@@ -5181,7 +5205,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 82,
        "primary_moved": true
@@ -5588,7 +5612,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 34,
        "primary_moved": true
@@ -5644,7 +5668,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 60,
        "primary_moved": true
@@ -5703,7 +5727,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 69,
        "primary_moved": true
@@ -5820,7 +5844,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 130,
        "primary_moved": true
@@ -5936,7 +5960,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 102,
        "primary_moved": true
@@ -6174,7 +6198,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 50,
        "primary_moved": true
@@ -6822,6 +6846,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 22,
      "label_rewrite_on_site": 22,
      "label_lost": 0,
@@ -6840,6 +6866,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 16,
      "label_rewrite_on_site": 16,
      "label_lost": 0,
@@ -6858,6 +6886,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 7,
      "label_rewrite_on_site": 7,
      "label_lost": 0,
@@ -6876,6 +6906,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 12,
      "label_rewrite_on_site": 12,
      "label_lost": 0,
@@ -6894,6 +6926,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 11,
      "label_rewrite_on_site": 11,
      "label_lost": 0,
@@ -6912,11 +6946,13 @@
      "lost": 15,
      "gained": 5,
      "mcnemar_p": 0.041389,
-     "label_orig_on_site": 22,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 15,
+     "label_orig_on_site": 16,
      "label_rewrite_on_site": 6,
-     "label_lost": 20,
-     "label_gained": 4,
-     "label_mcnemar_p": 0.001544,
+     "label_lost": 15,
+     "label_gained": 5,
+     "label_mcnemar_p": 0.041389,
      "primary_moved": 31,
      "primary_moved_wilson95": [
       0.8897,
@@ -7284,7 +7320,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 36,
        "primary_moved": true
@@ -7817,7 +7853,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 123,
        "primary_moved": true
@@ -7992,7 +8028,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": true,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": true,
        "primary": 132,
        "primary_moved": true
@@ -8222,7 +8258,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 60,
        "primary_moved": true
@@ -8281,7 +8317,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 69,
        "primary_moved": true
@@ -8571,7 +8607,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 50,
        "primary_moved": true
@@ -8783,6 +8819,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 29,
      "label_rewrite_on_site": 29,
      "label_lost": 0,
@@ -8801,6 +8839,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 18,
      "label_rewrite_on_site": 18,
      "label_lost": 0,
@@ -8819,6 +8859,8 @@
      "lost": 1,
      "gained": 0,
      "mcnemar_p": 1.0,
+     "lost_primary_unmoved": 1,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 8,
      "label_rewrite_on_site": 7,
      "label_lost": 1,
@@ -8837,6 +8879,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 16,
      "label_rewrite_on_site": 16,
      "label_lost": 0,
@@ -8855,6 +8899,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 16,
      "label_rewrite_on_site": 16,
      "label_lost": 0,
@@ -8873,11 +8919,13 @@
      "lost": 17,
      "gained": 5,
      "mcnemar_p": 0.016901,
-     "label_orig_on_site": 29,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 17,
+     "label_orig_on_site": 18,
      "label_rewrite_on_site": 6,
-     "label_lost": 27,
-     "label_gained": 4,
-     "label_mcnemar_p": 3.4e-05,
+     "label_lost": 17,
+     "label_gained": 5,
+     "label_mcnemar_p": 0.016901,
      "primary_moved": 43,
      "primary_moved_wilson95": [
       0.918,
@@ -9000,7 +9048,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 35,
        "primary_moved": true
@@ -9181,7 +9229,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 62,
        "primary_moved": true
@@ -9298,7 +9346,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 36,
        "primary_moved": true
@@ -9360,7 +9408,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 72,
        "primary_moved": true
@@ -10254,7 +10302,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 57,
        "primary_moved": true
@@ -10376,7 +10424,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": true,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": true,
        "primary": 132,
        "primary_moved": true
@@ -10436,7 +10484,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 82,
        "primary_moved": true
@@ -10730,7 +10778,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 60,
        "primary_moved": true
@@ -10789,7 +10837,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 69,
        "primary_moved": true
@@ -10852,7 +10900,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 130,
        "primary_moved": true
@@ -11091,7 +11139,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 50,
        "primary_moved": true
@@ -11459,6 +11507,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 0,
      "label_rewrite_on_site": 0,
      "label_lost": 0,
@@ -11474,6 +11524,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 0,
      "label_rewrite_on_site": 0,
      "label_lost": 0,
@@ -11489,6 +11541,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 0,
      "label_rewrite_on_site": 0,
      "label_lost": 0,
@@ -11504,6 +11558,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 0,
      "label_rewrite_on_site": 0,
      "label_lost": 0,
@@ -11519,6 +11575,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 0,
      "label_rewrite_on_site": 0,
      "label_lost": 0,
@@ -11534,6 +11592,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 0,
      "label_rewrite_on_site": 0,
      "label_lost": 0,
@@ -11557,6 +11617,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 1,
      "label_rewrite_on_site": 1,
      "label_lost": 0,
@@ -11575,6 +11637,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 0,
      "label_rewrite_on_site": 0,
      "label_lost": 0,
@@ -11593,6 +11657,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 0,
      "label_rewrite_on_site": 0,
      "label_lost": 0,
@@ -11611,6 +11677,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 0,
      "label_rewrite_on_site": 0,
      "label_lost": 0,
@@ -11629,6 +11697,8 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
      "label_orig_on_site": 0,
      "label_rewrite_on_site": 0,
      "label_lost": 0,
@@ -11647,11 +11717,13 @@
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
-     "label_orig_on_site": 1,
+     "lost_primary_unmoved": 0,
+     "lost_primary_moved": 0,
+     "label_orig_on_site": 0,
      "label_rewrite_on_site": 0,
-     "label_lost": 1,
+     "label_lost": 0,
      "label_gained": 0,
-     "label_mcnemar_p": 1.0,
+     "label_mcnemar_p": null,
      "primary_moved": 0,
      "primary_moved_wilson95": [
       0.0,
@@ -11769,7 +11841,7 @@
       "StaleLine (control)": {
        "orig_on_site": false,
        "rewrite_on_site": false,
-       "orig_label_on_site": true,
+       "orig_label_on_site": false,
        "rewrite_label_on_site": false,
        "primary": 34,
        "primary_moved": false
