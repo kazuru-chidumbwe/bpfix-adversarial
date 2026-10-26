@@ -1,0 +1,9 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into read only pointer to memory not null-checked
+   33 | if (bpf_ntohs(eth->h_proto) != ETH_P_IP) @ buggy.bpf.c:33
+      | in file /home/test/bpfix-v2-git/fixtures/upstream/bpfix-bench-cases/dynptr_slice_missing_null_check_001/buggy.bpf.c
+
+Add a null check to reference before accessing it
+

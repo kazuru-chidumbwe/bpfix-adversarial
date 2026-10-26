@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Invalid access to packet
+   94 | *tag = bpf_ntohl(sid->in6_u.u6_addr32[3]); @ pad32.bpf.c:94
+      | in file /home/test/bpfix-v2-git/campaigns/v2/upstream/rs_cilium_srv6_segment_bound_001/pad32.bpf.c
+Access involving 'sid->in6_u.u6_addr32[3]' is 16 bytes past the end of the checked packet range (62 bytes).
+
+Add or tighten a bounds check so the accessed range stays within the checked packet range.
+

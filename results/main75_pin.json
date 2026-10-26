@@ -257,79 +257,79 @@
    "PrettyVerifier": {
     "R0": {
      "primary_on_site": {
-      "hits": 0,
+      "hits": 27,
       "n": 74,
       "wilson95": [
-       0.0,
-       0.0493
+       0.2644,
+       0.4787
       ]
      },
      "label_on_site": {
-      "hits": 0,
+      "hits": 27,
       "n": 74,
       "wilson95": [
-       0.0,
-       0.0493
+       0.2644,
+       0.4787
       ]
      },
      "primary_within_3": {
-      "hits": 0,
+      "hits": 45,
       "n": 74,
       "wilson95": [
-       0.0,
-       0.0493
+       0.4942,
+       0.7114
       ]
      }
     },
     "R1": {
      "primary_on_site": {
-      "hits": 0,
+      "hits": 35,
       "n": 74,
       "wilson95": [
-       0.0,
-       0.0493
+       0.3634,
+       0.5852
       ]
      },
      "label_on_site": {
-      "hits": 0,
+      "hits": 35,
       "n": 74,
       "wilson95": [
-       0.0,
-       0.0493
+       0.3634,
+       0.5852
       ]
      },
      "primary_within_3": {
-      "hits": 0,
+      "hits": 48,
       "n": 74,
       "wilson95": [
-       0.0,
-       0.0493
+       0.535,
+       0.7476
       ]
      }
     },
     "R2": {
      "primary_on_site": {
-      "hits": 0,
+      "hits": 31,
       "n": 74,
       "wilson95": [
-       0.0,
-       0.0493
+       0.3132,
+       0.5326
       ]
      },
      "label_on_site": {
-      "hits": 0,
+      "hits": 31,
       "n": 74,
       "wilson95": [
-       0.0,
-       0.0493
+       0.3132,
+       0.5326
       ]
      },
      "primary_within_3": {
-      "hits": 0,
+      "hits": 45,
       "n": 74,
       "wilson95": [
-       0.0,
-       0.0493
+       0.4942,
+       0.7114
       ]
      }
     }
@@ -584,79 +584,79 @@
    "PrettyVerifier": {
     "R0": {
      "primary_on_site": {
-      "hits": 0,
+      "hits": 25,
       "n": 69,
       "wilson95": [
-       0.0,
-       0.0527
+       0.259,
+       0.4802
       ]
      },
      "label_on_site": {
-      "hits": 0,
+      "hits": 25,
       "n": 69,
       "wilson95": [
-       0.0,
-       0.0527
+       0.259,
+       0.4802
       ]
      },
      "primary_within_3": {
-      "hits": 0,
+      "hits": 42,
       "n": 69,
       "wilson95": [
-       0.0,
-       0.0527
+       0.4907,
+       0.7152
       ]
      }
     },
     "R1": {
      "primary_on_site": {
-      "hits": 0,
+      "hits": 32,
       "n": 69,
       "wilson95": [
-       0.0,
-       0.0527
+       0.3511,
+       0.5802
       ]
      },
      "label_on_site": {
-      "hits": 0,
+      "hits": 32,
       "n": 69,
       "wilson95": [
-       0.0,
-       0.0527
+       0.3511,
+       0.5802
       ]
      },
      "primary_within_3": {
-      "hits": 0,
+      "hits": 45,
       "n": 69,
       "wilson95": [
-       0.0,
-       0.0527
+       0.5345,
+       0.7538
       ]
      }
     },
     "R2": {
      "primary_on_site": {
-      "hits": 0,
+      "hits": 29,
       "n": 69,
       "wilson95": [
-       0.0,
-       0.0527
+       0.3111,
+       0.5379
       ]
      },
      "label_on_site": {
-      "hits": 0,
+      "hits": 29,
       "n": 69,
       "wilson95": [
-       0.0,
-       0.0527
+       0.3111,
+       0.5379
       ]
      },
      "primary_within_3": {
-      "hits": 0,
+      "hits": 42,
       "n": 69,
       "wilson95": [
-       0.0,
-       0.0527
+       0.4907,
+       0.7152
       ]
      }
     }
@@ -696,11 +696,11 @@
      ]
     },
     "PrettyVerifier": {
-     "hits": 0,
+     "hits": 2,
      "n": 6,
      "wilson95": [
-      0.0,
-      0.3903
+      0.0968,
+      0.7
      ]
     },
     "bpfix_any_label": {
@@ -822,11 +822,11 @@
      ]
     },
     "PrettyVerifier": {
-     "hits": 0,
+     "hits": 1,
      "n": 3,
      "wilson95": [
-      0.0,
-      0.5615
+      0.0615,
+      0.7923
      ]
     },
     "bpfix_any_label": {
@@ -864,11 +864,11 @@
      ]
     },
     "PrettyVerifier": {
-     "hits": 0,
+     "hits": 6,
      "n": 20,
      "wilson95": [
-      0.0,
-      0.1611
+      0.1455,
+      0.519
      ]
     },
     "bpfix_any_label": {
@@ -906,11 +906,11 @@
      ]
     },
     "PrettyVerifier": {
-     "hits": 0,
+     "hits": 4,
      "n": 11,
      "wilson95": [
-      0.0,
-      0.2588
+      0.1517,
+      0.6462
      ]
     },
     "bpfix_any_label": {
@@ -948,11 +948,11 @@
      ]
     },
     "PrettyVerifier": {
-     "hits": 0,
+     "hits": 9,
      "n": 9,
      "wilson95": [
-      0.0,
-      0.2991
+      0.7009,
+      1.0
      ]
     },
     "bpfix_any_label": {
@@ -1032,11 +1032,11 @@
      ]
     },
     "PrettyVerifier": {
-     "hits": 0,
+     "hits": 2,
      "n": 6,
      "wilson95": [
-      0.0,
-      0.3903
+      0.0968,
+      0.7
      ]
     },
     "bpfix_any_label": {
@@ -1074,11 +1074,11 @@
      ]
     },
     "PrettyVerifier": {
-     "hits": 0,
+     "hits": 3,
      "n": 4,
      "wilson95": [
-      0.0,
-      0.4899
+      0.3006,
+      0.9544
      ]
     },
     "bpfix_any_label": {
@@ -1160,11 +1160,11 @@
      ]
     },
     "PrettyVerifier": {
-     "hits": 0,
+     "hits": 19,
      "n": 40,
      "wilson95": [
-      0.0,
-      0.0876
+      0.3294,
+      0.625
      ]
     },
     "bpfix_any_label": {
@@ -1202,11 +1202,11 @@
      ]
     },
     "PrettyVerifier": {
-     "hits": 0,
+     "hits": 8,
      "n": 34,
      "wilson95": [
-      0.0,
-      0.1015
+      0.1244,
+      0.4
      ]
     },
     "bpfix_any_label": {
@@ -1255,6 +1255,23 @@
     "p": 4e-06
    }
   },
+  "bpfix_vs_PrettyVerifier": {
+   "R0": {
+    "bpfix_only": 7,
+    "PrettyVerifier_only": 0,
+    "p": 0.015625
+   },
+   "R1": {
+    "bpfix_only": 9,
+    "PrettyVerifier_only": 0,
+    "p": 0.003906
+   },
+   "R2": {
+    "bpfix_only": 7,
+    "PrettyVerifier_only": 0,
+    "p": 0.015625
+   }
+  },
   "VerifierState_vs_SourceComment": {
    "R0": {
     "VerifierState_only": 30,
@@ -1270,6 +1287,40 @@
     "VerifierState_only": 33,
     "SourceComment_only": 5,
     "p": 4e-06
+   }
+  },
+  "VerifierState_vs_PrettyVerifier": {
+   "R0": {
+    "VerifierState_only": 7,
+    "PrettyVerifier_only": 0,
+    "p": 0.015625
+   },
+   "R1": {
+    "VerifierState_only": 9,
+    "PrettyVerifier_only": 0,
+    "p": 0.003906
+   },
+   "R2": {
+    "VerifierState_only": 7,
+    "PrettyVerifier_only": 0,
+    "p": 0.015625
+   }
+  },
+  "SourceComment_vs_PrettyVerifier": {
+   "R0": {
+    "SourceComment_only": 5,
+    "PrettyVerifier_only": 23,
+    "p": 0.000912
+   },
+   "R1": {
+    "SourceComment_only": 7,
+    "PrettyVerifier_only": 31,
+    "p": 0.000116
+   },
+   "R2": {
+    "SourceComment_only": 5,
+    "PrettyVerifier_only": 26,
+    "p": 0.000192
    }
   }
  },
@@ -1319,15 +1370,15 @@
    },
    "PrettyVerifier": {
     "pairs": 65,
-    "orig_on_site": 0,
-    "variant_on_site": 0,
+    "orig_on_site": 26,
+    "variant_on_site": 26,
     "lost": 0,
     "gained": 0,
     "mcnemar_p": null,
-    "primary_moved": 0,
+    "primary_moved": 4,
     "primary_moved_wilson95": [
-     0.0,
-     0.0558
+     0.0242,
+     0.1478
     ],
     "excluded": []
    },
@@ -1391,15 +1442,15 @@
    },
    "PrettyVerifier": {
     "pairs": 65,
-    "orig_on_site": 0,
-    "variant_on_site": 0,
+    "orig_on_site": 26,
+    "variant_on_site": 26,
     "lost": 0,
     "gained": 0,
     "mcnemar_p": null,
-    "primary_moved": 0,
+    "primary_moved": 4,
     "primary_moved_wilson95": [
-     0.0,
-     0.0558
+     0.0242,
+     0.1478
     ],
     "excluded": []
    },
@@ -1478,8 +1529,8 @@
    },
    "PrettyVerifier": {
     "pairs": 35,
-    "orig_on_site": 0,
-    "variant_on_site": 0,
+    "orig_on_site": 11,
+    "variant_on_site": 11,
     "lost": 0,
     "gained": 0,
     "mcnemar_p": null,
@@ -1577,9 +1628,11 @@
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 42,
+     "labels": [
+      42
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -1645,22 +1698,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -1741,9 +1794,11 @@
      "note": "SC: no NP heuristic hit"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 33,
+     "labels": [
+      33
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -1809,22 +1864,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -1903,9 +1958,11 @@
      "note": "SC: scalar-guard establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 35,
+     "labels": [
+      35
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -1973,20 +2030,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -2070,7 +2127,7 @@
     "PrettyVerifier": {
      "primary": null,
      "labels": [],
-     "note": "PrettyVerifier output missing"
+     "note": "error not managed"
     }
    },
    "outcomes": {
@@ -2237,7 +2294,7 @@
     "PrettyVerifier": {
      "primary": null,
      "labels": [],
-     "note": "PrettyVerifier output missing"
+     "note": "error not managed"
     }
    },
    "outcomes": {
@@ -2385,9 +2442,11 @@
      "note": "SC: unknown obligation (DynptrSafety)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 27,
+     "labels": [
+      27
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -2455,20 +2514,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      }
     }
    }
@@ -2548,7 +2607,7 @@
     "PrettyVerifier": {
      "primary": null,
      "labels": [],
-     "note": "PrettyVerifier output missing"
+     "note": "error not managed"
     }
    },
    "outcomes": {
@@ -2689,9 +2748,11 @@
      "note": "SC: unknown obligation (TypeContract)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 57,
+     "labels": [
+      57
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -2757,22 +2818,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -2842,9 +2903,11 @@
      "note": "SC: nullable-return (fallback / nocheck)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 65,
+     "labels": [
+      65
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -2913,19 +2976,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 5
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 4
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 5
      }
     }
    }
@@ -3007,9 +3070,11 @@
      "note": "SC: scalar-guard establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 48,
+     "labels": [
+      48
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -3075,22 +3140,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -3146,9 +3211,11 @@
      "note": "SC: nullable-return (fallback / nocheck)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 67,
+     "labels": [
+      67
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -3216,20 +3283,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -3285,9 +3352,11 @@
      "note": "SC: nullable-return (fallback / nocheck)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 67,
+     "labels": [
+      67
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -3356,19 +3425,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 4
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 4
      }
     }
    }
@@ -3440,7 +3509,7 @@
     "PrettyVerifier": {
      "primary": null,
      "labels": [],
-     "note": "PrettyVerifier output missing"
+     "note": "error not managed"
     }
    },
    "outcomes": {
@@ -3574,9 +3643,11 @@
      "note": "SC: nullable-return (fallback / nocheck)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 62,
+     "labels": [
+      62
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -3644,20 +3715,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      }
     }
    }
@@ -3722,9 +3793,11 @@
      "note": "SC: data_end establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 31,
+     "labels": [
+      31
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -3790,22 +3863,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -3860,9 +3933,11 @@
      "note": "SC: data_end establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 36,
+     "labels": [
+      36
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -3930,20 +4005,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 2
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      }
     }
    }
@@ -4021,9 +4096,11 @@
      "note": "SC: data_end establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 72,
+     "labels": [
+      72
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -4091,20 +4168,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -4155,9 +4232,11 @@
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 54,
+     "labels": [
+      54
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -4223,22 +4302,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -4299,9 +4378,11 @@
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 61,
+     "labels": [
+      61
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -4367,22 +4448,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -4445,9 +4526,11 @@
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 39,
+     "labels": [
+      39
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -4513,22 +4596,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -4578,9 +4661,11 @@
      "note": "SC: data_end establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 52,
+     "labels": [
+      52
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -4648,20 +4733,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 2
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 2
      }
     }
    }
@@ -4724,9 +4809,11 @@
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 67,
+     "labels": [
+      67
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -4792,22 +4879,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -4864,9 +4951,11 @@
      "note": "SC: unknown obligation (HelperArgument)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 43,
+     "labels": [
+      43
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -4932,22 +5021,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -5002,9 +5091,11 @@
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 59,
+     "labels": [
+      59
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -5070,22 +5161,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -5142,9 +5233,11 @@
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 53,
+     "labels": [
+      53
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -5210,22 +5303,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -5299,9 +5392,11 @@
      "note": "SC: nullable-return (fallback / nocheck)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 35,
+     "labels": [
+      35
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -5367,22 +5462,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -5432,9 +5527,11 @@
      "note": "SC: nullable-return (fallback / nocheck)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 48,
+     "labels": [
+      48
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -5500,22 +5597,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -5573,7 +5670,7 @@
     "PrettyVerifier": {
      "primary": null,
      "labels": [],
-     "note": "PrettyVerifier output missing"
+     "note": "no source location"
     }
    },
    "outcomes": {
@@ -5728,9 +5825,11 @@
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 72,
+     "labels": [
+      72
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -5796,22 +5895,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -5870,7 +5969,7 @@
     "PrettyVerifier": {
      "primary": null,
      "labels": [],
-     "note": "PrettyVerifier output missing"
+     "note": "no source location"
     }
    },
    "outcomes": {
@@ -6014,9 +6113,11 @@
      "note": "SC: unknown obligation (TypeContract)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 33,
+     "labels": [
+      33
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -6082,22 +6183,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -6168,9 +6269,11 @@
      "note": "SC: unknown obligation (TypeContract)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 37,
+     "labels": [
+      37
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -6236,22 +6339,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -6321,9 +6424,11 @@
      "note": "SC: unknown obligation (TypeContract)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 49,
+     "labels": [
+      49
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -6391,20 +6496,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -6465,9 +6570,11 @@
      "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 63,
+     "labels": [
+      63
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -6533,22 +6640,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -6615,9 +6722,11 @@
      "note": "SC: nullable-return (fallback / nocheck)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 94,
+     "labels": [
+      94
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -6685,20 +6794,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 2
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 2
      }
     }
    }
@@ -6760,9 +6869,11 @@
      "note": "SC: nullable-return (fallback / nocheck)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 54,
+     "labels": [
+      54
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -6831,19 +6942,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 4
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 4
      }
     }
    }
@@ -6928,9 +7039,11 @@
      "note": "SC: nullable-return (fallback / nocheck)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 217,
+     "labels": [
+      217
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -6996,22 +7109,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -7070,9 +7183,11 @@
      "note": "SC: nullable-return (fallback / nocheck)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 57,
+     "labels": [
+      57
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -7140,20 +7255,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 2
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      }
     }
    }
@@ -7208,7 +7323,7 @@
     "PrettyVerifier": {
      "primary": null,
      "labels": [],
-     "note": "PrettyVerifier output missing"
+     "note": "error not managed"
     }
    },
    "outcomes": {
@@ -7346,9 +7461,11 @@
      "note": "SC: null-check establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 123,
+     "labels": [
+      123
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -7416,20 +7533,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 2
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      }
     }
    }
@@ -7482,9 +7599,11 @@
      "note": "SC: nullable-return (fallback / nocheck)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 45,
+     "labels": [
+      45
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -7550,22 +7669,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -7619,9 +7738,11 @@
      "note": "SC: scalar-guard establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 57,
+     "labels": [
+      57
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -7687,22 +7808,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -7768,9 +7889,11 @@
      "note": "SC: null-check establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 132,
+     "labels": [
+      132
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -7838,20 +7961,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      }
     }
    }
@@ -7920,7 +8043,7 @@
     "PrettyVerifier": {
      "primary": null,
      "labels": [],
-     "note": "PrettyVerifier output missing"
+     "note": "error not managed"
     }
    },
    "outcomes": {
@@ -8066,7 +8189,7 @@
     "PrettyVerifier": {
      "primary": null,
      "labels": [],
-     "note": "PrettyVerifier output missing"
+     "note": "error not managed"
     }
    },
    "outcomes": {
@@ -8206,9 +8329,11 @@
      "note": "SC: unknown obligation (ContextAccess)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 43,
+     "labels": [
+      43
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -8274,22 +8399,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -8340,7 +8465,7 @@
     "PrettyVerifier": {
      "primary": null,
      "labels": [],
-     "note": "PrettyVerifier output missing"
+     "note": "error not managed"
     }
    },
    "outcomes": {
@@ -8474,9 +8599,11 @@
      "note": "SC: data_end establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 37,
+     "labels": [
+      37
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -8542,22 +8669,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -8641,9 +8768,11 @@
      "note": "SC: data_end establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 87,
+     "labels": [
+      87
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -8711,20 +8840,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      }
     }
    }
@@ -8777,9 +8906,11 @@
      "note": "SC: data_end establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 86,
+     "labels": [
+      86
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -8845,22 +8976,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -8920,9 +9051,11 @@
      "note": "SC: unknown obligation (ReferenceLifecycle)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 14,
+     "labels": [
+      14
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -8991,19 +9124,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 14
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 12
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 14
      }
     }
    }
@@ -9053,9 +9186,11 @@
      "note": "SC: data_end establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 60,
+     "labels": [
+      60
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -9124,19 +9259,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 10
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 9
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 10
      }
     }
    }
@@ -9196,9 +9331,11 @@
      "note": "SC: null-check establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 69,
+     "labels": [
+      69
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -9267,19 +9404,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 6
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 4
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 6
      }
     }
    }
@@ -9330,7 +9467,7 @@
     "PrettyVerifier": {
      "primary": null,
      "labels": [],
-     "note": "PrettyVerifier output missing"
+     "note": "error not managed"
     }
    },
    "outcomes": {
@@ -9476,9 +9613,11 @@
      "note": "SC: nullable-return (fallback / nocheck)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 130,
+     "labels": [
+      130
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -9546,20 +9685,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      }
     }
    }
@@ -9612,9 +9751,11 @@
      "note": "SC: data_end establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 131,
+     "labels": [
+      131
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -9683,19 +9824,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 14
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 13
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 14
      }
     }
    }
@@ -9751,7 +9892,7 @@
     "PrettyVerifier": {
      "primary": null,
      "labels": [],
-     "note": "PrettyVerifier output missing"
+     "note": "error not managed"
     }
    },
    "outcomes": {
@@ -9894,9 +10035,11 @@
      "note": "SC: null-check establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 102,
+     "labels": [
+      102
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -9965,19 +10108,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 4
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 4
      }
     }
    }
@@ -10026,9 +10169,11 @@
      "note": "SC: scalar-guard establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 51,
+     "labels": [
+      51
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -10097,19 +10242,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 45
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 44
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 45
      }
     }
    }
@@ -10179,7 +10324,7 @@
     "PrettyVerifier": {
      "primary": null,
      "labels": [],
-     "note": "PrettyVerifier output missing"
+     "note": "no source location"
     }
    },
    "outcomes": {
@@ -10325,9 +10470,11 @@
      "note": "SC: nullable-return (fallback / nocheck)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 73,
+     "labels": [
+      73
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -10393,22 +10540,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -10457,9 +10604,11 @@
      "note": "SC: unknown obligation (EnvironmentCapability)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 34,
+     "labels": [
+      34
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -10528,19 +10677,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 15
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 14
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 15
      }
     }
    }
@@ -10606,9 +10755,11 @@
      "note": "SC: null-check establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 51,
+     "labels": [
+      51
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -10677,19 +10828,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 7
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 6
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 7
      }
     }
    }
@@ -10748,9 +10899,11 @@
      "note": "SC: data_end establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 30,
+     "labels": [
+      30
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -10819,19 +10972,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 11
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 10
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 11
      }
     }
    }
@@ -10882,7 +11035,7 @@
     "PrettyVerifier": {
      "primary": null,
      "labels": [],
-     "note": "PrettyVerifier output missing"
+     "note": "error not managed"
     }
    },
    "outcomes": {
@@ -11017,9 +11170,11 @@
      "note": "SC: unknown obligation (EnvironmentCapability)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 44,
+     "labels": [
+      44
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -11088,19 +11243,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 13
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 12
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 13
      }
     }
    }
@@ -11153,9 +11308,11 @@
      "note": "SC: data_end establish"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 92,
+     "labels": [
+      92
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -11221,22 +11378,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -11285,9 +11442,11 @@
      "note": "SC: unknown obligation (EnvironmentCapability)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 38,
+     "labels": [
+      38
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -11356,19 +11515,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 20
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 19
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 20
      }
     }
    }
@@ -11422,9 +11581,11 @@
      "note": "SC: unknown obligation (ContextAccess)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 37,
+     "labels": [
+      37
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -11490,22 +11651,22 @@
     },
     "PrettyVerifier": {
      "R0": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      }
     }
    }
@@ -11558,9 +11719,11 @@
      "note": "SC: nullable-return (fallback / nocheck)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 55,
+     "labels": [
+      55
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -11628,20 +11791,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      },
      "R1": {
-      "primary_on_site": false,
-      "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 1
      }
     }
    }
@@ -11705,9 +11868,11 @@
      "note": "SC: unknown obligation (ContextAccess)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 59,
+     "labels": [
+      59
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -11776,19 +11941,19 @@
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 6
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 4
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
       "primary_within_3": false,
-      "distance": null
+      "distance": 6
      }
     }
    }
@@ -11843,9 +12008,11 @@
      "note": "SC: unknown obligation (ContextAccess)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 59,
+     "labels": [
+      59
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -11913,20 +12080,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 2
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      }
     }
    }
@@ -11977,9 +12144,11 @@
      "note": "SC: unknown obligation (ContextAccess)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 47,
+     "labels": [
+      47
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -12047,20 +12216,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 2
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      }
     }
    }
@@ -12114,9 +12283,11 @@
      "note": "SC: unknown obligation (ContextAccess)"
     },
     "PrettyVerifier": {
-     "primary": null,
-     "labels": [],
-     "note": "PrettyVerifier output missing"
+     "primary": 43,
+     "labels": [
+      43
+     ],
+     "note": ""
     }
    },
    "outcomes": {
@@ -12184,20 +12355,20 @@
      "R0": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      },
      "R1": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 2
      },
      "R2": {
       "primary_on_site": false,
       "label_on_site": false,
-      "primary_within_3": false,
-      "distance": null
+      "primary_within_3": true,
+      "distance": 3
      }
     }
    }
@@ -13384,14 +13555,14 @@
    "PrettyVerifier": [
     {
      "case_id": "alu32_pointer_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "dynptr_slice_missing_null_check_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -13426,8 +13597,8 @@
     },
     {
      "case_id": "helper_map_arg_stack_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -13438,21 +13609,21 @@
     },
     {
      "case_id": "map_value_index_guard_oob_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "map_value_inline_cookie_001",
      "orig_on_site": false,
      "variant_on_site": false,
-     "primary_moved": false
+     "primary_moved": true
     },
     {
      "case_id": "map_value_pointer_cookie_001",
      "orig_on_site": false,
      "variant_on_site": false,
-     "primary_moved": false
+     "primary_moved": true
     },
     {
      "case_id": "map_value_signed_index_001",
@@ -13464,12 +13635,12 @@
      "case_id": "map_value_spill_cookie_001",
      "orig_on_site": false,
      "variant_on_site": false,
-     "primary_moved": false
+     "primary_moved": true
     },
     {
      "case_id": "packet_checked_wrong_base_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -13486,20 +13657,20 @@
     },
     {
      "case_id": "packet_inline_return_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "packet_l4_branch_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "packet_macro_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -13510,50 +13681,50 @@
     },
     {
      "case_id": "packet_vlan_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "perf_event_packet_payload_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_branch_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_double_submit_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_missing_null_check_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_nested_missing_null_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_stack_discard_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_stack_submit_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -13564,8 +13735,8 @@
     },
     {
      "case_id": "ringbuf_two_record_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -13578,12 +13749,12 @@
      "case_id": "rs_actplane_lsm_bpf_ringbuf_merge_001",
      "orig_on_site": false,
      "variant_on_site": false,
-     "primary_moved": false
+     "primary_moved": true
     },
     {
      "case_id": "rs_actplane_mmap_pending_merge_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -13606,14 +13777,14 @@
     },
     {
      "case_id": "rs_agentsight_process_ringbuf_null_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "rs_agentsight_stdiocap_user_copy_len_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -13630,8 +13801,8 @@
     },
     {
      "case_id": "rs_cilium_change_proto_stale_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -13642,8 +13813,8 @@
     },
     {
      "case_id": "rs_cilium_ip_options_traceid_payload_bound_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -13654,8 +13825,8 @@
     },
     {
      "case_id": "rs_cilium_mcast_igmpv3_grec_bound_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -13702,8 +13873,8 @@
     },
     {
      "case_id": "rs_tutorial_memleak_free_info_merge_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -13732,8 +13903,8 @@
     },
     {
      "case_id": "rs_xdp_tools_xdpfilt_udp_macro_bound_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -13744,8 +13915,8 @@
     },
     {
      "case_id": "subprog_adjust_tail_stale_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -15346,14 +15517,14 @@
    "PrettyVerifier": [
     {
      "case_id": "alu32_pointer_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "dynptr_slice_missing_null_check_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -15388,8 +15559,8 @@
     },
     {
      "case_id": "helper_map_arg_stack_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -15400,21 +15571,21 @@
     },
     {
      "case_id": "map_value_index_guard_oob_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "map_value_inline_cookie_001",
      "orig_on_site": false,
      "variant_on_site": false,
-     "primary_moved": false
+     "primary_moved": true
     },
     {
      "case_id": "map_value_pointer_cookie_001",
      "orig_on_site": false,
      "variant_on_site": false,
-     "primary_moved": false
+     "primary_moved": true
     },
     {
      "case_id": "map_value_signed_index_001",
@@ -15426,12 +15597,12 @@
      "case_id": "map_value_spill_cookie_001",
      "orig_on_site": false,
      "variant_on_site": false,
-     "primary_moved": false
+     "primary_moved": true
     },
     {
      "case_id": "packet_checked_wrong_base_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -15448,20 +15619,20 @@
     },
     {
      "case_id": "packet_inline_return_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "packet_l4_branch_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "packet_macro_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -15472,50 +15643,50 @@
     },
     {
      "case_id": "packet_vlan_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "perf_event_packet_payload_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_branch_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_double_submit_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_missing_null_check_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_nested_missing_null_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_stack_discard_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_stack_submit_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -15526,8 +15697,8 @@
     },
     {
      "case_id": "ringbuf_two_record_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -15540,12 +15711,12 @@
      "case_id": "rs_actplane_lsm_bpf_ringbuf_merge_001",
      "orig_on_site": false,
      "variant_on_site": false,
-     "primary_moved": false
+     "primary_moved": true
     },
     {
      "case_id": "rs_actplane_mmap_pending_merge_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -15568,14 +15739,14 @@
     },
     {
      "case_id": "rs_agentsight_process_ringbuf_null_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "rs_agentsight_stdiocap_user_copy_len_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -15592,8 +15763,8 @@
     },
     {
      "case_id": "rs_cilium_change_proto_stale_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -15604,8 +15775,8 @@
     },
     {
      "case_id": "rs_cilium_ip_options_traceid_payload_bound_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -15616,8 +15787,8 @@
     },
     {
      "case_id": "rs_cilium_mcast_igmpv3_grec_bound_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -15664,8 +15835,8 @@
     },
     {
      "case_id": "rs_tutorial_memleak_free_info_merge_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -15694,8 +15865,8 @@
     },
     {
      "case_id": "rs_xdp_tools_xdpfilt_udp_macro_bound_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -15706,8 +15877,8 @@
     },
     {
      "case_id": "subprog_adjust_tail_stale_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16774,8 +16945,8 @@
     },
     {
      "case_id": "map_value_index_guard_oob_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16804,32 +16975,32 @@
     },
     {
      "case_id": "packet_inline_return_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_branch_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_double_submit_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_missing_null_check_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
      "case_id": "ringbuf_nested_missing_null_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16840,8 +17011,8 @@
     },
     {
      "case_id": "ringbuf_pointer_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16852,8 +17023,8 @@
     },
     {
      "case_id": "ringbuf_stack_submit_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16864,8 +17035,8 @@
     },
     {
      "case_id": "ringbuf_two_record_cookie_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16888,8 +17059,8 @@
     },
     {
      "case_id": "rs_agentsight_stdiocap_user_copy_len_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {
@@ -16954,8 +17125,8 @@
     },
     {
      "case_id": "rs_tutorial_memleak_free_info_merge_001",
-     "orig_on_site": false,
-     "variant_on_site": false,
+     "orig_on_site": true,
+     "variant_on_site": true,
      "primary_moved": false
     },
     {

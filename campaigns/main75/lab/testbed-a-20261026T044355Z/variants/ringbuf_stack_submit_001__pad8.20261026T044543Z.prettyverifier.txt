@@ -1,0 +1,8 @@
+Prettier Verifier ##
+#######################
+
+error: Wrong argument passed to helper function
+   47 | bpf_ringbuf_submit(&ev, 0); @ pad8.bpf.c:47
+      | in file /home/test/bpfix-v2-git/campaigns/v2/upstream/ringbuf_stack_submit_001/pad8.bpf.c
+1° argument (&ev) is a pointer to locally defined data (frame pointer), but a ring buffer pointer to memory is expected
+

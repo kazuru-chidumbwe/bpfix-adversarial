@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Left shift prohibited in pointer arithmetic
+   49 | asm volatile("%[cookie] <<= 32; %[cookie] >>= 32" : [cookie] "+r"(cookie)); @ pad8.bpf.c:49
+      | in file /home/test/bpfix-v2-git/campaigns/v2/upstream/packet_macro_cookie_001/pad8.bpf.c
+It may be the result of a multiplication or an up cast, that are forbidden
+
+Only addition and subtraction are allowed
+

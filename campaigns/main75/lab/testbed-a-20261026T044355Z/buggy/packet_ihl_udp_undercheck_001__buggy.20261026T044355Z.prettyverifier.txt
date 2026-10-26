@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Invalid access to packet
+   72 | if (bpf_ntohs(dport) != 53) @ buggy.bpf.c:72
+      | in file /home/test/bpfix-v2-git/fixtures/upstream/bpfix-bench-cases/packet_ihl_udp_undercheck_001/buggy.bpf.c
+Access involving 'bpf_ntohs' is 2 bytes past the end of the checked packet range (21 bytes).
+
+Add or tighten a bounds check so the accessed range stays within the checked packet range.
+

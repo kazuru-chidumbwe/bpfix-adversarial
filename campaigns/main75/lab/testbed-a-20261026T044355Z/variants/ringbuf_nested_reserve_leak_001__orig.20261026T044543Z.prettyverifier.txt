@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Reference must be released before exiting
+    audit = bpf_ringbuf_reserve(&events, sizeof(*audit), 0) | @ orig.bpf.c:42
+                                                            | in file ; audit = bpf_ringbuf_reserve(&events, sizeof(*audit), 0); @ orig.bpf.c:42
+

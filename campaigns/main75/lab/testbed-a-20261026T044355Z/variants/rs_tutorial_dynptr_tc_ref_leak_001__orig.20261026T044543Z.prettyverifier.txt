@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Reference must be released before exiting
+    err = bpf_ringbuf_reserve_dynptr(&events, sizeof(hdr) + snap_len, 0, &rb) | @ orig.bpf.c:119
+                                                                              | in file ; err = bpf_ringbuf_reserve_dynptr(&events, sizeof(hdr) + snap_len, 0, &rb); @ orig.bpf.c:119
+

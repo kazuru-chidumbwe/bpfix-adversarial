@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into scalar value (not a pointer)
+   59 | return cfg->drop_proto == iph->protocol ? XDP_DROP : XDP_PASS; @ buggy.bpf.c:59
+      | in file /home/test/bpfix-v2-git/fixtures/upstream/bpfix-bench-cases/xdp_adjust_head_map_value_001/buggy.bpf.c
+

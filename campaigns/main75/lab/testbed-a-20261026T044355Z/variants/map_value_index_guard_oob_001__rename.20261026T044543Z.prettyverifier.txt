@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Invalid access to map value
+   48 | return ptr->slots[selector] ? XDP_DROP : XDP_PASS; @ rename.bpf.c:48
+      | in file /home/test/bpfix-v2-git/campaigns/v2/upstream/map_value_index_guard_oob_001/rename.bpf.c
+Access is 12 bytes past the end of the map value.
+
+Make sure that the index 'selector' is checked to be within the 'ptr->slots' bounds (0 to 2).
+

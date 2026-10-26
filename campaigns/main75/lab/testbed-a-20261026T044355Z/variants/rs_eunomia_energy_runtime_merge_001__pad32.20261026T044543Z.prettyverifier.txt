@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into pointer to map element value not null-checked
+   164 | __u64 old_ns = *old_ts; @ pad32.bpf.c:164
+       | in file /home/test/bpfix-v2-git/campaigns/v2/upstream/rs_eunomia_energy_runtime_merge_001/pad32.bpf.c
+

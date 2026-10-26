@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Helper function cannot access packet
+   77 | bpf_perf_event_output(ctx, &events, BPF_F_CURRENT_CPU, data, SAMPLE_BYTES); @ pad32.bpf.c:77
+      | in file /home/test/bpfix-v2-git/campaigns/v2/upstream/perf_event_packet_payload_001/pad32.bpf.c
+

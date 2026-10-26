@@ -1,0 +1,8 @@
+Prettier Verifier ##
+#######################
+
+error: Wrong argument passed to helper function
+   67 | bpf_ringbuf_discard(&rec, 0); @ pad32.bpf.c:67
+      | in file /home/test/bpfix-v2-git/campaigns/v2/upstream/ringbuf_stack_discard_001/pad32.bpf.c
+1° argument (&rec) is a pointer to locally defined data (frame pointer), but a ring buffer pointer to memory is expected
+

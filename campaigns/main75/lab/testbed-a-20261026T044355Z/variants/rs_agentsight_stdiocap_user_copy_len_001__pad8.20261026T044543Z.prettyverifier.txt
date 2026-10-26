@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Invalid access to memory region
+   67 | bpf_probe_read_user(event->buf, copy_size, (const void *)args->buf); @ pad8.bpf.c:67
+      | in file /home/test/bpfix-v2-git/campaigns/v2/upstream/rs_agentsight_stdiocap_user_copy_len_001/pad8.bpf.c
+Access involving 'event->buf' is 8 bytes past the end of the memory region (capacity: 24 bytes).
+
+Add or tighten a bounds check so the accessed range stays within the memory region limits.
+

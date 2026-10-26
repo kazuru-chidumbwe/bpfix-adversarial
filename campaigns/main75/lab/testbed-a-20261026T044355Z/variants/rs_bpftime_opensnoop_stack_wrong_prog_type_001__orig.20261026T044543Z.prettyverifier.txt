@@ -1,0 +1,5 @@
+Prettier Verifier ##
+#######################
+
+error: Error not managed -> program of this type cannot use helper bpf_get_stack#67
+

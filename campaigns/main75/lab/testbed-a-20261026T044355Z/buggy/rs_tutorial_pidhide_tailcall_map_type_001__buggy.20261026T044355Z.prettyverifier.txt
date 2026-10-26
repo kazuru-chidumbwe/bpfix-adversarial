@@ -1,0 +1,9 @@
+Prettier Verifier ##
+#######################
+
+error: Map configuration error
+   34 | bpf_tail_call(ctx, &map_prog_array, PROG_01); @ buggy.bpf.c:34
+      | in file /home/test/bpfix-v2-git/fixtures/upstream/bpfix-bench-cases/rs_tutorial_pidhide_tailcall_map_type_001/buggy.bpf.c
+
+bpf_tail_call() must be used with a map of type BPF_MAP_TYPE_PROG_ARRAY
+

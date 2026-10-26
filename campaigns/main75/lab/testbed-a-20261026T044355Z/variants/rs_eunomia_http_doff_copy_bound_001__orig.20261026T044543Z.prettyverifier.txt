@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Invalid access to packet
+   131 | rec->bytes[i] = *((__u8 *)tcp + i); @ orig.bpf.c:131
+       | in file /home/test/bpfix-v2-git/campaigns/v2/upstream/rs_eunomia_http_doff_copy_bound_001/orig.bpf.c
+Access is 1 byte past the end of the checked packet range (34 bytes).
+
+Add or tighten a bounds check so the accessed range stays within the checked packet range.
+

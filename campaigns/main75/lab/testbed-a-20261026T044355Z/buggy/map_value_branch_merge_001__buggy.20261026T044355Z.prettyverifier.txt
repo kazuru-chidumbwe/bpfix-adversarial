@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into pointer to map element value not null-checked
+   65 | return cfg->drop_proto == proto ? XDP_DROP : XDP_PASS; @ buggy.bpf.c:65
+      | in file /home/test/bpfix-v2-git/fixtures/upstream/bpfix-bench-cases/map_value_branch_merge_001/buggy.bpf.c
+

@@ -1,0 +1,5 @@
+Prettier Verifier ##
+#######################
+
+error: Error not managed -> invalid indirect access to stack R2 off=-64 size=68
+

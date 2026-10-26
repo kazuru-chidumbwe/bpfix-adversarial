@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into scalar value (not a pointer)
+   43 | if (iph->protocol != IPPROTO_UDP) @ orig.bpf.c:43
+      | in file /home/test/bpfix-v2-git/campaigns/v2/upstream/xdp_adjust_tail_stale_001/orig.bpf.c
+

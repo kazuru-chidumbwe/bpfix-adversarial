@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Expected initialized dynamic pointer in argument #0 of helper function
+   37 | eth = bpf_dynptr_slice(&ptr, 0, 0, sizeof(*eth)); @ pad8.bpf.c:37
+      | in file /home/test/bpfix-v2-git/campaigns/v2/upstream/dynptr_uninitialized_slice_arg_001/pad8.bpf.c
+

@@ -21,6 +21,7 @@ import argparse
 import json
 import sys
 from collections import defaultdict
+from itertools import combinations
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -243,7 +244,7 @@ def main(argv: list[str] | None = None) -> int:
         }
 
     mcnemar: dict = {}
-    for a, b in (("bpfix", "VerifierState"), ("bpfix", "SourceComment"), ("VerifierState", "SourceComment")):
+    for a, b in combinations(REPORTERS, 2):
         per_rule = {}
         for rule in RULES:
             ab = sum(1 for r in scored if r["outcomes"][a][rule]["primary_on_site"] and not r["outcomes"][b][rule]["primary_on_site"])
@@ -305,12 +306,13 @@ def render_md(p: dict) -> str:
             + f"; primary within {NEAR} lines: " + ", ".join(
             f"{r} {frac(s[subset]['bpfix'][r]['primary_within_3'])}" for r in RULES), ""]
     for key, title in (("kind", "case kind"), ("upstream_obligation", "upstream obligation")):
+        others = [r for r in REPORTERS if r != "bpfix"]
         L += [f"## By {title} (R0, all cases)", "",
-              f"| {title} | bpfix primary | bpfix any label | VerifierState | SourceComment |",
-              "| --- | ---: | ---: | ---: | ---: |"]
+              f"| {title} | bpfix primary | bpfix any label | " + " | ".join(others) + " |",
+              "| --- | ---: | ---: | " + " | ".join("---:" for _ in others) + " |"]
         for g, t in p["strata"][key].items():
             L.append(f"| {g} | {frac(t['bpfix'])} | {frac(t['bpfix_any_label'])} | "
-                     f"{frac(t['VerifierState'])} | {frac(t['SourceComment'])} |")
+                     + " | ".join(frac(t[r]) for r in others) + " |")
         L.append("")
     L += ["## Exact McNemar, primary on a repair site", "", "| pair | rule | only first | only second | p |",
           "| --- | --- | ---: | ---: | ---: |"]

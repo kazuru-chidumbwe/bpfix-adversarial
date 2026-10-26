@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Reference must be released before exiting
+    struct event *ptr = bpf_ringbuf_reserve(&events, sizeof(*ptr), 0) | @ rename.bpf.c:31
+                                                                      | in file ; struct event *ptr = bpf_ringbuf_reserve(&events, sizeof(*ptr), 0); @ rename.bpf.c:31
+

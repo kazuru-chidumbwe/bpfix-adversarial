@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into pointer to map element value not null-checked
+   57 | return ptr->drop_proto == proto ? TC_ACT_SHOT : TC_ACT_OK; @ rename.bpf.c:57
+      | in file /home/test/bpfix-v2-git/campaigns/v2/upstream/rs_actplane_policy_map_merge_001/rename.bpf.c
+
