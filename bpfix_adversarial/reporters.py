@@ -9,8 +9,11 @@ tool reads that tool's output, which a replay step stored next to the log as
 
 Adding a reporter: write a module with a class that has ``name``,
 ``needs_artifact`` and ``predict(ctx)``, and add one line to ``ADAPTERS`` in
-``bpfix_adversarial/adapters/__init__.py``. The scorers iterate the registry,
-so they need no change. See docs/ADDING-A-REPORTER.md.
+``bpfix_adversarial/adapters/__init__.py``. An external tool's adapter also
+has ``replay(ctx, obj) -> str`` (run the tool on one case, given the compiled
+object) and ``provenance() -> dict``; ``tools/replay_reporter.py`` calls them
+on the lab host. The scorers iterate the registry, so they need no change.
+See docs/ADDING-A-REPORTER.md.
 """
 
 from __future__ import annotations
