@@ -238,16 +238,126 @@ def git_show(repo_dir: Path, rev: str, path: str) -> str | None:
     return p.stdout if p.returncode == 0 else None
 
 
+GUARD_LINE = re.compile(r"^\s*#\s*(if|ifdef|ifndef|elif|else|endif)\b(.*)")
+MAX_DEFINES = 12
+
+
+def positive_macros(kind: str, cond: str) -> set[str]:
+    """Macros that must be defined (non-zero) for a branch to be taken."""
+    cond = cond.split("//")[0].split("/*")[0].strip()
+    if kind == "ifdef":
+        return {cond.split()[0]} if cond else set()
+    if kind != "if":
+        return set()  # ifndef / else: enabling a macro would not take the branch
+    names = {m.group(2) for m in re.finditer(r"(!\s*)?defined\s*\(?\s*([A-Za-z_]\w*)", cond) if not m.group(1)}
+    rest = re.sub(r"!?\s*defined\s*\(?\s*[A-Za-z_]\w*\s*\)?", " ", cond)
+    names |= {m.group(2) for m in re.finditer(r"(!\s*)?\b([A-Z_][A-Z0-9_]{2,})\b", rest) if not m.group(1)}
+    return names
+
+
+def guards(text: str, changed: set[int]) -> set[str]:
+    stack: list[tuple[str, str]] = []
+    out: set[str] = set()
+    for i, line in enumerate(text.splitlines(), 1):
+        m = GUARD_LINE.match(line)
+        if m:
+            kind, cond = m.group(1), m.group(2).strip()
+            if kind in ("if", "ifdef", "ifndef"):
+                stack.append((kind, cond))
+            elif kind == "elif" and stack:
+                stack[-1] = ("if", cond)
+            elif kind == "else" and stack:
+                stack[-1] = ("else", stack[-1][1])
+            elif kind == "endif" and stack:
+                stack.pop()
+            continue
+        if i in changed:
+            for k, cnd in stack:
+                out |= positive_macros(k, cnd)
+    return out
+
+
+def feature_macros(repo_dir: Path, parent: str, fix: str, files: list[str]) -> list[str]:
+    import difflib
+
+    found: set[str] = set()
+    for rel in files:
+        a, b = git_show(repo_dir, parent, rel), git_show(repo_dir, fix, rel)
+        if a is None or b is None:
+            continue
+        al, bl = a.splitlines(), b.splitlines()
+        changed: set[int] = set()
+        for tag, i1, i2, _j1, _j2 in difflib.SequenceMatcher(a=al, b=bl, autojunk=False).get_opcodes():
+            if tag == "equal":
+                continue
+            changed |= set(range(i1 + 1, i2 + 1)) if i2 > i1 else {i1, i1 + 1}
+        found |= guards(a, changed)
+    return sorted(found)[:MAX_DEFINES]
+
+
+def with_defines(cmd: dict, defines: list[str], out: Path) -> str:
+    defs = " ".join(f"-D{d}=1" for d in defines)
+    line = re.sub(r"(^|\s)(\S*clang\S*)(\s)", lambda m: f"{m.group(1)}{m.group(2)} {defs}{m.group(3)}", cmd["line"], count=1)
+    i = line.rfind(" -o ")
+    tail = line[i + 4:].split(None, 1)
+    return line[:i] + f" -o {shlex.quote(str(out))}" + (" " + tail[1] if len(tail) > 1 else "")
+
+
+def load_objects(selected: list[dict], tmp: Path, side: str, rank: int, deadline: float,
+                 defines: list[str] | None = None) -> dict:
+    objs = {}
+    for cmd in selected:
+        obj = (Path(cmd["cwd"]) / cmd["obj"]).resolve()
+        tag = "feat" if defines else "keep"
+        stash = tmp / f"{side}-{tag}" / obj.name
+        stash.parent.mkdir(parents=True, exist_ok=True)
+        line = cmd["line"]
+        if defines:
+            line = with_defines(cmd, defines, stash)
+            p = run(line, cwd=cmd["cwd"], timeout=min(900, left(deadline)))
+            if p.returncode or not stash.is_file():
+                continue
+        else:
+            if not obj.is_file():
+                continue
+            shutil.copy2(obj, stash)
+        key = Path(cmd["src"]).name + "::" + obj.name
+        objs[key] = {"obj": str(stash), "cmd": line,
+                     "progs": load(stash, tmp / f"{side}-{tag}-logs" / obj.stem, f"{rank}-{side}-{tag}", deadline)}
+    return objs
+
+
+def decide(par: dict, fix: dict) -> tuple[str, list, list]:
+    flips, rejects = [], []
+    for key in sorted(par):
+        for prog, r in sorted(par[key]["progs"].items()):
+            if r["verdict"] != "REJECT":
+                continue
+            kind = reject_kind(r["log"])
+            rejects.append({"object": key, "program": prog, "kind": kind})
+            f = fix.get(key, {}).get("progs", {}).get(prog)
+            if kind == "safety" and f and f["verdict"] == "ACCEPT":
+                flips.append({"object": key, "program": prog, "section": r["section"]})
+    if flips:
+        return "included", flips, rejects
+    if not rejects:
+        return "E4", flips, rejects
+    if any(x["kind"] == "safety" for x in rejects):
+        return "I3", flips, rejects
+    return ("C" if all(x["kind"] == "complexity" for x in rejects) else "I4"), flips, rejects
+
+
 def screen(c: dict, files: list[str], vmlinux_dir: str) -> dict:
     deadline = time.time() + TIMEBOX
-    row = {"screen_rank": c["screen_rank"], "repo": c["repo"], "commit": c["commit"], "started": dt.datetime.utcnow().isoformat() + "Z"}
-    tmp = WORK / "tmp" / f"{c['screen_rank']:03d}"
+    rank = c["screen_rank"]
+    row = {"screen_rank": rank, "repo": c["repo"], "commit": c["commit"], "started": dt.datetime.utcnow().isoformat() + "Z"}
+    tmp = WORK / "tmp" / f"{rank:03d}"
     repo_dir = ensure_repo(c["repo"])
     if run(["git", "-C", str(repo_dir), "cat-file", "-e", c["commit"]]).returncode:
         run(["git", "-C", str(repo_dir), "fetch", "-q", "origin", c["commit"]], timeout=left(deadline))
     parent = run(["git", "-C", str(repo_dir), "rev-parse", f"{c['commit']}^"]).stdout.strip()
     row["parent"] = parent
-    sides: dict[str, dict] = {}
+    selected: dict[str, list[dict]] = {}
     try:
         for side, rev in (("parent", parent), ("fix", c["commit"])):
             wt = tmp / side
@@ -260,24 +370,26 @@ def screen(c: dict, files: list[str], vmlinux_dir: str) -> dict:
             except RuntimeError as e:
                 row.update(outcome="E5", note=f"{side}: {e}"[:800])
                 return row
-            changed_abs = {str((wt / f).resolve()) for f in files}
-            selected = []
-            for cmd in cmds:
-                if btype == "direct compile" or changed_abs & set(deps_of(cmd, deadline)):
-                    selected.append(cmd)
-            objs = {}
-            for cmd in selected:
-                obj = (Path(cmd["cwd"]) / cmd["obj"]).resolve()
-                if not obj.is_file():
-                    continue
-                key = Path(cmd["src"]).name + "::" + obj.name
-                stash = tmp / f"{side}-keep" / obj.name
-                stash.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(obj, stash)
-                objs[key] = {"obj": str(stash), "cmd": cmd["line"],
-                             "progs": load(stash, tmp / f"{side}-logs" / obj.stem, f"{c['screen_rank']}-{side}", deadline)}
-            sides[side] = {"build_type": btype, "objects": objs}
             row["build_type"] = btype
+            changed_abs = {str((wt / f).resolve()) for f in files}
+            selected[side] = [cmd for cmd in cmds
+                              if btype == "direct compile" or changed_abs & set(deps_of(cmd, deadline))]
+        par = load_objects(selected["parent"], tmp, "parent", rank, deadline)
+        fix = load_objects(selected["fix"], tmp, "fix", rank, deadline)
+        outcome, flips, rejects = decide(par, fix)
+        row.update(decided_by="default", n_objects={"parent": len(par), "fix": len(fix)})
+        if outcome == "E4":
+            defines = feature_macros(repo_dir, parent, c["commit"], files)
+            row["feature_macros"] = defines
+            if defines:
+                par_f = load_objects(selected["parent"], tmp, "parent", rank, deadline, defines)
+                fix_f = load_objects(selected["fix"], tmp, "fix", rank, deadline, defines)
+                if par_f and fix_f:
+                    outcome, flips, rejects = decide(par_f, fix_f)
+                    par, fix = par_f, fix_f
+                    row.update(decided_by="features", n_objects={"parent": len(par), "fix": len(fix)})
+                else:
+                    row["feature_build"] = "failed at one commit; default decision kept"
     except TimeBox:
         row.update(outcome="E5", note="2-hour time box")
         return row
@@ -285,29 +397,9 @@ def screen(c: dict, files: list[str], vmlinux_dir: str) -> dict:
         for side in ("parent", "fix"):
             drop_worktree(repo_dir, tmp / side)
 
-    par, fix = sides["parent"]["objects"], sides["fix"]["objects"]
-    row["n_objects"] = {"parent": len(par), "fix": len(fix)}
-    flips, rejects = [], []
-    for key in sorted(par):
-        for prog, r in sorted(par[key]["progs"].items()):
-            if r["verdict"] != "REJECT":
-                continue
-            kind = reject_kind(r["log"])
-            rejects.append({"object": key, "program": prog, "kind": kind})
-            f = fix.get(key, {}).get("progs", {}).get(prog)
-            if kind == "safety" and f and f["verdict"] == "ACCEPT":
-                flips.append({"object": key, "program": prog, "section": r["section"]})
-    row["parent_rejects"] = rejects
-    row["flips"] = flips
-    if flips:
-        row["outcome"] = "included"
+    row.update(outcome=outcome, parent_rejects=rejects, flips=flips)
+    if outcome == "included":
         store(c, row, flips[0], par, fix, files, repo_dir, parent)
-    elif not rejects:
-        row["outcome"] = "E4"
-    elif any(x["kind"] == "safety" for x in rejects):
-        row["outcome"] = "I3"
-    else:
-        row["outcome"] = "C" if all(x["kind"] == "complexity" for x in rejects) else "I4"
     shutil.rmtree(tmp, ignore_errors=True)
     return row
 
@@ -327,7 +419,8 @@ def store(c, row, flip, par, fix, files, repo_dir, parent) -> None:
     shutil.copy2(fix[k]["progs"][prog]["log"], d / "fixed.log")
     shutil.copy2(par[k]["obj"], d / "buggy.o")
     shutil.copy2(fix[k]["obj"], d / "fixed.o")
-    meta = {k2: row[k2] for k2 in ("screen_rank", "repo", "commit", "parent", "build_type", "flips")}
+    meta = {k2: row.get(k2) for k2 in ("screen_rank", "repo", "commit", "parent", "build_type", "flips",
+                                         "decided_by", "feature_macros")}
     meta.update(object=k, program=prog, section=flip["section"], parent_cmd=par[k]["cmd"], fix_cmd=fix[k]["cmd"],
                 changed_files=files)
     (d / "meta.json").write_text(json.dumps(meta, indent=1) + "\n", encoding="utf-8", newline="\n")
