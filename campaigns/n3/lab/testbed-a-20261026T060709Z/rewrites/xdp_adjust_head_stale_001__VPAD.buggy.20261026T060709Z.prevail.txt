@@ -1,0 +1,5 @@
+PREVAIL exit=1
+FAIL: xdp/xdp_adjust_head_stale
+13: Invalid type (r8.type in {number, ctx, stack, packet, shared})
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

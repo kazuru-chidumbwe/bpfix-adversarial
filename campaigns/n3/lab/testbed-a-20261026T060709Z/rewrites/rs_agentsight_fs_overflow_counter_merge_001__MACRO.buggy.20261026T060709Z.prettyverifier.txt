@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into pointer to map element value not null-checked
+   125 | ADV_STMT(__sync_fetch_and_add(overflow, 1)); @ MACRO.buggy.bpf.c:125
+       | in file /home/test/bpfix-v2-git/campaigns/n3/rs_agentsight_fs_overflow_counter_merge_001/MACRO.buggy.bpf.c
+

@@ -1,0 +1,5 @@
+PREVAIL exit=1
+FAIL: xdp/rs_xdp_tools_xdpdump_perf_map_type
+54: map type 2 is not allowed for perf_event_output (valid_map_type(r2, perf_event_output))
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

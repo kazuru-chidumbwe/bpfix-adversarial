@@ -1,0 +1,271 @@
+libbpf: loading object from /tmp/bpfix-cap-5bk63eb9/ringbuf_missing_null_check_001__VPADC.buggy.o
+libbpf: elf: section(3) xdp, size 584, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'ringbuf_missing_null' at insn offset 0 (0 bytes), code size 73 insns (584 bytes)
+libbpf: elf: section(4) .relxdp, size 48, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 16, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-5bk63eb9/ringbuf_missing_null_check_001__VPADC.buggy.o is GPL
+libbpf: elf: section(16) .BTF, size 1280, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 556, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 336, link 1, flags 0, type=2
+libbpf: looking for externs among 14 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'events': at sec_idx 5, offset 0.
+libbpf: map 'events': found type = 27.
+libbpf: map 'events': found max_entries = 4096.
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #2 against 'events'
+libbpf: prog 'ringbuf_missing_null': found map 0 (events, sec 5, off 0) for insn #2
+libbpf: sec '.relxdp': relo #1: insn #11 against 'events'
+libbpf: prog 'ringbuf_missing_null': found map 0 (events, sec 5, off 0) for insn #11
+libbpf: sec '.relxdp': relo #2: insn #52 against 'events'
+libbpf: prog 'ringbuf_missing_null': found map 0 (events, sec 5, off 0) for insn #52
+libbpf: object 'ringbuf_missing': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'xdp': found 1 CO-RE relocations
+libbpf: CO-RE relocating [10] struct xdp_md: found target candidate [13583] struct xdp_md in [vmlinux]
+libbpf: prog 'ringbuf_missing_null': relo #0: <byte_off> [10] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'ringbuf_missing_null': relo #0: matching candidate #0 <byte_off> [13583] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'ringbuf_missing_null': relo #0: patched insn #0 (LDX/ST/STX) off 0 -> 0
+libbpf: map 'events': created successfully, fd=4
+libbpf: prog 'ringbuf_missing_null': BPF program load failed: Permission denied
+libbpf: prog 'ringbuf_missing_null': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; void *data = (void *)(long)ctx->data; @ VPADC.buggy.bpf.c:28
+0: (61) r8 = *(u32 *)(r1 +0)          ; R1=ctx() R8_w=pkt(r=0)
+1: (b7) r9 = 0                        ; R9_w=0
+; struct event *audit = bpf_ringbuf_reserve(&events, sizeof(*audit), 0); @ VPADC.buggy.bpf.c:29
+2: (18) r1 = 0xffff8d0ddb901600       ; R1_w=map_ptr(map=events,ks=0,vs=0)
+4: (b7) r2 = 4                        ; R2_w=4
+5: (b7) r3 = 0                        ; R3_w=0
+6: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 6 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 5: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 4: (b7) r2 = 4
+7: R0_w=ringbuf_mem_or_null(id=2,ref_obj_id=2,sz=4) refs=2
+7: (bf) r6 = r0                       ; R0_w=ringbuf_mem_or_null(id=2,ref_obj_id=2,sz=4) R6_w=ringbuf_mem_or_null(id=2,ref_obj_id=2,sz=4) refs=2
+; if (!audit) @ VPADC.buggy.bpf.c:30
+8: (15) if r6 == 0x0 goto pc+62       ; R6_w=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+9: (b7) r1 = 3                        ; R1_w=3 refs=2
+; audit->mark = 3; @ VPADC.buggy.bpf.c:32
+10: (63) *(u32 *)(r6 +0) = r1         ; R1_w=3 R6_w=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+; struct event *rec = bpf_ringbuf_reserve(&events, sizeof(*rec), 0); @ VPADC.buggy.bpf.c:34
+11: (18) r1 = 0xffff8d0ddb901600      ; R1_w=map_ptr(map=events,ks=0,vs=0) refs=2
+13: (b7) r2 = 4                       ; R2_w=4 refs=2
+14: (b7) r3 = 0                       ; R3_w=0 refs=2
+15: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 15 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 14: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 13: (b7) r2 = 4
+16: R0=ringbuf_mem_or_null(id=4,ref_obj_id=4,sz=4) refs=2,4
+16: (bf) r7 = r0                      ; R0=ringbuf_mem_or_null(id=4,ref_obj_id=4,sz=4) R7_w=ringbuf_mem_or_null(id=4,ref_obj_id=4,sz=4) refs=2,4
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:35
+17: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: last_idx 17 first_idx 16 subseq_idx -1 
+mark_precise: frame0: regs=r9 stack= before 16: (bf) r7 = r0
+mark_precise: frame0: parent state regs=r9 stack=:  R0_rw=ringbuf_mem_or_null(id=4,ref_obj_id=4,sz=4) R6_w=ringbuf_mem(ref_obj_id=2,sz=4) R8_w=pkt(r=0) R9_rw=P0 R10=fp0 refs=2,4
+mark_precise: frame0: last_idx 15 first_idx 0 subseq_idx 16 
+mark_precise: frame0: regs=r9 stack= before 15: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: regs=r9 stack= before 14: (b7) r3 = 0
+mark_precise: frame0: regs=r9 stack= before 13: (b7) r2 = 4
+mark_precise: frame0: regs=r9 stack= before 11: (18) r1 = 0xffff8d0ddb901600
+mark_precise: frame0: regs=r9 stack= before 10: (63) *(u32 *)(r6 +0) = r1
+mark_precise: frame0: regs=r9 stack= before 9: (b7) r1 = 3
+mark_precise: frame0: regs=r9 stack= before 8: (15) if r6 == 0x0 goto pc+62
+mark_precise: frame0: regs=r9 stack= before 7: (bf) r6 = r0
+mark_precise: frame0: regs=r9 stack= before 6: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: regs=r9 stack= before 5: (b7) r3 = 0
+mark_precise: frame0: regs=r9 stack= before 4: (b7) r2 = 4
+mark_precise: frame0: regs=r9 stack= before 2: (18) r1 = 0xffff8d0ddb901600
+mark_precise: frame0: regs=r9 stack= before 1: (b7) r9 = 0
+18: R9=0 R10=fp0 fp-8=0000???? refs=2,4
+18: (61) r1 = *(u32 *)(r10 -4)        ; R1_w=0 R10=fp0 fp-8=0000???? refs=2,4
+19: (07) r1 += 1                      ; R1_w=1 refs=2,4
+20: (63) *(u32 *)(r10 -4) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm???? refs=2,4
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:36
+21: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: last_idx 21 first_idx 16 subseq_idx -1 
+mark_precise: frame0: regs=r9 stack= before 20: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 19: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 18: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 17: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 16: (bf) r7 = r0
+mark_precise: frame0: parent state regs= stack=:  R0_rw=ringbuf_mem_or_null(id=4,ref_obj_id=4,sz=4) R6_w=ringbuf_mem(ref_obj_id=2,sz=4) R8_w=pkt(r=0) R9_rw=P0 R10=fp0 refs=2,4
+22: R9=0 R10=fp0 fp-8=0000???? refs=2,4
+22: (61) r1 = *(u32 *)(r10 -4)        ; R1_w=0 R10=fp0 fp-8=0000???? refs=2,4
+23: (07) r1 += 1                      ; R1_w=1 refs=2,4
+24: (63) *(u32 *)(r10 -4) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm???? refs=2,4
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:37
+25: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: last_idx 25 first_idx 16 subseq_idx -1 
+mark_precise: frame0: regs=r9 stack= before 24: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 23: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 22: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 21: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 20: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 19: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 18: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 17: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 16: (bf) r7 = r0
+mark_precise: frame0: parent state regs= stack=:  R0_rw=ringbuf_mem_or_null(id=4,ref_obj_id=4,sz=4) R6_w=ringbuf_mem(ref_obj_id=2,sz=4) R8_w=pkt(r=0) R9_rw=P0 R10=fp0 refs=2,4
+26: R9=0 R10=fp0 fp-8=0000???? refs=2,4
+26: (61) r1 = *(u32 *)(r10 -4)        ; R1_w=0 R10=fp0 fp-8=0000???? refs=2,4
+27: (07) r1 += 1                      ; R1_w=1 refs=2,4
+28: (63) *(u32 *)(r10 -4) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm???? refs=2,4
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:38
+29: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: last_idx 29 first_idx 16 subseq_idx -1 
+mark_precise: frame0: regs=r9 stack= before 28: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 27: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 26: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 25: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 24: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 23: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 22: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 21: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 20: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 19: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 18: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 17: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 16: (bf) r7 = r0
+mark_precise: frame0: parent state regs= stack=:  R0_rw=ringbuf_mem_or_null(id=4,ref_obj_id=4,sz=4) R6_w=ringbuf_mem(ref_obj_id=2,sz=4) R8_w=pkt(r=0) R9_rw=P0 R10=fp0 refs=2,4
+30: R9=0 R10=fp0 fp-8=0000???? refs=2,4
+30: (61) r1 = *(u32 *)(r10 -4)        ; R1_w=0 R10=fp0 fp-8=0000???? refs=2,4
+31: (07) r1 += 1                      ; R1_w=1 refs=2,4
+32: (63) *(u32 *)(r10 -4) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm???? refs=2,4
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:39
+33: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: last_idx 33 first_idx 16 subseq_idx -1 
+mark_precise: frame0: regs=r9 stack= before 32: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 31: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 30: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 29: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 28: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 27: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 26: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 25: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 24: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 23: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 22: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 21: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 20: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 19: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 18: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 17: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 16: (bf) r7 = r0
+mark_precise: frame0: parent state regs= stack=:  R0_rw=ringbuf_mem_or_null(id=4,ref_obj_id=4,sz=4) R6_w=ringbuf_mem(ref_obj_id=2,sz=4) R8_w=pkt(r=0) R9_rw=P0 R10=fp0 refs=2,4
+34: R9=0 R10=fp0 fp-8=0000???? refs=2,4
+34: (61) r1 = *(u32 *)(r10 -4)        ; R1_w=0 R10=fp0 fp-8=0000???? refs=2,4
+35: (07) r1 += 1                      ; R1_w=1 refs=2,4
+36: (63) *(u32 *)(r10 -4) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm???? refs=2,4
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:40
+37: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: last_idx 37 first_idx 16 subseq_idx -1 
+mark_precise: frame0: regs=r9 stack= before 36: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 35: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 34: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 33: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 32: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 31: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 30: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 29: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 28: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 27: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 26: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 25: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 24: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 23: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 22: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 21: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 20: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 19: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 18: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 17: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 16: (bf) r7 = r0
+mark_precise: frame0: parent state regs= stack=:  R0_rw=ringbuf_mem_or_null(id=4,ref_obj_id=4,sz=4) R6_w=ringbuf_mem(ref_obj_id=2,sz=4) R8_w=pkt(r=0) R9_rw=P0 R10=fp0 refs=2,4
+38: R9=0 R10=fp0 fp-8=0000???? refs=2,4
+38: (61) r1 = *(u32 *)(r10 -4)        ; R1_w=0 R10=fp0 fp-8=0000???? refs=2,4
+39: (07) r1 += 1                      ; R1_w=1 refs=2,4
+40: (63) *(u32 *)(r10 -4) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm???? refs=2,4
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:41
+41: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: last_idx 41 first_idx 16 subseq_idx -1 
+mark_precise: frame0: regs=r9 stack= before 40: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 39: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 38: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 37: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 36: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 35: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 34: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 33: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 32: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 31: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 30: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 29: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 28: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 27: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 26: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 25: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 24: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 23: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 22: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 21: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 20: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 19: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 18: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 17: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 16: (bf) r7 = r0
+mark_precise: frame0: parent state regs= stack=:  R0_rw=ringbuf_mem_or_null(id=4,ref_obj_id=4,sz=4) R6_w=ringbuf_mem(ref_obj_id=2,sz=4) R8_w=pkt(r=0) R9_rw=P0 R10=fp0 refs=2,4
+42: R9=0 R10=fp0 fp-8=0000???? refs=2,4
+42: (61) r1 = *(u32 *)(r10 -4)        ; R1_w=0 R10=fp0 fp-8=0000???? refs=2,4
+43: (07) r1 += 1                      ; R1_w=1 refs=2,4
+44: (63) *(u32 *)(r10 -4) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm???? refs=2,4
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:42
+45: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: last_idx 45 first_idx 16 subseq_idx -1 
+mark_precise: frame0: regs=r9 stack= before 44: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 43: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 42: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 41: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 40: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 39: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 38: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 37: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 36: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 35: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 34: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 33: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 32: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 31: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 30: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 29: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 28: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 27: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 26: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 25: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 24: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 23: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 22: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 21: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 20: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r9 stack= before 19: (07) r1 += 1
+mark_precise: frame0: regs=r9 stack= before 18: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 17: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: regs=r9 stack= before 16: (bf) r7 = r0
+mark_precise: frame0: parent state regs= stack=:  R0_rw=ringbuf_mem_or_null(id=4,ref_obj_id=4,sz=4) R6_w=ringbuf_mem(ref_obj_id=2,sz=4) R8_w=pkt(r=0) R9_rw=P0 R10=fp0 refs=2,4
+46: R9=0 R10=fp0 fp-8=0000???? refs=2,4
+46: (61) r1 = *(u32 *)(r10 -4)        ; R1_w=0 R10=fp0 fp-8=0000???? refs=2,4
+47: (07) r1 += 1                      ; R1_w=1 refs=2,4
+48: (63) *(u32 *)(r10 -4) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm???? refs=2,4
+49: (b7) r1 = 7                       ; R1_w=7 refs=2,4
+; rec->mark = 7; @ VPADC.buggy.bpf.c:43
+50: (63) *(u32 *)(r7 +0) = r1
+R7 invalid mem access 'ringbuf_mem_or_null'
+verification time 396 usec
+stack depth 8
+processed 49 insns (limit 1000000) max_states_per_insn 0 total_states 1 peak_states 1 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'ringbuf_missing_null': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-5bk63eb9/ringbuf_missing_null_check_001__VPADC.buggy.o'
+Error: failed to load object file

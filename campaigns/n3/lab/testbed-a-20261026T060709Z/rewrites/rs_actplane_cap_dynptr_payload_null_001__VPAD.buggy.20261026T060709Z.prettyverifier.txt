@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into pointer to memory not null-checked
+   102 | if (r->index >= MAX_TAINT_UPDATES) @ VPAD.buggy.bpf.c:102
+       | in file /home/test/bpfix-v2-git/campaigns/n3/rs_actplane_cap_dynptr_payload_null_001/VPAD.buggy.bpf.c
+

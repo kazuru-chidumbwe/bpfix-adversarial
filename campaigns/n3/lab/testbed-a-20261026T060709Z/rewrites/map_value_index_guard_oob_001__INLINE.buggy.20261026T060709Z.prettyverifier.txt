@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Invalid access to map value
+   50 | return cfg->slots[selector] ? XDP_DROP : XDP_PASS; @ INLINE.buggy.bpf.c:50
+      | in file /home/test/bpfix-v2-git/campaigns/n3/map_value_index_guard_oob_001/INLINE.buggy.bpf.c
+Access is 12 bytes past the end of the map value.
+
+Make sure that the index 'selector' is checked to be within the 'cfg->slots' bounds (0 to 2).
+

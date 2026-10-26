@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Reference must be released before exiting
+   14 | sk = bpf_skc_lookup_tcp(skb, &tuple, sizeof(tuple.ipv4), BPF_F_CURRENT_NETNS, 0); @ VPADC.buggy.bpf.c:24
+      | in file /home/test/bpfix-v2-git/campaigns/n3/rs_cilium_proxy_skc_assign_ref_leak_001/VPADC.buggy.bpf.c
+

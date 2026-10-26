@@ -1,0 +1,20 @@
+error[BPFIX-E001]: packet bounds proof is missing
+  = class: source_bug
+  = confidence: medium
+  = diagnostic: supported, help: repair_hint, span: exact_pc
+  = next action: bounds
+  --> INLINE.buggy.bpf.c:33
+   |
+19 | static __always_inline int __adv_guard(void *data, void *data_end) { return (data + 14 > data_end); }
+   | -------------------------------------------------------------------------------- verifier only proves packet range 0 bytes on this path, but the rejected access requires 15 bytes
+29 | if (__adv_guard(data, data_end))
+   | -------------------------------- nearby source context for packet bounds
+33 | proto = *(__u16 *)(shifted + 12);
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ rejected here: verifier needs R1 packet range >= 15, but only 14 bytes are proven
+   |
+   = verifier[16]: invalid access to packet, off=13 size=2, R1(id=0,off=13,r=14); R1 offset is outside of the packet
+   = note: nearest BPF instruction pc 6
+   = note: parsed 6 verifier state snapshots
+   = required proof: prove R1 has packet range at least 15 bytes before this access; verifier currently has range 14
+help: Add or move a packet bounds check immediately before the access or helper argument use.
+help: Check the exact pointer and byte length passed to the helper, not only an earlier header pointer.

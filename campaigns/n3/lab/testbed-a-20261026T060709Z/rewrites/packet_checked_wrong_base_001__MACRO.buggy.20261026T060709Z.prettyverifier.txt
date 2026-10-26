@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Invalid access to packet
+   33 | ADV_STMT(proto = *(__u16 *)(shifted + 12)); @ MACRO.buggy.bpf.c:33
+      | in file /home/test/bpfix-v2-git/campaigns/n3/packet_checked_wrong_base_001/MACRO.buggy.bpf.c
+Access involving 'proto = *' is 1 byte past the end of the checked packet range (14 bytes).
+
+Add or tighten a bounds check so the accessed range stays within the checked packet range.
+

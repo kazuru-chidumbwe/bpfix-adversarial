@@ -1,0 +1,127 @@
+libbpf: loading object from /tmp/bpfix-cap-5bk63eb9/dynptr_slice_stack_buffer_001__MACRO.fixed.o
+libbpf: elf: section(3) xdp, size 312, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'dynptr_slice_stack_buffer' at insn offset 0 (0 bytes), code size 39 insns (312 bytes)
+libbpf: elf: section(4) .relxdp, size 48, link 25, flags 40, type=9
+libbpf: elf: section(5) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-5bk63eb9/dynptr_slice_stack_buffer_001__MACRO.fixed.o is GPL
+libbpf: elf: section(15) .BTF, size 1383, link 0, flags 0, type=1
+libbpf: elf: section(17) .BTF.ext, size 332, link 0, flags 0, type=1
+libbpf: elf: section(25) .symtab, size 360, link 1, flags 0, type=2
+libbpf: looking for externs among 15 symbols...
+libbpf: collected 2 externs total
+libbpf: extern (ksym) #0: symbol 12, name bpf_dynptr_from_xdp
+libbpf: extern (ksym) #1: symbol 13, name bpf_dynptr_slice
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #13 against 'bpf_dynptr_from_xdp'
+libbpf: prog 'dynptr_slice_stack_buffer': found extern #0 'bpf_dynptr_from_xdp' (sym 12) for insn #13
+libbpf: sec '.relxdp': relo #1: insn #23 against 'bpf_dynptr_slice'
+libbpf: prog 'dynptr_slice_stack_buffer': found extern #1 'bpf_dynptr_slice' (sym 13) for insn #23
+libbpf: sec '.relxdp': relo #2: insn #31 against 'bpf_dynptr_slice'
+libbpf: prog 'dynptr_slice_stack_buffer': found extern #1 'bpf_dynptr_slice' (sym 13) for insn #31
+libbpf: object 'dynptr_slice_st': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: extern (func ksym) 'bpf_dynptr_from_xdp': resolved to vmlinux [57542]
+libbpf: extern (func ksym) 'bpf_dynptr_slice': resolved to vmlinux [57560]
+libbpf: sec 'xdp': found 2 CO-RE relocations
+libbpf: CO-RE relocating [2] struct xdp_md: found target candidate [13583] struct xdp_md in [vmlinux]
+libbpf: prog 'dynptr_slice_stack_buffer': relo #0: <byte_off> [2] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'dynptr_slice_stack_buffer': relo #0: matching candidate #0 <byte_off> [13583] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'dynptr_slice_stack_buffer': relo #0: patched insn #0 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'dynptr_slice_stack_buffer': relo #1: <byte_off> [2] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'dynptr_slice_stack_buffer': relo #1: matching candidate #0 <byte_off> [13583] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'dynptr_slice_stack_buffer': relo #1: patched insn #1 (LDX/ST/STX) off 0 -> 0
+libbpf: prog 'dynptr_slice_stack_buffer': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; void *data_end = (void *)(long)ctx->data_end; @ MACRO.fixed.bpf.c:24
+0: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data; @ MACRO.fixed.bpf.c:23
+1: (61) r3 = *(u32 *)(r1 +0)          ; R1=ctx() R3_w=pkt(r=0)
+2: (b7) r4 = 0                        ; R4_w=0
+; __u8 scratch[9] = {}; @ MACRO.fixed.bpf.c:26
+3: (73) *(u8 *)(r10 -24) = r4         ; R4_w=0 R10=fp0 fp-24=???????0
+4: (7b) *(u64 *)(r10 -32) = r4        ; R4_w=0 R10=fp0 fp-32_w=0
+; __u8 trailer[3] = {}; @ MACRO.fixed.bpf.c:27
+5: (73) *(u8 *)(r10 -34) = r4
+mark_precise: frame0: last_idx 5 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 4: (7b) *(u64 *)(r10 -32) = r4
+mark_precise: frame0: regs=r4 stack= before 3: (73) *(u8 *)(r10 -24) = r4
+mark_precise: frame0: regs=r4 stack= before 2: (b7) r4 = 0
+6: R4_w=0 R10=fp0 fp-40=?0??????
+6: (6b) *(u16 *)(r10 -36) = r4
+mark_precise: frame0: last_idx 6 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 5: (73) *(u8 *)(r10 -34) = r4
+mark_precise: frame0: regs=r4 stack= before 4: (7b) *(u64 *)(r10 -32) = r4
+mark_precise: frame0: regs=r4 stack= before 3: (73) *(u8 *)(r10 -24) = r4
+mark_precise: frame0: regs=r4 stack= before 2: (b7) r4 = 0
+7: R4_w=0 R10=fp0 fp-40=?000????
+7: (b7) r6 = 2                        ; R6_w=2
+; if (data + 12 + sizeof(trailer) > data_end) @ MACRO.fixed.bpf.c:31
+8: (07) r3 += 15                      ; R3_w=pkt(off=15,r=0)
+9: (2d) if r3 > r2 goto pc+27         ; R2_w=pkt_end() R3_w=pkt(off=15,r=15)
+10: (bf) r3 = r10                     ; R3_w=fp0 R10=fp0
+11: (07) r3 += -16                    ; R3_w=fp-16
+; if (bpf_dynptr_from_xdp(ctx, 0, &ptr)) @ MACRO.fixed.bpf.c:34
+12: (b7) r2 = 0                       ; R2_w=0
+13: (85) call bpf_dynptr_from_xdp#57542       ; R0=scalar() fp-16=dynptr_xdp(id=1,dynptr_id=1)
+14: (67) r0 <<= 32                    ; R0_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+15: (77) r0 >>= 32                    ; R0_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+16: (55) if r0 != 0x0 goto pc+20      ; R0_w=0
+17: (bf) r1 = r10                     ; R1_w=fp0 R10=fp0
+18: (07) r1 += -16                    ; R1_w=fp-16
+19: (bf) r3 = r10                     ; R3_w=fp0 R10=fp0
+20: (07) r3 += -32                    ; R3_w=fp-32
+; ADV_STMT(bytes = bpf_dynptr_slice(&ptr, 0, scratch, sizeof(scratch))); @ MACRO.fixed.bpf.c:37
+21: (b7) r2 = 0                       ; R2_w=0
+22: (b7) r4 = 9                       ; R4_w=9
+23: (85) call bpf_dynptr_slice#57560
+mark_precise: frame0: last_idx 23 first_idx 14 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 22: (b7) r4 = 9
+mark_precise: frame0: last_idx 23 first_idx 14 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 22: (b7) r4 = 9
+24: R0=rdonly_mem_or_null(id=2,sz=9)
+; if (!bytes) @ MACRO.fixed.bpf.c:38
+24: (15) if r0 == 0x0 goto pc+12      ; R0=rdonly_mem(sz=9)
+25: (bf) r1 = r10                     ; R1_w=fp0 R10=fp0
+26: (07) r1 += -16                    ; R1_w=fp-16
+27: (bf) r3 = r10                     ; R3_w=fp0 R10=fp0
+28: (07) r3 += -36                    ; R3_w=fp-36
+; tail = bpf_dynptr_slice(&ptr, 12, trailer, sizeof(trailer)); @ MACRO.fixed.bpf.c:41
+29: (b7) r2 = 12                      ; R2_w=12
+30: (b7) r4 = 3                       ; R4_w=3
+31: (85) call bpf_dynptr_slice#57560
+mark_precise: frame0: last_idx 31 first_idx 24 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 30: (b7) r4 = 3
+mark_precise: frame0: last_idx 31 first_idx 24 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 30: (b7) r4 = 3
+32: R0=rdonly_mem_or_null(id=3,sz=3)
+; if (!tail) @ MACRO.fixed.bpf.c:42
+32: (15) if r0 == 0x0 goto pc+4       ; R0=rdonly_mem(sz=3)
+; return ((__u8 *)tail)[0] == 0x08 ? XDP_DROP : XDP_PASS; @ MACRO.fixed.bpf.c:45
+33: (71) r1 = *(u8 *)(r0 +0)          ; R0=rdonly_mem(sz=3) R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+34: (b7) r6 = 1                       ; R6_w=1
+35: (15) if r1 == 0x8 goto pc+1       ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+36: (b7) r6 = 2                       ; R6_w=2
+; } @ MACRO.fixed.bpf.c:46
+37: (bf) r0 = r6                      ; R0_w=2 R6_w=2
+38: (95) exit
+
+from 35 to 37: R0=rdonly_mem(sz=3) R1_w=8 R6_w=1 R10=fp0 fp-16=dynptr_xdp(id=1,dynptr_id=1) fp-24=???????m fp-32=mmmmmmmm fp-40=?mmm????
+37: R0=rdonly_mem(sz=3) R1_w=8 R6_w=1 R10=fp0 fp-16=dynptr_xdp(id=1,dynptr_id=1) fp-24=???????m fp-32=mmmmmmmm fp-40=?mmm????
+37: (bf) r0 = r6                      ; R0_w=1 R6_w=1
+38: (95) exit
+
+from 32 to 37: R0=0 R6=2 R10=fp0 fp-16=dynptr_xdp(id=1,dynptr_id=1) fp-24=???????m fp-32=mmmmmmmm fp-40=?mmm????
+37: R0=0 R6=2 R10=fp0 fp-16=dynptr_xdp(id=1,dynptr_id=1) fp-24=???????m fp-32=mmmmmmmm fp-40=?mmm????
+37: (bf) r0 = r6                      ; R0_w=2 R6=2
+38: (95) exit
+
+from 24 to 37: safe
+
+from 16 to 37: safe
+
+from 9 to 37: safe
+verification time 297 usec
+stack depth 40
+processed 46 insns (limit 1000000) max_states_per_insn 0 total_states 4 peak_states 4 mark_read 4
+-- END PROG LOAD LOG --

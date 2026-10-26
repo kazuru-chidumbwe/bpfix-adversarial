@@ -1,0 +1,138 @@
+libbpf: loading object from /tmp/bpfix-cap-5bk63eb9/xdp_adjust_head_map_value_001__VPADC.buggy.o
+libbpf: elf: section(3) xdp, size 568, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'xdp_adjust_head_map_value' at insn offset 0 (0 bytes), code size 71 insns (568 bytes)
+libbpf: elf: section(4) .relxdp, size 16, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 32, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-5bk63eb9/xdp_adjust_head_map_value_001__VPADC.buggy.o is GPL
+libbpf: elf: section(16) .BTF, size 1939, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 668, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 336, link 1, flags 0, type=2
+libbpf: looking for externs among 14 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'configs': at sec_idx 5, offset 0.
+libbpf: map 'configs': found type = 1.
+libbpf: map 'configs': found key [6], sz = 4.
+libbpf: map 'configs': found value [9], sz = 8.
+libbpf: map 'configs': found max_entries = 1.
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #7 against 'configs'
+libbpf: prog 'xdp_adjust_head_map_value': found map 0 (configs, sec 5, off 0) for insn #7
+libbpf: object 'xdp_adjust_head': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'xdp': found 4 CO-RE relocations
+libbpf: CO-RE relocating [13] struct xdp_md: found target candidate [13583] struct xdp_md in [vmlinux]
+libbpf: prog 'xdp_adjust_head_map_value': relo #0: <byte_off> [13] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'xdp_adjust_head_map_value': relo #0: matching candidate #0 <byte_off> [13583] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'xdp_adjust_head_map_value': relo #0: patched insn #1 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'xdp_adjust_head_map_value': relo #1: <byte_off> [13] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'xdp_adjust_head_map_value': relo #1: matching candidate #0 <byte_off> [13583] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'xdp_adjust_head_map_value': relo #1: patched insn #2 (LDX/ST/STX) off 0 -> 0
+libbpf: CO-RE relocating [16] struct ethhdr: found target candidate [20213] struct ethhdr in [vmlinux]
+libbpf: prog 'xdp_adjust_head_map_value': relo #2: <byte_off> [16] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'xdp_adjust_head_map_value': relo #2: matching candidate #0 <byte_off> [20213] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'xdp_adjust_head_map_value': relo #2: patched insn #15 (LDX/ST/STX) off 12 -> 12
+libbpf: CO-RE relocating [22] struct iphdr: found target candidate [20569] struct iphdr in [vmlinux]
+libbpf: prog 'xdp_adjust_head_map_value': relo #3: <byte_off> [22] struct iphdr.protocol (0:7 @ offset 9)
+libbpf: prog 'xdp_adjust_head_map_value': relo #3: matching candidate #0 <byte_off> [20569] struct iphdr.protocol (0:7 @ offset 9)
+libbpf: prog 'xdp_adjust_head_map_value': relo #3: patched insn #65 (LDX/ST/STX) off 9 -> 9
+libbpf: map 'configs': created successfully, fd=4
+libbpf: prog 'xdp_adjust_head_map_value': BPF program load failed: Permission denied
+libbpf: prog 'xdp_adjust_head_map_value': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int xdp_adjust_head_map_value(struct xdp_md *ctx) @ VPADC.buggy.bpf.c:35
+0: (bf) r6 = r1                       ; R1=ctx() R6_w=ctx()
+; void *data_end = (void *)(long)ctx->data_end; @ VPADC.buggy.bpf.c:38
+1: (61) r8 = *(u32 *)(r6 +4)          ; R6_w=ctx() R8_w=pkt_end()
+; void *data = (void *)(long)ctx->data; @ VPADC.buggy.bpf.c:37
+2: (61) r9 = *(u32 *)(r6 +0)          ; R6_w=ctx() R9_w=pkt(r=0)
+3: (b7) r1 = 0                        ; R1_w=0
+; __u32 key = 0; @ VPADC.buggy.bpf.c:40
+4: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 4 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 3: (b7) r1 = 0
+5: R1_w=0 R10=fp0 fp-8=0000????
+5: (bf) r2 = r10                      ; R2_w=fp0 R10=fp0
+6: (07) r2 += -4                      ; R2_w=fp-4
+; struct config *cfg = bpf_map_lookup_elem(&configs, &key); @ VPADC.buggy.bpf.c:41
+7: (18) r1 = 0xffff8d0e6316b400       ; R1_w=map_ptr(map=configs,ks=4,vs=8)
+9: (85) call bpf_map_lookup_elem#1    ; R0_w=map_value_or_null(id=1,map=configs,ks=4,vs=8)
+10: (bf) r3 = r0                      ; R0_w=map_value_or_null(id=1,map=configs,ks=4,vs=8) R3_w=map_value_or_null(id=1,map=configs,ks=4,vs=8)
+11: (b7) r0 = 2                       ; R0_w=2
+; if ((void *)(eth + 1) > data_end) @ VPADC.buggy.bpf.c:43
+12: (bf) r7 = r9                      ; R7_w=pkt(r=0) R9_w=pkt(r=0)
+13: (07) r7 += 14                     ; R7_w=pkt(off=14,r=0)
+14: (2d) if r7 > r8 goto pc+55        ; R7_w=pkt(off=14,r=14) R8_w=pkt_end()
+; if (bpf_ntohs(eth->h_proto) != ETH_P_IP) @ VPADC.buggy.bpf.c:45
+15: (69) r1 = *(u16 *)(r9 +12)        ; R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R9=pkt(r=14)
+16: (55) if r1 != 0x8 goto pc+53      ; R1=8
+17: (07) r9 += 34                     ; R9_w=pkt(off=34,r=14)
+18: (2d) if r9 > r8 goto pc+51        ; R8=pkt_end() R9_w=pkt(off=34,r=34)
+; if (bpf_xdp_adjust_head(ctx, (int)sizeof(*eth)) < 0) @ VPADC.buggy.bpf.c:52
+19: (bf) r1 = r6                      ; R1_w=ctx() R6=ctx()
+20: (b7) r2 = 14                      ; R2_w=14
+21: (bf) r6 = r3                      ; R3=map_value_or_null(id=1,map=configs,ks=4,vs=8) R6_w=map_value_or_null(id=1,map=configs,ks=4,vs=8)
+22: (85) call bpf_xdp_adjust_head#44          ; R0_w=scalar()
+23: (bf) r1 = r0                      ; R0_w=scalar(id=2) R1_w=scalar(id=2)
+24: (bf) r2 = r6                      ; R2_w=map_value_or_null(id=1,map=configs,ks=4,vs=8) R6_w=map_value_or_null(id=1,map=configs,ks=4,vs=8)
+25: (b7) r0 = 0                       ; R0=0
+26: (6d) if r0 s> r1 goto pc+43       ; R0=0 R1=scalar(id=2,smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff))
+27: (b7) r0 = 2                       ; R0_w=2
+; if (!cfg) @ VPADC.buggy.bpf.c:55
+28: (15) if r2 == 0x0 goto pc+41      ; R2=map_value(map=configs,ks=4,vs=8)
+; cfg->seen_packets += 1; @ VPADC.buggy.bpf.c:57
+29: (61) r1 = *(u32 *)(r2 +4)         ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R2=map_value(map=configs,ks=4,vs=8)
+30: (07) r1 += 1                      ; R1_w=scalar(smin=umin=1,smax=umax=0x100000000,var_off=(0x0; 0x1ffffffff))
+31: (63) *(u32 *)(r2 +4) = r1         ; R1_w=scalar(smin=umin=1,smax=umax=0x100000000,var_off=(0x0; 0x1ffffffff)) R2=map_value(map=configs,ks=4,vs=8)
+32: (b7) r1 = 0                       ; R1_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:59
+33: (63) *(u32 *)(r10 -8) = r1        ; R1_w=0 R10=fp0 fp-8=mmmm0
+34: (61) r3 = *(u32 *)(r10 -8)        ; R3_w=0 R10=fp0 fp-8=mmmm0
+35: (07) r3 += 1                      ; R3_w=1
+36: (63) *(u32 *)(r10 -8) = r3        ; R3_w=1 R10=fp0 fp-8=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:60
+37: (63) *(u32 *)(r10 -8) = r1        ; R1_w=0 R10=fp0 fp-8=mmmm0
+38: (61) r3 = *(u32 *)(r10 -8)        ; R3_w=0 R10=fp0 fp-8=mmmm0
+39: (07) r3 += 1                      ; R3_w=1
+40: (63) *(u32 *)(r10 -8) = r3        ; R3_w=1 R10=fp0 fp-8=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:61
+41: (63) *(u32 *)(r10 -8) = r1        ; R1_w=0 R10=fp0 fp-8=mmmm0
+42: (61) r3 = *(u32 *)(r10 -8)        ; R3_w=0 R10=fp0 fp-8=mmmm0
+43: (07) r3 += 1                      ; R3_w=1
+44: (63) *(u32 *)(r10 -8) = r3        ; R3_w=1 R10=fp0 fp-8=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:62
+45: (63) *(u32 *)(r10 -8) = r1        ; R1_w=0 R10=fp0 fp-8=mmmm0
+46: (61) r3 = *(u32 *)(r10 -8)        ; R3_w=0 R10=fp0 fp-8=mmmm0
+47: (07) r3 += 1                      ; R3_w=1
+48: (63) *(u32 *)(r10 -8) = r3        ; R3_w=1 R10=fp0 fp-8=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:63
+49: (63) *(u32 *)(r10 -8) = r1        ; R1_w=0 R10=fp0 fp-8=mmmm0
+50: (61) r3 = *(u32 *)(r10 -8)        ; R3_w=0 R10=fp0 fp-8=mmmm0
+51: (07) r3 += 1                      ; R3_w=1
+52: (63) *(u32 *)(r10 -8) = r3        ; R3_w=1 R10=fp0 fp-8=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:64
+53: (63) *(u32 *)(r10 -8) = r1        ; R1_w=0 R10=fp0 fp-8=mmmm0
+54: (61) r3 = *(u32 *)(r10 -8)        ; R3_w=0 R10=fp0 fp-8=mmmm0
+55: (07) r3 += 1                      ; R3_w=1
+56: (63) *(u32 *)(r10 -8) = r3        ; R3_w=1 R10=fp0 fp-8=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:65
+57: (63) *(u32 *)(r10 -8) = r1        ; R1_w=0 R10=fp0 fp-8=mmmm0
+58: (61) r3 = *(u32 *)(r10 -8)        ; R3_w=0 R10=fp0 fp-8=mmmm0
+59: (07) r3 += 1                      ; R3_w=1
+60: (63) *(u32 *)(r10 -8) = r3        ; R3_w=1 R10=fp0 fp-8=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:66
+61: (63) *(u32 *)(r10 -8) = r1        ; R1_w=0 R10=fp0 fp-8=mmmm0
+62: (61) r1 = *(u32 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8=mmmm0
+63: (07) r1 += 1                      ; R1_w=1
+64: (63) *(u32 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm1
+; return cfg->drop_proto == iph->protocol ? XDP_DROP : XDP_PASS; @ VPADC.buggy.bpf.c:67
+65: (71) r1 = *(u8 *)(r7 +9)
+R7 invalid mem access 'scalar'
+verification time 249 usec
+stack depth 8
+processed 65 insns (limit 1000000) max_states_per_insn 0 total_states 2 peak_states 2 mark_read 2
+-- END PROG LOAD LOG --
+libbpf: prog 'xdp_adjust_head_map_value': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-5bk63eb9/xdp_adjust_head_map_value_001__VPADC.buggy.o'
+Error: failed to load object file

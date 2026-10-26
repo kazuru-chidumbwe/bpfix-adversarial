@@ -1,0 +1,134 @@
+libbpf: loading object from /tmp/bpfix-cap-5bk63eb9/rs_actplane_mmap_pending_merge_001__INLINE.buggy.o
+libbpf: elf: section(2) .text, size 520, link 0, flags 6, type=1
+libbpf: sec '.text': found program 'rs_mmap_index_remember' at insn offset 0 (0 bytes), code size 65 insns (520 bytes)
+libbpf: elf: section(3) .rel.text, size 32, link 28, flags 40, type=9
+libbpf: elf: section(4) xdp, size 960, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'rs_actplane_mmap_pending_merge' at insn offset 0 (0 bytes), code size 120 insns (960 bytes)
+libbpf: elf: section(5) .relxdp, size 128, link 28, flags 40, type=9
+libbpf: elf: section(6) .maps, size 160, link 0, flags 3, type=1
+libbpf: elf: section(7) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-5bk63eb9/rs_actplane_mmap_pending_merge_001__INLINE.buggy.o is GPL
+libbpf: elf: section(18) .BTF, size 3966, link 0, flags 0, type=1
+libbpf: elf: section(20) .BTF.ext, size 1380, link 0, flags 0, type=1
+libbpf: elf: section(28) .symtab, size 504, link 1, flags 0, type=2
+libbpf: looking for externs among 21 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'ts_mmappend': at sec_idx 6, offset 0.
+libbpf: map 'ts_mmappend': found type = 1.
+libbpf: map 'ts_mmappend': found key [8], sz = 8.
+libbpf: map 'ts_mmappend': found value [11], sz = 32.
+libbpf: map 'ts_mmappend': found max_entries = 16.
+libbpf: map 'ts_fd': at sec_idx 6, offset 32.
+libbpf: map 'ts_fd': found type = 1.
+libbpf: map 'ts_fd': found key [18], sz = 8.
+libbpf: map 'ts_fd': found value [20], sz = 32.
+libbpf: map 'ts_fd': found max_entries = 16.
+libbpf: map 'ts_mmap': at sec_idx 6, offset 64.
+libbpf: map 'ts_mmap': found type = 1.
+libbpf: map 'ts_mmap': found key [27], sz = 16.
+libbpf: map 'ts_mmap': found value [29], sz = 64.
+libbpf: map 'ts_mmap': found max_entries = 16.
+libbpf: map 'ts_mmap_index': at sec_idx 6, offset 96.
+libbpf: map 'ts_mmap_index': found type = 1.
+libbpf: map 'ts_mmap_index': found key [12], sz = 4.
+libbpf: map 'ts_mmap_index': found value [34], sz = 40.
+libbpf: map 'ts_mmap_index': found max_entries = 16.
+libbpf: map 'ts_mmap_scratch': at sec_idx 6, offset 128.
+libbpf: map 'ts_mmap_scratch': found type = 6.
+libbpf: map 'ts_mmap_scratch': found key [13], sz = 4.
+libbpf: map 'ts_mmap_scratch': found value [29], sz = 64.
+libbpf: map 'ts_mmap_scratch': found max_entries = 1.
+libbpf: sec '.rel.text': collecting relocation for section(2) '.text'
+libbpf: sec '.rel.text': relo #0: insn #4 against 'ts_mmap_index'
+libbpf: prog 'rs_mmap_index_remember': found map 3 (ts_mmap_index, sec 6, off 96) for insn #4
+libbpf: sec '.rel.text': relo #1: insn #59 against 'ts_mmap_index'
+libbpf: prog 'rs_mmap_index_remember': found map 3 (ts_mmap_index, sec 6, off 96) for insn #59
+libbpf: sec '.relxdp': collecting relocation for section(4) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #14 against 'ts_mmappend'
+libbpf: prog 'rs_actplane_mmap_pending_merge': found map 0 (ts_mmappend, sec 6, off 0) for insn #14
+libbpf: sec '.relxdp': relo #1: insn #26 against 'ts_mmappend'
+libbpf: prog 'rs_actplane_mmap_pending_merge': found map 0 (ts_mmappend, sec 6, off 0) for insn #26
+libbpf: sec '.relxdp': relo #2: insn #36 against 'ts_fd'
+libbpf: prog 'rs_actplane_mmap_pending_merge': found map 1 (ts_fd, sec 6, off 32) for insn #36
+libbpf: sec '.relxdp': relo #3: insn #45 against 'ts_mmap_scratch'
+libbpf: prog 'rs_actplane_mmap_pending_merge': found map 4 (ts_mmap_scratch, sec 6, off 128) for insn #45
+libbpf: sec '.relxdp': relo #4: insn #65 against '.text'
+libbpf: sec '.relxdp': relo #5: insn #74 against 'ts_mmap'
+libbpf: prog 'rs_actplane_mmap_pending_merge': found map 2 (ts_mmap, sec 6, off 64) for insn #74
+libbpf: sec '.relxdp': relo #6: insn #107 against 'ts_mmap'
+libbpf: prog 'rs_actplane_mmap_pending_merge': found map 2 (ts_mmap, sec 6, off 64) for insn #107
+libbpf: sec '.relxdp': relo #7: insn #115 against 'ts_mmappend'
+libbpf: prog 'rs_actplane_mmap_pending_merge': found map 0 (ts_mmappend, sec 6, off 0) for insn #115
+libbpf: object 'rs_actplane_mma': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'xdp': found 2 CO-RE relocations
+libbpf: CO-RE relocating [44] struct xdp_md: found target candidate [13583] struct xdp_md in [vmlinux]
+libbpf: prog 'rs_actplane_mmap_pending_merge': relo #0: <byte_off> [44] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_actplane_mmap_pending_merge': relo #0: matching candidate #0 <byte_off> [13583] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_actplane_mmap_pending_merge': relo #0: patched insn #1 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'rs_actplane_mmap_pending_merge': relo #1: <byte_off> [44] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_actplane_mmap_pending_merge': relo #1: matching candidate #0 <byte_off> [13583] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_actplane_mmap_pending_merge': relo #1: patched insn #2 (LDX/ST/STX) off 0 -> 0
+libbpf: prog 'rs_actplane_mmap_pending_merge': added 65 insns from sub-prog 'rs_mmap_index_remember'
+libbpf: prog 'rs_actplane_mmap_pending_merge': insn #65 relocated, imm 54 points to subprog 'rs_mmap_index_remember' (now at 120 offset)
+libbpf: map 'ts_mmappend': created successfully, fd=4
+libbpf: map 'ts_fd': created successfully, fd=5
+libbpf: map 'ts_mmap': created successfully, fd=6
+libbpf: map 'ts_mmap_index': created successfully, fd=7
+libbpf: map 'ts_mmap_scratch': created successfully, fd=8
+libbpf: prog 'rs_actplane_mmap_pending_merge': BPF program load failed: Permission denied
+libbpf: prog 'rs_actplane_mmap_pending_merge': -- BEGIN PROG LOAD LOG --
+func#0 @0
+func#1 @120
+0: R1=ctx() R10=fp0
+; int rs_actplane_mmap_pending_merge(struct xdp_md *ctx) @ INLINE.buggy.bpf.c:184
+0: (b7) r8 = 2                        ; R8_w=2
+; void *data_end = (void *)(long)ctx->data_end; @ INLINE.buggy.bpf.c:187
+1: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data; @ INLINE.buggy.bpf.c:186
+2: (61) r1 = *(u32 *)(r1 +0)          ; R1_w=pkt(r=0)
+; if ((void *)(bytes + 5) > data_end) @ INLINE.buggy.bpf.c:199
+3: (bf) r3 = r1                       ; R1_w=pkt(r=0) R3_w=pkt(r=0)
+4: (07) r3 += 5                       ; R3_w=pkt(off=5,r=0)
+5: (2d) if r3 > r2 goto pc+112        ; R2_w=pkt_end() R3_w=pkt(off=5,r=5)
+; pid = bytes[0]; @ INLINE.buggy.bpf.c:202
+6: (71) r2 = *(u8 *)(r1 +0)           ; R1_w=pkt(r=5) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; tid = bytes[1]; @ INLINE.buggy.bpf.c:203
+7: (7b) *(u64 *)(r10 -48) = r2        ; R2_w=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-48_w=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+8: (71) r2 = *(u8 *)(r1 +1)           ; R1_w=pkt(r=5) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+9: (7b) *(u64 *)(r10 -40) = r2        ; R2_w=scalar(id=2,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-40_w=scalar(id=2,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; guarded = bytes[3]; @ INLINE.buggy.bpf.c:205
+10: (71) r9 = *(u8 *)(r1 +3)          ; R1_w=pkt(r=5) R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; start = RS_MMAP_BASE + ((__u64)bytes[4] << 12); @ INLINE.buggy.bpf.c:206
+11: (71) r6 = *(u8 *)(r1 +4)          ; R1_w=pkt(r=5) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+12: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+13: (07) r2 += -40                    ; R2_w=fp-40
+; p = bpf_map_lookup_elem(&ts_mmappend, &tid); @ INLINE.buggy.bpf.c:208
+14: (18) r1 = 0xffff8d0daf9f9000      ; R1_w=map_ptr(map=ts_mmappend,ks=8,vs=32)
+16: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=3,map=ts_mmappend,ks=8,vs=32)
+17: (bf) r7 = r0                      ; R0=map_value_or_null(id=3,map=ts_mmappend,ks=8,vs=32) R7_w=map_value_or_null(id=3,map=ts_mmappend,ks=8,vs=32)
+; if (!p) @ INLINE.buggy.bpf.c:209
+18: (15) if r7 == 0x0 goto pc+99      ; R7_w=map_value(map=ts_mmappend,ks=8,vs=32)
+; if (__adv_guard(guarded)) { @ INLINE.buggy.bpf.c:213
+19: (57) r9 &= 1                      ; R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+20: (55) if r9 != 0x0 goto pc+9       ; R9_w=0
+; __u64 shadow_tid = tid + 1; @ INLINE.buggy.bpf.c:214
+21: (79) r1 = *(u64 *)(r10 -40)       ; R1_w=scalar() R10=fp0 fp-40=mmmmmmmm
+22: (07) r1 += 1                      ; R1_w=scalar()
+23: (7b) *(u64 *)(r10 -24) = r1       ; R1_w=scalar(id=4) R10=fp0 fp-24_w=scalar(id=4)
+24: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+25: (07) r2 += -24                    ; R2_w=fp-24
+; pending = bpf_map_lookup_elem(&ts_mmappend, &shadow_tid); @ INLINE.buggy.bpf.c:216
+26: (18) r1 = 0xffff8d0daf9f9000      ; R1_w=map_ptr(map=ts_mmappend,ks=8,vs=32)
+28: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=5,map=ts_mmappend,ks=8,vs=32)
+29: (bf) r7 = r0                      ; R0=map_value_or_null(id=5,map=ts_mmappend,ks=8,vs=32) R7_w=map_value_or_null(id=5,map=ts_mmappend,ks=8,vs=32)
+; fd = pending->fd; @ INLINE.buggy.bpf.c:219
+30: (61) r1 = *(u32 *)(r7 +0)
+R7 invalid mem access 'map_value_or_null'
+verification time 299 usec
+stack depth 48+0
+processed 29 insns (limit 1000000) max_states_per_insn 0 total_states 2 peak_states 2 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_actplane_mmap_pending_merge': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-5bk63eb9/rs_actplane_mmap_pending_merge_001__INLINE.buggy.o'
+Error: failed to load object file

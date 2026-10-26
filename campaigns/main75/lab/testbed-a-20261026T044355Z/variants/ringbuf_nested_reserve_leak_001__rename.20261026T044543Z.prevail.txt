@@ -1,0 +1,2 @@
+PREVAIL exit=0
+PASS: xdp/ringbuf_nested_reserve_leak

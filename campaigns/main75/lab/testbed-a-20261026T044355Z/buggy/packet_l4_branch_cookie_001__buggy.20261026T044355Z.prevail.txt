@@ -1,0 +1,5 @@
+PREVAIL exit=1
+FAIL: xdp/packet_l4_branch_cookie
+16: Invalid type (r1.type == number)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

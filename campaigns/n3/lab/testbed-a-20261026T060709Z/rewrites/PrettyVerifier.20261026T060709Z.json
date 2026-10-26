@@ -1,0 +1,10 @@
+{
+  "reporter": "PrettyVerifier",
+  "cli": "/home/test/pv-venv/bin/pretty-verifier",
+  "source_commit": "0f8875a158c5f846d218c6669a330b386a0ccce3",
+  "input": "program-load log without 'verification time' and 'stack depth' lines",
+  "clang": "Debian clang version 19.1.7 (3+b1)",
+  "manifest": "manifest.20261026T060709Z.jsonl",
+  "n_replayed": 196,
+  "n_compile_failed": 0
+}

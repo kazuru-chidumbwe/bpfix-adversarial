@@ -1,0 +1,254 @@
+libbpf: loading object from /tmp/bpfix-cap-5bk63eb9/rs_cilium_srv6_segment_bound_001__VPADC.buggy.o
+libbpf: elf: section(3) xdp, size 464, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'rs_cilium_srv6_segment_bound' at insn offset 0 (0 bytes), code size 58 insns (464 bytes)
+libbpf: elf: section(4) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-5bk63eb9/rs_cilium_srv6_segment_bound_001__VPADC.buggy.o is GPL
+libbpf: elf: section(14) .BTF, size 1883, link 0, flags 0, type=1
+libbpf: elf: section(16) .BTF.ext, size 700, link 0, flags 0, type=1
+libbpf: elf: section(24) .symtab, size 312, link 1, flags 0, type=2
+libbpf: looking for externs among 13 symbols...
+libbpf: collected 0 externs total
+libbpf: object 'rs_cilium_srv6_': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'xdp': found 5 CO-RE relocations
+libbpf: CO-RE relocating [2] struct xdp_md: found target candidate [13583] struct xdp_md in [vmlinux]
+libbpf: prog 'rs_cilium_srv6_segment_bound': relo #0: <byte_off> [2] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_cilium_srv6_segment_bound': relo #0: matching candidate #0 <byte_off> [13583] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_cilium_srv6_segment_bound': relo #0: patched insn #1 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'rs_cilium_srv6_segment_bound': relo #1: <byte_off> [2] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_cilium_srv6_segment_bound': relo #1: matching candidate #0 <byte_off> [13583] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_cilium_srv6_segment_bound': relo #1: patched insn #2 (LDX/ST/STX) off 0 -> 0
+libbpf: CO-RE relocating [8] struct ethhdr: found target candidate [20213] struct ethhdr in [vmlinux]
+libbpf: prog 'rs_cilium_srv6_segment_bound': relo #2: <byte_off> [8] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'rs_cilium_srv6_segment_bound': relo #2: matching candidate #0 <byte_off> [20213] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'rs_cilium_srv6_segment_bound': relo #2: patched insn #6 (LDX/ST/STX) off 12 -> 12
+libbpf: CO-RE relocating [15] struct ipv6hdr: found target candidate [20576] struct ipv6hdr in [vmlinux]
+libbpf: prog 'rs_cilium_srv6_segment_bound': relo #3: <byte_off> [15] struct ipv6hdr.nexthdr (0:4 @ offset 6)
+libbpf: prog 'rs_cilium_srv6_segment_bound': relo #3: matching candidate #0 <byte_off> [20576] struct ipv6hdr.nexthdr (0:4 @ offset 6)
+libbpf: prog 'rs_cilium_srv6_segment_bound': relo #3: patched insn #11 (LDX/ST/STX) off 6 -> 6
+libbpf: CO-RE relocating [20] struct in6_addr: found target candidate [2638] struct in6_addr in [vmlinux]
+libbpf: prog 'rs_cilium_srv6_segment_bound': relo #4: <byte_off> [20] struct in6_addr.in6_u.u6_addr32[3] (0:0:2:3 @ offset 12)
+libbpf: prog 'rs_cilium_srv6_segment_bound': relo #4: matching candidate #0 <byte_off> [2638] struct in6_addr.in6_u.u6_addr32[3] (0:0:2:3 @ offset 12)
+libbpf: prog 'rs_cilium_srv6_segment_bound': relo #4: patched insn #53 (LDX/ST/STX) off 12 -> 12
+libbpf: prog 'rs_cilium_srv6_segment_bound': BPF program load failed: Permission denied
+libbpf: prog 'rs_cilium_srv6_segment_bound': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_cilium_srv6_segment_bound(struct xdp_md *ctx) @ VPADC.buggy.bpf.c:73
+0: (b7) r0 = 2                        ; R0_w=2
+; void *data_end = (void *)(long)ctx->data_end; @ VPADC.buggy.bpf.c:76
+1: (61) r3 = *(u32 *)(r1 +4)          ; R1=ctx() R3_w=pkt_end()
+; void *data = (void *)(long)ctx->data; @ VPADC.buggy.bpf.c:75
+2: (61) r2 = *(u32 *)(r1 +0)          ; R1=ctx() R2_w=pkt(r=0)
+; if ((void *)(eth + 1) > data_end) @ VPADC.buggy.bpf.c:83
+3: (bf) r1 = r2                       ; R1_w=pkt(r=0) R2_w=pkt(r=0)
+4: (07) r1 += 14                      ; R1_w=pkt(off=14,r=0)
+5: (2d) if r1 > r3 goto pc+51         ; R1_w=pkt(off=14,r=14) R3_w=pkt_end()
+; if (bpf_ntohs(eth->h_proto) != ETH_P_IPV6) @ VPADC.buggy.bpf.c:85
+6: (69) r4 = *(u16 *)(r2 +12)         ; R2_w=pkt(r=14) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+7: (55) if r4 != 0xdd86 goto pc+49    ; R4_w=0xdd86
+8: (bf) r4 = r2                       ; R2_w=pkt(r=14) R4_w=pkt(r=14)
+9: (07) r4 += 54                      ; R4=pkt(off=54,r=14)
+10: (2d) if r4 > r3 goto pc+46        ; R3=pkt_end() R4=pkt(off=54,r=54)
+; nexthdr = ip6->nexthdr; @ VPADC.buggy.bpf.c:92
+11: (71) r1 = *(u8 *)(r1 +6)          ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (*nexthdr != NEXTHDR_ROUTING) @ VPADC.buggy.bpf.c:47
+12: (55) if r1 != 0x2b goto pc+44     ; R1_w=43
+; if ((void *)(srh + 1) > data_end) @ VPADC.buggy.bpf.c:50
+13: (bf) r1 = r2                      ; R1_w=pkt(r=54) R2=pkt(r=54)
+14: (07) r1 += 62                     ; R1_w=pkt(off=62,r=54)
+15: (2d) if r1 > r3 goto pc+41        ; R1_w=pkt(off=62,r=62) R3=pkt_end()
+; if (srh->type != IPV6_SRCRT_TYPE_4) @ VPADC.buggy.bpf.c:52
+16: (71) r3 = *(u8 *)(r2 +56)         ; R2=pkt(r=62) R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+17: (55) if r3 != 0x4 goto pc+39      ; R3_w=4
+; if (srh->segments_left == 0) @ VPADC.buggy.bpf.c:56
+18: (71) r2 = *(u8 *)(r2 +57)         ; R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+19: (15) if r2 == 0x0 goto pc+37      ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+20: (b7) r2 = 0                       ; R2_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:60
+21: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 21 first_idx 19 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 20: (b7) r2 = 0
+22: R2_w=0 R10=fp0 fp-8=0000????
+22: (61) r3 = *(u32 *)(r10 -4)        ; R3_w=0 R10=fp0 fp-8=0000????
+23: (07) r3 += 1                      ; R3_w=1
+24: (63) *(u32 *)(r10 -4) = r3        ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:61
+25: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 25 first_idx 19 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 24: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 23: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 22: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 21: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 20: (b7) r2 = 0
+26: R2_w=0 R10=fp0 fp-8=0000????
+26: (61) r3 = *(u32 *)(r10 -4)        ; R3_w=0 R10=fp0 fp-8=0000????
+27: (07) r3 += 1                      ; R3_w=1
+28: (63) *(u32 *)(r10 -4) = r3        ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:62
+29: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 29 first_idx 19 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 28: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 27: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 26: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 25: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 24: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 23: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 22: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 21: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 20: (b7) r2 = 0
+30: R2_w=0 R10=fp0 fp-8=0000????
+30: (61) r3 = *(u32 *)(r10 -4)        ; R3_w=0 R10=fp0 fp-8=0000????
+31: (07) r3 += 1                      ; R3_w=1
+32: (63) *(u32 *)(r10 -4) = r3        ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:63
+33: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 33 first_idx 19 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 32: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 31: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 30: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 29: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 28: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 27: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 26: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 25: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 24: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 23: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 22: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 21: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 20: (b7) r2 = 0
+34: R2_w=0 R10=fp0 fp-8=0000????
+34: (61) r3 = *(u32 *)(r10 -4)        ; R3_w=0 R10=fp0 fp-8=0000????
+35: (07) r3 += 1                      ; R3_w=1
+36: (63) *(u32 *)(r10 -4) = r3        ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:64
+37: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 37 first_idx 19 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 36: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 35: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 34: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 33: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 32: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 31: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 30: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 29: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 28: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 27: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 26: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 25: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 24: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 23: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 22: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 21: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 20: (b7) r2 = 0
+38: R2_w=0 R10=fp0 fp-8=0000????
+38: (61) r3 = *(u32 *)(r10 -4)        ; R3_w=0 R10=fp0 fp-8=0000????
+39: (07) r3 += 1                      ; R3_w=1
+40: (63) *(u32 *)(r10 -4) = r3        ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:65
+41: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 41 first_idx 19 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 40: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 39: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 38: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 37: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 36: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 35: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 34: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 33: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 32: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 31: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 30: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 29: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 28: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 27: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 26: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 25: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 24: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 23: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 22: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 21: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 20: (b7) r2 = 0
+42: R2_w=0 R10=fp0 fp-8=0000????
+42: (61) r3 = *(u32 *)(r10 -4)        ; R3_w=0 R10=fp0 fp-8=0000????
+43: (07) r3 += 1                      ; R3_w=1
+44: (63) *(u32 *)(r10 -4) = r3        ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:66
+45: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 45 first_idx 19 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 44: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 43: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 42: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 41: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 40: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 39: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 38: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 37: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 36: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 35: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 34: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 33: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 32: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 31: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 30: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 29: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 28: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 27: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 26: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 25: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 24: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 23: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 22: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 21: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 20: (b7) r2 = 0
+46: R2_w=0 R10=fp0 fp-8=0000????
+46: (61) r3 = *(u32 *)(r10 -4)        ; R3_w=0 R10=fp0 fp-8=0000????
+47: (07) r3 += 1                      ; R3_w=1
+48: (63) *(u32 *)(r10 -4) = r3        ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:67
+49: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 49 first_idx 19 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 48: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 47: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 46: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 45: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 44: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 43: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 42: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 41: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 40: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 39: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 38: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 37: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 36: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 35: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 34: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 33: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 32: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 31: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 30: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 29: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 28: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 27: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 26: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 25: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 24: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 23: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 22: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 21: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 20: (b7) r2 = 0
+50: R2_w=0 R10=fp0 fp-8=0000????
+50: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000????
+51: (07) r2 += 1                      ; R2_w=1
+52: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmm????
+; *tag = bpf_ntohl(sid->in6_u.u6_addr32[3]); @ VPADC.buggy.bpf.c:68
+53: (61) r1 = *(u32 *)(r1 +12)
+invalid access to packet, off=74 size=4, R1(id=0,off=74,r=62)
+R1 offset is outside of the packet
+verification time 310 usec
+stack depth 8
+processed 54 insns (limit 1000000) max_states_per_insn 0 total_states 2 peak_states 2 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_cilium_srv6_segment_bound': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-5bk63eb9/rs_cilium_srv6_segment_bound_001__VPADC.buggy.o'
+Error: failed to load object file

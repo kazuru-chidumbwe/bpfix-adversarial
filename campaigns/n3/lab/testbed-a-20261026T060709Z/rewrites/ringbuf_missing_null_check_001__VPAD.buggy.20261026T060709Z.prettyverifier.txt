@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into ring buffer pointer to memory not null-checked
+   43 | rec->mark = 7; @ VPAD.buggy.bpf.c:43
+      | in file /home/test/bpfix-v2-git/campaigns/n3/ringbuf_missing_null_check_001/VPAD.buggy.bpf.c
+

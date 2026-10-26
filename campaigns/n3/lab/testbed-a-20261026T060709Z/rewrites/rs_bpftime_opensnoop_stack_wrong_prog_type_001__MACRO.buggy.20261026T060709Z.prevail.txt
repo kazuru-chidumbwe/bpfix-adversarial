@@ -1,0 +1,2 @@
+PREVAIL exit=0
+PASS: xdp/rs_bpftime_opensnoop_stack_wrong_prog_type

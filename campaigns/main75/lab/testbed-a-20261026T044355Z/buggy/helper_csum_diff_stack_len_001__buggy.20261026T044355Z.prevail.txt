@@ -1,0 +1,5 @@
+PREVAIL exit=1
+FAIL: xdp/helper_csum_diff_stack_len
+35: Upper bound must be at most total_stack_size ((r3.type == number and r3.value == 0) or valid_access(r3.offset, width=r4) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

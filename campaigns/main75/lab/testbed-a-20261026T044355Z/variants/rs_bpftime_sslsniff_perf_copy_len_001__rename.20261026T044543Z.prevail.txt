@@ -1,0 +1,5 @@
+PREVAIL exit=1
+FAIL: uretprobe/SSL_read/rs_bpftime_sslsniff_perf_copy_len
+13: Invalid type (r1.type == number)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

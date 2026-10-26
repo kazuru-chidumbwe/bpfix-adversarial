@@ -1,0 +1,383 @@
+libbpf: loading object from /tmp/bpfix-cap-5bk63eb9/rs_bpftime_sslsniff_perf_copy_len_001__VPADC.buggy.o
+libbpf: elf: section(3) uretprobe/SSL_read, size 1048, link 0, flags 6, type=1
+libbpf: sec 'uretprobe/SSL_read': found program 'rs_bpftime_sslsniff_perf_copy_len' at insn offset 0 (0 bytes), code size 131 insns (1048 bytes)
+libbpf: elf: section(4) .reluretprobe/SSL_read, size 96, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 120, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-5bk63eb9/rs_bpftime_sslsniff_perf_copy_len_001__VPADC.buggy.o is GPL
+libbpf: elf: section(16) .BTF, size 3261, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 972, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 408, link 1, flags 0, type=2
+libbpf: looking for externs among 17 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'bufs': at sec_idx 5, offset 0.
+libbpf: map 'bufs': found type = 1.
+libbpf: map 'bufs': found key [8], sz = 4.
+libbpf: map 'bufs': found value [11], sz = 8.
+libbpf: map 'bufs': found max_entries = 10240.
+libbpf: map 'start_ns': at sec_idx 5, offset 32.
+libbpf: map 'start_ns': found type = 1.
+libbpf: map 'start_ns': found key [8], sz = 4.
+libbpf: map 'start_ns': found value [11], sz = 8.
+libbpf: map 'start_ns': found max_entries = 10240.
+libbpf: map 'ssl_data': at sec_idx 5, offset 64.
+libbpf: map 'ssl_data': found type = 6.
+libbpf: map 'ssl_data': found key [8], sz = 4.
+libbpf: map 'ssl_data': found value [20], sz = 64.
+libbpf: map 'ssl_data': found max_entries = 1.
+libbpf: map 'perf_SSL_events': at sec_idx 5, offset 96.
+libbpf: map 'perf_SSL_events': found type = 4.
+libbpf: map 'perf_SSL_events': found key_size = 4.
+libbpf: map 'perf_SSL_events': found value_size = 4.
+libbpf: sec '.reluretprobe/SSL_read': collecting relocation for section(3) 'uretprobe/SSL_read'
+libbpf: sec '.reluretprobe/SSL_read': relo #0: insn #19 against 'bufs'
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': found map 0 (bufs, sec 5, off 0) for insn #19
+libbpf: sec '.reluretprobe/SSL_read': relo #1: insn #26 against 'start_ns'
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': found map 1 (start_ns, sec 5, off 32) for insn #26
+libbpf: sec '.reluretprobe/SSL_read': relo #2: insn #33 against 'ssl_data'
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': found map 2 (ssl_data, sec 5, off 64) for insn #33
+libbpf: sec '.reluretprobe/SSL_read': relo #3: insn #113 against 'bufs'
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': found map 0 (bufs, sec 5, off 0) for insn #113
+libbpf: sec '.reluretprobe/SSL_read': relo #4: insn #117 against 'start_ns'
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': found map 1 (start_ns, sec 5, off 32) for insn #117
+libbpf: sec '.reluretprobe/SSL_read': relo #5: insn #122 against 'perf_SSL_events'
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': found map 3 (perf_SSL_events, sec 5, off 96) for insn #122
+libbpf: object 'rs_bpftime_ssls': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'uretprobe/SSL_read': found 1 CO-RE relocations
+libbpf: CO-RE relocating [31] struct pt_regs: found target candidate [179] struct pt_regs in [vmlinux]
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': relo #0: <byte_off> [31] struct pt_regs.ax (0:10 @ offset 80)
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': relo #0: matching candidate #0 <byte_off> [179] struct pt_regs.ax (0:10 @ offset 80)
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': relo #0: patched insn #11 (LDX/ST/STX) off 80 -> 80
+libbpf: map 'bufs': created successfully, fd=4
+libbpf: map 'start_ns': created successfully, fd=5
+libbpf: map 'ssl_data': created successfully, fd=6
+libbpf: map 'perf_SSL_events': setting size to 4
+libbpf: map 'perf_SSL_events': created successfully, fd=7
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': BPF program load failed: Permission denied
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_bpftime_sslsniff_perf_copy_len(struct pt_regs *ctx) @ VPADC.buggy.bpf.c:57
+0: (bf) r7 = r1                       ; R1=ctx() R7_w=ctx()
+; __u64 pid_tgid = bpf_get_current_pid_tgid(); @ VPADC.buggy.bpf.c:59
+1: (85) call bpf_get_current_pid_tgid#14      ; R0_w=scalar()
+2: (bf) r6 = r0                       ; R0_w=scalar(id=1) R6_w=scalar(id=1)
+; __u32 tid = (__u32)pid_tgid; @ VPADC.buggy.bpf.c:61
+3: (63) *(u32 *)(r10 -4) = r6         ; R6_w=scalar(id=1) R10=fp0 fp-8=mmmm????
+; __u32 uid = bpf_get_current_uid_gid(); @ VPADC.buggy.bpf.c:62
+4: (85) call bpf_get_current_uid_gid#15       ; R0_w=scalar()
+5: (7b) *(u64 *)(r10 -32) = r0        ; R0_w=scalar(id=2) R10=fp0 fp-32_w=scalar(id=2)
+; __u64 ts = bpf_ktime_get_ns(); @ VPADC.buggy.bpf.c:63
+6: (85) call bpf_ktime_get_ns#5       ; R0=scalar()
+7: (bf) r8 = r0                       ; R0=scalar(id=3) R8_w=scalar(id=3)
+8: (b7) r1 = 0                        ; R1_w=0
+; __u32 zero = 0; @ VPADC.buggy.bpf.c:64
+9: (63) *(u32 *)(r10 -8) = r1         ; R1_w=0 R10=fp0 fp-8=mmmm0
+10: (7b) *(u64 *)(r10 -24) = r7       ; R7=ctx() R10=fp0 fp-24_w=ctx()
+; int len = PT_REGS_RC(ctx); @ VPADC.buggy.bpf.c:70
+11: (79) r7 = *(u64 *)(r7 +80)        ; R7_w=scalar()
+12: (bf) r1 = r7                      ; R1_w=scalar(id=4) R7_w=scalar(id=4)
+13: (67) r1 <<= 32                    ; R1_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+14: (c7) r1 s>>= 32                   ; R1_w=scalar(smin=0xffffffff80000000,smax=0x7fffffff)
+15: (b7) r2 = 1                       ; R2_w=1
+; if (len <= 0) @ VPADC.buggy.bpf.c:72
+16: (6d) if r2 s> r1 goto pc+112      ; R1_w=scalar(smin=umin=smin32=umin32=1,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R2_w=1
+17: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+18: (07) r2 += -4                     ; R2_w=fp-4
+; bufp = bpf_map_lookup_elem(&bufs, &tid); @ VPADC.buggy.bpf.c:75
+19: (18) r1 = 0xffff8d0dd0b49000      ; R1_w=map_ptr(map=bufs,ks=4,vs=8)
+21: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=5,map=bufs,ks=4,vs=8)
+22: (7b) *(u64 *)(r10 -40) = r0       ; R0=map_value_or_null(id=5,map=bufs,ks=4,vs=8) R10=fp0 fp-40_w=map_value_or_null(id=5,map=bufs,ks=4,vs=8)
+; if (!bufp) @ VPADC.buggy.bpf.c:76
+23: (15) if r0 == 0x0 goto pc+105     ; R0=map_value(map=bufs,ks=4,vs=8)
+24: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+25: (07) r2 += -4                     ; R2_w=fp-4
+; tsp = bpf_map_lookup_elem(&start_ns, &tid); @ VPADC.buggy.bpf.c:79
+26: (18) r1 = 0xffff8d0dd0b4b000      ; R1_w=map_ptr(map=start_ns,ks=4,vs=8)
+28: (85) call bpf_map_lookup_elem#1   ; R0_w=map_value_or_null(id=6,map=start_ns,ks=4,vs=8)
+29: (bf) r9 = r0                      ; R0_w=map_value_or_null(id=6,map=start_ns,ks=4,vs=8) R9_w=map_value_or_null(id=6,map=start_ns,ks=4,vs=8)
+; if (!tsp) @ VPADC.buggy.bpf.c:80
+30: (15) if r9 == 0x0 goto pc+98      ; R9_w=map_value(map=start_ns,ks=4,vs=8)
+31: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+32: (07) r2 += -8                     ; R2_w=fp-8
+; data = bpf_map_lookup_elem(&ssl_data, &zero); @ VPADC.buggy.bpf.c:83
+33: (18) r1 = 0xffff8d0dc9a3da00      ; R1_w=map_ptr(map=ssl_data,ks=4,vs=64)
+35: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=7,map=ssl_data,ks=4,vs=64)
+; if (!data) @ VPADC.buggy.bpf.c:84
+36: (15) if r0 == 0x0 goto pc+92      ; R0=map_value(map=ssl_data,ks=4,vs=64)
+37: (77) r6 >>= 32                    ; R6_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+38: (bf) r2 = r0                      ; R0=map_value(map=ssl_data,ks=4,vs=64) R2_w=map_value(map=ssl_data,ks=4,vs=64)
+; data->timestamp_ns = ts; @ VPADC.buggy.bpf.c:87
+39: (7b) *(u64 *)(r2 +0) = r8         ; R2_w=map_value(map=ssl_data,ks=4,vs=64) R8=scalar(id=3)
+; data->delta_ns = ts - *tsp; @ VPADC.buggy.bpf.c:88
+40: (79) r1 = *(u64 *)(r9 +0)         ; R1_w=scalar() R9=map_value(map=start_ns,ks=4,vs=8)
+41: (bf) r9 = r2                      ; R2_w=map_value(map=ssl_data,ks=4,vs=64) R9_w=map_value(map=ssl_data,ks=4,vs=64)
+; data->pid = pid; @ VPADC.buggy.bpf.c:89
+42: (63) *(u32 *)(r9 +16) = r6        ; R6_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R9_w=map_value(map=ssl_data,ks=4,vs=64)
+; data->delta_ns = ts - *tsp; @ VPADC.buggy.bpf.c:88
+43: (1f) r8 -= r1                     ; R1_w=scalar() R8_w=scalar()
+44: (7b) *(u64 *)(r9 +8) = r8         ; R8_w=scalar() R9_w=map_value(map=ssl_data,ks=4,vs=64)
+; data->tid = tid; @ VPADC.buggy.bpf.c:90
+45: (61) r1 = *(u32 *)(r10 -4)        ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-8=mmmmmmmm
+; data->uid = uid; @ VPADC.buggy.bpf.c:91
+46: (79) r2 = *(u64 *)(r10 -32)       ; R2_w=scalar(id=2) R10=fp0 fp-32=scalar(id=2)
+47: (63) *(u32 *)(r9 +24) = r2        ; R2_w=scalar(id=2) R9_w=map_value(map=ssl_data,ks=4,vs=64)
+; data->tid = tid; @ VPADC.buggy.bpf.c:90
+48: (63) *(u32 *)(r9 +20) = r1        ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R9_w=map_value(map=ssl_data,ks=4,vs=64)
+49: (b7) r6 = 0                       ; R6_w=0
+; data->buf_filled = 0; @ VPADC.buggy.bpf.c:93
+50: (7b) *(u64 *)(r9 +32) = r6        ; R6_w=0 R9_w=map_value(map=ssl_data,ks=4,vs=64)
+; data->len = (__u32)len; @ VPADC.buggy.bpf.c:92
+51: (63) *(u32 *)(r9 +28) = r7        ; R7=scalar(id=4) R9_w=map_value(map=ssl_data,ks=4,vs=64)
+52: (7b) *(u64 *)(r10 -32) = r0       ; R0=map_value(map=ssl_data,ks=4,vs=64) R10=fp0 fp-32_w=map_value(map=ssl_data,ks=4,vs=64)
+; bpf_get_current_comm(data->comm, sizeof(data->comm)); @ VPADC.buggy.bpf.c:95
+53: (bf) r1 = r0                      ; R0=map_value(map=ssl_data,ks=4,vs=64) R1_w=map_value(map=ssl_data,ks=4,vs=64)
+54: (07) r1 += 40                     ; R1_w=map_value(map=ssl_data,ks=4,vs=64,off=40)
+55: (b7) r8 = 16                      ; R8_w=16
+56: (b7) r2 = 16                      ; R2_w=16
+57: (85) call bpf_get_current_comm#16
+mark_precise: frame0: last_idx 57 first_idx 36 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 56: (b7) r2 = 16
+58: R0=scalar()
+; int len = PT_REGS_RC(ctx); @ VPADC.buggy.bpf.c:70
+58: (67) r7 <<= 32                    ; R7_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+59: (77) r7 >>= 32                    ; R7_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; if (copy_size > MAX_BUF_SIZE) @ VPADC.buggy.bpf.c:98
+60: (2d) if r8 > r7 goto pc+1         ; R7_w=scalar(smin=umin=umin32=16,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R8=16
+61: (b7) r7 = 16                      ; R7_w=16
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:101
+62: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: last_idx 62 first_idx 58 subseq_idx -1 
+mark_precise: frame0: regs=r6 stack= before 61: (b7) r7 = 16
+mark_precise: frame0: regs=r6 stack= before 60: (2d) if r8 > r7 goto pc+1
+mark_precise: frame0: regs=r6 stack= before 59: (77) r7 >>= 32
+mark_precise: frame0: regs=r6 stack= before 58: (67) r7 <<= 32
+mark_precise: frame0: parent state regs=r6 stack=:  R0_w=scalar() R6_rw=P0 R7_r=scalar(id=4) R8_rw=16 R9_w=map_value(map=ssl_data,ks=4,vs=64) R10=fp0 fp-8=mmmmmmmm fp-24=ctx() fp-32_w=map_value(map=ssl_data,ks=4,vs=64) fp-40=map_value(map=bufs,ks=4,vs=8)
+mark_precise: frame0: last_idx 57 first_idx 36 subseq_idx 58 
+mark_precise: frame0: regs=r6 stack= before 57: (85) call bpf_get_current_comm#16
+mark_precise: frame0: regs=r6 stack= before 56: (b7) r2 = 16
+mark_precise: frame0: regs=r6 stack= before 55: (b7) r8 = 16
+mark_precise: frame0: regs=r6 stack= before 54: (07) r1 += 40
+mark_precise: frame0: regs=r6 stack= before 53: (bf) r1 = r0
+mark_precise: frame0: regs=r6 stack= before 52: (7b) *(u64 *)(r10 -32) = r0
+mark_precise: frame0: regs=r6 stack= before 51: (63) *(u32 *)(r9 +28) = r7
+mark_precise: frame0: regs=r6 stack= before 50: (7b) *(u64 *)(r9 +32) = r6
+mark_precise: frame0: regs=r6 stack= before 49: (b7) r6 = 0
+63: R6=0 R10=fp0 fp-16=0000????
+63: (61) r1 = *(u32 *)(r10 -12)       ; R1_w=0 R10=fp0 fp-16=0000????
+64: (07) r1 += 1                      ; R1_w=1
+65: (63) *(u32 *)(r10 -12) = r1       ; R1_w=1 R10=fp0 fp-16=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:102
+66: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: last_idx 66 first_idx 58 subseq_idx -1 
+mark_precise: frame0: regs=r6 stack= before 65: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 64: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 63: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 62: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 61: (b7) r7 = 16
+mark_precise: frame0: regs=r6 stack= before 60: (2d) if r8 > r7 goto pc+1
+mark_precise: frame0: regs=r6 stack= before 59: (77) r7 >>= 32
+mark_precise: frame0: regs=r6 stack= before 58: (67) r7 <<= 32
+mark_precise: frame0: parent state regs= stack=:  R0_w=scalar() R6_rw=P0 R7_r=scalar(id=4) R8_rw=16 R9_w=map_value(map=ssl_data,ks=4,vs=64) R10=fp0 fp-8=mmmmmmmm fp-24=ctx() fp-32_w=map_value(map=ssl_data,ks=4,vs=64) fp-40=map_value(map=bufs,ks=4,vs=8)
+67: R6=0 R10=fp0 fp-16=0000????
+67: (61) r1 = *(u32 *)(r10 -12)       ; R1_w=0 R10=fp0 fp-16=0000????
+68: (07) r1 += 1                      ; R1_w=1
+69: (63) *(u32 *)(r10 -12) = r1       ; R1_w=1 R10=fp0 fp-16=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:103
+70: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: last_idx 70 first_idx 58 subseq_idx -1 
+mark_precise: frame0: regs=r6 stack= before 69: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 68: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 67: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 66: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 65: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 64: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 63: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 62: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 61: (b7) r7 = 16
+mark_precise: frame0: regs=r6 stack= before 60: (2d) if r8 > r7 goto pc+1
+mark_precise: frame0: regs=r6 stack= before 59: (77) r7 >>= 32
+mark_precise: frame0: regs=r6 stack= before 58: (67) r7 <<= 32
+mark_precise: frame0: parent state regs= stack=:  R0_w=scalar() R6_rw=P0 R7_r=scalar(id=4) R8_rw=16 R9_w=map_value(map=ssl_data,ks=4,vs=64) R10=fp0 fp-8=mmmmmmmm fp-24=ctx() fp-32_w=map_value(map=ssl_data,ks=4,vs=64) fp-40=map_value(map=bufs,ks=4,vs=8)
+71: R6=0 R10=fp0 fp-16=0000????
+71: (61) r1 = *(u32 *)(r10 -12)       ; R1_w=0 R10=fp0 fp-16=0000????
+72: (07) r1 += 1                      ; R1_w=1
+73: (63) *(u32 *)(r10 -12) = r1       ; R1_w=1 R10=fp0 fp-16=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:104
+74: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: last_idx 74 first_idx 58 subseq_idx -1 
+mark_precise: frame0: regs=r6 stack= before 73: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 72: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 71: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 70: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 69: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 68: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 67: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 66: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 65: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 64: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 63: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 62: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 61: (b7) r7 = 16
+mark_precise: frame0: regs=r6 stack= before 60: (2d) if r8 > r7 goto pc+1
+mark_precise: frame0: regs=r6 stack= before 59: (77) r7 >>= 32
+mark_precise: frame0: regs=r6 stack= before 58: (67) r7 <<= 32
+mark_precise: frame0: parent state regs= stack=:  R0_w=scalar() R6_rw=P0 R7_r=scalar(id=4) R8_rw=16 R9_w=map_value(map=ssl_data,ks=4,vs=64) R10=fp0 fp-8=mmmmmmmm fp-24=ctx() fp-32_w=map_value(map=ssl_data,ks=4,vs=64) fp-40=map_value(map=bufs,ks=4,vs=8)
+75: R6=0 R10=fp0 fp-16=0000????
+75: (61) r1 = *(u32 *)(r10 -12)       ; R1_w=0 R10=fp0 fp-16=0000????
+76: (07) r1 += 1                      ; R1_w=1
+77: (63) *(u32 *)(r10 -12) = r1       ; R1_w=1 R10=fp0 fp-16=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:105
+78: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: last_idx 78 first_idx 58 subseq_idx -1 
+mark_precise: frame0: regs=r6 stack= before 77: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 76: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 75: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 74: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 73: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 72: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 71: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 70: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 69: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 68: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 67: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 66: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 65: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 64: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 63: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 62: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 61: (b7) r7 = 16
+mark_precise: frame0: regs=r6 stack= before 60: (2d) if r8 > r7 goto pc+1
+mark_precise: frame0: regs=r6 stack= before 59: (77) r7 >>= 32
+mark_precise: frame0: regs=r6 stack= before 58: (67) r7 <<= 32
+mark_precise: frame0: parent state regs= stack=:  R0_w=scalar() R6_rw=P0 R7_r=scalar(id=4) R8_rw=16 R9_w=map_value(map=ssl_data,ks=4,vs=64) R10=fp0 fp-8=mmmmmmmm fp-24=ctx() fp-32_w=map_value(map=ssl_data,ks=4,vs=64) fp-40=map_value(map=bufs,ks=4,vs=8)
+79: R6=0 R10=fp0 fp-16=0000????
+79: (61) r1 = *(u32 *)(r10 -12)       ; R1_w=0 R10=fp0 fp-16=0000????
+80: (07) r1 += 1                      ; R1_w=1
+81: (63) *(u32 *)(r10 -12) = r1       ; R1_w=1 R10=fp0 fp-16=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:106
+82: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: last_idx 82 first_idx 58 subseq_idx -1 
+mark_precise: frame0: regs=r6 stack= before 81: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 80: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 79: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 78: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 77: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 76: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 75: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 74: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 73: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 72: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 71: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 70: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 69: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 68: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 67: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 66: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 65: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 64: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 63: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 62: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 61: (b7) r7 = 16
+mark_precise: frame0: regs=r6 stack= before 60: (2d) if r8 > r7 goto pc+1
+mark_precise: frame0: regs=r6 stack= before 59: (77) r7 >>= 32
+mark_precise: frame0: regs=r6 stack= before 58: (67) r7 <<= 32
+mark_precise: frame0: parent state regs= stack=:  R0_w=scalar() R6_rw=P0 R7_r=scalar(id=4) R8_rw=16 R9_w=map_value(map=ssl_data,ks=4,vs=64) R10=fp0 fp-8=mmmmmmmm fp-24=ctx() fp-32_w=map_value(map=ssl_data,ks=4,vs=64) fp-40=map_value(map=bufs,ks=4,vs=8)
+83: R6=0 R10=fp0 fp-16=0000????
+83: (61) r1 = *(u32 *)(r10 -12)       ; R1_w=0 R10=fp0 fp-16=0000????
+84: (07) r1 += 1                      ; R1_w=1
+85: (63) *(u32 *)(r10 -12) = r1       ; R1_w=1 R10=fp0 fp-16=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:107
+86: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: last_idx 86 first_idx 58 subseq_idx -1 
+mark_precise: frame0: regs=r6 stack= before 85: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 84: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 83: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 82: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 81: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 80: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 79: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 78: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 77: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 76: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 75: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 74: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 73: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 72: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 71: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 70: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 69: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 68: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 67: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 66: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 65: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 64: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 63: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 62: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 61: (b7) r7 = 16
+mark_precise: frame0: regs=r6 stack= before 60: (2d) if r8 > r7 goto pc+1
+mark_precise: frame0: regs=r6 stack= before 59: (77) r7 >>= 32
+mark_precise: frame0: regs=r6 stack= before 58: (67) r7 <<= 32
+mark_precise: frame0: parent state regs= stack=:  R0_w=scalar() R6_rw=P0 R7_r=scalar(id=4) R8_rw=16 R9_w=map_value(map=ssl_data,ks=4,vs=64) R10=fp0 fp-8=mmmmmmmm fp-24=ctx() fp-32_w=map_value(map=ssl_data,ks=4,vs=64) fp-40=map_value(map=bufs,ks=4,vs=8)
+87: R6=0 R10=fp0 fp-16=0000????
+87: (61) r1 = *(u32 *)(r10 -12)       ; R1_w=0 R10=fp0 fp-16=0000????
+88: (07) r1 += 1                      ; R1_w=1
+89: (63) *(u32 *)(r10 -12) = r1       ; R1_w=1 R10=fp0 fp-16=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:108
+90: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: last_idx 90 first_idx 58 subseq_idx -1 
+mark_precise: frame0: regs=r6 stack= before 89: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 88: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 87: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 86: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 85: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 84: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 83: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 82: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 81: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 80: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 79: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 78: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 77: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 76: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 75: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 74: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 73: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 72: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 71: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 70: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 69: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 68: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 67: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 66: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 65: (63) *(u32 *)(r10 -12) = r1
+mark_precise: frame0: regs=r6 stack= before 64: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 63: (61) r1 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r6 stack= before 62: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: regs=r6 stack= before 61: (b7) r7 = 16
+mark_precise: frame0: regs=r6 stack= before 60: (2d) if r8 > r7 goto pc+1
+mark_precise: frame0: regs=r6 stack= before 59: (77) r7 >>= 32
+mark_precise: frame0: regs=r6 stack= before 58: (67) r7 <<= 32
+mark_precise: frame0: parent state regs= stack=:  R0_w=scalar() R6_rw=P0 R7_r=scalar(id=4) R8_rw=16 R9_w=map_value(map=ssl_data,ks=4,vs=64) R10=fp0 fp-8=mmmmmmmm fp-24=ctx() fp-32_w=map_value(map=ssl_data,ks=4,vs=64) fp-40=map_value(map=bufs,ks=4,vs=8)
+91: R6=0 R10=fp0 fp-16=0000????
+91: (61) r1 = *(u32 *)(r10 -12)       ; R1_w=0 R10=fp0 fp-16=0000????
+92: (07) r1 += 1                      ; R1_w=1
+93: (63) *(u32 *)(r10 -12) = r1       ; R1_w=1 R10=fp0 fp-16=mmmm????
+94: (79) r2 = *(u64 *)(r10 -32)       ; R2_w=map_value(map=ssl_data,ks=4,vs=64) R10=fp0 fp-32=map_value(map=ssl_data,ks=4,vs=64)
+; ret = bpf_probe_read_user(data->buf, copy_size, (void *)*bufp); @ VPADC.buggy.bpf.c:109
+95: (07) r2 += 56                     ; R2_w=map_value(map=ssl_data,ks=4,vs=64,off=56)
+96: (79) r1 = *(u64 *)(r10 -40)       ; R1_w=map_value(map=bufs,ks=4,vs=8) R10=fp0 fp-40=map_value(map=bufs,ks=4,vs=8)
+97: (79) r3 = *(u64 *)(r1 +0)         ; R1_w=map_value(map=bufs,ks=4,vs=8) R3_w=scalar()
+98: (bf) r1 = r2                      ; R1_w=map_value(map=ssl_data,ks=4,vs=64,off=56) R2_w=map_value(map=ssl_data,ks=4,vs=64,off=56)
+99: (bf) r2 = r7                      ; R2_w=16 R7_w=16
+100: (85) call bpf_probe_read_user#112
+invalid access to map value, value_size=64 off=56 size=16
+R1 min value is outside of the allowed memory range
+verification time 497 usec
+stack depth 40
+processed 98 insns (limit 1000000) max_states_per_insn 0 total_states 4 peak_states 4 mark_read 4
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-5bk63eb9/rs_bpftime_sslsniff_perf_copy_len_001__VPADC.buggy.o'
+Error: failed to load object file

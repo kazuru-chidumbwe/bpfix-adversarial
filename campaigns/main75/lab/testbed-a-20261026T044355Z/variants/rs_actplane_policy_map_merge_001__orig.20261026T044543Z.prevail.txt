@@ -1,0 +1,5 @@
+PREVAIL exit=1
+FAIL: tc/rs_actplane_policy_map_merge
+27: Possible null access (valid_access(r0.offset, width=4) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

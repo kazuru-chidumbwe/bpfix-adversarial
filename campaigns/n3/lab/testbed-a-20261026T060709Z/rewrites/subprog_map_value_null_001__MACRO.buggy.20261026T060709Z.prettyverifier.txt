@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into pointer to map element value not null-checked
+   57 | ADV_STMT(cfg->key_xor ^= key); @ MACRO.buggy.bpf.c:57
+      | in file /home/test/bpfix-v2-git/campaigns/n3/subprog_map_value_null_001/MACRO.buggy.bpf.c
+

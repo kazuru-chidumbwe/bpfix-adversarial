@@ -1,0 +1,5 @@
+PREVAIL exit=1
+FAIL: xdp/rs_xdp_tools_load_bytes_stack_len
+30: Upper bound must be at most total_stack_size (valid_access(r3.offset, width=r4) for write)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

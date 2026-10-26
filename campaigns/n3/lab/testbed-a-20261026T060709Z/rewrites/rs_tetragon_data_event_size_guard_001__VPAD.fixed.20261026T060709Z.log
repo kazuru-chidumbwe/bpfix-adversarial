@@ -1,0 +1,653 @@
+libbpf: loading object from /tmp/bpfix-cap-5bk63eb9/rs_tetragon_data_event_size_guard_001__VPAD.fixed.o
+libbpf: elf: section(3) tracepoint/syscalls/sys_enter_write, size 648, link 0, flags 6, type=1
+libbpf: sec 'tracepoint/syscalls/sys_enter_write': found program 'rs_tetragon_data_event_size_guard' at insn offset 0 (0 bytes), code size 81 insns (648 bytes)
+libbpf: elf: section(4) .reltracepoint/syscalls/sys_enter_write, size 32, link 27, flags 40, type=9
+libbpf: elf: section(5) .maps, size 64, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 13, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-5bk63eb9/rs_tetragon_data_event_size_guard_001__VPAD.fixed.o is Dual BSD/GPL
+libbpf: elf: section(17) .BTF, size 1993, link 0, flags 0, type=1
+libbpf: elf: section(19) .BTF.ext, size 684, link 0, flags 0, type=1
+libbpf: elf: section(27) .symtab, size 384, link 1, flags 0, type=2
+libbpf: looking for externs among 16 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'data_heap': at sec_idx 5, offset 0.
+libbpf: map 'data_heap': found type = 2.
+libbpf: map 'data_heap': found key [8], sz = 4.
+libbpf: map 'data_heap': found value [11], sz = 40.
+libbpf: map 'data_heap': found max_entries = 1.
+libbpf: map 'events': at sec_idx 5, offset 32.
+libbpf: map 'events': found type = 4.
+libbpf: map 'events': found key [2], sz = 4.
+libbpf: map 'events': found value [8], sz = 4.
+libbpf: map 'events': found max_entries = 0.
+libbpf: sec '.reltracepoint/syscalls/sys_enter_write': collecting relocation for section(3) 'tracepoint/syscalls/sys_enter_write'
+libbpf: sec '.reltracepoint/syscalls/sys_enter_write': relo #0: insn #5 against 'data_heap'
+libbpf: prog 'rs_tetragon_data_event_size_guard': found map 0 (data_heap, sec 5, off 0) for insn #5
+libbpf: sec '.reltracepoint/syscalls/sys_enter_write': relo #1: insn #67 against 'events'
+libbpf: prog 'rs_tetragon_data_event_size_guard': found map 1 (events, sec 5, off 32) for insn #67
+libbpf: object 'rs_tetragon_dat': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'tracepoint/syscalls/sys_enter_write': found 2 CO-RE relocations
+libbpf: CO-RE relocating [26] struct trace_event_raw_sys_enter: found target candidate [10898] struct trace_event_raw_sys_enter in [vmlinux]
+libbpf: prog 'rs_tetragon_data_event_size_guard': relo #0: <byte_off> [26] struct trace_event_raw_sys_enter.args[1] (0:2:1 @ offset 24)
+libbpf: prog 'rs_tetragon_data_event_size_guard': relo #0: matching candidate #0 <byte_off> [10898] struct trace_event_raw_sys_enter.args[1] (0:2:1 @ offset 24)
+libbpf: prog 'rs_tetragon_data_event_size_guard': relo #0: patched insn #10 (LDX/ST/STX) off 24 -> 24
+libbpf: prog 'rs_tetragon_data_event_size_guard': relo #1: <byte_off> [26] struct trace_event_raw_sys_enter.args[2] (0:2:2 @ offset 32)
+libbpf: prog 'rs_tetragon_data_event_size_guard': relo #1: matching candidate #0 <byte_off> [10898] struct trace_event_raw_sys_enter.args[2] (0:2:2 @ offset 32)
+libbpf: prog 'rs_tetragon_data_event_size_guard': relo #1: patched insn #11 (LDX/ST/STX) off 32 -> 32
+libbpf: map 'data_heap': created successfully, fd=4
+libbpf: map 'events': setting size to 4
+libbpf: map 'events': created successfully, fd=5
+libbpf: prog 'rs_tetragon_data_event_size_guard': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_tetragon_data_event_size_guard(struct trace_event_raw_sys_enter *ctx) @ VPAD.fixed.bpf.c:83
+0: (bf) r7 = r1                       ; R1=ctx() R7_w=ctx()
+1: (b7) r6 = 0                        ; R6_w=0
+; __u32 zero = 0; @ VPAD.fixed.bpf.c:85
+2: (63) *(u32 *)(r10 -8) = r6         ; R6_w=0 R10=fp0 fp-8=????0
+3: (bf) r2 = r10                      ; R2_w=fp0 R10=fp0
+4: (07) r2 += -8                      ; R2_w=fp-8
+; msg = bpf_map_lookup_elem(&data_heap, &zero); @ VPAD.fixed.bpf.c:92
+5: (18) r1 = 0xffff8d0ddbbbbe00       ; R1_w=map_ptr(map=data_heap,ks=4,vs=40)
+7: (85) call bpf_map_lookup_elem#1    ; R0_w=map_value_or_null(id=1,map=data_heap,ks=4,vs=40)
+; if (!msg) @ VPAD.fixed.bpf.c:93
+8: (15) if r0 == 0x0 goto pc+70       ; R0_w=map_value(map=data_heap,ks=4,vs=40)
+9: (bf) r8 = r0                       ; R0_w=map_value(map=data_heap,ks=4,vs=40) R8_w=map_value(map=data_heap,ks=4,vs=40)
+; user_ptr = ctx->args[1]; @ VPAD.fixed.bpf.c:96
+10: (79) r3 = *(u64 *)(r7 +24)        ; R3_w=scalar() R7_w=ctx()
+; raw_size = ctx->args[2]; @ VPAD.fixed.bpf.c:97
+11: (79) r6 = *(u64 *)(r7 +32)        ; R6_w=scalar() R7_w=ctx()
+12: (b7) r1 = 10                      ; R1_w=10
+; msg->common.op = MSG_OP_DATA; @ VPAD.fixed.bpf.c:50
+13: (63) *(u32 *)(r8 +0) = r1         ; R1_w=10 R8_w=map_value(map=data_heap,ks=4,vs=40)
+14: (b7) r1 = 0                       ; R1_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPAD.fixed.bpf.c:51
+15: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 15 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 14: (b7) r1 = 0
+16: R1_w=0 R10=fp0 fp-8=0000mmmm
+16: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000mmmm
+17: (07) r2 += 1                      ; R2_w=1
+18: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmmmmmm
+; raw_size &= 0x7fffffff; @ VPAD.fixed.bpf.c:98
+19: (57) r6 &= 2147483647             ; R6_w=scalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff))
+20: (b7) r2 = 32                      ; R2=32
+; if (bounded_size > MSG_DATA_ARG_LEN) @ VPAD.fixed.bpf.c:100
+21: (2d) if r2 > r6 goto pc+1         ; R2=32 R6=scalar(smin=umin=smin32=umin32=32,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff))
+22: (b7) r6 = 32                      ; R6_w=32
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPAD.fixed.bpf.c:52
+23: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 23 first_idx 21 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 22: (b7) r6 = 32
+mark_precise: frame0: regs=r1 stack= before 21: (2d) if r2 > r6 goto pc+1
+mark_precise: frame0: parent state regs=r1 stack=:  R0_w=map_value(map=data_heap,ks=4,vs=40) R1_rw=P0 R2_rw=32 R3_w=scalar() R6_rw=scalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R7_w=ctx() R8_w=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8=mmmmmmmm
+mark_precise: frame0: last_idx 20 first_idx 0 subseq_idx 21 
+mark_precise: frame0: regs=r1 stack= before 20: (b7) r2 = 32
+mark_precise: frame0: regs=r1 stack= before 19: (57) r6 &= 2147483647
+mark_precise: frame0: regs=r1 stack= before 18: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 17: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 16: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 15: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 14: (b7) r1 = 0
+24: R1=0 R10=fp0 fp-8=0000mmmm
+24: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000mmmm
+25: (07) r2 += 1                      ; R2_w=1
+26: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmmmmmm
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPAD.fixed.bpf.c:53
+27: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 27 first_idx 21 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 26: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 25: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 24: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 23: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 22: (b7) r6 = 32
+mark_precise: frame0: regs=r1 stack= before 21: (2d) if r2 > r6 goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0_w=map_value(map=data_heap,ks=4,vs=40) R1_rw=P0 R2_rw=32 R3_w=scalar() R6_rw=scalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R7_w=ctx() R8_w=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8_r=mmmmmmmm
+28: R1=0 R10=fp0 fp-8=0000mmmm
+28: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000mmmm
+29: (07) r2 += 1                      ; R2_w=1
+30: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmmmmmm
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPAD.fixed.bpf.c:54
+31: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 31 first_idx 21 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 30: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 29: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 28: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 27: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 26: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 25: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 24: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 23: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 22: (b7) r6 = 32
+mark_precise: frame0: regs=r1 stack= before 21: (2d) if r2 > r6 goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0_w=map_value(map=data_heap,ks=4,vs=40) R1_rw=P0 R2_rw=32 R3_w=scalar() R6_rw=scalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R7_w=ctx() R8_w=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8_r=mmmmmmmm
+32: R1=0 R10=fp0 fp-8=0000mmmm
+32: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000mmmm
+33: (07) r2 += 1                      ; R2_w=1
+34: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmmmmmm
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPAD.fixed.bpf.c:55
+35: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 35 first_idx 21 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 34: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 33: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 32: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 31: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 30: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 29: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 28: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 27: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 26: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 25: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 24: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 23: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 22: (b7) r6 = 32
+mark_precise: frame0: regs=r1 stack= before 21: (2d) if r2 > r6 goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0_w=map_value(map=data_heap,ks=4,vs=40) R1_rw=P0 R2_rw=32 R3_w=scalar() R6_rw=scalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R7_w=ctx() R8_w=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8_r=mmmmmmmm
+36: R1=0 R10=fp0 fp-8=0000mmmm
+36: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000mmmm
+37: (07) r2 += 1                      ; R2_w=1
+38: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmmmmmm
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPAD.fixed.bpf.c:56
+39: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 39 first_idx 21 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 38: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 37: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 36: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 35: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 34: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 33: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 32: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 31: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 30: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 29: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 28: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 27: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 26: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 25: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 24: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 23: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 22: (b7) r6 = 32
+mark_precise: frame0: regs=r1 stack= before 21: (2d) if r2 > r6 goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0_w=map_value(map=data_heap,ks=4,vs=40) R1_rw=P0 R2_rw=32 R3_w=scalar() R6_rw=scalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R7_w=ctx() R8_w=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8_r=mmmmmmmm
+40: R1=0 R10=fp0 fp-8=0000mmmm
+40: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000mmmm
+41: (07) r2 += 1                      ; R2_w=1
+42: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmmmmmm
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPAD.fixed.bpf.c:57
+43: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 43 first_idx 21 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 42: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 41: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 40: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 39: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 38: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 37: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 36: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 35: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 34: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 33: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 32: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 31: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 30: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 29: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 28: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 27: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 26: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 25: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 24: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 23: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 22: (b7) r6 = 32
+mark_precise: frame0: regs=r1 stack= before 21: (2d) if r2 > r6 goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0_w=map_value(map=data_heap,ks=4,vs=40) R1_rw=P0 R2_rw=32 R3_w=scalar() R6_rw=scalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R7_w=ctx() R8_w=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8_r=mmmmmmmm
+44: R1=0 R10=fp0 fp-8=0000mmmm
+44: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000mmmm
+45: (07) r2 += 1                      ; R2_w=1
+46: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmmmmmm
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPAD.fixed.bpf.c:58
+47: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 47 first_idx 21 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 46: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 45: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 44: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 43: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 42: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 41: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 40: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 39: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 38: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 37: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 36: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 35: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 34: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 33: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 32: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 31: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 30: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 29: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 28: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 27: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 26: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 25: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 24: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 23: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 22: (b7) r6 = 32
+mark_precise: frame0: regs=r1 stack= before 21: (2d) if r2 > r6 goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0_w=map_value(map=data_heap,ks=4,vs=40) R1_rw=P0 R2_rw=32 R3_w=scalar() R6_rw=scalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R7_w=ctx() R8_w=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8_r=mmmmmmmm
+48: R1=0 R10=fp0 fp-8=0000mmmm
+48: (61) r1 = *(u32 *)(r10 -4)        ; R1_w=0 R10=fp0 fp-8=0000mmmm
+49: (07) r1 += 1                      ; R1_w=1
+50: (63) *(u32 *)(r10 -4) = r1        ; R1_w=1 R10=fp0 fp-8=mmmmmmmm
+; err = bpf_probe_read_user(&msg->arg[0], bytes, (const void *)user_ptr); @ VPAD.fixed.bpf.c:59
+51: (07) r0 += 8                      ; R0_w=map_value(map=data_heap,ks=4,vs=40,off=8)
+52: (bf) r1 = r0                      ; R0_w=map_value(map=data_heap,ks=4,vs=40,off=8) R1_w=map_value(map=data_heap,ks=4,vs=40,off=8)
+53: (bf) r2 = r6                      ; R2_w=32 R6_w=32
+54: (85) call bpf_probe_read_user#112
+mark_precise: frame0: last_idx 54 first_idx 21 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 53: (bf) r2 = r6
+mark_precise: frame0: regs=r6 stack= before 52: (bf) r1 = r0
+mark_precise: frame0: regs=r6 stack= before 51: (07) r0 += 8
+mark_precise: frame0: regs=r6 stack= before 50: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 49: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 48: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 47: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 46: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 45: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 44: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 43: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 42: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 41: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 40: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 39: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 38: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 37: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 36: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 35: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 34: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 33: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 32: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 31: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 30: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 29: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 28: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 27: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 26: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 25: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 24: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 23: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 22: (b7) r6 = 32
+55: R0=scalar()
+55: (18) r9 = 0x80000000              ; R9_w=0x80000000
+; if (err < 0) { @ VPAD.fixed.bpf.c:60
+57: (bf) r1 = r0                      ; R0=scalar(id=2) R1_w=scalar(id=2)
+58: (5f) r1 &= r9                     ; R1_w=scalar(smin=0,smax=umax=umax32=0x80000000,smax32=0,var_off=(0x0; 0x80000000)) R9_w=0x80000000
+59: (15) if r1 == 0x0 goto pc+1       ; R1_w=0x80000000
+60: (05) goto pc+15
+; if (err < 0) { @ VPAD.fixed.bpf.c:69
+76: (67) r0 <<= 32                    ; R0_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+77: (c7) r0 s>>= 32                   ; R0_w=scalar(smin=0xffffffff80000000,smax=0x7fffffff)
+78: (bf) r6 = r0                      ; R0=scalar(id=3,smin=0xffffffff80000000,smax=0x7fffffff) R6=scalar(id=3,smin=0xffffffff80000000,smax=0x7fffffff)
+; } @ VPAD.fixed.bpf.c:105
+79: (bf) r0 = r6                      ; R0_w=scalar(id=3,smin=0xffffffff80000000,smax=0x7fffffff) R6=scalar(id=3,smin=0xffffffff80000000,smax=0x7fffffff)
+80: (95) exit
+
+from 59 to 61: R0=scalar(id=2) R1_w=0 R6=32 R7=ctx() R8=map_value(map=data_heap,ks=4,vs=40) R9_w=0x80000000 R10=fp0 fp-8=mmmmmmmm
+61: R0=scalar(id=2) R1_w=0 R6=32 R7=ctx() R8=map_value(map=data_heap,ks=4,vs=40) R9_w=0x80000000 R10=fp0 fp-8=mmmmmmmm
+; msg->common.size = MSG_DATA_ARG_OFFSET + bytes; @ VPAD.fixed.bpf.c:67
+61: (bf) r5 = r6                      ; R5_w=32 R6=32
+62: (07) r5 += 8                      ; R5_w=40
+63: (63) *(u32 *)(r8 +4) = r5         ; R5_w=40 R8=map_value(map=data_heap,ks=4,vs=40)
+; err = bpf_perf_event_output(ctx, &events, BPF_F_CURRENT_CPU, msg, msg->common.size); @ VPAD.fixed.bpf.c:68
+64: (67) r5 <<= 32                    ; R5_w=0x2800000000
+65: (77) r5 >>= 32                    ; R5_w=40
+66: (bf) r1 = r7                      ; R1_w=ctx() R7=ctx()
+67: (18) r2 = 0xffff8d0ddbbbae00      ; R2_w=map_ptr(map=events,ks=4,vs=4)
+69: (18) r3 = 0xffffffff              ; R3_w=0xffffffff
+71: (bf) r4 = r8                      ; R4_w=map_value(map=data_heap,ks=4,vs=40) R8=map_value(map=data_heap,ks=4,vs=40)
+72: (85) call bpf_perf_event_output#25
+mark_precise: frame0: last_idx 72 first_idx 55 subseq_idx -1 
+mark_precise: frame0: regs=r5 stack= before 71: (bf) r4 = r8
+mark_precise: frame0: regs=r5 stack= before 69: (18) r3 = 0xffffffff
+mark_precise: frame0: regs=r5 stack= before 67: (18) r2 = 0xffff8d0ddbbbae00
+mark_precise: frame0: regs=r5 stack= before 66: (bf) r1 = r7
+mark_precise: frame0: regs=r5 stack= before 65: (77) r5 >>= 32
+mark_precise: frame0: regs=r5 stack= before 64: (67) r5 <<= 32
+mark_precise: frame0: regs=r5 stack= before 63: (63) *(u32 *)(r8 +4) = r5
+mark_precise: frame0: regs=r5 stack= before 62: (07) r5 += 8
+mark_precise: frame0: regs=r5 stack= before 61: (bf) r5 = r6
+mark_precise: frame0: regs=r6 stack= before 59: (15) if r1 == 0x0 goto pc+1
+mark_precise: frame0: regs=r6 stack= before 58: (5f) r1 &= r9
+mark_precise: frame0: regs=r6 stack= before 57: (bf) r1 = r0
+mark_precise: frame0: regs=r6 stack= before 55: (18) r9 = 0x80000000
+mark_precise: frame0: parent state regs=r6 stack=:  R0_rw=scalar() R6_rw=P32 R7_r=ctx() R8_r=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8=mmmmmmmm
+mark_precise: frame0: last_idx 54 first_idx 21 subseq_idx 55 
+mark_precise: frame0: regs=r6 stack= before 54: (85) call bpf_probe_read_user#112
+mark_precise: frame0: regs=r6 stack= before 53: (bf) r2 = r6
+mark_precise: frame0: regs=r6 stack= before 52: (bf) r1 = r0
+mark_precise: frame0: regs=r6 stack= before 51: (07) r0 += 8
+mark_precise: frame0: regs=r6 stack= before 50: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 49: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 48: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 47: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 46: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 45: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 44: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 43: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 42: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 41: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 40: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 39: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 38: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 37: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 36: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 35: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 34: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 33: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 32: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 31: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 30: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 29: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 28: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 27: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 26: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 25: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 24: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 23: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 22: (b7) r6 = 32
+73: R0=scalar()
+; if (err < 0) { @ VPAD.fixed.bpf.c:69
+73: (bf) r1 = r0                      ; R0=scalar(id=4) R1_w=scalar(id=4)
+74: (5f) r1 &= r9                     ; R1_w=scalar(smin=0,smax=umax=umax32=0x80000000,smax32=0,var_off=(0x0; 0x80000000)) R9=0x80000000
+75: (15) if r1 == 0x0 goto pc+3       ; R1_w=0x80000000
+76: (67) r0 <<= 32                    ; R0_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+77: (c7) r0 s>>= 32                   ; R0_w=scalar(smin=0xffffffff80000000,smax=0x7fffffff)
+78: (bf) r6 = r0
+79: safe
+
+from 75 to 79: safe
+
+from 21 to 23: R0=map_value(map=data_heap,ks=4,vs=40) R1=0 R2=32 R3=scalar() R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=31,var_off=(0x0; 0x1f)) R7=ctx() R8=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8=mmmmmmmm
+23: R0=map_value(map=data_heap,ks=4,vs=40) R1=0 R2=32 R3=scalar() R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=31,var_off=(0x0; 0x1f)) R7=ctx() R8=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8=mmmmmmmm
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPAD.fixed.bpf.c:52
+23: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 23 first_idx 21 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 21: (2d) if r2 > r6 goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0_rw=map_value(map=data_heap,ks=4,vs=40) R1_rw=P0 R2_rw=32 R3_rw=scalar() R6_rw=scalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R7_rw=ctx() R8_rw=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8_r=mmmmmmmm
+24: R1=0 R10=fp0 fp-8=0000mmmm
+24: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000mmmm
+25: (07) r2 += 1                      ; R2_w=1
+26: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmmmmmm
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPAD.fixed.bpf.c:53
+27: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 27 first_idx 21 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 26: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 25: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 24: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 23: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 21: (2d) if r2 > r6 goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0_rw=map_value(map=data_heap,ks=4,vs=40) R1_rw=P0 R2_rw=32 R3_rw=scalar() R6_rw=scalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R7_rw=ctx() R8_rw=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8_r=mmmmmmmm
+28: R1=0 R10=fp0 fp-8=0000mmmm
+28: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000mmmm
+29: (07) r2 += 1                      ; R2_w=1
+30: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmmmmmm
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPAD.fixed.bpf.c:54
+31: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 31 first_idx 21 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 30: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 29: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 28: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 27: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 26: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 25: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 24: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 23: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 21: (2d) if r2 > r6 goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0_rw=map_value(map=data_heap,ks=4,vs=40) R1_rw=P0 R2_rw=32 R3_rw=scalar() R6_rw=scalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R7_rw=ctx() R8_rw=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8_r=mmmmmmmm
+32: R1=0 R10=fp0 fp-8=0000mmmm
+32: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000mmmm
+33: (07) r2 += 1                      ; R2_w=1
+34: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmmmmmm
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPAD.fixed.bpf.c:55
+35: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 35 first_idx 21 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 34: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 33: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 32: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 31: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 30: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 29: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 28: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 27: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 26: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 25: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 24: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 23: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 21: (2d) if r2 > r6 goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0_rw=map_value(map=data_heap,ks=4,vs=40) R1_rw=P0 R2_rw=32 R3_rw=scalar() R6_rw=scalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R7_rw=ctx() R8_rw=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8_r=mmmmmmmm
+36: R1=0 R10=fp0 fp-8=0000mmmm
+36: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000mmmm
+37: (07) r2 += 1                      ; R2_w=1
+38: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmmmmmm
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPAD.fixed.bpf.c:56
+39: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 39 first_idx 21 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 38: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 37: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 36: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 35: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 34: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 33: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 32: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 31: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 30: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 29: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 28: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 27: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 26: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 25: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 24: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 23: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 21: (2d) if r2 > r6 goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0_rw=map_value(map=data_heap,ks=4,vs=40) R1_rw=P0 R2_rw=32 R3_rw=scalar() R6_rw=scalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R7_rw=ctx() R8_rw=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8_r=mmmmmmmm
+40: R1=0 R10=fp0 fp-8=0000mmmm
+40: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000mmmm
+41: (07) r2 += 1                      ; R2_w=1
+42: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmmmmmm
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPAD.fixed.bpf.c:57
+43: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 43 first_idx 21 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 42: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 41: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 40: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 39: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 38: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 37: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 36: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 35: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 34: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 33: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 32: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 31: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 30: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 29: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 28: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 27: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 26: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 25: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 24: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 23: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 21: (2d) if r2 > r6 goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0_rw=map_value(map=data_heap,ks=4,vs=40) R1_rw=P0 R2_rw=32 R3_rw=scalar() R6_rw=scalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R7_rw=ctx() R8_rw=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8_r=mmmmmmmm
+44: R1=0 R10=fp0 fp-8=0000mmmm
+44: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000mmmm
+45: (07) r2 += 1                      ; R2_w=1
+46: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmmmmmm
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPAD.fixed.bpf.c:58
+47: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 47 first_idx 21 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 46: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 45: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 44: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 43: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 42: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 41: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 40: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 39: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 38: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 37: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 36: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 35: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 34: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 33: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 32: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 31: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 30: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 29: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 28: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 27: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 26: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 25: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 24: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 23: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 21: (2d) if r2 > r6 goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0_rw=map_value(map=data_heap,ks=4,vs=40) R1_rw=P0 R2_rw=32 R3_rw=scalar() R6_rw=scalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R7_rw=ctx() R8_rw=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8_r=mmmmmmmm
+48: R1=0 R10=fp0 fp-8=0000mmmm
+48: (61) r1 = *(u32 *)(r10 -4)        ; R1_w=0 R10=fp0 fp-8=0000mmmm
+49: (07) r1 += 1                      ; R1_w=1
+50: (63) *(u32 *)(r10 -4) = r1        ; R1_w=1 R10=fp0 fp-8=mmmmmmmm
+; err = bpf_probe_read_user(&msg->arg[0], bytes, (const void *)user_ptr); @ VPAD.fixed.bpf.c:59
+51: (07) r0 += 8                      ; R0_w=map_value(map=data_heap,ks=4,vs=40,off=8)
+52: (bf) r1 = r0                      ; R0_w=map_value(map=data_heap,ks=4,vs=40,off=8) R1_w=map_value(map=data_heap,ks=4,vs=40,off=8)
+53: (bf) r2 = r6                      ; R2_w=scalar(id=6,smin=smin32=0,smax=umax=smax32=umax32=31,var_off=(0x0; 0x1f)) R6=scalar(id=6,smin=smin32=0,smax=umax=smax32=umax32=31,var_off=(0x0; 0x1f))
+54: (85) call bpf_probe_read_user#112
+mark_precise: frame0: last_idx 54 first_idx 21 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 53: (bf) r2 = r6
+mark_precise: frame0: regs=r6 stack= before 52: (bf) r1 = r0
+mark_precise: frame0: regs=r6 stack= before 51: (07) r0 += 8
+mark_precise: frame0: regs=r6 stack= before 50: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 49: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 48: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 47: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 46: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 45: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 44: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 43: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 42: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 41: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 40: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 39: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 38: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 37: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 36: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 35: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 34: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 33: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 32: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 31: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 30: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 29: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 28: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 27: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 26: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 25: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 24: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 23: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 21: (2d) if r2 > r6 goto pc+1
+mark_precise: frame0: parent state regs=r2,r6 stack=:  R0_rw=map_value(map=data_heap,ks=4,vs=40) R1_rw=P0 R2_rw=P32 R3_rw=scalar() R6_rw=Pscalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R7_rw=ctx() R8_rw=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8_r=mmmmmmmm
+mark_precise: frame0: last_idx 20 first_idx 0 subseq_idx 21 
+mark_precise: frame0: regs=r2,r6 stack= before 20: (b7) r2 = 32
+mark_precise: frame0: regs=r6 stack= before 19: (57) r6 &= 2147483647
+mark_precise: frame0: regs=r6 stack= before 18: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 17: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 16: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 15: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 14: (b7) r1 = 0
+mark_precise: frame0: regs=r6 stack= before 13: (63) *(u32 *)(r8 +0) = r1
+mark_precise: frame0: regs=r6 stack= before 12: (b7) r1 = 10
+mark_precise: frame0: regs=r6 stack= before 11: (79) r6 = *(u64 *)(r7 +32)
+55: R0=scalar()
+55: (18) r9 = 0x80000000              ; R9_w=0x80000000
+; if (err < 0) { @ VPAD.fixed.bpf.c:60
+57: (bf) r1 = r0                      ; R0=scalar(id=7) R1_w=scalar(id=7)
+58: (5f) r1 &= r9                     ; R1_w=scalar(smin=0,smax=umax=umax32=0x80000000,smax32=0,var_off=(0x0; 0x80000000)) R9_w=0x80000000
+59: (15) if r1 == 0x0 goto pc+1       ; R1_w=0x80000000
+60: (05) goto pc+15
+; if (err < 0) { @ VPAD.fixed.bpf.c:69
+76: (67) r0 <<= 32                    ; R0_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+77: (c7) r0 s>>= 32                   ; R0_w=scalar(smin=0xffffffff80000000,smax=0x7fffffff)
+78: (bf) r6 = r0
+79: safe
+
+from 59 to 61: R0=scalar(id=7) R1=0 R6=scalar(id=6,smin=smin32=0,smax=umax=smax32=umax32=31,var_off=(0x0; 0x1f)) R7=ctx() R8=map_value(map=data_heap,ks=4,vs=40) R9=0x80000000 R10=fp0 fp-8=mmmmmmmm
+61: R0=scalar(id=7) R1=0 R6=scalar(id=6,smin=smin32=0,smax=umax=smax32=umax32=31,var_off=(0x0; 0x1f)) R7=ctx() R8=map_value(map=data_heap,ks=4,vs=40) R9=0x80000000 R10=fp0 fp-8=mmmmmmmm
+; msg->common.size = MSG_DATA_ARG_OFFSET + bytes; @ VPAD.fixed.bpf.c:67
+61: (bf) r5 = r6                      ; R5_w=scalar(id=6,smin=smin32=0,smax=umax=smax32=umax32=31,var_off=(0x0; 0x1f)) R6=scalar(id=6,smin=smin32=0,smax=umax=smax32=umax32=31,var_off=(0x0; 0x1f))
+62: (07) r5 += 8                      ; R5_w=scalar(id=6+8,smin=umin=smin32=umin32=8,smax=umax=smax32=umax32=39,var_off=(0x0; 0x3f))
+63: (63) *(u32 *)(r8 +4) = r5         ; R5_w=scalar(id=6+8,smin=umin=smin32=umin32=8,smax=umax=smax32=umax32=39,var_off=(0x0; 0x3f)) R8=map_value(map=data_heap,ks=4,vs=40)
+; err = bpf_perf_event_output(ctx, &events, BPF_F_CURRENT_CPU, msg, msg->common.size); @ VPAD.fixed.bpf.c:68
+64: (67) r5 <<= 32                    ; R5_w=scalar(smin=umin=0x800000000,smax=umax=0x2700000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0x3f00000000))
+65: (77) r5 >>= 32                    ; R5_w=scalar(smin=umin=smin32=umin32=8,smax=umax=smax32=umax32=39,var_off=(0x0; 0x3f))
+66: (bf) r1 = r7                      ; R1_w=ctx() R7=ctx()
+67: (18) r2 = 0xffff8d0ddbbbae00      ; R2_w=map_ptr(map=events,ks=4,vs=4)
+69: (18) r3 = 0xffffffff              ; R3_w=0xffffffff
+71: (bf) r4 = r8                      ; R4_w=map_value(map=data_heap,ks=4,vs=40) R8=map_value(map=data_heap,ks=4,vs=40)
+72: (85) call bpf_perf_event_output#25
+mark_precise: frame0: last_idx 72 first_idx 61 subseq_idx -1 
+mark_precise: frame0: regs=r5 stack= before 71: (bf) r4 = r8
+mark_precise: frame0: regs=r5 stack= before 69: (18) r3 = 0xffffffff
+mark_precise: frame0: regs=r5 stack= before 67: (18) r2 = 0xffff8d0ddbbbae00
+mark_precise: frame0: regs=r5 stack= before 66: (bf) r1 = r7
+mark_precise: frame0: regs=r5 stack= before 65: (77) r5 >>= 32
+mark_precise: frame0: regs=r5 stack= before 64: (67) r5 <<= 32
+mark_precise: frame0: regs=r5 stack= before 63: (63) *(u32 *)(r8 +4) = r5
+mark_precise: frame0: regs=r5 stack= before 62: (07) r5 += 8
+mark_precise: frame0: regs=r5 stack= before 61: (bf) r5 = r6
+mark_precise: frame0: parent state regs=r6 stack=:  R0=scalar(id=7) R1_w=0 R6_r=Pscalar(id=6,smin=smin32=0,smax=umax=smax32=umax32=31,var_off=(0x0; 0x1f)) R7_r=ctx() R8_r=map_value(map=data_heap,ks=4,vs=40) R9_w=0x80000000 R10=fp0 fp-8=mmmmmmmm
+mark_precise: frame0: last_idx 59 first_idx 55 subseq_idx 61 
+mark_precise: frame0: regs=r6 stack= before 59: (15) if r1 == 0x0 goto pc+1
+mark_precise: frame0: regs=r6 stack= before 58: (5f) r1 &= r9
+mark_precise: frame0: regs=r6 stack= before 57: (bf) r1 = r0
+mark_precise: frame0: regs=r6 stack= before 55: (18) r9 = 0x80000000
+mark_precise: frame0: parent state regs=r6 stack=:  R0_rw=scalar() R6_r=Pscalar(id=6,smin=smin32=0,smax=umax=smax32=umax32=31,var_off=(0x0; 0x1f)) R7_r=ctx() R8_r=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8=mmmmmmmm
+mark_precise: frame0: last_idx 54 first_idx 21 subseq_idx 55 
+mark_precise: frame0: regs=r6 stack= before 54: (85) call bpf_probe_read_user#112
+mark_precise: frame0: regs=r6 stack= before 53: (bf) r2 = r6
+mark_precise: frame0: regs=r6 stack= before 52: (bf) r1 = r0
+mark_precise: frame0: regs=r6 stack= before 51: (07) r0 += 8
+mark_precise: frame0: regs=r6 stack= before 50: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 49: (07) r1 += 1
+mark_precise: frame0: regs=r6 stack= before 48: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 47: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 46: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 45: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 44: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 43: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 42: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 41: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 40: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 39: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 38: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 37: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 36: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 35: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 34: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 33: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 32: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 31: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 30: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 29: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 28: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 27: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 26: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r6 stack= before 25: (07) r2 += 1
+mark_precise: frame0: regs=r6 stack= before 24: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 23: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r6 stack= before 21: (2d) if r2 > r6 goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0_rw=map_value(map=data_heap,ks=4,vs=40) R1_rw=P0 R2_rw=P32 R3_rw=scalar() R6_rw=Pscalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R7_rw=ctx() R8_rw=map_value(map=data_heap,ks=4,vs=40) R10=fp0 fp-8_r=mmmmmmmm
+73: safe
+
+from 8 to 79: safe
+verification time 1029 usec
+stack depth 8
+processed 135 insns (limit 1000000) max_states_per_insn 1 total_states 6 peak_states 6 mark_read 2
+-- END PROG LOAD LOG --

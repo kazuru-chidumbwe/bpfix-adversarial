@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into pointer to map element value not null-checked
+   219 | ADV_STMT(fd = pending->fd); @ MACRO.buggy.bpf.c:219
+       | in file /home/test/bpfix-v2-git/campaigns/n3/rs_actplane_mmap_pending_merge_001/MACRO.buggy.bpf.c
+

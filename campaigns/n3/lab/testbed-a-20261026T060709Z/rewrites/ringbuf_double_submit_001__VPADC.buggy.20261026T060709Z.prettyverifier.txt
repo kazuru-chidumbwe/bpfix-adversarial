@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into scalar value (not a pointer)
+   61 | audit->mark = 99; @ VPADC.buggy.bpf.c:61
+      | in file /home/test/bpfix-v2-git/campaigns/n3/ringbuf_double_submit_001/VPADC.buggy.bpf.c
+

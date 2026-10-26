@@ -1,0 +1,5 @@
+PREVAIL exit=1
+FAIL: tracepoint/syscalls/sys_enter_write/rs_tetragon_data_event_size_guard
+18: Upper bound must be at most r1.shared_region_size (valid_access(r1.offset, width=r2) for write)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

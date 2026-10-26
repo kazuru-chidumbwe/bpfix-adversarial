@@ -1,0 +1,16 @@
+error[BPFIX-E009]: kernel or program-type capability is unavailable
+  = class: environment_or_configuration
+  = confidence: medium
+  = diagnostic: supported, help: triage_only, span: exact_pc
+  = next action: environment
+  --> VPAD.buggy.bpf.c:70
+   |
+70 | bpf_perf_event_output(ctx, &xdpdump_perf_map, flags,
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ rejected here: this program type cannot use bpf_perf_event_output#25
+   |
+   = verifier[264]: cannot pass map_type 2 into func bpf_perf_event_output#25
+   = note: nearest BPF instruction pc 61
+   = note: parsed 58 verifier state snapshots
+   = required proof: load this program with an attach type and kernel environment that allow bpf_perf_event_output#25, or avoid that helper on this path
+help: Check kernel version, program type, attach type, capabilities, and BTF availability.
+help: Use a supported helper or gate the code path by target kernel capabilities.

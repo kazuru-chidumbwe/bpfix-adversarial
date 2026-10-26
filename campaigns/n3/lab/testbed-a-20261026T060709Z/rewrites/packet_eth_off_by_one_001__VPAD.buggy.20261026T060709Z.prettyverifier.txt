@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Invalid access to packet
+   44 | proto = *(__u16 *)(data + 12); @ VPAD.buggy.bpf.c:44
+      | in file /home/test/bpfix-v2-git/campaigns/n3/packet_eth_off_by_one_001/VPAD.buggy.bpf.c
+Access involving '__u16 *' is 1 byte past the end of the checked packet range (13 bytes).
+
+Add or tighten a bounds check so the accessed range stays within the checked packet range.
+

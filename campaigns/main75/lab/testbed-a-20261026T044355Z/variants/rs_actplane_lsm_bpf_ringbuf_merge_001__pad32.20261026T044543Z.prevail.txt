@@ -1,0 +1,5 @@
+PREVAIL exit=1
+FAIL: lsm/bpf/rs_actplane_lsm_bpf_ringbuf_merge
+24: Possible null access (valid_access(r0.offset, width=4) for write)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

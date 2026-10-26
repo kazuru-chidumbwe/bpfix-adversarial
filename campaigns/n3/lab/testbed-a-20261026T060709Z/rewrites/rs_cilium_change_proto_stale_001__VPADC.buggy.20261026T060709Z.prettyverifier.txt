@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into scalar value (not a pointer)
+   51 | eth->h_proto = bpf_htons(ETH_P_IP); @ VPADC.buggy.bpf.c:51
+      | in file /home/test/bpfix-v2-git/campaigns/n3/rs_cilium_change_proto_stale_001/VPADC.buggy.bpf.c
+

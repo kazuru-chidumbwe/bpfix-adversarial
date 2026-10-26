@@ -1,0 +1,6 @@
+PREVAIL exit=64
+please specify a program
+available programs:
+section=.text function=trim_tail
+section=xdp function=subprog_adjust_tail_stale
+

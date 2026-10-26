@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into ring buffer pointer to memory not null-checked
+   53 | event->pid = pid; @ VPAD.buggy.bpf.c:53
+      | in file /home/test/bpfix-v2-git/campaigns/n3/rs_actplane_lsm_bpf_ringbuf_merge_001/VPAD.buggy.bpf.c
+

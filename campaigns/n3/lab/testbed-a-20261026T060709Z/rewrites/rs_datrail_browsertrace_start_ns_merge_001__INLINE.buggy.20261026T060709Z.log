@@ -1,0 +1,280 @@
+libbpf: loading object from /tmp/bpfix-cap-5bk63eb9/rs_datrail_browsertrace_start_ns_merge_001__INLINE.buggy.o
+libbpf: elf: section(3) tp/syscalls/sys_exit_read, size 600, link 0, flags 6, type=1
+libbpf: sec 'tp/syscalls/sys_exit_read': found program 'rs_datrail_browsertrace_start_ns_merge' at insn offset 0 (0 bytes), code size 75 insns (600 bytes)
+libbpf: elf: section(4) .reltp/syscalls/sys_exit_read, size 80, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 80, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-5bk63eb9/rs_datrail_browsertrace_start_ns_merge_001__INLINE.buggy.o is GPL
+libbpf: elf: section(16) .BTF, size 2113, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 604, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 384, link 1, flags 0, type=2
+libbpf: looking for externs among 16 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'bufs': at sec_idx 5, offset 0.
+libbpf: map 'bufs': found type = 1.
+libbpf: map 'bufs': found key [8], sz = 4.
+libbpf: map 'bufs': found value [11], sz = 8.
+libbpf: map 'bufs': found max_entries = 1024.
+libbpf: map 'start_ns': at sec_idx 5, offset 32.
+libbpf: map 'start_ns': found type = 1.
+libbpf: map 'start_ns': found key [8], sz = 4.
+libbpf: map 'start_ns': found value [11], sz = 8.
+libbpf: map 'start_ns': found max_entries = 1024.
+libbpf: map 'rb': at sec_idx 5, offset 64.
+libbpf: map 'rb': found type = 27.
+libbpf: map 'rb': found max_entries = 4096.
+libbpf: sec '.reltp/syscalls/sys_exit_read': collecting relocation for section(3) 'tp/syscalls/sys_exit_read'
+libbpf: sec '.reltp/syscalls/sys_exit_read': relo #0: insn #14 against 'bufs'
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': found map 0 (bufs, sec 5, off 0) for insn #14
+libbpf: sec '.reltp/syscalls/sys_exit_read': relo #1: insn #21 against 'start_ns'
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': found map 1 (start_ns, sec 5, off 32) for insn #21
+libbpf: sec '.reltp/syscalls/sys_exit_read': relo #2: insn #28 against 'rb'
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': found map 2 (rb, sec 5, off 64) for insn #28
+libbpf: sec '.reltp/syscalls/sys_exit_read': relo #3: insn #62 against 'bufs'
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': found map 0 (bufs, sec 5, off 0) for insn #62
+libbpf: sec '.reltp/syscalls/sys_exit_read': relo #4: insn #66 against 'start_ns'
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': found map 1 (start_ns, sec 5, off 32) for insn #66
+libbpf: object 'rs_datrail_brow': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'tp/syscalls/sys_exit_read': found 1 CO-RE relocations
+libbpf: CO-RE relocating [24] struct trace_event_raw_sys_exit: found target candidate [10899] struct trace_event_raw_sys_exit in [vmlinux]
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': relo #0: <byte_off> [24] struct trace_event_raw_sys_exit.ret (0:2 @ offset 16)
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': relo #0: matching candidate #0 <byte_off> [10899] struct trace_event_raw_sys_exit.ret (0:2 @ offset 16)
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': relo #0: patched insn #6 (LDX/ST/STX) off 16 -> 16
+libbpf: map 'bufs': created successfully, fd=4
+libbpf: map 'start_ns': created successfully, fd=5
+libbpf: map 'rb': created successfully, fd=6
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': BPF program load failed: Permission denied
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_datrail_browsertrace_start_ns_merge(struct trace_event_raw_sys_exit *ctx) @ INLINE.buggy.bpf.c:42
+0: (bf) r6 = r1                       ; R1=ctx() R6_w=ctx()
+; __u64 pid_tgid = bpf_get_current_pid_tgid(); @ INLINE.buggy.bpf.c:44
+1: (85) call bpf_get_current_pid_tgid#14      ; R0_w=scalar()
+2: (bf) r7 = r0                       ; R0_w=scalar(id=1) R7_w=scalar(id=1)
+; __u32 tid = (__u32)pid_tgid; @ INLINE.buggy.bpf.c:46
+3: (63) *(u32 *)(r10 -4) = r7         ; R7_w=scalar(id=1) R10=fp0 fp-8=mmmm????
+; __u64 ts = bpf_ktime_get_ns(); @ INLINE.buggy.bpf.c:47
+4: (85) call bpf_ktime_get_ns#5       ; R0_w=scalar()
+5: (bf) r8 = r0                       ; R0_w=scalar(id=2) R8_w=scalar(id=2)
+; int len = ctx->ret; @ INLINE.buggy.bpf.c:52
+6: (79) r6 = *(u64 *)(r6 +16)         ; R6_w=scalar()
+7: (bf) r1 = r6                       ; R1_w=scalar(id=3) R6_w=scalar(id=3)
+8: (67) r1 <<= 32                     ; R1_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+9: (c7) r1 s>>= 32                    ; R1_w=scalar(smin=0xffffffff80000000,smax=0x7fffffff)
+10: (b7) r2 = 1                       ; R2=1
+; if (len <= 0) @ INLINE.buggy.bpf.c:54
+11: (6d) if r2 s> r1 goto pc+61       ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R2=1
+12: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+13: (07) r2 += -4                     ; R2_w=fp-4
+; bufp = bpf_map_lookup_elem(&bufs, &tid); @ INLINE.buggy.bpf.c:57
+14: (18) r1 = 0xffff8d0daf9f9000      ; R1_w=map_ptr(map=bufs,ks=4,vs=8)
+16: (85) call bpf_map_lookup_elem#1   ; R0_w=map_value_or_null(id=4,map=bufs,ks=4,vs=8)
+17: (bf) r9 = r0                      ; R0_w=map_value_or_null(id=4,map=bufs,ks=4,vs=8) R9_w=map_value_or_null(id=4,map=bufs,ks=4,vs=8)
+; if (!bufp) @ INLINE.buggy.bpf.c:58
+18: (15) if r9 == 0x0 goto pc+54      ; R9_w=map_value(map=bufs,ks=4,vs=8)
+19: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+20: (07) r2 += -4                     ; R2_w=fp-4
+; tsp = bpf_map_lookup_elem(&start_ns, &tid); @ INLINE.buggy.bpf.c:61
+21: (18) r1 = 0xffff8d0daf9f9800      ; R1_w=map_ptr(map=start_ns,ks=4,vs=8)
+23: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=5,map=start_ns,ks=4,vs=8)
+24: (18) r1 = 0xffffffff              ; R1_w=0xffffffff
+; if (pid == 0) { @ INLINE.buggy.bpf.c:62
+26: (2d) if r7 > r1 goto pc+1         ; R1_w=0xffffffff R7=scalar(id=1,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+27: (15) if r0 == 0x0 goto pc+45      ; R0=map_value(map=start_ns,ks=4,vs=8)
+; event = bpf_ringbuf_reserve(&rb, sizeof(*event), 0); @ INLINE.buggy.bpf.c:67
+28: (18) r1 = 0xffff8d0ddb901800      ; R1_w=map_ptr(map=rb,ks=0,vs=0)
+30: (b7) r2 = 40                      ; R2_w=40
+31: (7b) *(u64 *)(r10 -16) = r0       ; R0=map_value(map=start_ns,ks=4,vs=8) R10=fp0 fp-16_w=map_value(map=start_ns,ks=4,vs=8)
+32: (b7) r3 = 0                       ; R3_w=0
+33: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 33 first_idx 24 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 32: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 31: (7b) *(u64 *)(r10 -16) = r0
+mark_precise: frame0: regs=r2 stack= before 30: (b7) r2 = 40
+34: R0=ringbuf_mem_or_null(id=7,ref_obj_id=7,sz=40) refs=7
+34: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=map_value(map=start_ns,ks=4,vs=8) R10=fp0 fp-16=map_value(map=start_ns,ks=4,vs=8) refs=7
+; if (__adv_guard(event)) @ INLINE.buggy.bpf.c:68
+35: (15) if r0 == 0x0 goto pc+37      ; R0=ringbuf_mem(ref_obj_id=7,sz=40) refs=7
+36: (77) r7 >>= 32                    ; R7_w=0 refs=7
+37: (bf) r2 = r0                      ; R0=ringbuf_mem(ref_obj_id=7,sz=40) R2_w=ringbuf_mem(ref_obj_id=7,sz=40) refs=7
+; event->delta_ns = ts - *tsp; @ INLINE.buggy.bpf.c:71
+38: (79) r1 = *(u64 *)(r1 +0)         ; R1_w=scalar() refs=7
+; event->pid = pid; @ INLINE.buggy.bpf.c:72
+39: (63) *(u32 *)(r2 +8) = r7         ; R2_w=ringbuf_mem(ref_obj_id=7,sz=40) R7_w=0 refs=7
+40: (bf) r7 = r2                      ; R2_w=ringbuf_mem(ref_obj_id=7,sz=40) R7_w=ringbuf_mem(ref_obj_id=7,sz=40) refs=7
+; event->delta_ns = ts - *tsp; @ INLINE.buggy.bpf.c:71
+41: (1f) r8 -= r1                     ; R1_w=scalar() R8_w=scalar() refs=7
+42: (7b) *(u64 *)(r7 +0) = r8         ; R7_w=ringbuf_mem(ref_obj_id=7,sz=40) R8_w=scalar() refs=7
+; event->tid = tid; @ INLINE.buggy.bpf.c:73
+43: (61) r1 = *(u32 *)(r10 -4)        ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-8=mmmm???? refs=7
+; event->buf_size = 0; @ INLINE.buggy.bpf.c:75
+44: (b7) r2 = 0                       ; R2_w=0 refs=7
+45: (63) *(u32 *)(r7 +20) = r2        ; R2_w=0 R7_w=ringbuf_mem(ref_obj_id=7,sz=40) refs=7
+; event->tid = tid; @ INLINE.buggy.bpf.c:73
+46: (63) *(u32 *)(r7 +12) = r1        ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R7_w=ringbuf_mem(ref_obj_id=7,sz=40) refs=7
+; event->len = (__u32)len; @ INLINE.buggy.bpf.c:74
+47: (63) *(u32 *)(r7 +16) = r6        ; R6=scalar(id=3) R7_w=ringbuf_mem(ref_obj_id=7,sz=40) refs=7
+; int len = ctx->ret; @ INLINE.buggy.bpf.c:52
+48: (67) r6 <<= 32                    ; R6_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000)) refs=7
+49: (77) r6 >>= 32                    ; R6_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) refs=7
+50: (b7) r1 = 16                      ; R1_w=16 refs=7
+; if (copy_size > MAX_BUF_SIZE) @ INLINE.buggy.bpf.c:78
+51: (2d) if r1 > r6 goto pc+1         ; R1_w=16 R6_w=scalar(smin=umin=umin32=16,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) refs=7
+52: (b7) r6 = 16                      ; R6=16 refs=7
+; if (!bpf_probe_read_user(event->buf, copy_size, (void *)*bufp)) @ INLINE.buggy.bpf.c:81
+53: (79) r3 = *(u64 *)(r9 +0)         ; R3_w=scalar() R9=map_value(map=bufs,ks=4,vs=8) refs=7
+54: (07) r0 += 24                     ; R0_w=ringbuf_mem(ref_obj_id=7,off=24,sz=40) refs=7
+55: (bf) r1 = r0                      ; R0_w=ringbuf_mem(ref_obj_id=7,off=24,sz=40) R1_w=ringbuf_mem(ref_obj_id=7,off=24,sz=40) refs=7
+56: (bf) r2 = r6                      ; R2_w=16 R6=16 refs=7
+57: (85) call bpf_probe_read_user#112
+mark_precise: frame0: last_idx 57 first_idx 53 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 56: (bf) r2 = r6
+mark_precise: frame0: regs=r6 stack= before 55: (bf) r1 = r0
+mark_precise: frame0: regs=r6 stack= before 54: (07) r0 += 24
+mark_precise: frame0: regs=r6 stack= before 53: (79) r3 = *(u64 *)(r9 +0)
+mark_precise: frame0: parent state regs=r6 stack=:  R0_r=ringbuf_mem(ref_obj_id=7,sz=40) R1_w=16 R2_w=0 R6_rw=P16 R7_w=ringbuf_mem(ref_obj_id=7,sz=40) R8_w=scalar() R9_r=map_value(map=bufs,ks=4,vs=8) R10=fp0 fp-8=mmmm???? fp-16=map_value(map=start_ns,ks=4,vs=8) refs=7
+mark_precise: frame0: last_idx 52 first_idx 34 subseq_idx 53 
+mark_precise: frame0: regs=r6 stack= before 52: (b7) r6 = 16
+58: R0_w=scalar() refs=7
+58: (55) if r0 != 0x0 goto pc+1       ; R0_w=0 refs=7
+; event->buf_size = copy_size; @ INLINE.buggy.bpf.c:82
+59: (63) *(u32 *)(r7 +20) = r6        ; R6=16 R7=ringbuf_mem(ref_obj_id=7,sz=40) refs=7
+60: (bf) r6 = r10                     ; R6_w=fp0 R10=fp0 refs=7
+61: (07) r6 += -4                     ; R6_w=fp-4 refs=7
+; bpf_map_delete_elem(&bufs, &tid); @ INLINE.buggy.bpf.c:84
+62: (18) r1 = 0xffff8d0daf9f9000      ; R1_w=map_ptr(map=bufs,ks=4,vs=8) refs=7
+64: (bf) r2 = r6                      ; R2_w=fp-4 R6_w=fp-4 refs=7
+65: (85) call bpf_map_delete_elem#3   ; R0=scalar() refs=7
+; bpf_map_delete_elem(&start_ns, &tid); @ INLINE.buggy.bpf.c:85
+66: (18) r1 = 0xffff8d0daf9f9800      ; R1_w=map_ptr(map=start_ns,ks=4,vs=8) refs=7
+68: (bf) r2 = r6                      ; R2_w=fp-4 R6=fp-4 refs=7
+69: (85) call bpf_map_delete_elem#3   ; R0_w=scalar() refs=7
+; bpf_ringbuf_submit(event, 0); @ INLINE.buggy.bpf.c:86
+70: (bf) r1 = r7                      ; R1_w=ringbuf_mem(ref_obj_id=7,sz=40) R7=ringbuf_mem(ref_obj_id=7,sz=40) refs=7
+71: (b7) r2 = 0                       ; R2_w=0 refs=7
+72: (85) call bpf_ringbuf_submit#132          ;
+; } @ INLINE.buggy.bpf.c:88
+73: (b7) r0 = 0                       ; R0_w=0
+74: (95) exit
+
+from 58 to 60: R0=scalar(umin=1) R6=16 R7=ringbuf_mem(ref_obj_id=7,sz=40) R8=scalar() R9=map_value(map=bufs,ks=4,vs=8) R10=fp0 fp-8=mmmm???? fp-16=map_value(map=start_ns,ks=4,vs=8) refs=7
+60: R0=scalar(umin=1) R6=16 R7=ringbuf_mem(ref_obj_id=7,sz=40) R8=scalar() R9=map_value(map=bufs,ks=4,vs=8) R10=fp0 fp-8=mmmm???? fp-16=map_value(map=start_ns,ks=4,vs=8) refs=7
+; event->buf_size = copy_size; @ INLINE.buggy.bpf.c:82
+60: (bf) r6 = r10                     ; R6_w=fp0 R10=fp0 refs=7
+61: (07) r6 += -4                     ; R6_w=fp-4 refs=7
+; bpf_map_delete_elem(&bufs, &tid); @ INLINE.buggy.bpf.c:84
+62: (18) r1 = 0xffff8d0daf9f9000      ; R1_w=map_ptr(map=bufs,ks=4,vs=8) refs=7
+64: (bf) r2 = r6                      ; R2_w=fp-4 R6_w=fp-4 refs=7
+65: (85) call bpf_map_delete_elem#3
+66: safe
+
+from 51 to 53: R0=ringbuf_mem(ref_obj_id=7,sz=40) R1_w=16 R2_w=0 R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=15,var_off=(0x0; 0xf)) R7_w=ringbuf_mem(ref_obj_id=7,sz=40) R8_w=scalar() R9=map_value(map=bufs,ks=4,vs=8) R10=fp0 fp-8=mmmm???? fp-16=map_value(map=start_ns,ks=4,vs=8) refs=7
+53: R0=ringbuf_mem(ref_obj_id=7,sz=40) R1_w=16 R2_w=0 R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=15,var_off=(0x0; 0xf)) R7_w=ringbuf_mem(ref_obj_id=7,sz=40) R8_w=scalar() R9=map_value(map=bufs,ks=4,vs=8) R10=fp0 fp-8=mmmm???? fp-16=map_value(map=start_ns,ks=4,vs=8) refs=7
+; if (!bpf_probe_read_user(event->buf, copy_size, (void *)*bufp)) @ INLINE.buggy.bpf.c:81
+53: (79) r3 = *(u64 *)(r9 +0)         ; R3_w=scalar() R9=map_value(map=bufs,ks=4,vs=8) refs=7
+54: (07) r0 += 24                     ; R0_w=ringbuf_mem(ref_obj_id=7,off=24,sz=40) refs=7
+55: (bf) r1 = r0                      ; R0_w=ringbuf_mem(ref_obj_id=7,off=24,sz=40) R1_w=ringbuf_mem(ref_obj_id=7,off=24,sz=40) refs=7
+56: (bf) r2 = r6                      ; R2_w=scalar(id=8,smin=smin32=0,smax=umax=smax32=umax32=15,var_off=(0x0; 0xf)) R6_w=scalar(id=8,smin=smin32=0,smax=umax=smax32=umax32=15,var_off=(0x0; 0xf)) refs=7
+57: (85) call bpf_probe_read_user#112
+mark_precise: frame0: last_idx 57 first_idx 34 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 56: (bf) r2 = r6
+mark_precise: frame0: regs=r6 stack= before 55: (bf) r1 = r0
+mark_precise: frame0: regs=r6 stack= before 54: (07) r0 += 24
+mark_precise: frame0: regs=r6 stack= before 53: (79) r3 = *(u64 *)(r9 +0)
+mark_precise: frame0: regs=r6 stack= before 51: (2d) if r1 > r6 goto pc+1
+mark_precise: frame0: regs=r1,r6 stack= before 50: (b7) r1 = 16
+mark_precise: frame0: regs=r6 stack= before 49: (77) r6 >>= 32
+mark_precise: frame0: regs=r6 stack= before 48: (67) r6 <<= 32
+mark_precise: frame0: regs=r6 stack= before 47: (63) *(u32 *)(r7 +16) = r6
+mark_precise: frame0: regs=r6 stack= before 46: (63) *(u32 *)(r7 +12) = r1
+mark_precise: frame0: regs=r6 stack= before 45: (63) *(u32 *)(r7 +20) = r2
+mark_precise: frame0: regs=r6 stack= before 44: (b7) r2 = 0
+mark_precise: frame0: regs=r6 stack= before 43: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r6 stack= before 42: (7b) *(u64 *)(r7 +0) = r8
+mark_precise: frame0: regs=r6 stack= before 41: (1f) r8 -= r1
+mark_precise: frame0: regs=r6 stack= before 40: (bf) r7 = r2
+mark_precise: frame0: regs=r6 stack= before 39: (63) *(u32 *)(r2 +8) = r7
+mark_precise: frame0: regs=r6 stack= before 38: (79) r1 = *(u64 *)(r1 +0)
+mark_precise: frame0: regs=r6 stack= before 37: (bf) r2 = r0
+mark_precise: frame0: regs=r6 stack= before 36: (77) r7 >>= 32
+mark_precise: frame0: regs=r6 stack= before 35: (15) if r0 == 0x0 goto pc+37
+mark_precise: frame0: regs=r6 stack= before 34: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: parent state regs=r6 stack=:  R0_rw=ringbuf_mem_or_null(id=7,ref_obj_id=7,sz=40) R6_r=Pscalar(id=3) R7_r=scalar(id=1,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R8_r=scalar(id=2) R9_r=map_value(map=bufs,ks=4,vs=8) R10=fp0 fp-8_r=mmmm???? fp-16_rw=map_value(map=start_ns,ks=4,vs=8) refs=7
+mark_precise: frame0: last_idx 33 first_idx 24 subseq_idx 34 
+mark_precise: frame0: regs=r6 stack= before 33: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: regs=r6 stack= before 32: (b7) r3 = 0
+mark_precise: frame0: regs=r6 stack= before 31: (7b) *(u64 *)(r10 -16) = r0
+mark_precise: frame0: regs=r6 stack= before 30: (b7) r2 = 40
+mark_precise: frame0: regs=r6 stack= before 28: (18) r1 = 0xffff8d0ddb901800
+mark_precise: frame0: regs=r6 stack= before 27: (15) if r0 == 0x0 goto pc+45
+mark_precise: frame0: regs=r6 stack= before 26: (2d) if r7 > r1 goto pc+1
+mark_precise: frame0: regs=r6 stack= before 24: (18) r1 = 0xffffffff
+mark_precise: frame0: parent state regs=r6 stack=:  R0_rw=map_value_or_null(id=5,map=start_ns,ks=4,vs=8) R6_r=Pscalar(id=3) R7_r=scalar(id=1) R8_r=scalar(id=2) R9_rw=map_value(map=bufs,ks=4,vs=8) R10=fp0 fp-8_r=mmmm????
+mark_precise: frame0: last_idx 23 first_idx 11 subseq_idx 24 
+mark_precise: frame0: regs=r6 stack= before 23: (85) call bpf_map_lookup_elem#1
+mark_precise: frame0: regs=r6 stack= before 21: (18) r1 = 0xffff8d0daf9f9800
+mark_precise: frame0: regs=r6 stack= before 20: (07) r2 += -4
+mark_precise: frame0: regs=r6 stack= before 19: (bf) r2 = r10
+mark_precise: frame0: regs=r6 stack= before 18: (15) if r9 == 0x0 goto pc+54
+mark_precise: frame0: regs=r6 stack= before 17: (bf) r9 = r0
+mark_precise: frame0: regs=r6 stack= before 16: (85) call bpf_map_lookup_elem#1
+mark_precise: frame0: regs=r6 stack= before 14: (18) r1 = 0xffff8d0daf9f9000
+mark_precise: frame0: regs=r6 stack= before 13: (07) r2 += -4
+mark_precise: frame0: regs=r6 stack= before 12: (bf) r2 = r10
+mark_precise: frame0: regs=r6 stack= before 11: (6d) if r2 s> r1 goto pc+61
+mark_precise: frame0: parent state regs=r6 stack=:  R0_w=scalar(id=2) R1_rw=scalar(smin=0xffffffff80000000,smax=0x7fffffff) R2_rw=1 R6_rw=Pscalar(id=3) R7_rw=scalar(id=1) R8_rw=scalar(id=2) R10=fp0 fp-8_r=mmmm????
+mark_precise: frame0: last_idx 10 first_idx 0 subseq_idx 11 
+mark_precise: frame0: regs=r6 stack= before 10: (b7) r2 = 1
+mark_precise: frame0: regs=r6 stack= before 9: (c7) r1 s>>= 32
+mark_precise: frame0: regs=r6 stack= before 8: (67) r1 <<= 32
+mark_precise: frame0: regs=r6 stack= before 7: (bf) r1 = r6
+mark_precise: frame0: regs=r6 stack= before 6: (79) r6 = *(u64 *)(r6 +16)
+58: R0=scalar() refs=7
+58: (55) if r0 != 0x0 goto pc+1       ; R0=0 refs=7
+; event->buf_size = copy_size; @ INLINE.buggy.bpf.c:82
+59: (63) *(u32 *)(r7 +20) = r6
+60: safe
+
+from 58 to 60: safe
+
+from 35 to 73: R0=0 R1_w=map_value(map=start_ns,ks=4,vs=8) R6=scalar(id=3) R7=scalar(id=1,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R8=scalar(id=2) R9=map_value(map=bufs,ks=4,vs=8) R10=fp0 fp-8=mmmm???? fp-16=map_value(map=start_ns,ks=4,vs=8)
+73: R0=0 R1_w=map_value(map=start_ns,ks=4,vs=8) R6=scalar(id=3) R7=scalar(id=1,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R8=scalar(id=2) R9=map_value(map=bufs,ks=4,vs=8) R10=fp0 fp-8=mmmm???? fp-16=map_value(map=start_ns,ks=4,vs=8)
+; } @ INLINE.buggy.bpf.c:88
+73: (b7) r0 = 0                       ; R0_w=0
+74: (95) exit
+
+from 27 to 73: R0=0 R1_w=0xffffffff R6=scalar(id=3) R7=scalar(id=1,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R8=scalar(id=2) R9=map_value(map=bufs,ks=4,vs=8) R10=fp0 fp-8=mmmm????
+73: R0=0 R1_w=0xffffffff R6=scalar(id=3) R7=scalar(id=1,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R8=scalar(id=2) R9=map_value(map=bufs,ks=4,vs=8) R10=fp0 fp-8=mmmm????
+73: (b7) r0 = 0                       ; R0_w=0
+74: (95) exit
+
+from 26 to 28: R0=map_value_or_null(id=5,map=start_ns,ks=4,vs=8) R1=0xffffffff R6=scalar(id=3) R7=scalar(id=1,umin=0x100000000) R8=scalar(id=2) R9=map_value(map=bufs,ks=4,vs=8) R10=fp0 fp-8=mmmm????
+28: R0=map_value_or_null(id=5,map=start_ns,ks=4,vs=8) R1=0xffffffff R6=scalar(id=3) R7=scalar(id=1,umin=0x100000000) R8=scalar(id=2) R9=map_value(map=bufs,ks=4,vs=8) R10=fp0 fp-8=mmmm????
+; event = bpf_ringbuf_reserve(&rb, sizeof(*event), 0); @ INLINE.buggy.bpf.c:67
+28: (18) r1 = 0xffff8d0ddb901800      ; R1_w=map_ptr(map=rb,ks=0,vs=0)
+30: (b7) r2 = 40                      ; R2_w=40
+31: (7b) *(u64 *)(r10 -16) = r0       ; R0=map_value_or_null(id=5,map=start_ns,ks=4,vs=8) R10=fp0 fp-16_w=map_value_or_null(id=5,map=start_ns,ks=4,vs=8)
+32: (b7) r3 = 0                       ; R3_w=0
+33: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 33 first_idx 28 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 32: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 31: (7b) *(u64 *)(r10 -16) = r0
+mark_precise: frame0: regs=r2 stack= before 30: (b7) r2 = 40
+34: R0_w=ringbuf_mem_or_null(id=10,ref_obj_id=10,sz=40) refs=10
+34: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=map_value_or_null(id=5,map=start_ns,ks=4,vs=8) R10=fp0 fp-16_w=map_value_or_null(id=5,map=start_ns,ks=4,vs=8) refs=10
+; if (__adv_guard(event)) @ INLINE.buggy.bpf.c:68
+35: (15) if r0 == 0x0 goto pc+37      ; R0_w=ringbuf_mem(ref_obj_id=10,sz=40) refs=10
+36: (77) r7 >>= 32                    ; R7_w=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) refs=10
+37: (bf) r2 = r0                      ; R0_w=ringbuf_mem(ref_obj_id=10,sz=40) R2_w=ringbuf_mem(ref_obj_id=10,sz=40) refs=10
+; event->delta_ns = ts - *tsp; @ INLINE.buggy.bpf.c:71
+38: (79) r1 = *(u64 *)(r1 +0)
+R1 invalid mem access 'map_value_or_null'
+verification time 595 usec
+stack depth 16
+processed 98 insns (limit 1000000) max_states_per_insn 1 total_states 8 peak_states 8 mark_read 3
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-5bk63eb9/rs_datrail_browsertrace_start_ns_merge_001__INLINE.buggy.o'
+Error: failed to load object file

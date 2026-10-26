@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Invalid access to memory region
+   43 | if (bpf_ntohs(eth->h_proto) != ETH_P_IP) @ VPADC.buggy.bpf.c:43
+      | in file /home/test/bpfix-v2-git/campaigns/n3/dynptr_slice_short_mem_001/VPADC.buggy.bpf.c
+Access involving 'bpf_ntohs' is 1 byte past the end of the memory region (capacity: 13 bytes).
+
+Add or tighten a bounds check so the accessed range stays within the memory region limits.
+

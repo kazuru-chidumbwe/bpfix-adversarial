@@ -1,0 +1,226 @@
+libbpf: loading object from /tmp/bpfix-cap-5bk63eb9/rs_eunomia_wq_container_map_001__INLINE.fixed.o
+libbpf: elf: section(2) .text, size 64, link 0, flags 6, type=1
+libbpf: sec '.text': found program 'wq_callback' at insn offset 0 (0 bytes), code size 8 insns (64 bytes)
+libbpf: elf: section(3) xdp, size 776, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'rs_eunomia_wq_container_map' at insn offset 0 (0 bytes), code size 97 insns (776 bytes)
+libbpf: elf: section(4) .relxdp, size 128, link 27, flags 40, type=9
+libbpf: elf: section(5) .maps, size 64, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-5bk63eb9/rs_eunomia_wq_container_map_001__INLINE.fixed.o is GPL
+libbpf: elf: section(17) .BTF, size 2468, link 0, flags 0, type=1
+libbpf: elf: section(19) .BTF.ext, size 852, link 0, flags 0, type=1
+libbpf: elf: section(27) .symtab, size 504, link 1, flags 0, type=2
+libbpf: looking for externs among 21 symbols...
+libbpf: collected 3 externs total
+libbpf: extern (ksym) #0: symbol 17, name bpf_wq_init
+libbpf: extern (ksym) #1: symbol 18, name bpf_wq_set_callback_impl
+libbpf: extern (ksym) #2: symbol 19, name bpf_wq_start
+libbpf: map 'stats_map': at sec_idx 5, offset 0.
+libbpf: map 'stats_map': found type = 2.
+libbpf: map 'stats_map': found key [2], sz = 4.
+libbpf: map 'stats_map': found value [9], sz = 40.
+libbpf: map 'stats_map': found max_entries = 1.
+libbpf: map 'work_items': at sec_idx 5, offset 32.
+libbpf: map 'work_items': found type = 2.
+libbpf: map 'work_items': found key [2], sz = 4.
+libbpf: map 'work_items': found value [17], sz = 24.
+libbpf: map 'work_items': found max_entries = 4.
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #13 against 'stats_map'
+libbpf: prog 'rs_eunomia_wq_container_map': found map 0 (stats_map, sec 5, off 0) for insn #13
+libbpf: sec '.relxdp': relo #1: insn #39 against 'work_items'
+libbpf: prog 'rs_eunomia_wq_container_map': found map 1 (work_items, sec 5, off 32) for insn #39
+libbpf: sec '.relxdp': relo #2: insn #46 against 'work_items'
+libbpf: prog 'rs_eunomia_wq_container_map': found map 1 (work_items, sec 5, off 32) for insn #46
+libbpf: sec '.relxdp': relo #3: insn #53 against 'work_items'
+libbpf: prog 'rs_eunomia_wq_container_map': found map 1 (work_items, sec 5, off 32) for insn #53
+libbpf: sec '.relxdp': relo #4: insn #57 against 'bpf_wq_init'
+libbpf: prog 'rs_eunomia_wq_container_map': found extern #0 'bpf_wq_init' (sym 17) for insn #57
+libbpf: sec '.relxdp': relo #5: insn #67 against '.text'
+libbpf: sec '.relxdp': relo #6: insn #71 against 'bpf_wq_set_callback_impl'
+libbpf: prog 'rs_eunomia_wq_container_map': found extern #1 'bpf_wq_set_callback_impl' (sym 18) for insn #71
+libbpf: sec '.relxdp': relo #7: insn #77 against 'bpf_wq_start'
+libbpf: prog 'rs_eunomia_wq_container_map': found extern #2 'bpf_wq_start' (sym 19) for insn #77
+libbpf: object 'rs_eunomia_wq_c': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: extern (func ksym) 'bpf_wq_init': resolved to vmlinux [59509]
+libbpf: extern (func ksym) 'bpf_wq_set_callback_impl': resolved to vmlinux [59512]
+libbpf: extern (func ksym) 'bpf_wq_start': resolved to vmlinux [59515]
+libbpf: sec 'xdp': found 2 CO-RE relocations
+libbpf: CO-RE relocating [25] struct xdp_md: found target candidate [13583] struct xdp_md in [vmlinux]
+libbpf: prog 'rs_eunomia_wq_container_map': relo #0: <byte_off> [25] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_eunomia_wq_container_map': relo #0: matching candidate #0 <byte_off> [13583] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_eunomia_wq_container_map': relo #0: patched insn #0 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'rs_eunomia_wq_container_map': relo #1: <byte_off> [25] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_eunomia_wq_container_map': relo #1: matching candidate #0 <byte_off> [13583] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_eunomia_wq_container_map': relo #1: patched insn #1 (LDX/ST/STX) off 0 -> 0
+libbpf: prog 'rs_eunomia_wq_container_map': added 8 insns from sub-prog 'wq_callback'
+libbpf: prog 'rs_eunomia_wq_container_map': insn #67 relocated, imm 29 points to subprog 'wq_callback' (now at 97 offset)
+libbpf: map 'stats_map': created successfully, fd=4
+libbpf: map 'work_items': created successfully, fd=5
+libbpf: prog 'rs_eunomia_wq_container_map': -- BEGIN PROG LOAD LOG --
+func#0 @0
+func#1 @97
+0: R1=ctx() R10=fp0
+; void *data_end = (void *)(long)ctx->data_end; @ INLINE.fixed.bpf.c:69
+0: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data; @ INLINE.fixed.bpf.c:68
+1: (61) r8 = *(u32 *)(r1 +0)          ; R1=ctx() R8_w=pkt(r=0)
+2: (b7) r1 = 0                        ; R1_w=0
+; struct elem init = {}; @ INLINE.fixed.bpf.c:71
+3: (7b) *(u64 *)(r10 -8) = r1         ; R1_w=0 R10=fp0 fp-8_w=0
+4: (7b) *(u64 *)(r10 -16) = r1        ; R1_w=0 R10=fp0 fp-16_w=0
+5: (7b) *(u64 *)(r10 -24) = r1        ; R1_w=0 R10=fp0 fp-24_w=0
+; int stat_key = 0; @ INLINE.fixed.bpf.c:75
+6: (63) *(u32 *)(r10 -28) = r1
+mark_precise: frame0: last_idx 6 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 5: (7b) *(u64 *)(r10 -24) = r1
+mark_precise: frame0: regs=r1 stack= before 4: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r1 stack= before 3: (7b) *(u64 *)(r10 -8) = r1
+mark_precise: frame0: regs=r1 stack= before 2: (b7) r1 = 0
+7: R1_w=0 R10=fp0 fp-32=0000????
+7: (b7) r6 = 2                        ; R6_w=2
+; if ((void *)(req + 1) > data_end) @ INLINE.fixed.bpf.c:78
+8: (bf) r1 = r8                       ; R1_w=pkt(r=0) R8_w=pkt(r=0)
+9: (07) r1 += 16                      ; R1_w=pkt(off=16,r=0)
+10: (2d) if r1 > r2 goto pc+15        ; R1_w=pkt(off=16,r=16) R2_w=pkt_end()
+11: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+12: (07) r2 += -28                    ; R2_w=fp-28
+; stats = bpf_map_lookup_elem(&stats_map, &stat_key); @ INLINE.fixed.bpf.c:81
+13: (18) r1 = 0xffff8d0dc9a3cc00      ; R1_w=map_ptr(map=stats_map,ks=4,vs=40)
+15: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=1,map=stats_map,ks=4,vs=40)
+16: (bf) r7 = r0                      ; R0=map_value_or_null(id=1,map=stats_map,ks=4,vs=40) R7_w=map_value_or_null(id=1,map=stats_map,ks=4,vs=40)
+; if (!stats) @ INLINE.fixed.bpf.c:82
+17: (15) if r7 == 0x0 goto pc+8       ; R7_w=map_value(map=stats_map,ks=4,vs=40)
+; stats->processed++; @ INLINE.fixed.bpf.c:85
+18: (79) r1 = *(u64 *)(r7 +0)         ; R1_w=scalar() R7_w=map_value(map=stats_map,ks=4,vs=40)
+19: (07) r1 += 1                      ; R1_w=scalar()
+20: (7b) *(u64 *)(r7 +0) = r1         ; R1_w=scalar() R7_w=map_value(map=stats_map,ks=4,vs=40)
+; if (!req->schedule) { @ INLINE.fixed.bpf.c:86
+21: (61) r1 = *(u32 *)(r8 +8)         ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R8=pkt(r=16)
+22: (55) if r1 != 0x0 goto pc+5       ; R1_w=0
+; stats->skipped++; @ INLINE.fixed.bpf.c:87
+23: (79) r1 = *(u64 *)(r7 +8)         ; R1_w=scalar() R7_w=map_value(map=stats_map,ks=4,vs=40)
+24: (07) r1 += 1                      ; R1_w=scalar()
+25: (7b) *(u64 *)(r7 +8) = r1         ; R1=scalar() R7=map_value(map=stats_map,ks=4,vs=40)
+; } @ INLINE.fixed.bpf.c:116
+26: (bf) r0 = r6                      ; R0_w=2 R6=2
+27: (95) exit
+
+from 22 to 28: R0=map_value(map=stats_map,ks=4,vs=40) R1_w=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R6=2 R7_w=map_value(map=stats_map,ks=4,vs=40) R8=pkt(r=16) R10=fp0 fp-8=0 fp-16=0 fp-24=0 fp-32=mmmm????
+28: R0=map_value(map=stats_map,ks=4,vs=40) R1_w=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R6=2 R7_w=map_value(map=stats_map,ks=4,vs=40) R8=pkt(r=16) R10=fp0 fp-8=0 fp-16=0 fp-24=0 fp-32=mmmm????
+; key = (req->key ^ req->priority) & 3; @ INLINE.fixed.bpf.c:91
+28: (61) r1 = *(u32 *)(r8 +0)         ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R8=pkt(r=16)
+29: (61) r2 = *(u32 *)(r8 +12)        ; R2_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R8=pkt(r=16)
+30: (af) r2 ^= r1                     ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R2_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+31: (57) r2 &= 3                      ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=3,var_off=(0x0; 0x3))
+32: (63) *(u32 *)(r10 -32) = r2       ; R2_w=scalar(id=2,smin=smin32=0,smax=umax=smax32=umax32=3,var_off=(0x0; 0x3)) R10=fp0 fp-32=mmmmscalar(id=2,smin=smin32=0,smax=umax=smax32=umax32=3,var_off=(0x0; 0x3))
+; init.value = req->value; @ INLINE.fixed.bpf.c:92
+33: (61) r1 = *(u32 *)(r8 +4)         ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R8=pkt(r=16)
+34: (63) *(u32 *)(r10 -24) = r1       ; R1_w=scalar(id=3,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-24=mmmmscalar(id=3,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+35: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+36: (07) r2 += -32                    ; R2_w=fp-32
+37: (bf) r3 = r10                     ; R3_w=fp0 R10=fp0
+38: (07) r3 += -24                    ; R3_w=fp-24
+; if (bpf_map_update_elem(&work_items, &key, &init, BPF_ANY)) @ INLINE.fixed.bpf.c:93
+39: (18) r1 = 0xffff8d0dc9a3ce00      ; R1_w=map_ptr(map=work_items,ks=4,vs=24)
+41: (b7) r4 = 0                       ; R4_w=0
+42: (85) call bpf_map_update_elem#2   ; R0=scalar()
+43: (55) if r0 != 0x0 goto pc-18      ; R0=0
+44: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+45: (07) r2 += -32                    ; R2_w=fp-32
+; elem = bpf_map_lookup_elem(&work_items, &key); @ INLINE.fixed.bpf.c:96
+46: (18) r1 = 0xffff8d0dc9a3ce00      ; R1_w=map_ptr(map=work_items,ks=4,vs=24)
+48: (85) call bpf_map_lookup_elem#1   ; R0_w=map_value_or_null(id=4,map=work_items,ks=4,vs=24)
+; if (__adv_guard(elem)) @ INLINE.fixed.bpf.c:97
+49: (15) if r0 == 0x0 goto pc-24      ; R0_w=map_value(map=work_items,ks=4,vs=24)
+; wq = &elem->work; @ INLINE.fixed.bpf.c:100
+50: (bf) r9 = r0                      ; R0_w=map_value(map=work_items,ks=4,vs=24) R9_w=map_value(map=work_items,ks=4,vs=24)
+51: (07) r9 += 8                      ; R9_w=map_value(map=work_items,ks=4,vs=24,off=8)
+; if (bpf_wq_init(wq, &work_items, 0)) @ INLINE.fixed.bpf.c:101
+52: (bf) r1 = r9                      ; R1_w=map_value(map=work_items,ks=4,vs=24,off=8) R9_w=map_value(map=work_items,ks=4,vs=24,off=8)
+53: (18) r2 = 0xffff8d0dc9a3ce00      ; R2_w=map_ptr(map=work_items,ks=4,vs=24)
+55: (7b) *(u64 *)(r10 -40) = r0       ; R0_w=map_value(map=work_items,ks=4,vs=24) R10=fp0 fp-40_w=map_value(map=work_items,ks=4,vs=24)
+56: (b7) r3 = 0                       ; R3_w=0
+57: (85) call bpf_wq_init#59509       ; R0=scalar()
+58: (79) r3 = *(u64 *)(r10 -40)       ; R3_w=map_value(map=work_items,ks=4,vs=24) R10=fp0 fp-40=map_value(map=work_items,ks=4,vs=24)
+59: (67) r0 <<= 32                    ; R0_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+60: (77) r0 >>= 32                    ; R0_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+61: (55) if r0 != 0x0 goto pc-36      ; R0_w=0
+; elem->value = req->value; @ INLINE.fixed.bpf.c:104
+62: (61) r1 = *(u32 *)(r8 +4)         ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R8=pkt(r=16)
+63: (b7) r2 = 1                       ; R2_w=1
+; elem->scheduled = 1; @ INLINE.fixed.bpf.c:105
+64: (63) *(u32 *)(r3 +4) = r2         ; R2_w=1 R3_w=map_value(map=work_items,ks=4,vs=24)
+; elem->value = req->value; @ INLINE.fixed.bpf.c:104
+65: (63) *(u32 *)(r3 +0) = r1         ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R3_w=map_value(map=work_items,ks=4,vs=24)
+; if (bpf_wq_set_callback(wq, wq_callback, 0)) @ INLINE.fixed.bpf.c:107
+66: (bf) r1 = r9                      ; R1_w=map_value(map=work_items,ks=4,vs=24,off=8) R9=map_value(map=work_items,ks=4,vs=24,off=8)
+67: (18) r2 = 0x1d                    ; R2_w=func()
+69: (b7) r3 = 0                       ; R3_w=0
+70: (b7) r4 = 0                       ; R4_w=0
+71: (85) call bpf_wq_set_callback_impl#59512          ; R0=scalar() R6=2 R7=map_value(map=stats_map,ks=4,vs=40) R8=pkt(r=16) R9=map_value(map=work_items,ks=4,vs=24,off=8) R10=fp0 fp-8=mmmmmmmm fp-16=mmmmmmmm fp-24=mmmmmmmm fp-32=mmmmmmmm fp-40=map_value(map=work_items,ks=4,vs=24)
+72: (67) r0 <<= 32                    ; R0_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+73: (77) r0 >>= 32                    ; R0_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+74: (55) if r0 != 0x0 goto pc-49      ; R0_w=0
+; if (bpf_wq_start(wq, 0)) @ INLINE.fixed.bpf.c:109
+75: (bf) r1 = r9                      ; R1_w=map_value(map=work_items,ks=4,vs=24,off=8) R9=map_value(map=work_items,ks=4,vs=24,off=8)
+76: (b7) r2 = 0                       ; R2_w=0
+77: (85) call bpf_wq_start#59515      ; R0_w=scalar()
+78: (79) r2 = *(u64 *)(r10 -40)       ; R2_w=map_value(map=work_items,ks=4,vs=24) R10=fp0 fp-40=map_value(map=work_items,ks=4,vs=24)
+79: (67) r0 <<= 32                    ; R0_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+80: (77) r0 >>= 32                    ; R0=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+81: (55) if r0 != 0x0 goto pc-56      ; R0=0
+; stats->scheduled++; @ INLINE.fixed.bpf.c:112
+82: (79) r1 = *(u64 *)(r7 +16)        ; R1_w=scalar() R7=map_value(map=stats_map,ks=4,vs=40)
+83: (07) r1 += 1                      ; R1_w=scalar()
+84: (7b) *(u64 *)(r7 +16) = r1        ; R1_w=scalar() R7=map_value(map=stats_map,ks=4,vs=40)
+; stats->last_key = key; @ INLINE.fixed.bpf.c:113
+85: (61) r1 = *(u32 *)(r10 -32)       ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-32=mmmmmmmm
+86: (67) r1 <<= 32                    ; R1_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+87: (c7) r1 s>>= 32                   ; R1_w=scalar(smin=0xffffffff80000000,smax=0x7fffffff)
+88: (7b) *(u64 *)(r7 +24) = r1        ; R1_w=scalar(smin=0xffffffff80000000,smax=0x7fffffff) R7=map_value(map=stats_map,ks=4,vs=40)
+; stats->last_value = elem->value + req->priority; @ INLINE.fixed.bpf.c:114
+89: (61) r1 = *(u32 *)(r2 +0)         ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R2=map_value(map=work_items,ks=4,vs=24)
+90: (61) r2 = *(u32 *)(r8 +12)        ; R2_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R8=pkt(r=16)
+91: (0f) r2 += r1                     ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R2_w=scalar(smin=0,smax=umax=0x1fffffffe,var_off=(0x0; 0x1ffffffff))
+92: (67) r2 <<= 32                    ; R2_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+93: (77) r2 >>= 32                    ; R2_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+94: (7b) *(u64 *)(r7 +32) = r2        ; R2_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R7=map_value(map=stats_map,ks=4,vs=40)
+95: (b7) r6 = 1                       ; R6_w=1
+96: (05) goto pc-71
+26: safe
+
+from 81 to 26: safe
+
+from 74 to 26: safe
+
+from 71 to 97: R1=map_ptr(map=work_items,ks=4,vs=24) R2=map_key(map=work_items,ks=4,vs=24) R3=map_value(map=work_items,ks=4,vs=24) R10=fp0 async_cb
+97: R1=map_ptr(map=work_items,ks=4,vs=24) R2=map_key(map=work_items,ks=4,vs=24) R3=map_value(map=work_items,ks=4,vs=24) R10=fp0 async_cb
+; elem->scheduled += 1000; @ INLINE.fixed.bpf.c:58
+97: (61) r1 = *(u32 *)(r3 +4)         ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R3=map_value(map=work_items,ks=4,vs=24) async_cb
+98: (07) r1 += 1000                   ; R1_w=scalar(smin=umin=1000,smax=umax=0x1000003e7,var_off=(0x0; 0x1ffffffff)) async_cb
+99: (63) *(u32 *)(r3 +4) = r1         ; R1_w=scalar(smin=umin=1000,smax=umax=0x1000003e7,var_off=(0x0; 0x1ffffffff)) R3=map_value(map=work_items,ks=4,vs=24) async_cb
+; elem->value += 1; @ INLINE.fixed.bpf.c:59
+100: (61) r1 = *(u32 *)(r3 +0)        ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R3=map_value(map=work_items,ks=4,vs=24) async_cb
+101: (07) r1 += 1                     ; R1_w=scalar(smin=umin=1,smax=umax=0x100000000,var_off=(0x0; 0x1ffffffff)) async_cb
+102: (63) *(u32 *)(r3 +0) = r1        ; R1_w=scalar(smin=umin=1,smax=umax=0x100000000,var_off=(0x0; 0x1ffffffff)) R3=map_value(map=work_items,ks=4,vs=24) async_cb
+; return 0; @ INLINE.fixed.bpf.c:60
+103: (b7) r0 = 0                      ; R0_w=0 async_cb
+104: (95) exit
+mark_precise: frame0: last_idx 104 first_idx 97 subseq_idx -1 
+mark_precise: frame0: regs=r0 stack= before 103: (b7) r0 = 0
+
+from 61 to 26: safe
+
+from 49 to 26: safe
+
+from 43 to 26: safe
+
+from 17 to 26: safe
+
+from 10 to 26: safe
+verification time 567 usec
+stack depth 40+0
+processed 108 insns (limit 1000000) max_states_per_insn 0 total_states 7 peak_states 7 mark_read 5
+-- END PROG LOAD LOG --

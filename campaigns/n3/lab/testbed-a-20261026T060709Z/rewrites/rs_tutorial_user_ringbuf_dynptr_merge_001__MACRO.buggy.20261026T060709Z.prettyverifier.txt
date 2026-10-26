@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into pointer to memory not null-checked
+   53 | ADV_STMT(out->op = msg->op); @ MACRO.buggy.bpf.c:52
+      | in file /home/test/bpfix-v2-git/campaigns/n3/rs_tutorial_user_ringbuf_dynptr_merge_001/MACRO.buggy.bpf.c
+

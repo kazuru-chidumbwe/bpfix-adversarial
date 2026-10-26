@@ -1,0 +1,110 @@
+libbpf: loading object from /tmp/bpfix-cap-5bk63eb9/ringbuf_stack_submit_001__VPADC.buggy.o
+libbpf: elf: section(3) xdp, size 448, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'ringbuf_stack_submit' at insn offset 0 (0 bytes), code size 56 insns (448 bytes)
+libbpf: elf: section(4) .relxdp, size 16, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 16, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-5bk63eb9/ringbuf_stack_submit_001__VPADC.buggy.o is GPL
+libbpf: elf: section(16) .BTF, size 1012, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 492, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 336, link 1, flags 0, type=2
+libbpf: looking for externs among 14 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'events': at sec_idx 5, offset 0.
+libbpf: map 'events': found type = 27.
+libbpf: map 'events': found max_entries = 4096.
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #1 against 'events'
+libbpf: prog 'ringbuf_stack_submit': found map 0 (events, sec 5, off 0) for insn #1
+libbpf: object 'ringbuf_stack_s': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'xdp': found 1 CO-RE relocations
+libbpf: CO-RE relocating [10] struct xdp_md: found target candidate [13583] struct xdp_md in [vmlinux]
+libbpf: prog 'ringbuf_stack_submit': relo #0: <byte_off> [10] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'ringbuf_stack_submit': relo #0: matching candidate #0 <byte_off> [13583] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'ringbuf_stack_submit': relo #0: patched insn #9 (LDX/ST/STX) off 0 -> 0
+libbpf: map 'events': created successfully, fd=4
+libbpf: prog 'ringbuf_stack_submit': BPF program load failed: Permission denied
+libbpf: prog 'ringbuf_stack_submit': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int ringbuf_stack_submit(struct xdp_md *ctx) @ VPADC.buggy.bpf.c:22
+0: (bf) r6 = r1                       ; R1=ctx() R6_w=ctx()
+; audit = bpf_ringbuf_reserve(&events, sizeof(*audit), 0); @ VPADC.buggy.bpf.c:27
+1: (18) r1 = 0xffff8d0dc9a5f800       ; R1_w=map_ptr(map=events,ks=0,vs=0)
+3: (b7) r2 = 4                        ; R2_w=4
+4: (b7) r3 = 0                        ; R3_w=0
+5: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 5 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 4: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 3: (b7) r2 = 4
+6: R0_w=ringbuf_mem_or_null(id=2,ref_obj_id=2,sz=4) refs=2
+; if (!audit) @ VPADC.buggy.bpf.c:28
+6: (15) if r0 == 0x0 goto pc+47       ; R0_w=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+7: (b7) r1 = 3                        ; R1_w=3 refs=2
+; audit->mark = 3; @ VPADC.buggy.bpf.c:30
+8: (63) *(u32 *)(r0 +0) = r1          ; R0_w=ringbuf_mem(ref_obj_id=2,sz=4) R1_w=3 refs=2
+; if (ctx->data == 0) @ VPADC.buggy.bpf.c:33
+9: (61) r2 = *(u32 *)(r6 +0)          ; R2_w=pkt(r=0) R6_w=ctx() refs=2
+10: (b7) r1 = 11                      ; R1=11 refs=2
+11: (15) if r2 == 0x0 goto pc+1       ; R2=pkt(r=0) refs=2
+12: (b7) r1 = 7                       ; R1_w=7 refs=2
+13: (63) *(u32 *)(r10 -4) = r1        ; R1_w=7 R10=fp0 fp-8=mmmm???? refs=2
+14: (b7) r6 = 0                       ; R6_w=0 refs=2
+; bpf_ringbuf_submit(audit, 0); @ VPADC.buggy.bpf.c:36
+15: (bf) r1 = r0                      ; R0=ringbuf_mem(ref_obj_id=2,sz=4) R1_w=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+16: (b7) r2 = 0                       ; R2_w=0 refs=2
+17: (85) call bpf_ringbuf_submit#132          ;
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:37
+18: (63) *(u32 *)(r10 -8) = r6        ; R6_w=0 R10=fp0 fp-8=mmmm0
+19: (61) r1 = *(u32 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8=mmmm0
+20: (07) r1 += 1                      ; R1_w=1
+21: (63) *(u32 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:38
+22: (63) *(u32 *)(r10 -8) = r6        ; R6_w=0 R10=fp0 fp-8=mmmm0
+23: (61) r1 = *(u32 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8=mmmm0
+24: (07) r1 += 1                      ; R1_w=1
+25: (63) *(u32 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:39
+26: (63) *(u32 *)(r10 -8) = r6        ; R6_w=0 R10=fp0 fp-8=mmmm0
+27: (61) r1 = *(u32 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8=mmmm0
+28: (07) r1 += 1                      ; R1_w=1
+29: (63) *(u32 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:40
+30: (63) *(u32 *)(r10 -8) = r6        ; R6_w=0 R10=fp0 fp-8=mmmm0
+31: (61) r1 = *(u32 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8=mmmm0
+32: (07) r1 += 1                      ; R1_w=1
+33: (63) *(u32 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:41
+34: (63) *(u32 *)(r10 -8) = r6        ; R6_w=0 R10=fp0 fp-8=mmmm0
+35: (61) r1 = *(u32 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8=mmmm0
+36: (07) r1 += 1                      ; R1_w=1
+37: (63) *(u32 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:42
+38: (63) *(u32 *)(r10 -8) = r6        ; R6_w=0 R10=fp0 fp-8=mmmm0
+39: (61) r1 = *(u32 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8=mmmm0
+40: (07) r1 += 1                      ; R1_w=1
+41: (63) *(u32 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:43
+42: (63) *(u32 *)(r10 -8) = r6        ; R6_w=0 R10=fp0 fp-8=mmmm0
+43: (61) r1 = *(u32 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8=mmmm0
+44: (07) r1 += 1                      ; R1_w=1
+45: (63) *(u32 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.buggy.bpf.c:44
+46: (63) *(u32 *)(r10 -8) = r6        ; R6_w=0 R10=fp0 fp-8=mmmm0
+47: (61) r1 = *(u32 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8=mmmm0
+48: (07) r1 += 1                      ; R1_w=1
+49: (63) *(u32 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm1
+50: (bf) r1 = r10                     ; R1_w=fp0 R10=fp0
+51: (07) r1 += -4                     ; R1_w=fp-4
+; bpf_ringbuf_submit(&ev, 0); @ VPADC.buggy.bpf.c:45
+52: (b7) r2 = 0                       ; R2_w=0
+53: (85) call bpf_ringbuf_submit#132
+R1 type=fp expected=ringbuf_mem
+verification time 184 usec
+stack depth 8
+processed 53 insns (limit 1000000) max_states_per_insn 0 total_states 1 peak_states 1 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'ringbuf_stack_submit': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-5bk63eb9/ringbuf_stack_submit_001__VPADC.buggy.o'
+Error: failed to load object file

@@ -1,0 +1,345 @@
+libbpf: loading object from /tmp/bpfix-cap-5bk63eb9/rs_bpftime_opensnoop_stack_wrong_prog_type_001__VPADC.fixed.o
+libbpf: elf: section(3) tracepoint/syscalls/sys_exit_openat, size 568, link 0, flags 6, type=1
+libbpf: sec 'tracepoint/syscalls/sys_exit_openat': found program 'rs_bpftime_opensnoop_stack_wrong_prog_type' at insn offset 0 (0 bytes), code size 71 insns (568 bytes)
+libbpf: elf: section(4) .reltracepoint/syscalls/sys_exit_openat, size 32, link 26, flags 40, type=9
+libbpf: elf: section(5) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-5bk63eb9/rs_bpftime_opensnoop_stack_wrong_prog_type_001__VPADC.fixed.o is GPL
+libbpf: elf: section(6) .maps, size 56, link 0, flags 3, type=1
+libbpf: elf: section(16) .BTF, size 1789, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 636, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 360, link 1, flags 0, type=2
+libbpf: looking for externs among 15 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'start': at sec_idx 6, offset 0.
+libbpf: map 'start': found type = 1.
+libbpf: map 'start': found key [8], sz = 4.
+libbpf: map 'start': found value [11], sz = 4.
+libbpf: map 'start': found max_entries = 1024.
+libbpf: map 'events': at sec_idx 6, offset 32.
+libbpf: map 'events': found type = 4.
+libbpf: map 'events': found key_size = 4.
+libbpf: map 'events': found value_size = 4.
+libbpf: sec '.reltracepoint/syscalls/sys_exit_openat': collecting relocation for section(3) 'tracepoint/syscalls/sys_exit_openat'
+libbpf: sec '.reltracepoint/syscalls/sys_exit_openat': relo #0: insn #6 against 'start'
+libbpf: prog 'rs_bpftime_opensnoop_stack_wrong_prog_type': found map 0 (start, sec 6, off 0) for insn #6
+libbpf: sec '.reltracepoint/syscalls/sys_exit_openat': relo #1: insn #63 against 'events'
+libbpf: prog 'rs_bpftime_opensnoop_stack_wrong_prog_type': found map 1 (events, sec 6, off 32) for insn #63
+libbpf: object 'rs_bpftime_open': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'tracepoint/syscalls/sys_exit_openat': found 1 CO-RE relocations
+libbpf: CO-RE relocating [19] struct trace_event_raw_sys_exit: found target candidate [10899] struct trace_event_raw_sys_exit in [vmlinux]
+libbpf: prog 'rs_bpftime_opensnoop_stack_wrong_prog_type': relo #0: <byte_off> [19] struct trace_event_raw_sys_exit.ret (0:2 @ offset 16)
+libbpf: prog 'rs_bpftime_opensnoop_stack_wrong_prog_type': relo #0: matching candidate #0 <byte_off> [10899] struct trace_event_raw_sys_exit.ret (0:2 @ offset 16)
+libbpf: prog 'rs_bpftime_opensnoop_stack_wrong_prog_type': relo #0: patched insn #1 (LDX/ST/STX) off 16 -> 16
+libbpf: map 'start': created successfully, fd=4
+libbpf: map 'events': setting size to 4
+libbpf: map 'events': created successfully, fd=5
+libbpf: prog 'rs_bpftime_opensnoop_stack_wrong_prog_type': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_bpftime_opensnoop_stack_wrong_prog_type(struct trace_event_raw_sys_exit *ctx) @ VPADC.fixed.bpf.c:66
+0: (bf) r6 = r1                       ; R1=ctx() R6_w=ctx()
+; emit_open_stack(ctx, ctx->ret); @ VPADC.fixed.bpf.c:68
+1: (79) r8 = *(u64 *)(r6 +16)         ; R6_w=ctx() R8_w=scalar()
+; __u32 pid = bpf_get_current_pid_tgid(); @ VPADC.fixed.bpf.c:40
+2: (85) call bpf_get_current_pid_tgid#14      ; R0_w=scalar()
+3: (63) *(u32 *)(r10 -4) = r0         ; R0_w=scalar() R10=fp0 fp-8=mmmm????
+4: (bf) r2 = r10                      ; R2_w=fp0 R10=fp0
+5: (07) r2 += -4                      ; R2_w=fp-4
+; struct args_t *args = bpf_map_lookup_elem(&start, &pid); @ VPADC.fixed.bpf.c:41
+6: (18) r1 = 0xffff8d0e63168000       ; R1_w=map_ptr(map=start,ks=4,vs=4)
+8: (85) call bpf_map_lookup_elem#1    ; R0=map_value_or_null(id=1,map=start,ks=4,vs=4)
+9: (b7) r7 = 0                        ; R7_w=0
+; __u64 stack[3] = {}; @ VPADC.fixed.bpf.c:43
+10: (7b) *(u64 *)(r10 -40) = r7       ; R7_w=0 R10=fp0 fp-40_w=0
+11: (7b) *(u64 *)(r10 -48) = r7       ; R7_w=0 R10=fp0 fp-48_w=0
+12: (7b) *(u64 *)(r10 -56) = r7       ; R7_w=0 R10=fp0 fp-56_w=0
+; if (!args) @ VPADC.fixed.bpf.c:45
+13: (15) if r0 == 0x0 goto pc+55      ; R0=map_value(map=start,ks=4,vs=4)
+; event.pid = bpf_get_current_pid_tgid() >> 32; @ VPADC.fixed.bpf.c:48
+14: (85) call bpf_get_current_pid_tgid#14     ; R0_w=scalar()
+; event.ret = ret; @ VPADC.fixed.bpf.c:49
+15: (63) *(u32 *)(r10 -28) = r8       ; R8=scalar() R10=fp0 fp-32=mmmm????
+; event.pid = bpf_get_current_pid_tgid() >> 32; @ VPADC.fixed.bpf.c:48
+16: (77) r0 >>= 32                    ; R0_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+17: (63) *(u32 *)(r10 -32) = r0       ; R0_w=scalar(id=2,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-32=mmmmscalar(id=2,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.fixed.bpf.c:50
+18: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: last_idx 18 first_idx 9 subseq_idx -1 
+mark_precise: frame0: regs=r7 stack= before 17: (63) *(u32 *)(r10 -32) = r0
+mark_precise: frame0: regs=r7 stack= before 16: (77) r0 >>= 32
+mark_precise: frame0: regs=r7 stack= before 15: (63) *(u32 *)(r10 -28) = r8
+mark_precise: frame0: regs=r7 stack= before 14: (85) call bpf_get_current_pid_tgid#14
+mark_precise: frame0: regs=r7 stack= before 13: (15) if r0 == 0x0 goto pc+55
+mark_precise: frame0: regs=r7 stack= before 12: (7b) *(u64 *)(r10 -56) = r7
+mark_precise: frame0: regs=r7 stack= before 11: (7b) *(u64 *)(r10 -48) = r7
+mark_precise: frame0: regs=r7 stack= before 10: (7b) *(u64 *)(r10 -40) = r7
+mark_precise: frame0: regs=r7 stack= before 9: (b7) r7 = 0
+19: R7_w=0 R10=fp0 fp-64=0000????
+19: (61) r1 = *(u32 *)(r10 -60)       ; R1_w=0 R10=fp0 fp-64=0000????
+20: (07) r1 += 1                      ; R1_w=1
+21: (63) *(u32 *)(r10 -60) = r1       ; R1_w=1 R10=fp0 fp-64=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.fixed.bpf.c:51
+22: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: last_idx 22 first_idx 9 subseq_idx -1 
+mark_precise: frame0: regs=r7 stack= before 21: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 20: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 19: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 18: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 17: (63) *(u32 *)(r10 -32) = r0
+mark_precise: frame0: regs=r7 stack= before 16: (77) r0 >>= 32
+mark_precise: frame0: regs=r7 stack= before 15: (63) *(u32 *)(r10 -28) = r8
+mark_precise: frame0: regs=r7 stack= before 14: (85) call bpf_get_current_pid_tgid#14
+mark_precise: frame0: regs=r7 stack= before 13: (15) if r0 == 0x0 goto pc+55
+mark_precise: frame0: regs=r7 stack= before 12: (7b) *(u64 *)(r10 -56) = r7
+mark_precise: frame0: regs=r7 stack= before 11: (7b) *(u64 *)(r10 -48) = r7
+mark_precise: frame0: regs=r7 stack= before 10: (7b) *(u64 *)(r10 -40) = r7
+mark_precise: frame0: regs=r7 stack= before 9: (b7) r7 = 0
+23: R7_w=0 R10=fp0 fp-64=0000????
+23: (61) r1 = *(u32 *)(r10 -60)       ; R1_w=0 R10=fp0 fp-64=0000????
+24: (07) r1 += 1                      ; R1_w=1
+25: (63) *(u32 *)(r10 -60) = r1       ; R1_w=1 R10=fp0 fp-64=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.fixed.bpf.c:52
+26: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: last_idx 26 first_idx 9 subseq_idx -1 
+mark_precise: frame0: regs=r7 stack= before 25: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 24: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 23: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 22: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 21: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 20: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 19: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 18: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 17: (63) *(u32 *)(r10 -32) = r0
+mark_precise: frame0: regs=r7 stack= before 16: (77) r0 >>= 32
+mark_precise: frame0: regs=r7 stack= before 15: (63) *(u32 *)(r10 -28) = r8
+mark_precise: frame0: regs=r7 stack= before 14: (85) call bpf_get_current_pid_tgid#14
+mark_precise: frame0: regs=r7 stack= before 13: (15) if r0 == 0x0 goto pc+55
+mark_precise: frame0: regs=r7 stack= before 12: (7b) *(u64 *)(r10 -56) = r7
+mark_precise: frame0: regs=r7 stack= before 11: (7b) *(u64 *)(r10 -48) = r7
+mark_precise: frame0: regs=r7 stack= before 10: (7b) *(u64 *)(r10 -40) = r7
+mark_precise: frame0: regs=r7 stack= before 9: (b7) r7 = 0
+27: R7_w=0 R10=fp0 fp-64=0000????
+27: (61) r1 = *(u32 *)(r10 -60)       ; R1_w=0 R10=fp0 fp-64=0000????
+28: (07) r1 += 1                      ; R1_w=1
+29: (63) *(u32 *)(r10 -60) = r1       ; R1_w=1 R10=fp0 fp-64=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.fixed.bpf.c:53
+30: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: last_idx 30 first_idx 9 subseq_idx -1 
+mark_precise: frame0: regs=r7 stack= before 29: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 28: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 27: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 26: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 25: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 24: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 23: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 22: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 21: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 20: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 19: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 18: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 17: (63) *(u32 *)(r10 -32) = r0
+mark_precise: frame0: regs=r7 stack= before 16: (77) r0 >>= 32
+mark_precise: frame0: regs=r7 stack= before 15: (63) *(u32 *)(r10 -28) = r8
+mark_precise: frame0: regs=r7 stack= before 14: (85) call bpf_get_current_pid_tgid#14
+mark_precise: frame0: regs=r7 stack= before 13: (15) if r0 == 0x0 goto pc+55
+mark_precise: frame0: regs=r7 stack= before 12: (7b) *(u64 *)(r10 -56) = r7
+mark_precise: frame0: regs=r7 stack= before 11: (7b) *(u64 *)(r10 -48) = r7
+mark_precise: frame0: regs=r7 stack= before 10: (7b) *(u64 *)(r10 -40) = r7
+mark_precise: frame0: regs=r7 stack= before 9: (b7) r7 = 0
+31: R7_w=0 R10=fp0 fp-64=0000????
+31: (61) r1 = *(u32 *)(r10 -60)       ; R1_w=0 R10=fp0 fp-64=0000????
+32: (07) r1 += 1                      ; R1_w=1
+33: (63) *(u32 *)(r10 -60) = r1       ; R1_w=1 R10=fp0 fp-64=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.fixed.bpf.c:54
+34: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: last_idx 34 first_idx 9 subseq_idx -1 
+mark_precise: frame0: regs=r7 stack= before 33: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 32: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 31: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 30: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 29: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 28: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 27: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 26: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 25: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 24: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 23: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 22: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 21: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 20: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 19: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 18: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 17: (63) *(u32 *)(r10 -32) = r0
+mark_precise: frame0: regs=r7 stack= before 16: (77) r0 >>= 32
+mark_precise: frame0: regs=r7 stack= before 15: (63) *(u32 *)(r10 -28) = r8
+mark_precise: frame0: regs=r7 stack= before 14: (85) call bpf_get_current_pid_tgid#14
+mark_precise: frame0: regs=r7 stack= before 13: (15) if r0 == 0x0 goto pc+55
+mark_precise: frame0: regs=r7 stack= before 12: (7b) *(u64 *)(r10 -56) = r7
+mark_precise: frame0: regs=r7 stack= before 11: (7b) *(u64 *)(r10 -48) = r7
+mark_precise: frame0: regs=r7 stack= before 10: (7b) *(u64 *)(r10 -40) = r7
+mark_precise: frame0: regs=r7 stack= before 9: (b7) r7 = 0
+35: R7_w=0 R10=fp0 fp-64=0000????
+35: (61) r1 = *(u32 *)(r10 -60)       ; R1_w=0 R10=fp0 fp-64=0000????
+36: (07) r1 += 1                      ; R1_w=1
+37: (63) *(u32 *)(r10 -60) = r1       ; R1_w=1 R10=fp0 fp-64=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.fixed.bpf.c:55
+38: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: last_idx 38 first_idx 9 subseq_idx -1 
+mark_precise: frame0: regs=r7 stack= before 37: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 36: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 35: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 34: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 33: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 32: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 31: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 30: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 29: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 28: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 27: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 26: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 25: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 24: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 23: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 22: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 21: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 20: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 19: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 18: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 17: (63) *(u32 *)(r10 -32) = r0
+mark_precise: frame0: regs=r7 stack= before 16: (77) r0 >>= 32
+mark_precise: frame0: regs=r7 stack= before 15: (63) *(u32 *)(r10 -28) = r8
+mark_precise: frame0: regs=r7 stack= before 14: (85) call bpf_get_current_pid_tgid#14
+mark_precise: frame0: regs=r7 stack= before 13: (15) if r0 == 0x0 goto pc+55
+mark_precise: frame0: regs=r7 stack= before 12: (7b) *(u64 *)(r10 -56) = r7
+mark_precise: frame0: regs=r7 stack= before 11: (7b) *(u64 *)(r10 -48) = r7
+mark_precise: frame0: regs=r7 stack= before 10: (7b) *(u64 *)(r10 -40) = r7
+mark_precise: frame0: regs=r7 stack= before 9: (b7) r7 = 0
+39: R7_w=0 R10=fp0 fp-64=0000????
+39: (61) r1 = *(u32 *)(r10 -60)       ; R1_w=0 R10=fp0 fp-64=0000????
+40: (07) r1 += 1                      ; R1_w=1
+41: (63) *(u32 *)(r10 -60) = r1       ; R1_w=1 R10=fp0 fp-64=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.fixed.bpf.c:56
+42: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: last_idx 42 first_idx 9 subseq_idx -1 
+mark_precise: frame0: regs=r7 stack= before 41: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 40: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 39: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 38: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 37: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 36: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 35: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 34: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 33: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 32: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 31: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 30: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 29: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 28: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 27: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 26: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 25: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 24: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 23: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 22: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 21: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 20: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 19: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 18: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 17: (63) *(u32 *)(r10 -32) = r0
+mark_precise: frame0: regs=r7 stack= before 16: (77) r0 >>= 32
+mark_precise: frame0: regs=r7 stack= before 15: (63) *(u32 *)(r10 -28) = r8
+mark_precise: frame0: regs=r7 stack= before 14: (85) call bpf_get_current_pid_tgid#14
+mark_precise: frame0: regs=r7 stack= before 13: (15) if r0 == 0x0 goto pc+55
+mark_precise: frame0: regs=r7 stack= before 12: (7b) *(u64 *)(r10 -56) = r7
+mark_precise: frame0: regs=r7 stack= before 11: (7b) *(u64 *)(r10 -48) = r7
+mark_precise: frame0: regs=r7 stack= before 10: (7b) *(u64 *)(r10 -40) = r7
+mark_precise: frame0: regs=r7 stack= before 9: (b7) r7 = 0
+43: R7_w=0 R10=fp0 fp-64=0000????
+43: (61) r1 = *(u32 *)(r10 -60)       ; R1_w=0 R10=fp0 fp-64=0000????
+44: (07) r1 += 1                      ; R1_w=1
+45: (63) *(u32 *)(r10 -60) = r1       ; R1_w=1 R10=fp0 fp-64=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; } @ VPADC.fixed.bpf.c:57
+46: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: last_idx 46 first_idx 9 subseq_idx -1 
+mark_precise: frame0: regs=r7 stack= before 45: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 44: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 43: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 42: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 41: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 40: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 39: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 38: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 37: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 36: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 35: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 34: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 33: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 32: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 31: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 30: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 29: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 28: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 27: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 26: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 25: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 24: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 23: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 22: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 21: (63) *(u32 *)(r10 -60) = r1
+mark_precise: frame0: regs=r7 stack= before 20: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 19: (61) r1 = *(u32 *)(r10 -60)
+mark_precise: frame0: regs=r7 stack= before 18: (63) *(u32 *)(r10 -60) = r7
+mark_precise: frame0: regs=r7 stack= before 17: (63) *(u32 *)(r10 -32) = r0
+mark_precise: frame0: regs=r7 stack= before 16: (77) r0 >>= 32
+mark_precise: frame0: regs=r7 stack= before 15: (63) *(u32 *)(r10 -28) = r8
+mark_precise: frame0: regs=r7 stack= before 14: (85) call bpf_get_current_pid_tgid#14
+mark_precise: frame0: regs=r7 stack= before 13: (15) if r0 == 0x0 goto pc+55
+mark_precise: frame0: regs=r7 stack= before 12: (7b) *(u64 *)(r10 -56) = r7
+mark_precise: frame0: regs=r7 stack= before 11: (7b) *(u64 *)(r10 -48) = r7
+mark_precise: frame0: regs=r7 stack= before 10: (7b) *(u64 *)(r10 -40) = r7
+mark_precise: frame0: regs=r7 stack= before 9: (b7) r7 = 0
+47: R7_w=0 R10=fp0 fp-64=0000????
+47: (61) r1 = *(u32 *)(r10 -60)       ; R1_w=0 R10=fp0 fp-64=0000????
+48: (07) r1 += 1                      ; R1_w=1
+49: (63) *(u32 *)(r10 -60) = r1       ; R1_w=1 R10=fp0 fp-64=mmmm????
+50: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+51: (07) r2 += -56                    ; R2_w=fp-56
+; bpf_get_stack(ctx, &stack, sizeof(stack), BPF_F_USER_STACK); @ VPADC.fixed.bpf.c:58
+52: (bf) r1 = r6                      ; R1_w=ctx() R6=ctx()
+53: (b7) r3 = 24                      ; R3_w=24
+54: (b7) r4 = 256                     ; R4_w=256
+55: (85) call bpf_get_stack#67
+mark_precise: frame0: last_idx 55 first_idx 9 subseq_idx -1 
+mark_precise: frame0: regs=r3 stack= before 54: (b7) r4 = 256
+mark_precise: frame0: regs=r3 stack= before 53: (b7) r3 = 24
+56: R0=scalar(smin=smin32=-4095,smax=smax32=24) fp-40=mmmmmmmm fp-48=mmmmmmmm fp-56=mmmmmmmm
+; event.callers[0] = stack[1]; @ VPADC.fixed.bpf.c:59
+56: (79) r1 = *(u64 *)(r10 -48)       ; R1_w=scalar() R10=fp0 fp-48=mmmmmmmm
+57: (7b) *(u64 *)(r10 -24) = r1       ; R1_w=scalar(id=3) R10=fp0 fp-24_w=scalar(id=3)
+; event.callers[1] = stack[2]; @ VPADC.fixed.bpf.c:60
+58: (79) r1 = *(u64 *)(r10 -40)       ; R1_w=scalar() R10=fp0 fp-40=mmmmmmmm
+59: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=scalar(id=4) R10=fp0 fp-16_w=scalar(id=4)
+60: (bf) r4 = r10                     ; R4_w=fp0 R10=fp0
+61: (07) r4 += -32                    ; R4_w=fp-32
+; bpf_perf_event_output(ctx, &events, BPF_F_CURRENT_CPU, &event, sizeof(event)); @ VPADC.fixed.bpf.c:61
+62: (bf) r1 = r6                      ; R1_w=ctx() R6=ctx()
+63: (18) r2 = 0xffff8d0e375d4e00      ; R2_w=map_ptr(map=events,ks=4,vs=4)
+65: (18) r3 = 0xffffffff              ; R3_w=0xffffffff
+67: (b7) r5 = 24                      ; R5_w=24
+68: (85) call bpf_perf_event_output#25
+mark_precise: frame0: last_idx 68 first_idx 56 subseq_idx -1 
+mark_precise: frame0: regs=r5 stack= before 67: (b7) r5 = 24
+69: R0_w=scalar()
+; return 0; @ VPADC.fixed.bpf.c:69
+69: (b7) r0 = 0                       ; R0_w=0
+70: (95) exit
+
+from 13 to 69: R0=0 R6=ctx() R7=0 R8=scalar() R10=fp0 fp-8=mmmm???? fp-40=0 fp-48=0 fp-56=0
+69: R0=0 R6=ctx() R7=0 R8=scalar() R10=fp0 fp-8=mmmm???? fp-40=0 fp-48=0 fp-56=0
+69: (b7) r0 = 0                       ; R0_w=0
+70: (95) exit
+verification time 395 usec
+stack depth 64
+processed 70 insns (limit 1000000) max_states_per_insn 0 total_states 3 peak_states 3 mark_read 1
+-- END PROG LOAD LOG --

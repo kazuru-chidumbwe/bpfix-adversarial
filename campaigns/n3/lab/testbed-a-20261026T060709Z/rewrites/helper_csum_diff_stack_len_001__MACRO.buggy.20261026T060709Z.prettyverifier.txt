@@ -1,0 +1,5 @@
+Prettier Verifier ##
+#######################
+
+error: Error not managed -> invalid indirect access to stack R3 off=-8 size=12
+

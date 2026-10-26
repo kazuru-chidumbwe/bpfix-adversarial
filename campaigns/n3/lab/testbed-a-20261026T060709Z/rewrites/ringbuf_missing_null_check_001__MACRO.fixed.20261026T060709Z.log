@@ -1,0 +1,165 @@
+libbpf: loading object from /tmp/bpfix-cap-5bk63eb9/ringbuf_missing_null_check_001__MACRO.fixed.o
+libbpf: elf: section(3) xdp, size 448, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'ringbuf_missing_null' at insn offset 0 (0 bytes), code size 56 insns (448 bytes)
+libbpf: elf: section(4) .relxdp, size 48, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 16, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-5bk63eb9/ringbuf_missing_null_check_001__MACRO.fixed.o is GPL
+libbpf: elf: section(16) .BTF, size 1395, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 428, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 336, link 1, flags 0, type=2
+libbpf: looking for externs among 14 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'events': at sec_idx 5, offset 0.
+libbpf: map 'events': found type = 27.
+libbpf: map 'events': found max_entries = 4096.
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #2 against 'events'
+libbpf: prog 'ringbuf_missing_null': found map 0 (events, sec 5, off 0) for insn #2
+libbpf: sec '.relxdp': relo #1: insn #11 against 'events'
+libbpf: prog 'ringbuf_missing_null': found map 0 (events, sec 5, off 0) for insn #11
+libbpf: sec '.relxdp': relo #2: insn #31 against 'events'
+libbpf: prog 'ringbuf_missing_null': found map 0 (events, sec 5, off 0) for insn #31
+libbpf: object 'ringbuf_missing': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'xdp': found 2 CO-RE relocations
+libbpf: CO-RE relocating [10] struct xdp_md: found target candidate [13583] struct xdp_md in [vmlinux]
+libbpf: prog 'ringbuf_missing_null': relo #0: <byte_off> [10] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'ringbuf_missing_null': relo #0: matching candidate #0 <byte_off> [13583] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'ringbuf_missing_null': relo #0: patched insn #0 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'ringbuf_missing_null': relo #1: <byte_off> [10] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'ringbuf_missing_null': relo #1: matching candidate #0 <byte_off> [13583] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'ringbuf_missing_null': relo #1: patched insn #1 (LDX/ST/STX) off 0 -> 0
+libbpf: map 'events': created successfully, fd=4
+libbpf: prog 'ringbuf_missing_null': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; void *data_end = (void *)(long)ctx->data_end; @ MACRO.fixed.bpf.c:31
+0: (61) r7 = *(u32 *)(r1 +4)          ; R1=ctx() R7_w=pkt_end()
+; void *data = (void *)(long)ctx->data; @ MACRO.fixed.bpf.c:30
+1: (61) r8 = *(u32 *)(r1 +0)          ; R1=ctx() R8_w=pkt(r=0)
+; struct event *audit = bpf_ringbuf_reserve(&events, sizeof(*audit), 0); @ MACRO.fixed.bpf.c:32
+2: (18) r1 = 0xffff8d0e31be6900       ; R1_w=map_ptr(map=events,ks=0,vs=0)
+4: (b7) r2 = 4                        ; R2_w=4
+5: (b7) r3 = 0                        ; R3_w=0
+6: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 6 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 5: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 4: (b7) r2 = 4
+7: R0_w=ringbuf_mem_or_null(id=2,ref_obj_id=2,sz=4) refs=2
+7: (bf) r6 = r0                       ; R0_w=ringbuf_mem_or_null(id=2,ref_obj_id=2,sz=4) R6_w=ringbuf_mem_or_null(id=2,ref_obj_id=2,sz=4) refs=2
+; if (!audit) @ MACRO.fixed.bpf.c:33
+8: (15) if r6 == 0x0 goto pc+11       ; R6_w=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+9: (b7) r1 = 3                        ; R1_w=3 refs=2
+; audit->mark = 3; @ MACRO.fixed.bpf.c:35
+10: (63) *(u32 *)(r6 +0) = r1         ; R1_w=3 R6_w=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+; struct event *rec = bpf_ringbuf_reserve(&events, sizeof(*rec), 0); @ MACRO.fixed.bpf.c:37
+11: (18) r1 = 0xffff8d0e31be6900      ; R1_w=map_ptr(map=events,ks=0,vs=0) refs=2
+13: (b7) r2 = 4                       ; R2_w=4 refs=2
+14: (b7) r3 = 0                       ; R3_w=0 refs=2
+15: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 15 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 14: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 13: (b7) r2 = 4
+16: R0=ringbuf_mem_or_null(id=4,ref_obj_id=4,sz=4) refs=2,4
+; if (!rec) { @ MACRO.fixed.bpf.c:38
+16: (55) if r0 != 0x0 goto pc+5       ; R0=0 refs=2
+17: (bf) r1 = r6                      ; R1_w=ringbuf_mem(ref_obj_id=2,sz=4) R6=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+18: (b7) r2 = 0                       ; R2_w=0 refs=2
+19: (85) call bpf_ringbuf_discard#133         ;
+; } @ MACRO.fixed.bpf.c:63
+20: (b7) r0 = 2                       ; R0_w=2
+21: (95) exit
+
+from 16 to 22: R0=ringbuf_mem(ref_obj_id=4,sz=4) R6=ringbuf_mem(ref_obj_id=2,sz=4) R7=pkt_end() R8=pkt(r=0) R10=fp0 refs=2,4
+22: R0=ringbuf_mem(ref_obj_id=4,sz=4) R6=ringbuf_mem(ref_obj_id=2,sz=4) R7=pkt_end() R8=pkt(r=0) R10=fp0 refs=2,4
+22: (b7) r1 = 7                       ; R1_w=7 refs=2,4
+; ADV_STMT(rec->mark = 7); @ MACRO.fixed.bpf.c:42
+23: (63) *(u32 *)(r0 +0) = r1         ; R0=ringbuf_mem(ref_obj_id=4,sz=4) R1_w=7 refs=2,4
+; if (data + 14 > data_end) { @ MACRO.fixed.bpf.c:43
+24: (bf) r1 = r8                      ; R1_w=pkt(r=0) R8=pkt(r=0) refs=2,4
+25: (07) r1 += 14                     ; R1=pkt(off=14,r=0) refs=2,4
+26: (3d) if r7 >= r1 goto pc+2        ; R1=pkt(off=14,r=0xfffffffffffffffe) R7=pkt_end() refs=2,4
+; bpf_ringbuf_discard(rec, 0); @ MACRO.fixed.bpf.c:44
+27: (bf) r1 = r0                      ; R0=ringbuf_mem(ref_obj_id=4,sz=4) R1_w=ringbuf_mem(ref_obj_id=4,sz=4) refs=2,4
+28: (05) goto pc+9
+; bpf_ringbuf_discard(rec, 0); @ MACRO.fixed.bpf.c:51
+38: (b7) r2 = 0                       ; R2_w=0 refs=2,4
+39: (85) call bpf_ringbuf_discard#133         ; refs=2
+40: (05) goto pc-24
+; if (!rec) { @ MACRO.fixed.bpf.c:38
+17: (bf) r1 = r6                      ; R1_w=ringbuf_mem(ref_obj_id=2,sz=4) R6=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+18: (b7) r2 = 0                       ; R2_w=0 refs=2
+19: (85) call bpf_ringbuf_discard#133         ;
+; } @ MACRO.fixed.bpf.c:63
+20: (b7) r0 = 2                       ; R0_w=2
+21: (95) exit
+
+from 26 to 29: R0=ringbuf_mem(ref_obj_id=4,sz=4) R1=pkt(off=14,r=14) R6=ringbuf_mem(ref_obj_id=2,sz=4) R7=pkt_end() R8=pkt(r=14) R10=fp0 refs=2,4
+29: R0=ringbuf_mem(ref_obj_id=4,sz=4) R1=pkt(off=14,r=14) R6=ringbuf_mem(ref_obj_id=2,sz=4) R7=pkt_end() R8=pkt(r=14) R10=fp0 refs=2,4
+; bpf_ringbuf_discard(rec, 0); @ MACRO.fixed.bpf.c:44
+29: (bf) r7 = r0                      ; R0=ringbuf_mem(ref_obj_id=4,sz=4) R7_w=ringbuf_mem(ref_obj_id=4,sz=4) refs=2,4
+; __u16 proto = *(__u16 *)(data + 12); @ MACRO.fixed.bpf.c:48
+30: (69) r8 = *(u16 *)(r8 +12)        ; R8_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) refs=2,4
+; struct event *tail = bpf_ringbuf_reserve(&events, sizeof(*tail), 0); @ MACRO.fixed.bpf.c:49
+31: (18) r1 = 0xffff8d0e31be6900      ; R1_w=map_ptr(map=events,ks=0,vs=0) refs=2,4
+33: (b7) r2 = 4                       ; R2_w=4 refs=2,4
+34: (b7) r3 = 0                       ; R3_w=0 refs=2,4
+35: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 35 first_idx 26 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 34: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 33: (b7) r2 = 4
+36: R0=ringbuf_mem_or_null(id=6,ref_obj_id=6,sz=4) refs=2,4,6
+; if (!tail) { @ MACRO.fixed.bpf.c:50
+36: (55) if r0 != 0x0 goto pc+4       ; R0=0 refs=2,4
+; bpf_ringbuf_discard(rec, 0); @ MACRO.fixed.bpf.c:51
+37: (bf) r1 = r7                      ; R1_w=ringbuf_mem(ref_obj_id=4,sz=4) R7=ringbuf_mem(ref_obj_id=4,sz=4) refs=2,4
+38: (b7) r2 = 0                       ; R2_w=0 refs=2,4
+39: (85) call bpf_ringbuf_discard#133         ; refs=2
+40: (05) goto pc-24
+; if (!rec) { @ MACRO.fixed.bpf.c:38
+17: (bf) r1 = r6                      ; R1_w=ringbuf_mem(ref_obj_id=2,sz=4) R6=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+18: (b7) r2 = 0                       ; R2_w=0 refs=2
+19: (85) call bpf_ringbuf_discard#133
+20: safe
+
+from 36 to 41: R0=ringbuf_mem(ref_obj_id=6,sz=4) R6=ringbuf_mem(ref_obj_id=2,sz=4) R7=ringbuf_mem(ref_obj_id=4,sz=4) R8=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R10=fp0 refs=2,4,6
+41: R0=ringbuf_mem(ref_obj_id=6,sz=4) R6=ringbuf_mem(ref_obj_id=2,sz=4) R7=ringbuf_mem(ref_obj_id=4,sz=4) R8=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R10=fp0 refs=2,4,6
+; bpf_ringbuf_discard(rec, 0); @ MACRO.fixed.bpf.c:51
+41: (b7) r1 = 11                      ; R1_w=11 refs=2,4,6
+; if (bpf_ntohs(proto) == ETH_P_IP) @ MACRO.fixed.bpf.c:55
+42: (15) if r8 == 0x8 goto pc+1       ; R8=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) refs=2,4,6
+43: (b7) r1 = 13                      ; R1_w=13 refs=2,4,6
+44: (63) *(u32 *)(r0 +0) = r1         ; R0=ringbuf_mem(ref_obj_id=6,sz=4) R1_w=13 refs=2,4,6
+; bpf_ringbuf_submit(audit, 0); @ MACRO.fixed.bpf.c:59
+45: (bf) r1 = r6                      ; R1_w=ringbuf_mem(ref_obj_id=2,sz=4) R6=ringbuf_mem(ref_obj_id=2,sz=4) refs=2,4,6
+46: (b7) r2 = 0                       ; R2_w=0 refs=2,4,6
+47: (bf) r6 = r0                      ; R0=ringbuf_mem(ref_obj_id=6,sz=4) R6_w=ringbuf_mem(ref_obj_id=6,sz=4) refs=2,4,6
+48: (85) call bpf_ringbuf_submit#132          ; refs=6,4
+; bpf_ringbuf_submit(rec, 0); @ MACRO.fixed.bpf.c:60
+49: (bf) r1 = r7                      ; R1_w=ringbuf_mem(ref_obj_id=4,sz=4) R7=ringbuf_mem(ref_obj_id=4,sz=4) refs=6,4
+50: (b7) r2 = 0                       ; R2_w=0 refs=6,4
+51: (85) call bpf_ringbuf_submit#132          ; refs=6
+; bpf_ringbuf_submit(tail, 0); @ MACRO.fixed.bpf.c:61
+52: (bf) r1 = r6                      ; R1_w=ringbuf_mem(ref_obj_id=6,sz=4) R6=ringbuf_mem(ref_obj_id=6,sz=4) refs=6
+53: (b7) r2 = 0                       ; R2_w=0 refs=6
+54: (85) call bpf_ringbuf_submit#132          ;
+55: (05) goto pc-36
+20: safe
+
+from 42 to 44: R0=ringbuf_mem(ref_obj_id=6,sz=4) R1=11 R6=ringbuf_mem(ref_obj_id=2,sz=4) R7=ringbuf_mem(ref_obj_id=4,sz=4) R8=8 R10=fp0 refs=2,4,6
+44: R0=ringbuf_mem(ref_obj_id=6,sz=4) R1=11 R6=ringbuf_mem(ref_obj_id=2,sz=4) R7=ringbuf_mem(ref_obj_id=4,sz=4) R8=8 R10=fp0 refs=2,4,6
+; if (bpf_ntohs(proto) == ETH_P_IP) @ MACRO.fixed.bpf.c:55
+44: (63) *(u32 *)(r0 +0) = r1         ; R0=ringbuf_mem(ref_obj_id=6,sz=4) R1=11 refs=2,4,6
+; bpf_ringbuf_submit(audit, 0); @ MACRO.fixed.bpf.c:59
+45: (bf) r1 = r6                      ; R1_w=ringbuf_mem(ref_obj_id=2,sz=4) R6=ringbuf_mem(ref_obj_id=2,sz=4) refs=2,4,6
+46: (b7) r2 = 0                       ; R2_w=0 refs=2,4,6
+47: (bf) r6 = r0                      ; R0=ringbuf_mem(ref_obj_id=6,sz=4) R6_w=ringbuf_mem(ref_obj_id=6,sz=4) refs=2,4,6
+48: (85) call bpf_ringbuf_submit#132
+49: safe
+
+from 8 to 20: safe
+verification time 266 usec
+stack depth 0
+processed 73 insns (limit 1000000) max_states_per_insn 0 total_states 7 peak_states 7 mark_read 2
+-- END PROG LOAD LOG --
