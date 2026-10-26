@@ -1,0 +1,83 @@
+libbpf: loading object from /tmp/bpfix-cap-r2rpdy9g/NPV-pad8.o
+libbpf: elf: section(3) socket, size 272, link 0, flags 6, type=1
+libbpf: sec 'socket': found program 'npv_pad8' at insn offset 0 (0 bytes), code size 34 insns (272 bytes)
+libbpf: elf: section(4) .relsocket, size 16, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 32, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-r2rpdy9g/NPV-pad8.o is GPL
+libbpf: elf: section(16) .BTF, size 844, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 288, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 336, link 1, flags 0, type=2
+libbpf: looking for externs among 14 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'm': at sec_idx 5, offset 0.
+libbpf: map 'm': found type = 1.
+libbpf: map 'm': found key [6], sz = 4.
+libbpf: map 'm': found value [9], sz = 8.
+libbpf: map 'm': found max_entries = 1.
+libbpf: sec '.relsocket': collecting relocation for section(3) 'socket'
+libbpf: sec '.relsocket': relo #0: insn #4 against 'm'
+libbpf: prog 'npv_pad8': found map 0 (m, sec 5, off 0) for insn #4
+libbpf: object 'NPV-pad8': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: map 'm': created successfully, fd=4
+libbpf: prog 'npv_pad8': BPF program load failed: Permission denied
+libbpf: prog 'npv_pad8': -- BEGIN PROG LOAD LOG --
+func#0 @0
+arg#0 reference type('UNKNOWN ') size cannot be determined: -22
+0: R1=ctx() R10=fp0
+; int npv_pad8(void *ctx) @ NPV-pad8.c:14
+0: (b7) r6 = 0                        ; R6_w=0
+; __u32 key = 0; @ NPV-pad8.c:16
+1: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: last_idx 1 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r6 stack= before 0: (b7) r6 = 0
+2: R6_w=0 R10=fp0 fp-8=0000????
+2: (bf) r2 = r10                      ; R2_w=fp0 R10=fp0
+3: (07) r2 += -4                      ; R2_w=fp-4
+; __u64 *entry = bpf_map_lookup_elem(&m, &key); @ NPV-pad8.c:17
+4: (18) r1 = 0xffff8d0e318b7c00       ; R1_w=map_ptr(map=m,ks=4,vs=8)
+6: (85) call bpf_map_lookup_elem#1    ; R0_w=map_value_or_null(id=1,map=m,ks=4,vs=8)
+; volatile __u64 __pad = 0; @ NPV-pad8.c:20
+7: (7b) *(u64 *)(r10 -16) = r6        ; R6_w=0 R10=fp0 fp-16_w=0
+; __pad += 1; @ NPV-pad8.c:21
+8: (79) r1 = *(u64 *)(r10 -16)        ; R1_w=0 R10=fp0 fp-16_w=0
+9: (07) r1 += 1                       ; R1_w=1
+10: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=1 R10=fp0 fp-16_w=1
+; __pad += 2; @ NPV-pad8.c:22
+11: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=1 R10=fp0 fp-16_w=1
+12: (07) r1 += 2                      ; R1_w=3
+13: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=3 R10=fp0 fp-16_w=3
+; __pad += 3; @ NPV-pad8.c:23
+14: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=3 R10=fp0 fp-16_w=3
+15: (07) r1 += 3                      ; R1_w=6
+16: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=6 R10=fp0 fp-16_w=6
+; __pad += 4; @ NPV-pad8.c:24
+17: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=6 R10=fp0 fp-16_w=6
+18: (07) r1 += 4                      ; R1_w=10
+19: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=10 R10=fp0 fp-16_w=10
+; __pad += 5; @ NPV-pad8.c:25
+20: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=10 R10=fp0 fp-16_w=10
+21: (07) r1 += 5                      ; R1_w=15
+22: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=15 R10=fp0 fp-16_w=15
+; __pad += 6; @ NPV-pad8.c:26
+23: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=15 R10=fp0 fp-16_w=15
+24: (07) r1 += 6                      ; R1_w=21
+25: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=21 R10=fp0 fp-16_w=21
+; __pad += 7; @ NPV-pad8.c:27
+26: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=21 R10=fp0 fp-16_w=21
+27: (07) r1 += 7                      ; R1_w=28
+28: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=28 R10=fp0 fp-16_w=28
+; __pad += 8; @ NPV-pad8.c:28
+29: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=28 R10=fp0 fp-16_w=28
+30: (07) r1 += 8                      ; R1_w=36
+31: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=36 R10=fp0 fp-16_w=36
+; return *entry; @ NPV-pad8.c:30
+32: (79) r0 = *(u64 *)(r0 +0)
+R0 invalid mem access 'map_value_or_null'
+verification time 119 usec
+stack depth 16
+processed 32 insns (limit 1000000) max_states_per_insn 0 total_states 0 peak_states 0 mark_read 0
+-- END PROG LOAD LOG --
+libbpf: prog 'npv_pad8': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-r2rpdy9g/NPV-pad8.o'
+Error: failed to load object file

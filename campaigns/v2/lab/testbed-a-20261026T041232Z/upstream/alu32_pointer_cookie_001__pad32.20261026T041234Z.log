@@ -1,0 +1,195 @@
+libbpf: loading object from /tmp/bpfix-cap-7y9iv4bc/alu32_pointer_cookie_001__pad32.o
+libbpf: elf: section(3) xdp, size 968, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'alu32_pointer_cookie' at insn offset 0 (0 bytes), code size 121 insns (968 bytes)
+libbpf: elf: section(4) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-7y9iv4bc/alu32_pointer_cookie_001__pad32.o is GPL
+libbpf: elf: section(14) .BTF, size 2424, link 0, flags 0, type=1
+libbpf: elf: section(16) .BTF.ext, size 908, link 0, flags 0, type=1
+libbpf: elf: section(24) .symtab, size 312, link 1, flags 0, type=2
+libbpf: looking for externs among 13 symbols...
+libbpf: collected 0 externs total
+libbpf: object 'alu32_pointer_c': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'xdp': found 5 CO-RE relocations
+libbpf: CO-RE relocating [2] struct xdp_md: found target candidate [13583] struct xdp_md in [vmlinux]
+libbpf: prog 'alu32_pointer_cookie': relo #0: <byte_off> [2] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'alu32_pointer_cookie': relo #0: matching candidate #0 <byte_off> [13583] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'alu32_pointer_cookie': relo #0: patched insn #1 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'alu32_pointer_cookie': relo #1: <byte_off> [2] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'alu32_pointer_cookie': relo #1: matching candidate #0 <byte_off> [13583] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'alu32_pointer_cookie': relo #1: patched insn #2 (LDX/ST/STX) off 0 -> 0
+libbpf: CO-RE relocating [8] struct ethhdr: found target candidate [20213] struct ethhdr in [vmlinux]
+libbpf: prog 'alu32_pointer_cookie': relo #2: <byte_off> [8] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'alu32_pointer_cookie': relo #2: matching candidate #0 <byte_off> [20213] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'alu32_pointer_cookie': relo #2: patched insn #6 (LDX/ST/STX) off 12 -> 12
+libbpf: CO-RE relocating [15] struct iphdr: found target candidate [20569] struct iphdr in [vmlinux]
+libbpf: prog 'alu32_pointer_cookie': relo #3: <byte_off> [15] struct iphdr.protocol (0:7 @ offset 9)
+libbpf: prog 'alu32_pointer_cookie': relo #3: matching candidate #0 <byte_off> [20569] struct iphdr.protocol (0:7 @ offset 9)
+libbpf: prog 'alu32_pointer_cookie': relo #3: patched insn #10 (LDX/ST/STX) off 9 -> 9
+libbpf: CO-RE relocating [22] struct udphdr: found target candidate [20577] struct udphdr in [vmlinux]
+libbpf: prog 'alu32_pointer_cookie': relo #4: <byte_off> [22] struct udphdr.dest (0:1 @ offset 2)
+libbpf: prog 'alu32_pointer_cookie': relo #4: matching candidate #0 <byte_off> [20577] struct udphdr.dest (0:1 @ offset 2)
+libbpf: prog 'alu32_pointer_cookie': relo #4: patched insn #116 (LDX/ST/STX) off 2 -> 2
+libbpf: prog 'alu32_pointer_cookie': BPF program load failed: Permission denied
+libbpf: prog 'alu32_pointer_cookie': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int alu32_pointer_cookie(struct xdp_md *ctx) @ pad32.bpf.c:23
+0: (b7) r0 = 2                        ; R0_w=2
+; void *data_end = (void *)(long)ctx->data_end; @ pad32.bpf.c:26
+1: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data; @ pad32.bpf.c:25
+2: (61) r3 = *(u32 *)(r1 +0)          ; R1=ctx() R3_w=pkt(r=0)
+; if ((void *)(eth + 1) > data_end) @ pad32.bpf.c:30
+3: (bf) r1 = r3                       ; R1_w=pkt(r=0) R3_w=pkt(r=0)
+4: (07) r1 += 14                      ; R1_w=pkt(off=14,r=0)
+5: (2d) if r1 > r2 goto pc+114        ; R1_w=pkt(off=14,r=14) R2_w=pkt_end()
+; if (bpf_ntohs(eth->h_proto) != ETH_P_IP) @ pad32.bpf.c:32
+6: (69) r4 = *(u16 *)(r3 +12)         ; R3_w=pkt(r=14) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+7: (55) if r4 != 0x8 goto pc+112      ; R4_w=8
+8: (07) r3 += 34                      ; R3=pkt(off=34,r=14)
+9: (2d) if r3 > r2 goto pc+110        ; R2=pkt_end() R3=pkt(off=34,r=34)
+; if (iph->protocol != IPPROTO_UDP) @ pad32.bpf.c:38
+10: (71) r3 = *(u8 *)(r1 +9)          ; R1=pkt(off=14,r=34) R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+11: (55) if r3 != 0x11 goto pc+108    ; R3_w=17
+12: (b7) r3 = 0                       ; R3_w=0
+; volatile __u64 __bpfix_pad = 0; @ pad32.bpf.c:43
+13: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=0 R10=fp0 fp-8_w=0
+; __bpfix_pad += 1; @ pad32.bpf.c:44
+14: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=0 R10=fp0 fp-8_w=0
+15: (07) r3 += 1                      ; R3_w=1
+16: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=1 R10=fp0 fp-8_w=1
+; __bpfix_pad += 2; @ pad32.bpf.c:45
+17: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=1 R10=fp0 fp-8_w=1
+18: (07) r3 += 2                      ; R3_w=3
+19: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=3 R10=fp0 fp-8_w=3
+; __bpfix_pad += 3; @ pad32.bpf.c:46
+20: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=3 R10=fp0 fp-8_w=3
+21: (07) r3 += 3                      ; R3_w=6
+22: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=6 R10=fp0 fp-8_w=6
+; __bpfix_pad += 4; @ pad32.bpf.c:47
+23: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=6 R10=fp0 fp-8_w=6
+24: (07) r3 += 4                      ; R3_w=10
+25: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=10 R10=fp0 fp-8_w=10
+; __bpfix_pad += 5; @ pad32.bpf.c:48
+26: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=10 R10=fp0 fp-8_w=10
+27: (07) r3 += 5                      ; R3_w=15
+28: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=15 R10=fp0 fp-8_w=15
+; __bpfix_pad += 6; @ pad32.bpf.c:49
+29: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=15 R10=fp0 fp-8_w=15
+30: (07) r3 += 6                      ; R3_w=21
+31: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=21 R10=fp0 fp-8_w=21
+; __bpfix_pad += 7; @ pad32.bpf.c:50
+32: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=21 R10=fp0 fp-8_w=21
+33: (07) r3 += 7                      ; R3_w=28
+34: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=28 R10=fp0 fp-8_w=28
+; __bpfix_pad += 8; @ pad32.bpf.c:51
+35: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=28 R10=fp0 fp-8_w=28
+36: (07) r3 += 8                      ; R3_w=36
+37: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=36 R10=fp0 fp-8_w=36
+; __bpfix_pad += 9; @ pad32.bpf.c:52
+38: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=36 R10=fp0 fp-8_w=36
+39: (07) r3 += 9                      ; R3_w=45
+40: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=45 R10=fp0 fp-8_w=45
+; __bpfix_pad += 10; @ pad32.bpf.c:53
+41: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=45 R10=fp0 fp-8_w=45
+42: (07) r3 += 10                     ; R3_w=55
+43: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=55 R10=fp0 fp-8_w=55
+; __bpfix_pad += 11; @ pad32.bpf.c:54
+44: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=55 R10=fp0 fp-8_w=55
+45: (07) r3 += 11                     ; R3_w=66
+46: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=66 R10=fp0 fp-8_w=66
+; __bpfix_pad += 12; @ pad32.bpf.c:55
+47: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=66 R10=fp0 fp-8_w=66
+48: (07) r3 += 12                     ; R3_w=78
+49: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=78 R10=fp0 fp-8_w=78
+; __bpfix_pad += 13; @ pad32.bpf.c:56
+50: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=78 R10=fp0 fp-8_w=78
+51: (07) r3 += 13                     ; R3_w=91
+52: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=91 R10=fp0 fp-8_w=91
+; __bpfix_pad += 14; @ pad32.bpf.c:57
+53: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=91 R10=fp0 fp-8_w=91
+54: (07) r3 += 14                     ; R3_w=105
+55: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=105 R10=fp0 fp-8_w=105
+; __bpfix_pad += 15; @ pad32.bpf.c:58
+56: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=105 R10=fp0 fp-8_w=105
+57: (07) r3 += 15                     ; R3_w=120
+58: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=120 R10=fp0 fp-8_w=120
+; __bpfix_pad += 16; @ pad32.bpf.c:59
+59: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=120 R10=fp0 fp-8_w=120
+60: (07) r3 += 16                     ; R3_w=136
+61: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=136 R10=fp0 fp-8_w=136
+; __bpfix_pad += 17; @ pad32.bpf.c:60
+62: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=136 R10=fp0 fp-8_w=136
+63: (07) r3 += 17                     ; R3_w=153
+64: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=153 R10=fp0 fp-8_w=153
+; __bpfix_pad += 18; @ pad32.bpf.c:61
+65: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=153 R10=fp0 fp-8_w=153
+66: (07) r3 += 18                     ; R3_w=171
+67: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=171 R10=fp0 fp-8_w=171
+; __bpfix_pad += 19; @ pad32.bpf.c:62
+68: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=171 R10=fp0 fp-8_w=171
+69: (07) r3 += 19                     ; R3_w=190
+70: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=190 R10=fp0 fp-8_w=190
+; __bpfix_pad += 20; @ pad32.bpf.c:63
+71: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=190 R10=fp0 fp-8_w=190
+72: (07) r3 += 20                     ; R3_w=210
+73: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=210 R10=fp0 fp-8_w=210
+; __bpfix_pad += 21; @ pad32.bpf.c:64
+74: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=210 R10=fp0 fp-8_w=210
+75: (07) r3 += 21                     ; R3_w=231
+76: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=231 R10=fp0 fp-8_w=231
+; __bpfix_pad += 22; @ pad32.bpf.c:65
+77: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=231 R10=fp0 fp-8_w=231
+78: (07) r3 += 22                     ; R3_w=253
+79: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=253 R10=fp0 fp-8_w=253
+; __bpfix_pad += 23; @ pad32.bpf.c:66
+80: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=253 R10=fp0 fp-8_w=253
+81: (07) r3 += 23                     ; R3_w=276
+82: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=276 R10=fp0 fp-8_w=276
+; __bpfix_pad += 24; @ pad32.bpf.c:67
+83: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=276 R10=fp0 fp-8_w=276
+84: (07) r3 += 24                     ; R3_w=300
+85: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=300 R10=fp0 fp-8_w=300
+; __bpfix_pad += 25; @ pad32.bpf.c:68
+86: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=300 R10=fp0 fp-8_w=300
+87: (07) r3 += 25                     ; R3_w=325
+88: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=325 R10=fp0 fp-8_w=325
+; __bpfix_pad += 26; @ pad32.bpf.c:69
+89: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=325 R10=fp0 fp-8_w=325
+90: (07) r3 += 26                     ; R3_w=351
+91: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=351 R10=fp0 fp-8_w=351
+; __bpfix_pad += 27; @ pad32.bpf.c:70
+92: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=351 R10=fp0 fp-8_w=351
+93: (07) r3 += 27                     ; R3_w=378
+94: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=378 R10=fp0 fp-8_w=378
+; __bpfix_pad += 28; @ pad32.bpf.c:71
+95: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=378 R10=fp0 fp-8_w=378
+96: (07) r3 += 28                     ; R3_w=406
+97: (7b) *(u64 *)(r10 -8) = r3        ; R3_w=406 R10=fp0 fp-8_w=406
+; __bpfix_pad += 29; @ pad32.bpf.c:72
+98: (79) r3 = *(u64 *)(r10 -8)        ; R3_w=406 R10=fp0 fp-8_w=406
+99: (07) r3 += 29                     ; R3_w=435
+100: (7b) *(u64 *)(r10 -8) = r3       ; R3_w=435 R10=fp0 fp-8_w=435
+; __bpfix_pad += 30; @ pad32.bpf.c:73
+101: (79) r3 = *(u64 *)(r10 -8)       ; R3_w=435 R10=fp0 fp-8_w=435
+102: (07) r3 += 30                    ; R3_w=465
+103: (7b) *(u64 *)(r10 -8) = r3       ; R3_w=465 R10=fp0 fp-8_w=465
+; __bpfix_pad += 31; @ pad32.bpf.c:74
+104: (79) r3 = *(u64 *)(r10 -8)       ; R3_w=465 R10=fp0 fp-8_w=465
+105: (07) r3 += 31                    ; R3_w=496
+106: (7b) *(u64 *)(r10 -8) = r3       ; R3_w=496 R10=fp0 fp-8_w=496
+; __bpfix_pad += 32; @ pad32.bpf.c:75
+107: (79) r3 = *(u64 *)(r10 -8)       ; R3_w=496 R10=fp0 fp-8_w=496
+108: (07) r3 += 32                    ; R3_w=528
+109: (7b) *(u64 *)(r10 -8) = r3       ; R3_w=528 R10=fp0 fp-8_w=528
+; asm volatile("%[cookie] <<= 32; %[cookie] >>= 32" : [cookie] "+r"(cookie)); @ pad32.bpf.c:76
+110: (67) r1 <<= 32
+R1 pointer arithmetic with <<= operator prohibited
+verification time 300 usec
+stack depth 8
+processed 111 insns (limit 1000000) max_states_per_insn 0 total_states 1 peak_states 1 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'alu32_pointer_cookie': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-7y9iv4bc/alu32_pointer_cookie_001__pad32.o'
+Error: failed to load object file

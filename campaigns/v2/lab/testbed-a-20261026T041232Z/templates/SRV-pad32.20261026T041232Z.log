@@ -1,0 +1,188 @@
+libbpf: loading object from /tmp/bpfix-cap-r2rpdy9g/SRV-pad32.o
+libbpf: elf: section(3) socket, size 856, link 0, flags 6, type=1
+libbpf: sec 'socket': found program 'srv_pad32' at insn offset 0 (0 bytes), code size 107 insns (856 bytes)
+libbpf: elf: section(4) .relsocket, size 16, link 26, flags 40, type=9
+libbpf: elf: section(5) .rodata.cst32, size 32, link 0, flags 12, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-r2rpdy9g/SRV-pad32.o is GPL
+libbpf: elf: section(16) .BTF, size 839, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 656, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 336, link 1, flags 0, type=2
+libbpf: looking for externs among 14 symbols...
+libbpf: collected 0 externs total
+libbpf: map '.rodata.cst32' (global data): at sec_idx 5, offset 0, flags 80.
+libbpf: map 0 is ".rodata.cst32"
+libbpf: sec '.relsocket': collecting relocation for section(3) 'socket'
+libbpf: sec '.relsocket': relo #0: insn #12 against '.rodata.cst32'
+libbpf: prog 'srv_pad32': found data map 0 (.rodata.cst32, sec 5, off 0) for insn 12
+libbpf: object 'SRV-pad32': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: map '.rodata.cst32': created successfully, fd=4
+libbpf: prog 'srv_pad32': BPF program load failed: Permission denied
+libbpf: prog 'srv_pad32': -- BEGIN PROG LOAD LOG --
+func#0 @0
+arg#0 reference type('UNKNOWN ') size cannot be determined: -22
+0: R1=ctx() R10=fp0
+; __u32 idx = bpf_get_prandom_u32(); @ SRV-pad32.c:11
+0: (85) call bpf_get_prandom_u32#7    ; R0_w=scalar()
+1: (b7) r1 = 0                        ; R1_w=0
+; volatile __u64 __pad = 0; @ SRV-pad32.c:13
+2: (7b) *(u64 *)(r10 -8) = r1         ; R1_w=0 R10=fp0 fp-8_w=0
+; __pad += 1; @ SRV-pad32.c:14
+3: (79) r1 = *(u64 *)(r10 -8)         ; R1_w=0 R10=fp0 fp-8_w=0
+4: (07) r1 += 1                       ; R1_w=1
+5: (7b) *(u64 *)(r10 -8) = r1         ; R1_w=1 R10=fp0 fp-8_w=1
+; __pad += 2; @ SRV-pad32.c:15
+6: (79) r1 = *(u64 *)(r10 -8)         ; R1_w=1 R10=fp0 fp-8_w=1
+7: (07) r1 += 2                       ; R1_w=3
+8: (7b) *(u64 *)(r10 -8) = r1         ; R1_w=3 R10=fp0 fp-8_w=3
+; return table[idx]; @ SRV-pad32.c:47
+9: (67) r0 <<= 32                     ; R0_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+10: (77) r0 >>= 32                    ; R0_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+11: (67) r0 <<= 3                     ; R0_w=scalar(smin=0,smax=umax=0x7fffffff8,smax32=0x7ffffff8,umax32=0xfffffff8,var_off=(0x0; 0x7fffffff8))
+12: (18) r1 = 0xffff8d0ddbbb9b08      ; R1_w=map_value(map=.rodata.cst32,ks=4,vs=32)
+14: (0f) r1 += r0
+mark_precise: frame0: last_idx 14 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r0 stack= before 12: (18) r1 = 0xffff8d0ddbbb9b08
+mark_precise: frame0: regs=r0 stack= before 11: (67) r0 <<= 3
+mark_precise: frame0: regs=r0 stack= before 10: (77) r0 >>= 32
+mark_precise: frame0: regs=r0 stack= before 9: (67) r0 <<= 32
+mark_precise: frame0: regs=r0 stack= before 8: (7b) *(u64 *)(r10 -8) = r1
+mark_precise: frame0: regs=r0 stack= before 7: (07) r1 += 2
+mark_precise: frame0: regs=r0 stack= before 6: (79) r1 = *(u64 *)(r10 -8)
+mark_precise: frame0: regs=r0 stack= before 5: (7b) *(u64 *)(r10 -8) = r1
+mark_precise: frame0: regs=r0 stack= before 4: (07) r1 += 1
+mark_precise: frame0: regs=r0 stack= before 3: (79) r1 = *(u64 *)(r10 -8)
+mark_precise: frame0: regs=r0 stack= before 2: (7b) *(u64 *)(r10 -8) = r1
+mark_precise: frame0: regs=r0 stack= before 1: (b7) r1 = 0
+mark_precise: frame0: regs=r0 stack= before 0: (85) call bpf_get_prandom_u32#7
+15: R0_w=scalar(smin=0,smax=umax=0x7fffffff8,smax32=0x7ffffff8,umax32=0xfffffff8,var_off=(0x0; 0x7fffffff8)) R1_w=map_value(map=.rodata.cst32,ks=4,vs=32,smin=0,smax=umax=0x7fffffff8,smax32=0x7ffffff8,umax32=0xfffffff8,var_off=(0x0; 0x7fffffff8))
+; __pad += 3; @ SRV-pad32.c:16
+15: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=3 R10=fp0 fp-8_w=3
+16: (07) r2 += 3                      ; R2_w=6
+17: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=6 R10=fp0 fp-8_w=6
+; __pad += 4; @ SRV-pad32.c:17
+18: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=6 R10=fp0 fp-8_w=6
+19: (07) r2 += 4                      ; R2_w=10
+20: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=10 R10=fp0 fp-8_w=10
+; __pad += 5; @ SRV-pad32.c:18
+21: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=10 R10=fp0 fp-8_w=10
+22: (07) r2 += 5                      ; R2_w=15
+23: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=15 R10=fp0 fp-8_w=15
+; __pad += 6; @ SRV-pad32.c:19
+24: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=15 R10=fp0 fp-8_w=15
+25: (07) r2 += 6                      ; R2_w=21
+26: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=21 R10=fp0 fp-8_w=21
+; __pad += 7; @ SRV-pad32.c:20
+27: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=21 R10=fp0 fp-8_w=21
+28: (07) r2 += 7                      ; R2_w=28
+29: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=28 R10=fp0 fp-8_w=28
+; __pad += 8; @ SRV-pad32.c:21
+30: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=28 R10=fp0 fp-8_w=28
+31: (07) r2 += 8                      ; R2_w=36
+32: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=36 R10=fp0 fp-8_w=36
+; __pad += 9; @ SRV-pad32.c:22
+33: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=36 R10=fp0 fp-8_w=36
+34: (07) r2 += 9                      ; R2_w=45
+35: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=45 R10=fp0 fp-8_w=45
+; __pad += 10; @ SRV-pad32.c:23
+36: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=45 R10=fp0 fp-8_w=45
+37: (07) r2 += 10                     ; R2_w=55
+38: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=55 R10=fp0 fp-8_w=55
+; __pad += 11; @ SRV-pad32.c:24
+39: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=55 R10=fp0 fp-8_w=55
+40: (07) r2 += 11                     ; R2_w=66
+41: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=66 R10=fp0 fp-8_w=66
+; __pad += 12; @ SRV-pad32.c:25
+42: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=66 R10=fp0 fp-8_w=66
+43: (07) r2 += 12                     ; R2_w=78
+44: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=78 R10=fp0 fp-8_w=78
+; __pad += 13; @ SRV-pad32.c:26
+45: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=78 R10=fp0 fp-8_w=78
+46: (07) r2 += 13                     ; R2_w=91
+47: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=91 R10=fp0 fp-8_w=91
+; __pad += 14; @ SRV-pad32.c:27
+48: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=91 R10=fp0 fp-8_w=91
+49: (07) r2 += 14                     ; R2_w=105
+50: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=105 R10=fp0 fp-8_w=105
+; __pad += 15; @ SRV-pad32.c:28
+51: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=105 R10=fp0 fp-8_w=105
+52: (07) r2 += 15                     ; R2_w=120
+53: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=120 R10=fp0 fp-8_w=120
+; __pad += 16; @ SRV-pad32.c:29
+54: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=120 R10=fp0 fp-8_w=120
+55: (07) r2 += 16                     ; R2_w=136
+56: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=136 R10=fp0 fp-8_w=136
+; __pad += 17; @ SRV-pad32.c:30
+57: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=136 R10=fp0 fp-8_w=136
+58: (07) r2 += 17                     ; R2_w=153
+59: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=153 R10=fp0 fp-8_w=153
+; __pad += 18; @ SRV-pad32.c:31
+60: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=153 R10=fp0 fp-8_w=153
+61: (07) r2 += 18                     ; R2_w=171
+62: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=171 R10=fp0 fp-8_w=171
+; __pad += 19; @ SRV-pad32.c:32
+63: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=171 R10=fp0 fp-8_w=171
+64: (07) r2 += 19                     ; R2_w=190
+65: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=190 R10=fp0 fp-8_w=190
+; __pad += 20; @ SRV-pad32.c:33
+66: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=190 R10=fp0 fp-8_w=190
+67: (07) r2 += 20                     ; R2_w=210
+68: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=210 R10=fp0 fp-8_w=210
+; __pad += 21; @ SRV-pad32.c:34
+69: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=210 R10=fp0 fp-8_w=210
+70: (07) r2 += 21                     ; R2_w=231
+71: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=231 R10=fp0 fp-8_w=231
+; __pad += 22; @ SRV-pad32.c:35
+72: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=231 R10=fp0 fp-8_w=231
+73: (07) r2 += 22                     ; R2_w=253
+74: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=253 R10=fp0 fp-8_w=253
+; __pad += 23; @ SRV-pad32.c:36
+75: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=253 R10=fp0 fp-8_w=253
+76: (07) r2 += 23                     ; R2_w=276
+77: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=276 R10=fp0 fp-8_w=276
+; __pad += 24; @ SRV-pad32.c:37
+78: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=276 R10=fp0 fp-8_w=276
+79: (07) r2 += 24                     ; R2_w=300
+80: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=300 R10=fp0 fp-8_w=300
+; __pad += 25; @ SRV-pad32.c:38
+81: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=300 R10=fp0 fp-8_w=300
+82: (07) r2 += 25                     ; R2_w=325
+83: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=325 R10=fp0 fp-8_w=325
+; __pad += 26; @ SRV-pad32.c:39
+84: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=325 R10=fp0 fp-8_w=325
+85: (07) r2 += 26                     ; R2_w=351
+86: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=351 R10=fp0 fp-8_w=351
+; __pad += 27; @ SRV-pad32.c:40
+87: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=351 R10=fp0 fp-8_w=351
+88: (07) r2 += 27                     ; R2_w=378
+89: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=378 R10=fp0 fp-8_w=378
+; __pad += 28; @ SRV-pad32.c:41
+90: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=378 R10=fp0 fp-8_w=378
+91: (07) r2 += 28                     ; R2_w=406
+92: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=406 R10=fp0 fp-8_w=406
+; __pad += 29; @ SRV-pad32.c:42
+93: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=406 R10=fp0 fp-8_w=406
+94: (07) r2 += 29                     ; R2_w=435
+95: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=435 R10=fp0 fp-8_w=435
+; __pad += 30; @ SRV-pad32.c:43
+96: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=435 R10=fp0 fp-8_w=435
+97: (07) r2 += 30                     ; R2_w=465
+98: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=465 R10=fp0 fp-8_w=465
+; __pad += 31; @ SRV-pad32.c:44
+99: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=465 R10=fp0 fp-8_w=465
+100: (07) r2 += 31                    ; R2_w=496
+101: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=496 R10=fp0 fp-8_w=496
+; __pad += 32; @ SRV-pad32.c:45
+102: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=496 R10=fp0 fp-8_w=496
+103: (07) r2 += 32                    ; R2_w=528
+104: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=528 R10=fp0 fp-8_w=528
+; return table[idx]; @ SRV-pad32.c:47
+105: (79) r0 = *(u64 *)(r1 +0)
+R1 unbounded memory access, make sure to bounds check any such access
+verification time 417 usec
+stack depth 8
+processed 105 insns (limit 1000000) max_states_per_insn 0 total_states 0 peak_states 0 mark_read 0
+-- END PROG LOAD LOG --
+libbpf: prog 'srv_pad32': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-r2rpdy9g/SRV-pad32.o'
+Error: failed to load object file

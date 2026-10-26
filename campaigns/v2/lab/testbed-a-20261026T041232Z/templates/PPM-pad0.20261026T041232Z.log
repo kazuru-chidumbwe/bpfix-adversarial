@@ -1,0 +1,62 @@
+libbpf: loading object from /tmp/bpfix-cap-r2rpdy9g/PPM-pad0.o
+libbpf: elf: section(3) xdp, size 152, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'ppm_pad0' at insn offset 0 (0 bytes), code size 19 insns (152 bytes)
+libbpf: elf: section(4) .relxdp, size 16, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 32, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-r2rpdy9g/PPM-pad0.o is GPL
+libbpf: elf: section(16) .BTF, size 1122, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 240, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 336, link 1, flags 0, type=2
+libbpf: looking for externs among 14 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'slot': at sec_idx 5, offset 0.
+libbpf: map 'slot': found type = 2.
+libbpf: map 'slot': found key [8], sz = 4.
+libbpf: map 'slot': found value [11], sz = 8.
+libbpf: map 'slot': found max_entries = 1.
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #10 against 'slot'
+libbpf: prog 'ppm_pad0': found map 0 (slot, sec 5, off 0) for insn #10
+libbpf: object 'PPM-pad0': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: map 'slot': created successfully, fd=4
+libbpf: prog 'ppm_pad0': BPF program load failed: Permission denied
+libbpf: prog 'ppm_pad0': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; void *data_end = (void *)(long)ctx->data_end; @ PPM-pad0.c:17
+0: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data; @ PPM-pad0.c:16
+1: (61) r7 = *(u32 *)(r1 +0)          ; R1=ctx() R7_w=pkt(r=0)
+2: (b7) r1 = 0                        ; R1_w=0
+; __u32 key = 0; @ PPM-pad0.c:18
+3: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 3 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 2: (b7) r1 = 0
+4: R1_w=0 R10=fp0 fp-8=0000????
+4: (b7) r6 = 1                        ; R6_w=1
+; if (data + 8 > data_end) @ PPM-pad0.c:19
+5: (bf) r1 = r7                       ; R1_w=pkt(r=0) R7_w=pkt(r=0)
+6: (07) r1 += 8                       ; R1_w=pkt(off=8,r=0)
+7: (2d) if r1 > r2 goto pc+9          ; R1_w=pkt(off=8,r=8) R2_w=pkt_end()
+8: (bf) r2 = r10                      ; R2_w=fp0 R10=fp0
+9: (07) r2 += -4                      ; R2_w=fp-4
+; __u64 *cell = bpf_map_lookup_elem(&slot, &key); @ PPM-pad0.c:21
+10: (18) r1 = 0xffff8d0ddbbb8600      ; R1_w=map_ptr(map=slot,ks=4,vs=8)
+12: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=1,map=slot,ks=4,vs=8)
+; if (!cell) @ PPM-pad0.c:22
+13: (15) if r0 == 0x0 goto pc+3       ; R0=map_value(map=slot,ks=4,vs=8)
+; *(volatile __u64 *)cell = (__u64)(long)data; @ PPM-pad0.c:25
+14: (7b) *(u64 *)(r0 +0) = r7         ; R0=map_value(map=slot,ks=4,vs=8) R7=pkt(r=8)
+; void *back = (void *)(long)*(volatile __u64 *)cell; @ PPM-pad0.c:26
+15: (79) r1 = *(u64 *)(r0 +0)         ; R0=map_value(map=slot,ks=4,vs=8) R1_w=scalar()
+; return *(__u8 *)back; @ PPM-pad0.c:28
+16: (71) r6 = *(u8 *)(r1 +0)
+R1 invalid mem access 'scalar'
+verification time 113 usec
+stack depth 8
+processed 16 insns (limit 1000000) max_states_per_insn 0 total_states 1 peak_states 1 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'ppm_pad0': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-r2rpdy9g/PPM-pad0.o'
+Error: failed to load object file

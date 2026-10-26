@@ -1,0 +1,59 @@
+libbpf: loading object from /tmp/bpfix-cap-r2rpdy9g/RR-wrongptr-slot.o
+libbpf: elf: section(3) socket, size 136, link 0, flags 6, type=1
+libbpf: sec 'socket': found program 'rr_wrongptr' at insn offset 0 (0 bytes), code size 17 insns (136 bytes)
+libbpf: elf: section(4) .relsocket, size 32, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 32, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-r2rpdy9g/RR-wrongptr-slot.o is GPL
+libbpf: elf: section(16) .BTF, size 788, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 176, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 336, link 1, flags 0, type=2
+libbpf: looking for externs among 14 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'm': at sec_idx 5, offset 0.
+libbpf: map 'm': found type = 1.
+libbpf: map 'm': found key [6], sz = 4.
+libbpf: map 'm': found value [9], sz = 8.
+libbpf: map 'm': found max_entries = 1.
+libbpf: sec '.relsocket': collecting relocation for section(3) 'socket'
+libbpf: sec '.relsocket': relo #0: insn #4 against 'm'
+libbpf: prog 'rr_wrongptr': found map 0 (m, sec 5, off 0) for insn #4
+libbpf: sec '.relsocket': relo #1: insn #9 against 'm'
+libbpf: prog 'rr_wrongptr': found map 0 (m, sec 5, off 0) for insn #9
+libbpf: object 'RR-wrongptr-slo': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: map 'm': created successfully, fd=4
+libbpf: prog 'rr_wrongptr': BPF program load failed: Permission denied
+libbpf: prog 'rr_wrongptr': -- BEGIN PROG LOAD LOG --
+func#0 @0
+arg#0 reference type('UNKNOWN ') size cannot be determined: -22
+0: R1=ctx() R10=fp0
+; int rr_wrongptr(void *ctx) @ RR-wrongptr-slot.c:14
+0: (b7) r6 = 0                        ; R6_w=0
+; __u32 key = 0; @ RR-wrongptr-slot.c:16
+1: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: last_idx 1 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r6 stack= before 0: (b7) r6 = 0
+2: R6_w=0 R10=fp0 fp-8=0000????
+2: (bf) r7 = r10                      ; R7_w=fp0 R10=fp0
+3: (07) r7 += -4                      ; R7_w=fp-4
+; __u64 *slot = bpf_map_lookup_elem(&m, &key); @ RR-wrongptr-slot.c:17
+4: (18) r1 = 0xffff8d0ddbafd800       ; R1_w=map_ptr(map=m,ks=4,vs=8)
+6: (bf) r2 = r7                       ; R2_w=fp-4 R7_w=fp-4
+7: (85) call bpf_map_lookup_elem#1    ; R0_w=map_value_or_null(id=1,map=m,ks=4,vs=8)
+8: (bf) r8 = r0                       ; R0_w=map_value_or_null(id=1,map=m,ks=4,vs=8) R8_w=map_value_or_null(id=1,map=m,ks=4,vs=8)
+; __u64 *other = bpf_map_lookup_elem(&m, &key); @ RR-wrongptr-slot.c:18
+9: (18) r1 = 0xffff8d0ddbafd800       ; R1_w=map_ptr(map=m,ks=4,vs=8)
+11: (bf) r2 = r7                      ; R2_w=fp-4 R7_w=fp-4
+12: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=2,map=m,ks=4,vs=8)
+; if (!slot) @ RR-wrongptr-slot.c:20
+13: (15) if r8 == 0x0 goto pc+1       ; R8=map_value(map=m,ks=4,vs=8)
+; return *other; @ RR-wrongptr-slot.c:23
+14: (79) r6 = *(u64 *)(r0 +0)
+R0 invalid mem access 'map_value_or_null'
+verification time 89 usec
+stack depth 8
+processed 13 insns (limit 1000000) max_states_per_insn 0 total_states 1 peak_states 1 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'rr_wrongptr': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-r2rpdy9g/RR-wrongptr-slot.o'
+Error: failed to load object file

@@ -1,0 +1,1303 @@
+{
+  "generator": "tools/score_v2_campaign.py",
+  "stamp": "20261026T041232Z",
+  "host": "testbed-a \u00b7 kernel 6.12.86+deb13-amd64 \u00b7 Debian clang version 19.1.7 (3+b1) \u00b7 bpftool v7.5.0 | using libbpf v1.5",
+  "pilot_note": null,
+  "rename": [
+    {
+      "pair": "RR-branch-ptr-entry",
+      "construct": "branch",
+      "listed": "ptr",
+      "idiomatic": "entry",
+      "verdicts": [
+        "REJECT",
+        "REJECT"
+      ],
+      "status": "ok",
+      "error_ids": [
+        "E002",
+        "E002"
+      ],
+      "primary": [
+        25,
+        25
+      ],
+      "primary_equal": true,
+      "error_equal": true,
+      "structure_equal": true,
+      "labels_only_listed": [],
+      "labels_only_idiomatic": [],
+      "check_line": 21,
+      "check_line_labelled": [
+        false,
+        false
+      ]
+    },
+    {
+      "pair": "RR-branch-tmp-slot",
+      "construct": "branch",
+      "listed": "tmp",
+      "idiomatic": "slot",
+      "verdicts": [
+        "REJECT",
+        "REJECT"
+      ],
+      "status": "ok",
+      "error_ids": [
+        "E002",
+        "E002"
+      ],
+      "primary": [
+        25,
+        25
+      ],
+      "primary_equal": true,
+      "error_equal": true,
+      "structure_equal": true,
+      "labels_only_listed": [],
+      "labels_only_idiomatic": [],
+      "check_line": 21,
+      "check_line_labelled": [
+        false,
+        false
+      ]
+    },
+    {
+      "pair": "RR-flag-valid-ok",
+      "construct": "flag",
+      "listed": "valid",
+      "idiomatic": "ok",
+      "verdicts": [
+        "REJECT",
+        "REJECT"
+      ],
+      "status": "ok",
+      "error_ids": [
+        "E002",
+        "E002"
+      ],
+      "primary": [
+        23,
+        23
+      ],
+      "primary_equal": true,
+      "error_equal": true,
+      "structure_equal": false,
+      "labels_only_listed": [
+        [
+          20,
+          "secondary",
+          "nearby source context for nullable pointer"
+        ]
+      ],
+      "labels_only_idiomatic": [],
+      "check_line": 20,
+      "check_line_labelled": [
+        true,
+        false
+      ]
+    },
+    {
+      "pair": "RR-reassign-ptr-entry",
+      "construct": "reassign",
+      "listed": "ptr",
+      "idiomatic": "entry",
+      "verdicts": [
+        "REJECT",
+        "REJECT"
+      ],
+      "status": "ok",
+      "error_ids": [
+        "E002",
+        "E002"
+      ],
+      "primary": [
+        23,
+        23
+      ],
+      "primary_equal": true,
+      "error_equal": true,
+      "structure_equal": false,
+      "labels_only_listed": [
+        [
+          18,
+          "secondary",
+          "nearby source context for nullable pointer"
+        ]
+      ],
+      "labels_only_idiomatic": [],
+      "check_line": 18,
+      "check_line_labelled": [
+        true,
+        false
+      ]
+    },
+    {
+      "pair": "RR-reassign-tmp-slot",
+      "construct": "reassign",
+      "listed": "tmp",
+      "idiomatic": "slot",
+      "verdicts": [
+        "REJECT",
+        "REJECT"
+      ],
+      "status": "ok",
+      "error_ids": [
+        "E002",
+        "E002"
+      ],
+      "primary": [
+        23,
+        23
+      ],
+      "primary_equal": true,
+      "error_equal": true,
+      "structure_equal": false,
+      "labels_only_listed": [
+        [
+          18,
+          "secondary",
+          "nearby source context for nullable pointer"
+        ]
+      ],
+      "labels_only_idiomatic": [],
+      "check_line": 18,
+      "check_line_labelled": [
+        true,
+        false
+      ]
+    },
+    {
+      "pair": "RR-wrongptr-ptr-entry",
+      "construct": "wrongptr",
+      "listed": "ptr",
+      "idiomatic": "entry",
+      "verdicts": [
+        "REJECT",
+        "REJECT"
+      ],
+      "status": "ok",
+      "error_ids": [
+        "E002",
+        "E002"
+      ],
+      "primary": [
+        23,
+        23
+      ],
+      "primary_equal": true,
+      "error_equal": true,
+      "structure_equal": false,
+      "labels_only_listed": [
+        [
+          20,
+          "secondary",
+          "nearby source context for nullable pointer"
+        ]
+      ],
+      "labels_only_idiomatic": [],
+      "check_line": 20,
+      "check_line_labelled": [
+        true,
+        false
+      ]
+    },
+    {
+      "pair": "RR-wrongptr-tmp-slot",
+      "construct": "wrongptr",
+      "listed": "tmp",
+      "idiomatic": "slot",
+      "verdicts": [
+        "REJECT",
+        "REJECT"
+      ],
+      "status": "ok",
+      "error_ids": [
+        "E002",
+        "E002"
+      ],
+      "primary": [
+        23,
+        23
+      ],
+      "primary_equal": true,
+      "error_equal": true,
+      "structure_equal": false,
+      "labels_only_listed": [
+        [
+          20,
+          "secondary",
+          "nearby source context for nullable pointer"
+        ]
+      ],
+      "labels_only_idiomatic": [],
+      "check_line": 20,
+      "check_line_labelled": [
+        true,
+        false
+      ]
+    }
+  ],
+  "pads": [
+    {
+      "family": "NPV",
+      "rows": [
+        {
+          "case_id": "NPV-pad0",
+          "pad": 0,
+          "verdict": "REJECT",
+          "processed_insns": 7,
+          "oracle_loss_code": 17,
+          "oracle_loss_span": [
+            17
+          ],
+          "oracle_reject_code": 20,
+          "vs_stop_line": 20,
+          "vs_stop_in_injection": false,
+          "bpfix_error": "E002",
+          "bpfix_upstream_obligation": "NullablePointer",
+          "bpfix_next_action": "null",
+          "bpfix_primary": 20,
+          "top1_line": false,
+          "top1_span": false,
+          "injection_in_labels": true,
+          "primary_distance": 3
+        },
+        {
+          "case_id": "NPV-pad8",
+          "pad": 8,
+          "verdict": "REJECT",
+          "processed_insns": 32,
+          "oracle_loss_code": 17,
+          "oracle_loss_span": [
+            17
+          ],
+          "oracle_reject_code": 30,
+          "vs_stop_line": 30,
+          "vs_stop_in_injection": false,
+          "bpfix_error": "E002",
+          "bpfix_upstream_obligation": "NullablePointer",
+          "bpfix_next_action": "null",
+          "bpfix_primary": 30,
+          "top1_line": false,
+          "top1_span": false,
+          "injection_in_labels": true,
+          "primary_distance": 13
+        },
+        {
+          "case_id": "NPV-pad32",
+          "pad": 32,
+          "verdict": "REJECT",
+          "processed_insns": 104,
+          "oracle_loss_code": 17,
+          "oracle_loss_span": [
+            17
+          ],
+          "oracle_reject_code": 54,
+          "vs_stop_line": 54,
+          "vs_stop_in_injection": false,
+          "bpfix_error": "E002",
+          "bpfix_upstream_obligation": "NullablePointer",
+          "bpfix_next_action": "null",
+          "bpfix_primary": 54,
+          "top1_line": false,
+          "top1_span": false,
+          "injection_in_labels": true,
+          "primary_distance": 37
+        }
+      ],
+      "insns_grow_with_pad": true,
+      "injection_in_labels_all_pads": true,
+      "error_stable": true
+    },
+    {
+      "family": "PBS",
+      "rows": [
+        {
+          "case_id": "PBS-pad0",
+          "pad": 0,
+          "verdict": "REJECT",
+          "processed_insns": 7,
+          "oracle_loss_code": 12,
+          "oracle_loss_span": [
+            12,
+            13
+          ],
+          "oracle_reject_code": 15,
+          "vs_stop_line": 15,
+          "vs_stop_in_injection": false,
+          "bpfix_error": "E001",
+          "bpfix_upstream_obligation": "PacketBounds",
+          "bpfix_next_action": "bounds",
+          "bpfix_primary": 15,
+          "top1_line": false,
+          "top1_span": false,
+          "injection_in_labels": true,
+          "primary_distance": 3
+        },
+        {
+          "case_id": "PBS-pad8",
+          "pad": 8,
+          "verdict": "REJECT",
+          "processed_insns": 23,
+          "oracle_loss_code": 12,
+          "oracle_loss_span": [
+            12,
+            13
+          ],
+          "oracle_reject_code": 25,
+          "vs_stop_line": 25,
+          "vs_stop_in_injection": false,
+          "bpfix_error": "E001",
+          "bpfix_upstream_obligation": "PacketBounds",
+          "bpfix_next_action": "bounds",
+          "bpfix_primary": 25,
+          "top1_line": false,
+          "top1_span": false,
+          "injection_in_labels": true,
+          "primary_distance": 13
+        },
+        {
+          "case_id": "PBS-pad32",
+          "pad": 32,
+          "verdict": "REJECT",
+          "processed_insns": 71,
+          "oracle_loss_code": 12,
+          "oracle_loss_span": [
+            12,
+            13
+          ],
+          "oracle_reject_code": 49,
+          "vs_stop_line": 49,
+          "vs_stop_in_injection": false,
+          "bpfix_error": "E001",
+          "bpfix_upstream_obligation": "PacketBounds",
+          "bpfix_next_action": "bounds",
+          "bpfix_primary": 49,
+          "top1_line": false,
+          "top1_span": false,
+          "injection_in_labels": true,
+          "primary_distance": 37
+        }
+      ],
+      "insns_grow_with_pad": true,
+      "injection_in_labels_all_pads": true,
+      "error_stable": true
+    },
+    {
+      "family": "PBV",
+      "rows": [
+        {
+          "case_id": "PBV-pad0",
+          "pad": 0,
+          "verdict": "REJECT",
+          "processed_insns": 7,
+          "oracle_loss_code": 12,
+          "oracle_loss_span": [
+            12,
+            13
+          ],
+          "oracle_reject_code": 15,
+          "vs_stop_line": 15,
+          "vs_stop_in_injection": false,
+          "bpfix_error": "E001",
+          "bpfix_upstream_obligation": "PacketBounds",
+          "bpfix_next_action": "bounds",
+          "bpfix_primary": 15,
+          "top1_line": false,
+          "top1_span": false,
+          "injection_in_labels": true,
+          "primary_distance": 3
+        },
+        {
+          "case_id": "PBV-pad8",
+          "pad": 8,
+          "verdict": "REJECT",
+          "processed_insns": 33,
+          "oracle_loss_code": 12,
+          "oracle_loss_span": [
+            12,
+            13
+          ],
+          "oracle_reject_code": 25,
+          "vs_stop_line": 25,
+          "vs_stop_in_injection": false,
+          "bpfix_error": "E001",
+          "bpfix_upstream_obligation": "PacketBounds",
+          "bpfix_next_action": "bounds",
+          "bpfix_primary": 25,
+          "top1_line": false,
+          "top1_span": false,
+          "injection_in_labels": true,
+          "primary_distance": 13
+        },
+        {
+          "case_id": "PBV-pad32",
+          "pad": 32,
+          "verdict": "REJECT",
+          "processed_insns": 105,
+          "oracle_loss_code": 12,
+          "oracle_loss_span": [
+            12,
+            13
+          ],
+          "oracle_reject_code": 49,
+          "vs_stop_line": 49,
+          "vs_stop_in_injection": false,
+          "bpfix_error": "E001",
+          "bpfix_upstream_obligation": "PacketBounds",
+          "bpfix_next_action": "bounds",
+          "bpfix_primary": 49,
+          "top1_line": false,
+          "top1_span": false,
+          "injection_in_labels": true,
+          "primary_distance": 37
+        }
+      ],
+      "insns_grow_with_pad": true,
+      "injection_in_labels_all_pads": true,
+      "error_stable": true
+    },
+    {
+      "family": "PPM",
+      "rows": [
+        {
+          "case_id": "PPM-pad0",
+          "pad": 0,
+          "verdict": "REJECT",
+          "processed_insns": 16,
+          "oracle_loss_code": 25,
+          "oracle_loss_span": [
+            25,
+            26
+          ],
+          "oracle_reject_code": 28,
+          "vs_stop_line": 28,
+          "vs_stop_in_injection": false,
+          "bpfix_error": "E011",
+          "bpfix_upstream_obligation": "ContextAccess",
+          "bpfix_next_action": "provenance",
+          "bpfix_primary": 28,
+          "top1_line": false,
+          "top1_span": false,
+          "injection_in_labels": true,
+          "primary_distance": 3
+        },
+        {
+          "case_id": "PPM-pad8",
+          "pad": 8,
+          "verdict": "REJECT",
+          "processed_insns": 42,
+          "oracle_loss_code": 25,
+          "oracle_loss_span": [
+            25,
+            26
+          ],
+          "oracle_reject_code": 38,
+          "vs_stop_line": 38,
+          "vs_stop_in_injection": false,
+          "bpfix_error": "E011",
+          "bpfix_upstream_obligation": "ContextAccess",
+          "bpfix_next_action": "provenance",
+          "bpfix_primary": 38,
+          "top1_line": false,
+          "top1_span": false,
+          "injection_in_labels": true,
+          "primary_distance": 13
+        },
+        {
+          "case_id": "PPM-pad32",
+          "pad": 32,
+          "verdict": "REJECT",
+          "processed_insns": 114,
+          "oracle_loss_code": 25,
+          "oracle_loss_span": [
+            25,
+            26
+          ],
+          "oracle_reject_code": 62,
+          "vs_stop_line": 62,
+          "vs_stop_in_injection": false,
+          "bpfix_error": "E011",
+          "bpfix_upstream_obligation": "ContextAccess",
+          "bpfix_next_action": "provenance",
+          "bpfix_primary": 62,
+          "top1_line": false,
+          "top1_span": false,
+          "injection_in_labels": true,
+          "primary_distance": 37
+        }
+      ],
+      "insns_grow_with_pad": true,
+      "injection_in_labels_all_pads": true,
+      "error_stable": true
+    },
+    {
+      "family": "SRV",
+      "rows": [
+        {
+          "case_id": "SRV-pad0",
+          "pad": 0,
+          "verdict": "REJECT",
+          "processed_insns": 7,
+          "oracle_loss_code": 11,
+          "oracle_loss_span": [
+            11
+          ],
+          "oracle_reject_code": 13,
+          "vs_stop_line": 13,
+          "vs_stop_in_injection": false,
+          "bpfix_error": "E005",
+          "bpfix_upstream_obligation": "ScalarRange",
+          "bpfix_next_action": "bounds",
+          "bpfix_primary": 13,
+          "top1_line": false,
+          "top1_span": false,
+          "injection_in_labels": false,
+          "primary_distance": 2
+        },
+        {
+          "case_id": "SRV-pad8",
+          "pad": 8,
+          "verdict": "REJECT",
+          "processed_insns": 33,
+          "oracle_loss_code": 11,
+          "oracle_loss_span": [
+            11
+          ],
+          "oracle_reject_code": 23,
+          "vs_stop_line": 23,
+          "vs_stop_in_injection": false,
+          "bpfix_error": "E005",
+          "bpfix_upstream_obligation": "ScalarRange",
+          "bpfix_next_action": "bounds",
+          "bpfix_primary": 23,
+          "top1_line": false,
+          "top1_span": false,
+          "injection_in_labels": false,
+          "primary_distance": 12
+        },
+        {
+          "case_id": "SRV-pad32",
+          "pad": 32,
+          "verdict": "REJECT",
+          "processed_insns": 105,
+          "oracle_loss_code": 11,
+          "oracle_loss_span": [
+            11
+          ],
+          "oracle_reject_code": 47,
+          "vs_stop_line": 47,
+          "vs_stop_in_injection": false,
+          "bpfix_error": "E005",
+          "bpfix_upstream_obligation": "ScalarRange",
+          "bpfix_next_action": "bounds",
+          "bpfix_primary": 47,
+          "top1_line": false,
+          "top1_span": false,
+          "injection_in_labels": false,
+          "primary_distance": 36
+        }
+      ],
+      "insns_grow_with_pad": true,
+      "injection_in_labels_all_pads": false,
+      "error_stable": true
+    }
+  ],
+  "upstream_host": "testbed-a \u00b7 kernel 6.12.86+deb13-amd64 \u00b7 Debian clang version 19.1.7 (3+b1) \u00b7 bpftool v7.5.0 | using libbpf v1.5",
+  "upstream": {
+    "n_cases": 21,
+    "comparisons": {
+      "pad8": {
+        "n_pairs": 20,
+        "orig_primary_in_repair": {
+          "hits": 16,
+          "wilson95": [
+            0.584,
+            0.9193
+          ]
+        },
+        "variant_primary_in_repair": {
+          "hits": 16,
+          "wilson95": [
+            0.584,
+            0.9193
+          ]
+        },
+        "lost_hits_b": 0,
+        "gained_hits_c": 0,
+        "mcnemar_exact_p": null,
+        "rows": [
+          {
+            "case": "alu32_pointer_cookie_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              13,
+              39
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "dynptr_slice_missing_null_check_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              15,
+              42
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "dynptr_slice_short_mem_001",
+            "orig_primary_in_repair": false,
+            "variant_primary_in_repair": false,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": false,
+            "error_equal": true,
+            "insns": [
+              16,
+              42
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "dynptr_slice_stack_buffer_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              17,
+              44
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "dynptr_stack_copy_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              9,
+              18
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "dynptr_uninitialized_slice_arg_001",
+            "orig_primary_in_repair": false,
+            "variant_primary_in_repair": false,
+            "orig_label_in_repair": false,
+            "variant_label_in_repair": false,
+            "error_equal": true,
+            "insns": [
+              6,
+              32
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "helper_csum_diff_stack_len_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              36,
+              61
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "helper_map_arg_stack_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              16,
+              42
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "map_value_index_guard_oob_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              25,
+              49
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "map_value_signed_index_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              23,
+              29
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "packet_checked_wrong_base_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              7,
+              33
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "packet_eth_off_by_one_001",
+            "orig_primary_in_repair": false,
+            "variant_primary_in_repair": false,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              8,
+              34
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "packet_ihl_udp_undercheck_001",
+            "orig_primary_in_repair": false,
+            "variant_primary_in_repair": false,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              29,
+              55
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "packet_inline_return_cookie_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              16,
+              42
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "packet_l4_branch_cookie_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              17,
+              43
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "packet_macro_cookie_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              16,
+              42
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "ringbuf_branch_cookie_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              25,
+              51
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "ringbuf_double_submit_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              24,
+              50
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "ringbuf_missing_null_check_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              16,
+              42
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "ringbuf_nested_missing_null_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              24,
+              50
+            ],
+            "structure_equal": null
+          }
+        ]
+      },
+      "pad32": {
+        "n_pairs": 20,
+        "orig_primary_in_repair": {
+          "hits": 16,
+          "wilson95": [
+            0.584,
+            0.9193
+          ]
+        },
+        "variant_primary_in_repair": {
+          "hits": 16,
+          "wilson95": [
+            0.584,
+            0.9193
+          ]
+        },
+        "lost_hits_b": 0,
+        "gained_hits_c": 0,
+        "mcnemar_exact_p": null,
+        "rows": [
+          {
+            "case": "alu32_pointer_cookie_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              13,
+              111
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "dynptr_slice_missing_null_check_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              15,
+              114
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "dynptr_slice_short_mem_001",
+            "orig_primary_in_repair": false,
+            "variant_primary_in_repair": false,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": false,
+            "error_equal": true,
+            "insns": [
+              16,
+              114
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "dynptr_slice_stack_buffer_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              17,
+              116
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "dynptr_stack_copy_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              9,
+              108
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "dynptr_uninitialized_slice_arg_001",
+            "orig_primary_in_repair": false,
+            "variant_primary_in_repair": false,
+            "orig_label_in_repair": false,
+            "variant_label_in_repair": false,
+            "error_equal": true,
+            "insns": [
+              6,
+              104
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "helper_csum_diff_stack_len_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              36,
+              133
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "helper_map_arg_stack_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              16,
+              114
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "map_value_index_guard_oob_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              25,
+              121
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "map_value_signed_index_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              23,
+              29
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "packet_checked_wrong_base_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              7,
+              105
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "packet_eth_off_by_one_001",
+            "orig_primary_in_repair": false,
+            "variant_primary_in_repair": false,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              8,
+              106
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "packet_ihl_udp_undercheck_001",
+            "orig_primary_in_repair": false,
+            "variant_primary_in_repair": false,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              29,
+              127
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "packet_inline_return_cookie_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              16,
+              114
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "packet_l4_branch_cookie_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              17,
+              115
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "packet_macro_cookie_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              16,
+              114
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "ringbuf_branch_cookie_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              25,
+              121
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "ringbuf_double_submit_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              24,
+              122
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "ringbuf_missing_null_check_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              16,
+              114
+            ],
+            "structure_equal": null
+          },
+          {
+            "case": "ringbuf_nested_missing_null_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              24,
+              122
+            ],
+            "structure_equal": null
+          }
+        ]
+      },
+      "rename": {
+        "n_pairs": 8,
+        "orig_primary_in_repair": {
+          "hits": 7,
+          "wilson95": [
+            0.5291,
+            0.9776
+          ]
+        },
+        "variant_primary_in_repair": {
+          "hits": 7,
+          "wilson95": [
+            0.5291,
+            0.9776
+          ]
+        },
+        "lost_hits_b": 0,
+        "gained_hits_c": 0,
+        "mcnemar_exact_p": null,
+        "rows": [
+          {
+            "case": "map_value_index_guard_oob_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              25,
+              25
+            ],
+            "structure_equal": true
+          },
+          {
+            "case": "map_value_signed_index_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              23,
+              23
+            ],
+            "structure_equal": true
+          },
+          {
+            "case": "packet_inline_return_cookie_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              16,
+              16
+            ],
+            "structure_equal": true
+          },
+          {
+            "case": "ringbuf_branch_cookie_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              25,
+              25
+            ],
+            "structure_equal": true
+          },
+          {
+            "case": "ringbuf_double_submit_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              24,
+              24
+            ],
+            "structure_equal": true
+          },
+          {
+            "case": "ringbuf_missing_null_check_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              16,
+              16
+            ],
+            "structure_equal": false
+          },
+          {
+            "case": "ringbuf_nested_missing_null_001",
+            "orig_primary_in_repair": true,
+            "variant_primary_in_repair": true,
+            "orig_label_in_repair": true,
+            "variant_label_in_repair": true,
+            "error_equal": true,
+            "insns": [
+              24,
+              24
+            ],
+            "structure_equal": false
+          },
+          {
+            "case": "ringbuf_nested_reserve_leak_001",
+            "orig_primary_in_repair": false,
+            "variant_primary_in_repair": false,
+            "orig_label_in_repair": false,
+            "variant_label_in_repair": false,
+            "error_equal": true,
+            "insns": [
+              46,
+              46
+            ],
+            "structure_equal": true
+          }
+        ]
+      }
+    }
+  }
+}

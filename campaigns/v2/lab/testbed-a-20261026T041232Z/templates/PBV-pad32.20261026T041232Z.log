@@ -1,0 +1,167 @@
+libbpf: loading object from /tmp/bpfix-cap-r2rpdy9g/PBV-pad32.o
+libbpf: elf: section(3) xdp, size 848, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'pbv_pad32' at insn offset 0 (0 bytes), code size 106 insns (848 bytes)
+libbpf: elf: section(4) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-r2rpdy9g/PBV-pad32.o is GPL
+libbpf: elf: section(14) .BTF, size 1160, link 0, flags 0, type=1
+libbpf: elf: section(16) .BTF.ext, size 704, link 0, flags 0, type=1
+libbpf: elf: section(24) .symtab, size 312, link 1, flags 0, type=2
+libbpf: looking for externs among 13 symbols...
+libbpf: collected 0 externs total
+libbpf: object 'PBV-pad32': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: prog 'pbv_pad32': BPF program load failed: Permission denied
+libbpf: prog 'pbv_pad32': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int pbv_pad32(struct xdp_md *ctx) @ PBV-pad32.c:7
+0: (b7) r0 = 1                        ; R0_w=1
+; void *data_end = (void *)(long)ctx->data_end; @ PBV-pad32.c:10
+1: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data; @ PBV-pad32.c:9
+2: (61) r1 = *(u32 *)(r1 +0)          ; R1_w=pkt(r=0)
+; if (data + 1 > data_end) @ PBV-pad32.c:12
+3: (bf) r3 = r1                       ; R1_w=pkt(r=0) R3_w=pkt(r=0)
+4: (07) r3 += 1                       ; R3_w=pkt(off=1,r=0)
+5: (2d) if r3 > r2 goto pc+99         ; R2_w=pkt_end() R3_w=pkt(off=1,r=1)
+6: (b7) r2 = 0                        ; R2_w=0
+; volatile __u64 __pad = 0; @ PBV-pad32.c:15
+7: (7b) *(u64 *)(r10 -8) = r2         ; R2_w=0 R10=fp0 fp-8_w=0
+; __pad += 1; @ PBV-pad32.c:16
+8: (79) r2 = *(u64 *)(r10 -8)         ; R2_w=0 R10=fp0 fp-8_w=0
+9: (07) r2 += 1                       ; R2_w=1
+10: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=1 R10=fp0 fp-8_w=1
+; __pad += 2; @ PBV-pad32.c:17
+11: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=1 R10=fp0 fp-8_w=1
+12: (07) r2 += 2                      ; R2_w=3
+13: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=3 R10=fp0 fp-8_w=3
+; __pad += 3; @ PBV-pad32.c:18
+14: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=3 R10=fp0 fp-8_w=3
+15: (07) r2 += 3                      ; R2_w=6
+16: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=6 R10=fp0 fp-8_w=6
+; __pad += 4; @ PBV-pad32.c:19
+17: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=6 R10=fp0 fp-8_w=6
+18: (07) r2 += 4                      ; R2_w=10
+19: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=10 R10=fp0 fp-8_w=10
+; __pad += 5; @ PBV-pad32.c:20
+20: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=10 R10=fp0 fp-8_w=10
+21: (07) r2 += 5                      ; R2_w=15
+22: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=15 R10=fp0 fp-8_w=15
+; __pad += 6; @ PBV-pad32.c:21
+23: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=15 R10=fp0 fp-8_w=15
+24: (07) r2 += 6                      ; R2_w=21
+25: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=21 R10=fp0 fp-8_w=21
+; __pad += 7; @ PBV-pad32.c:22
+26: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=21 R10=fp0 fp-8_w=21
+27: (07) r2 += 7                      ; R2_w=28
+28: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=28 R10=fp0 fp-8_w=28
+; __pad += 8; @ PBV-pad32.c:23
+29: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=28 R10=fp0 fp-8_w=28
+30: (07) r2 += 8                      ; R2_w=36
+31: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=36 R10=fp0 fp-8_w=36
+; __pad += 9; @ PBV-pad32.c:24
+32: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=36 R10=fp0 fp-8_w=36
+33: (07) r2 += 9                      ; R2_w=45
+34: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=45 R10=fp0 fp-8_w=45
+; __pad += 10; @ PBV-pad32.c:25
+35: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=45 R10=fp0 fp-8_w=45
+36: (07) r2 += 10                     ; R2_w=55
+37: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=55 R10=fp0 fp-8_w=55
+; __pad += 11; @ PBV-pad32.c:26
+38: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=55 R10=fp0 fp-8_w=55
+39: (07) r2 += 11                     ; R2_w=66
+40: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=66 R10=fp0 fp-8_w=66
+; __pad += 12; @ PBV-pad32.c:27
+41: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=66 R10=fp0 fp-8_w=66
+42: (07) r2 += 12                     ; R2_w=78
+43: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=78 R10=fp0 fp-8_w=78
+; __pad += 13; @ PBV-pad32.c:28
+44: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=78 R10=fp0 fp-8_w=78
+45: (07) r2 += 13                     ; R2_w=91
+46: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=91 R10=fp0 fp-8_w=91
+; __pad += 14; @ PBV-pad32.c:29
+47: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=91 R10=fp0 fp-8_w=91
+48: (07) r2 += 14                     ; R2_w=105
+49: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=105 R10=fp0 fp-8_w=105
+; __pad += 15; @ PBV-pad32.c:30
+50: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=105 R10=fp0 fp-8_w=105
+51: (07) r2 += 15                     ; R2_w=120
+52: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=120 R10=fp0 fp-8_w=120
+; __pad += 16; @ PBV-pad32.c:31
+53: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=120 R10=fp0 fp-8_w=120
+54: (07) r2 += 16                     ; R2_w=136
+55: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=136 R10=fp0 fp-8_w=136
+; __pad += 17; @ PBV-pad32.c:32
+56: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=136 R10=fp0 fp-8_w=136
+57: (07) r2 += 17                     ; R2_w=153
+58: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=153 R10=fp0 fp-8_w=153
+; __pad += 18; @ PBV-pad32.c:33
+59: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=153 R10=fp0 fp-8_w=153
+60: (07) r2 += 18                     ; R2_w=171
+61: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=171 R10=fp0 fp-8_w=171
+; __pad += 19; @ PBV-pad32.c:34
+62: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=171 R10=fp0 fp-8_w=171
+63: (07) r2 += 19                     ; R2_w=190
+64: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=190 R10=fp0 fp-8_w=190
+; __pad += 20; @ PBV-pad32.c:35
+65: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=190 R10=fp0 fp-8_w=190
+66: (07) r2 += 20                     ; R2_w=210
+67: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=210 R10=fp0 fp-8_w=210
+; __pad += 21; @ PBV-pad32.c:36
+68: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=210 R10=fp0 fp-8_w=210
+69: (07) r2 += 21                     ; R2_w=231
+70: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=231 R10=fp0 fp-8_w=231
+; __pad += 22; @ PBV-pad32.c:37
+71: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=231 R10=fp0 fp-8_w=231
+72: (07) r2 += 22                     ; R2_w=253
+73: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=253 R10=fp0 fp-8_w=253
+; __pad += 23; @ PBV-pad32.c:38
+74: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=253 R10=fp0 fp-8_w=253
+75: (07) r2 += 23                     ; R2_w=276
+76: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=276 R10=fp0 fp-8_w=276
+; __pad += 24; @ PBV-pad32.c:39
+77: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=276 R10=fp0 fp-8_w=276
+78: (07) r2 += 24                     ; R2_w=300
+79: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=300 R10=fp0 fp-8_w=300
+; __pad += 25; @ PBV-pad32.c:40
+80: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=300 R10=fp0 fp-8_w=300
+81: (07) r2 += 25                     ; R2_w=325
+82: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=325 R10=fp0 fp-8_w=325
+; __pad += 26; @ PBV-pad32.c:41
+83: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=325 R10=fp0 fp-8_w=325
+84: (07) r2 += 26                     ; R2_w=351
+85: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=351 R10=fp0 fp-8_w=351
+; __pad += 27; @ PBV-pad32.c:42
+86: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=351 R10=fp0 fp-8_w=351
+87: (07) r2 += 27                     ; R2_w=378
+88: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=378 R10=fp0 fp-8_w=378
+; __pad += 28; @ PBV-pad32.c:43
+89: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=378 R10=fp0 fp-8_w=378
+90: (07) r2 += 28                     ; R2_w=406
+91: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=406 R10=fp0 fp-8_w=406
+; __pad += 29; @ PBV-pad32.c:44
+92: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=406 R10=fp0 fp-8_w=406
+93: (07) r2 += 29                     ; R2_w=435
+94: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=435 R10=fp0 fp-8_w=435
+; __pad += 30; @ PBV-pad32.c:45
+95: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=435 R10=fp0 fp-8_w=435
+96: (07) r2 += 30                     ; R2_w=465
+97: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=465 R10=fp0 fp-8_w=465
+; __pad += 31; @ PBV-pad32.c:46
+98: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=465 R10=fp0 fp-8_w=465
+99: (07) r2 += 31                     ; R2_w=496
+100: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=496 R10=fp0 fp-8_w=496
+; __pad += 32; @ PBV-pad32.c:47
+101: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=496 R10=fp0 fp-8_w=496
+102: (07) r2 += 32                    ; R2_w=528
+103: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=528 R10=fp0 fp-8_w=528
+; return *(__u64 *)data; @ PBV-pad32.c:49
+104: (79) r0 = *(u64 *)(r1 +0)
+invalid access to packet, off=0 size=8, R1(id=0,off=0,r=1)
+R1 offset is outside of the packet
+verification time 542 usec
+stack depth 8
+processed 105 insns (limit 1000000) max_states_per_insn 0 total_states 0 peak_states 0 mark_read 0
+-- END PROG LOAD LOG --
+libbpf: prog 'pbv_pad32': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-r2rpdy9g/PBV-pad32.o'
+Error: failed to load object file
