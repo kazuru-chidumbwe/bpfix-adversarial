@@ -1,0 +1,35 @@
+{
+  "case_id": "rs_cilium_mcast_igmpv3_grec_bound_001",
+  "error_id": "E001",
+  "anchor": 86,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        85,
+        86
+      ]
+    },
+    "pad8": {
+      "shift_from": 86,
+      "shift": 10,
+      "repair_sites": [
+        85,
+        96
+      ],
+      "anchor_in_variant": 96
+    },
+    "pad32": {
+      "shift_from": 86,
+      "shift": 34,
+      "repair_sites": [
+        85,
+        120
+      ],
+      "anchor_in_variant": 120
+    }
+  }
+}

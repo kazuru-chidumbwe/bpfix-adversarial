@@ -1,0 +1,59 @@
+{
+  "case_id": "rs_tutorial_memleak_free_info_merge_001",
+  "error_id": "E002",
+  "anchor": 73,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        67,
+        68,
+        69,
+        70,
+        73
+      ]
+    },
+    "pad8": {
+      "shift_from": 73,
+      "shift": 10,
+      "repair_sites": [
+        67,
+        68,
+        69,
+        70,
+        83
+      ],
+      "anchor_in_variant": 83
+    },
+    "pad32": {
+      "shift_from": 73,
+      "shift": 34,
+      "repair_sites": [
+        67,
+        68,
+        69,
+        70,
+        107
+      ],
+      "anchor_in_variant": 107
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        67,
+        68,
+        69,
+        70,
+        73
+      ],
+      "from": "existing",
+      "to": "ptr",
+      "check_line": 46,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

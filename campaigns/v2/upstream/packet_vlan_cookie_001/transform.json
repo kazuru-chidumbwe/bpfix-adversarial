@@ -1,0 +1,44 @@
+{
+  "case_id": "packet_vlan_cookie_001",
+  "error_id": "E006",
+  "anchor": 67,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        66,
+        67,
+        68,
+        69,
+        70
+      ]
+    },
+    "pad8": {
+      "shift_from": 67,
+      "shift": 10,
+      "repair_sites": [
+        66,
+        77,
+        78,
+        79,
+        80
+      ],
+      "anchor_in_variant": 77
+    },
+    "pad32": {
+      "shift_from": 67,
+      "shift": 34,
+      "repair_sites": [
+        66,
+        101,
+        102,
+        103,
+        104
+      ],
+      "anchor_in_variant": 101
+    }
+  }
+}

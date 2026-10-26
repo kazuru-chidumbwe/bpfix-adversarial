@@ -1,0 +1,63 @@
+{
+  "case_id": "rs_eunomia_energy_runtime_merge_001",
+  "error_id": "E002",
+  "anchor": 130,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        124,
+        125,
+        126,
+        127,
+        128,
+        129
+      ]
+    },
+    "pad8": {
+      "shift_from": 130,
+      "shift": 10,
+      "repair_sites": [
+        124,
+        125,
+        126,
+        127,
+        128,
+        129
+      ],
+      "anchor_in_variant": 140
+    },
+    "pad32": {
+      "shift_from": 130,
+      "shift": 34,
+      "repair_sites": [
+        124,
+        125,
+        126,
+        127,
+        128,
+        129
+      ],
+      "anchor_in_variant": 164
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        124,
+        125,
+        126,
+        127,
+        128,
+        129
+      ],
+      "from": "old_ts",
+      "to": "ptr",
+      "check_line": 119,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

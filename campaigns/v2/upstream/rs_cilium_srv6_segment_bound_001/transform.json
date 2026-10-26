@@ -1,0 +1,32 @@
+{
+  "case_id": "rs_cilium_srv6_segment_bound_001",
+  "error_id": "E001",
+  "anchor": 60,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        50
+      ]
+    },
+    "pad8": {
+      "shift_from": 60,
+      "shift": 10,
+      "repair_sites": [
+        50
+      ],
+      "anchor_in_variant": 70
+    },
+    "pad32": {
+      "shift_from": 60,
+      "shift": 34,
+      "repair_sites": [
+        50
+      ],
+      "anchor_in_variant": 94
+    }
+  }
+}

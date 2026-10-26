@@ -1,0 +1,75 @@
+{
+  "case_id": "rs_actplane_mmap_pending_merge_001",
+  "error_id": "E002",
+  "anchor": 217,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        195,
+        209,
+        210,
+        211,
+        212,
+        213,
+        214,
+        217,
+        222
+      ]
+    },
+    "pad8": {
+      "shift_from": 217,
+      "shift": 10,
+      "repair_sites": [
+        195,
+        209,
+        210,
+        211,
+        212,
+        213,
+        214,
+        227,
+        232
+      ],
+      "anchor_in_variant": 227
+    },
+    "pad32": {
+      "shift_from": 217,
+      "shift": 34,
+      "repair_sites": [
+        195,
+        209,
+        210,
+        211,
+        212,
+        213,
+        214,
+        251,
+        256
+      ],
+      "anchor_in_variant": 251
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        195,
+        209,
+        210,
+        211,
+        212,
+        213,
+        214,
+        217,
+        222
+      ],
+      "from": "start",
+      "to": "ptr",
+      "check_line": 123,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

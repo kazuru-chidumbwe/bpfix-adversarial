@@ -1,0 +1,35 @@
+{
+  "case_id": "subprog_adjust_tail_stale_001",
+  "error_id": "E011",
+  "anchor": 37,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        36,
+        37
+      ]
+    },
+    "pad8": {
+      "shift_from": 37,
+      "shift": 10,
+      "repair_sites": [
+        36,
+        47
+      ],
+      "anchor_in_variant": 47
+    },
+    "pad32": {
+      "shift_from": 37,
+      "shift": 34,
+      "repair_sites": [
+        36,
+        71
+      ],
+      "anchor_in_variant": 71
+    }
+  }
+}

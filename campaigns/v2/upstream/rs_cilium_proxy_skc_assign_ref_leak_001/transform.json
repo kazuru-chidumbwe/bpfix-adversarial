@@ -1,0 +1,31 @@
+{
+  "case_id": "rs_cilium_proxy_skc_assign_ref_leak_001",
+  "error_id": "E004",
+  "anchor": 34,
+  "anchor_source": "primary",
+  "pad_skipped": "anchor starts with '}'",
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        28,
+        29,
+        32
+      ]
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        28,
+        29,
+        32
+      ],
+      "from": "sk",
+      "to": "ptr",
+      "check_line": 25,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

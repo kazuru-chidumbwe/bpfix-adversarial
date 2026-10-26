@@ -1,0 +1,29 @@
+{
+  "case_id": "rs_eunomia_http_doff_copy_bound_001",
+  "error_id": "E001",
+  "anchor": 131,
+  "anchor_source": "primary",
+  "pad_skipped": "previous code line is not a statement boundary",
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        116,
+        117
+      ]
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        116,
+        117
+      ],
+      "from": "rec",
+      "to": "ptr",
+      "check_line": 119,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

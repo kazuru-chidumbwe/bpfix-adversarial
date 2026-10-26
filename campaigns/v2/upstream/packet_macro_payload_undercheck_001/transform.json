@@ -1,0 +1,32 @@
+{
+  "case_id": "packet_macro_payload_undercheck_001",
+  "error_id": "E001",
+  "anchor": 52,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        50
+      ]
+    },
+    "pad8": {
+      "shift_from": 52,
+      "shift": 10,
+      "repair_sites": [
+        50
+      ],
+      "anchor_in_variant": 62
+    },
+    "pad32": {
+      "shift_from": 52,
+      "shift": 34,
+      "repair_sites": [
+        50
+      ],
+      "anchor_in_variant": 86
+    }
+  }
+}

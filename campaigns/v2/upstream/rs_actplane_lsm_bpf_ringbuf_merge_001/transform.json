@@ -1,0 +1,38 @@
+{
+  "case_id": "rs_actplane_lsm_bpf_ringbuf_merge_001",
+  "error_id": "E002",
+  "anchor": 54,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        44,
+        45,
+        50
+      ]
+    },
+    "pad8": {
+      "shift_from": 54,
+      "shift": 10,
+      "repair_sites": [
+        44,
+        45,
+        50
+      ],
+      "anchor_in_variant": 64
+    },
+    "pad32": {
+      "shift_from": 54,
+      "shift": 34,
+      "repair_sites": [
+        44,
+        45,
+        50
+      ],
+      "anchor_in_variant": 88
+    }
+  }
+}

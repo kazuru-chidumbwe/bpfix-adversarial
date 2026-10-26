@@ -1,0 +1,59 @@
+{
+  "case_id": "ringbuf_submit_after_discard_001",
+  "error_id": "E008",
+  "anchor": 49,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        40,
+        46,
+        47,
+        48,
+        50
+      ]
+    },
+    "pad8": {
+      "shift_from": 49,
+      "shift": 10,
+      "repair_sites": [
+        40,
+        46,
+        47,
+        48,
+        60
+      ],
+      "anchor_in_variant": 59
+    },
+    "pad32": {
+      "shift_from": 49,
+      "shift": 34,
+      "repair_sites": [
+        40,
+        46,
+        47,
+        48,
+        84
+      ],
+      "anchor_in_variant": 83
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        40,
+        46,
+        47,
+        48,
+        50
+      ],
+      "from": "rec",
+      "to": "ptr",
+      "check_line": 42,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "case_id": "rs_agentsight_process_ringbuf_null_001",
+  "error_id": "E002",
+  "anchor": 45,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        44,
+        45
+      ]
+    },
+    "pad8": {
+      "shift_from": 45,
+      "shift": 10,
+      "repair_sites": [
+        44,
+        55
+      ],
+      "anchor_in_variant": 55
+    },
+    "pad32": {
+      "shift_from": 45,
+      "shift": 34,
+      "repair_sites": [
+        44,
+        79
+      ],
+      "anchor_in_variant": 79
+    }
+  }
+}

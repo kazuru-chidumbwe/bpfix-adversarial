@@ -1,0 +1,63 @@
+{
+  "case_id": "rs_actplane_cap_dynptr_payload_null_001",
+  "error_id": "E002",
+  "anchor": 94,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        90,
+        91,
+        92,
+        106,
+        107,
+        108
+      ]
+    },
+    "pad8": {
+      "shift_from": 94,
+      "shift": 10,
+      "repair_sites": [
+        90,
+        91,
+        92,
+        116,
+        117,
+        118
+      ],
+      "anchor_in_variant": 104
+    },
+    "pad32": {
+      "shift_from": 94,
+      "shift": 34,
+      "repair_sites": [
+        90,
+        91,
+        92,
+        140,
+        141,
+        142
+      ],
+      "anchor_in_variant": 128
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        90,
+        91,
+        92,
+        106,
+        107,
+        108
+      ],
+      "from": "scratch",
+      "to": "ptr",
+      "check_line": 65,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

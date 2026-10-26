@@ -40,6 +40,10 @@ OUT_MD = ROOT / "results" / "upstream_repair_site.md"
 NEAR = 3
 
 
+def case_kind(case_id: str) -> str:
+    return "real-project seed" if case_id.startswith("rs_") else "canary"
+
+
 def score_case(case_dir: Path) -> dict:
     buggy = (case_dir / "buggy.bpf.c").read_text(encoding="utf-8")
     fixed = (case_dir / "fixed.bpf.c").read_text(encoding="utf-8")
@@ -102,6 +106,15 @@ def main() -> None:
     for r in scorable:
         by_ob[r["upstream_obligation"] or "unmapped"].append(r)
     per_ob = {ob: {m: tally(rs, m) for m in metrics} for ob, rs in sorted(by_ob.items())}
+    # Upstream names its real-project seeds rs_<project>_...; the rest are canary cases.
+    by_kind: dict[str, list[dict]] = defaultdict(list)
+    for r in scorable:
+        by_kind[case_kind(r["case_id"])].append(r)
+    per_kind = {k: {m: tally(rs, m) for m in metrics} for k, rs in sorted(by_kind.items())}
+    selection = (
+        "the full main75 split" if summary["n_cases"] == 75
+        else "the keyword-stratified depth-21 selection, not a random sample of main75"
+    )
 
     payload = {
         "generator": "tools/score_upstream_repair_site.py",
@@ -110,10 +123,11 @@ def main() -> None:
         "near_threshold": NEAR,
         "summary": summary,
         "by_upstream_obligation": per_ob,
+        "by_case_kind": per_kind,
         "rows": rows,
         "caveat": (
             "Hunk-level agreement with upstream's fix, not root-cause ground truth. "
-            "Cases are the depth-21 keyword-stratified selection, not a random sample of main75."
+            f"Cases are {selection}."
         ),
     }
     OUT_JSON.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n")
@@ -132,7 +146,7 @@ def main() -> None:
         "in buggy line numbers (an insertion marks the lines on both sides of the gap). "
         "Neither input is authored by this harness.",
         "",
-        f"Cases: {summary['n_cases']} vendored (depth-21 selection); scorable: {summary['n_scorable']}. "
+        f"Cases: {summary['n_cases']} vendored ({selection.split(',')[0]}); scorable: {summary['n_scorable']}. "
         f"`-->` line 0 (no primary): {summary['n_primary_zero']}.",
         "",
         "| Metric | Hits |",
@@ -155,6 +169,18 @@ def main() -> None:
         )
     lines += [
         "",
+        "## By case kind",
+        "",
+        "| Case kind | primary on site | any label on site | n |",
+        "| --- | ---: | ---: | ---: |",
+    ]
+    for kind, t in per_kind.items():
+        lines.append(
+            f"| {kind} | {frac(t['primary_in_repair'])} | {frac(t['any_label_in_repair'])} | "
+            f"{t['primary_in_repair']['n']} |"
+        )
+    lines += [
+        "",
         "## Per case",
         "",
         "| case | error | primary | repair sites | primary on site | label on site | distance |",
@@ -171,8 +197,8 @@ def main() -> None:
     lines += [
         "",
         "Hunk-level agreement with upstream's fix, not root-cause ground truth: a fix can touch more "
-        "lines than the fault or repair elsewhere. The 21 cases are the keyword-stratified depth-21 "
-        "selection, not a random sample of main75; intervals are Wilson 95% over cases.",
+        f"lines than the fault or repair elsewhere. Cases are {selection}; "
+        "intervals are Wilson 95% over cases.",
         "",
     ]
     OUT_MD.write_text("\n".join(lines), encoding="utf-8", newline="\n")

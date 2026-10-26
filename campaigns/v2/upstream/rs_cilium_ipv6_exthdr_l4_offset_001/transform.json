@@ -1,0 +1,50 @@
+{
+  "case_id": "rs_cilium_ipv6_exthdr_l4_offset_001",
+  "error_id": "E001",
+  "anchor": 87,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        58,
+        60,
+        74,
+        75,
+        82,
+        83,
+        86
+      ]
+    },
+    "pad8": {
+      "shift_from": 87,
+      "shift": 10,
+      "repair_sites": [
+        58,
+        60,
+        74,
+        75,
+        82,
+        83,
+        86
+      ],
+      "anchor_in_variant": 97
+    },
+    "pad32": {
+      "shift_from": 87,
+      "shift": 34,
+      "repair_sites": [
+        58,
+        60,
+        74,
+        75,
+        82,
+        83,
+        86
+      ],
+      "anchor_in_variant": 121
+    }
+  }
+}

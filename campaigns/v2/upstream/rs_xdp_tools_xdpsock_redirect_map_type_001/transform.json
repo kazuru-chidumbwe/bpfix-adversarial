@@ -1,0 +1,32 @@
+{
+  "case_id": "rs_xdp_tools_xdpsock_redirect_map_type_001",
+  "error_id": "E009",
+  "anchor": 38,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        18
+      ]
+    },
+    "pad8": {
+      "shift_from": 38,
+      "shift": 10,
+      "repair_sites": [
+        18
+      ],
+      "anchor_in_variant": 48
+    },
+    "pad32": {
+      "shift_from": 38,
+      "shift": 34,
+      "repair_sites": [
+        18
+      ],
+      "anchor_in_variant": 72
+    }
+  }
+}

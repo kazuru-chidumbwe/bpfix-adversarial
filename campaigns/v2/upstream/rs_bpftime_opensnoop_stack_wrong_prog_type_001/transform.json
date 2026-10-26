@@ -1,0 +1,59 @@
+{
+  "case_id": "rs_bpftime_opensnoop_stack_wrong_prog_type_001",
+  "error_id": "E009",
+  "anchor": 50,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        57,
+        58,
+        60,
+        61,
+        62
+      ]
+    },
+    "pad8": {
+      "shift_from": 50,
+      "shift": 10,
+      "repair_sites": [
+        67,
+        68,
+        70,
+        71,
+        72
+      ],
+      "anchor_in_variant": 60
+    },
+    "pad32": {
+      "shift_from": 50,
+      "shift": 34,
+      "repair_sites": [
+        91,
+        92,
+        94,
+        95,
+        96
+      ],
+      "anchor_in_variant": 84
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        57,
+        58,
+        60,
+        61,
+        62
+      ],
+      "from": "args",
+      "to": "ptr",
+      "check_line": 45,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

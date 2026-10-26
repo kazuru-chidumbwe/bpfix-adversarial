@@ -1,0 +1,32 @@
+{
+  "case_id": "rs_cilium_fib_lookup_param_len_001",
+  "error_id": "E003",
+  "anchor": 46,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        46
+      ]
+    },
+    "pad8": {
+      "shift_from": 46,
+      "shift": 10,
+      "repair_sites": [
+        56
+      ],
+      "anchor_in_variant": 56
+    },
+    "pad32": {
+      "shift_from": 46,
+      "shift": 34,
+      "repair_sites": [
+        80
+      ],
+      "anchor_in_variant": 80
+    }
+  }
+}

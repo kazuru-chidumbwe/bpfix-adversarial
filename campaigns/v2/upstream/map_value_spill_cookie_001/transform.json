@@ -1,0 +1,47 @@
+{
+  "case_id": "map_value_spill_cookie_001",
+  "error_id": "E002",
+  "anchor": 62,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        58,
+        59
+      ]
+    },
+    "pad8": {
+      "shift_from": 62,
+      "shift": 10,
+      "repair_sites": [
+        58,
+        59
+      ],
+      "anchor_in_variant": 72
+    },
+    "pad32": {
+      "shift_from": 62,
+      "shift": 34,
+      "repair_sites": [
+        58,
+        59
+      ],
+      "anchor_in_variant": 96
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        58,
+        59
+      ],
+      "from": "cfg",
+      "to": "ptr",
+      "check_line": 52,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

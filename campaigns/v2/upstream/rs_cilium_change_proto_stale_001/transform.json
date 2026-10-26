@@ -1,0 +1,35 @@
+{
+  "case_id": "rs_cilium_change_proto_stale_001",
+  "error_id": "E011",
+  "anchor": 43,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        42,
+        43
+      ]
+    },
+    "pad8": {
+      "shift_from": 43,
+      "shift": 10,
+      "repair_sites": [
+        42,
+        53
+      ],
+      "anchor_in_variant": 53
+    },
+    "pad32": {
+      "shift_from": 43,
+      "shift": 34,
+      "repair_sites": [
+        42,
+        77
+      ],
+      "anchor_in_variant": 77
+    }
+  }
+}

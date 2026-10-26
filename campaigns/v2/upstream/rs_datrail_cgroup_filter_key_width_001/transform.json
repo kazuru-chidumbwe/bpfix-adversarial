@@ -1,0 +1,43 @@
+{
+  "case_id": "rs_datrail_cgroup_filter_key_width_001",
+  "error_id": "E003",
+  "anchor": 42,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        41
+      ]
+    },
+    "pad8": {
+      "shift_from": 42,
+      "shift": 10,
+      "repair_sites": [
+        41
+      ],
+      "anchor_in_variant": 52
+    },
+    "pad32": {
+      "shift_from": 42,
+      "shift": 34,
+      "repair_sites": [
+        41
+      ],
+      "anchor_in_variant": 76
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        41
+      ],
+      "from": "filter_cgroup",
+      "to": "ptr",
+      "check_line": 31,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

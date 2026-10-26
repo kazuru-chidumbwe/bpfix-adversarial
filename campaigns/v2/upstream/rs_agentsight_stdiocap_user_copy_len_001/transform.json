@@ -1,0 +1,47 @@
+{
+  "case_id": "rs_agentsight_stdiocap_user_copy_len_001",
+  "error_id": "E005",
+  "anchor": 57,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        56,
+        57
+      ]
+    },
+    "pad8": {
+      "shift_from": 57,
+      "shift": 10,
+      "repair_sites": [
+        56,
+        67
+      ],
+      "anchor_in_variant": 67
+    },
+    "pad32": {
+      "shift_from": 57,
+      "shift": 34,
+      "repair_sites": [
+        56,
+        91
+      ],
+      "anchor_in_variant": 91
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        56,
+        57
+      ],
+      "from": "args",
+      "to": "ptr",
+      "check_line": 44,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

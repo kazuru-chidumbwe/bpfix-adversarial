@@ -1,0 +1,51 @@
+{
+  "case_id": "map_value_pointer_cookie_001",
+  "error_id": "E002",
+  "anchor": 67,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        61,
+        62,
+        63
+      ]
+    },
+    "pad8": {
+      "shift_from": 67,
+      "shift": 10,
+      "repair_sites": [
+        61,
+        62,
+        63
+      ],
+      "anchor_in_variant": 77
+    },
+    "pad32": {
+      "shift_from": 67,
+      "shift": 34,
+      "repair_sites": [
+        61,
+        62,
+        63
+      ],
+      "anchor_in_variant": 101
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        61,
+        62,
+        63
+      ],
+      "from": "cfg",
+      "to": "ptr",
+      "check_line": 58,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "case_id": "rs_eunomia_wq_container_map_001",
+  "error_id": "E010",
+  "anchor": 99,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        70,
+        99
+      ]
+    },
+    "pad8": {
+      "shift_from": 99,
+      "shift": 10,
+      "repair_sites": [
+        70,
+        109
+      ],
+      "anchor_in_variant": 109
+    },
+    "pad32": {
+      "shift_from": 99,
+      "shift": 34,
+      "repair_sites": [
+        70,
+        133
+      ],
+      "anchor_in_variant": 133
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        70,
+        99
+      ],
+      "from": "stats",
+      "to": "ptr",
+      "check_line": 81,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

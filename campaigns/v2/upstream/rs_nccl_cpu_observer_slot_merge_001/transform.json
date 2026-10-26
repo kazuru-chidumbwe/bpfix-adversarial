@@ -1,0 +1,55 @@
+{
+  "case_id": "rs_nccl_cpu_observer_slot_merge_001",
+  "error_id": "E002",
+  "anchor": 102,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        94,
+        95,
+        97,
+        98
+      ]
+    },
+    "pad8": {
+      "shift_from": 102,
+      "shift": 10,
+      "repair_sites": [
+        94,
+        95,
+        97,
+        98
+      ],
+      "anchor_in_variant": 112
+    },
+    "pad32": {
+      "shift_from": 102,
+      "shift": 34,
+      "repair_sites": [
+        94,
+        95,
+        97,
+        98
+      ],
+      "anchor_in_variant": 136
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        94,
+        95,
+        97,
+        98
+      ],
+      "from": "cfg",
+      "to": "ptr",
+      "check_line": 73,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

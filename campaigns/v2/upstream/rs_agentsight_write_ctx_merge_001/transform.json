@@ -1,0 +1,63 @@
+{
+  "case_id": "rs_agentsight_write_ctx_merge_001",
+  "error_id": "E002",
+  "anchor": 132,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        126,
+        127,
+        128,
+        129,
+        130,
+        131
+      ]
+    },
+    "pad8": {
+      "shift_from": 132,
+      "shift": 10,
+      "repair_sites": [
+        126,
+        127,
+        128,
+        129,
+        130,
+        131
+      ],
+      "anchor_in_variant": 142
+    },
+    "pad32": {
+      "shift_from": 132,
+      "shift": 34,
+      "repair_sites": [
+        126,
+        127,
+        128,
+        129,
+        130,
+        131
+      ],
+      "anchor_in_variant": 166
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        126,
+        127,
+        128,
+        129,
+        130,
+        131
+      ],
+      "from": "fd_ptr",
+      "to": "ptr",
+      "check_line": 123,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

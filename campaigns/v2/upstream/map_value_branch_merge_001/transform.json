@@ -1,0 +1,67 @@
+{
+  "case_id": "map_value_branch_merge_001",
+  "error_id": "E002",
+  "anchor": 65,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        39,
+        40,
+        56,
+        57,
+        58,
+        59,
+        60
+      ]
+    },
+    "pad8": {
+      "shift_from": 65,
+      "shift": 10,
+      "repair_sites": [
+        39,
+        40,
+        56,
+        57,
+        58,
+        59,
+        60
+      ],
+      "anchor_in_variant": 75
+    },
+    "pad32": {
+      "shift_from": 65,
+      "shift": 34,
+      "repair_sites": [
+        39,
+        40,
+        56,
+        57,
+        58,
+        59,
+        60
+      ],
+      "anchor_in_variant": 99
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        39,
+        40,
+        56,
+        57,
+        58,
+        59,
+        60
+      ],
+      "from": "cfg",
+      "to": "ptr",
+      "check_line": 41,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

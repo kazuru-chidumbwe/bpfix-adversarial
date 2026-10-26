@@ -1,0 +1,55 @@
+{
+  "case_id": "xdp_adjust_head_map_value_001",
+  "error_id": "E011",
+  "anchor": 59,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        48,
+        51,
+        52,
+        53
+      ]
+    },
+    "pad8": {
+      "shift_from": 59,
+      "shift": 10,
+      "repair_sites": [
+        48,
+        51,
+        52,
+        53
+      ],
+      "anchor_in_variant": 69
+    },
+    "pad32": {
+      "shift_from": 59,
+      "shift": 34,
+      "repair_sites": [
+        48,
+        51,
+        52,
+        53
+      ],
+      "anchor_in_variant": 93
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        48,
+        51,
+        52,
+        53
+      ],
+      "from": "cfg",
+      "to": "ptr",
+      "check_line": 55,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

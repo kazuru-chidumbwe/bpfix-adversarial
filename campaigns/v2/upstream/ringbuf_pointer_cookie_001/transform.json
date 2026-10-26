@@ -1,0 +1,39 @@
+{
+  "case_id": "ringbuf_pointer_cookie_001",
+  "error_id": "E006",
+  "anchor": 64,
+  "anchor_source": "primary",
+  "pad_skipped": "anchor is not a code line",
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        40,
+        71,
+        72,
+        73,
+        74,
+        75,
+        77
+      ]
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        40,
+        71,
+        72,
+        73,
+        74,
+        75,
+        77
+      ],
+      "from": "audit",
+      "to": "ptr",
+      "check_line": 61,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

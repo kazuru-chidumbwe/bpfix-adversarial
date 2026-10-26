@@ -1,0 +1,16 @@
+{
+  "case_id": "rs_tutorial_pidhide_tailcall_map_type_001",
+  "error_id": "E009",
+  "anchor": 34,
+  "anchor_source": "primary",
+  "pad_skipped": "previous code line is not a statement boundary",
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        19
+      ]
+    }
+  }
+}

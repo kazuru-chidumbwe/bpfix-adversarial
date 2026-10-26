@@ -1,0 +1,32 @@
+{
+  "case_id": "rs_tetragon_data_event_size_guard_001",
+  "error_id": "E005",
+  "anchor": 51,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        96
+      ]
+    },
+    "pad8": {
+      "shift_from": 51,
+      "shift": 10,
+      "repair_sites": [
+        106
+      ],
+      "anchor_in_variant": 61
+    },
+    "pad32": {
+      "shift_from": 51,
+      "shift": 34,
+      "repair_sites": [
+        130
+      ],
+      "anchor_in_variant": 85
+    }
+  }
+}

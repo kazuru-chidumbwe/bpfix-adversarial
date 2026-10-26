@@ -1,0 +1,51 @@
+{
+  "case_id": "rs_agentsight_fs_overflow_counter_merge_001",
+  "error_id": "E002",
+  "anchor": 123,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        118,
+        119,
+        120
+      ]
+    },
+    "pad8": {
+      "shift_from": 123,
+      "shift": 10,
+      "repair_sites": [
+        118,
+        119,
+        120
+      ],
+      "anchor_in_variant": 133
+    },
+    "pad32": {
+      "shift_from": 123,
+      "shift": 34,
+      "repair_sites": [
+        118,
+        119,
+        120
+      ],
+      "anchor_in_variant": 157
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        118,
+        119,
+        120
+      ],
+      "from": "trace_fs_mutations",
+      "to": "ptr",
+      "check_line": 74,
+      "direction": "idiomatic->listed"
+    }
+  }
+}

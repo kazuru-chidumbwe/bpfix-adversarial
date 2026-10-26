@@ -1,0 +1,35 @@
+{
+  "case_id": "rs_actplane_taint_loop_count_bound_001",
+  "error_id": "E005",
+  "anchor": 29,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        28,
+        29
+      ]
+    },
+    "pad8": {
+      "shift_from": 29,
+      "shift": 10,
+      "repair_sites": [
+        28,
+        39
+      ],
+      "anchor_in_variant": 39
+    },
+    "pad32": {
+      "shift_from": 29,
+      "shift": 34,
+      "repair_sites": [
+        28,
+        63
+      ],
+      "anchor_in_variant": 63
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "case_id": "rs_tutorial_dynptr_tc_ref_leak_001",
+  "error_id": "E004",
+  "anchor": 137,
+  "anchor_source": "primary",
+  "pad_skipped": "anchor starts with '}'",
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        120,
+        121,
+        122,
+        124,
+        125,
+        126
+      ]
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "case_id": "ringbuf_stack_discard_001",
+  "error_id": "E008",
+  "anchor": 27,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        25,
+        32,
+        33
+      ]
+    },
+    "pad8": {
+      "shift_from": 27,
+      "shift": 10,
+      "repair_sites": [
+        25,
+        42,
+        43
+      ],
+      "anchor_in_variant": 37
+    },
+    "pad32": {
+      "shift_from": 27,
+      "shift": 34,
+      "repair_sites": [
+        25,
+        66,
+        67
+      ],
+      "anchor_in_variant": 61
+    }
+  }
+}

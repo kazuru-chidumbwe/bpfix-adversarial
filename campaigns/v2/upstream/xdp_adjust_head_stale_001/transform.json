@@ -1,0 +1,16 @@
+{
+  "case_id": "xdp_adjust_head_stale_001",
+  "error_id": "E011",
+  "anchor": 46,
+  "anchor_source": "primary",
+  "pad_skipped": "previous code line is not a statement boundary",
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        44
+      ]
+    }
+  }
+}

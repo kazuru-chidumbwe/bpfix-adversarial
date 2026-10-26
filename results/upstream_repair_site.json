@@ -5,35 +5,61 @@
   "near_threshold": 3,
   "summary": {
     "primary_in_repair": {
-      "hits": 16,
-      "n": 21,
+      "hits": 30,
+      "n": 67,
       "wilson95": [
-        0.5491,
-        0.8937
+        0.3348,
+        0.5664
       ]
     },
     "any_label_in_repair": {
-      "hits": 18,
-      "n": 21,
+      "hits": 45,
+      "n": 67,
       "wilson95": [
-        0.6536,
-        0.9502
+        0.5526,
+        0.7721
       ]
     },
     "primary_within_3": {
-      "hits": 19,
-      "n": 21,
+      "hits": 47,
+      "n": 67,
       "wilson95": [
-        0.7109,
-        0.9735
+        0.5834,
+        0.7977
       ]
     },
-    "n_cases": 21,
-    "n_scorable": 21,
+    "n_cases": 75,
+    "n_scorable": 67,
     "n_primary_zero": 1,
-    "chance_expected_primary_hits": 3.559
+    "chance_expected_primary_hits": 6.401
   },
   "by_upstream_obligation": {
+    "ContextAccess": {
+      "primary_in_repair": {
+        "hits": 2,
+        "n": 5,
+        "wilson95": [
+          0.1176,
+          0.7693
+        ]
+      },
+      "any_label_in_repair": {
+        "hits": 2,
+        "n": 5,
+        "wilson95": [
+          0.1176,
+          0.7693
+        ]
+      },
+      "primary_within_3": {
+        "hits": 4,
+        "n": 5,
+        "wilson95": [
+          0.3755,
+          0.9638
+        ]
+      }
+    },
     "DynptrSafety": {
       "primary_in_repair": {
         "hits": 1,
@@ -60,80 +86,132 @@
         ]
       }
     },
-    "NullablePointer": {
+    "EnvironmentCapability": {
       "primary_in_repair": {
-        "hits": 3,
-        "n": 3,
+        "hits": 0,
+        "n": 4,
         "wilson95": [
-          0.4385,
+          0.0,
+          0.4899
+        ]
+      },
+      "any_label_in_repair": {
+        "hits": 0,
+        "n": 4,
+        "wilson95": [
+          0.0,
+          0.4899
+        ]
+      },
+      "primary_within_3": {
+        "hits": 0,
+        "n": 4,
+        "wilson95": [
+          0.0,
+          0.4899
+        ]
+      }
+    },
+    "HelperArgument": {
+      "primary_in_repair": {
+        "hits": 1,
+        "n": 1,
+        "wilson95": [
+          0.2065,
           1.0
         ]
       },
       "any_label_in_repair": {
-        "hits": 3,
-        "n": 3,
+        "hits": 1,
+        "n": 1,
         "wilson95": [
-          0.4385,
+          0.2065,
           1.0
         ]
       },
       "primary_within_3": {
-        "hits": 3,
-        "n": 3,
+        "hits": 1,
+        "n": 1,
         "wilson95": [
-          0.4385,
+          0.2065,
           1.0
+        ]
+      }
+    },
+    "NullablePointer": {
+      "primary_in_repair": {
+        "hits": 6,
+        "n": 19,
+        "wilson95": [
+          0.1536,
+          0.5399
+        ]
+      },
+      "any_label_in_repair": {
+        "hits": 16,
+        "n": 19,
+        "wilson95": [
+          0.6243,
+          0.9448
+        ]
+      },
+      "primary_within_3": {
+        "hits": 13,
+        "n": 19,
+        "wilson95": [
+          0.4601,
+          0.8464
         ]
       }
     },
     "PacketBounds": {
       "primary_in_repair": {
-        "hits": 1,
-        "n": 3,
+        "hits": 4,
+        "n": 11,
         "wilson95": [
-          0.0615,
-          0.7923
+          0.1517,
+          0.6462
         ]
       },
       "any_label_in_repair": {
-        "hits": 2,
-        "n": 3,
+        "hits": 6,
+        "n": 11,
         "wilson95": [
-          0.2077,
-          0.9385
+          0.2801,
+          0.7873
         ]
       },
       "primary_within_3": {
-        "hits": 2,
-        "n": 3,
+        "hits": 7,
+        "n": 11,
         "wilson95": [
-          0.2077,
-          0.9385
+          0.3538,
+          0.8483
         ]
       }
     },
     "PointerProvenance": {
       "primary_in_repair": {
-        "hits": 6,
-        "n": 6,
+        "hits": 8,
+        "n": 8,
         "wilson95": [
-          0.6097,
+          0.6756,
           1.0
         ]
       },
       "any_label_in_repair": {
-        "hits": 6,
-        "n": 6,
+        "hits": 8,
+        "n": 8,
         "wilson95": [
-          0.6097,
+          0.6756,
           1.0
         ]
       },
       "primary_within_3": {
-        "hits": 6,
-        "n": 6,
+        "hits": 8,
+        "n": 8,
         "wilson95": [
-          0.6097,
+          0.6756,
           1.0
         ]
       }
@@ -141,77 +219,77 @@
     "ReferenceLifecycle": {
       "primary_in_repair": {
         "hits": 0,
-        "n": 1,
+        "n": 5,
         "wilson95": [
           0.0,
-          0.7935
+          0.4345
         ]
       },
       "any_label_in_repair": {
-        "hits": 0,
-        "n": 1,
+        "hits": 2,
+        "n": 5,
         "wilson95": [
-          0.0,
-          0.7935
+          0.1176,
+          0.7693
         ]
       },
       "primary_within_3": {
-        "hits": 0,
-        "n": 1,
+        "hits": 1,
+        "n": 5,
         "wilson95": [
-          0.0,
-          0.7935
+          0.0362,
+          0.6245
         ]
       }
     },
     "ScalarRange": {
       "primary_in_repair": {
-        "hits": 2,
-        "n": 3,
+        "hits": 4,
+        "n": 6,
         "wilson95": [
-          0.2077,
-          0.9385
+          0.3,
+          0.9032
         ]
       },
       "any_label_in_repair": {
-        "hits": 3,
-        "n": 3,
+        "hits": 5,
+        "n": 6,
         "wilson95": [
-          0.4385,
-          1.0
+          0.4365,
+          0.9699
         ]
       },
       "primary_within_3": {
-        "hits": 3,
-        "n": 3,
+        "hits": 5,
+        "n": 6,
         "wilson95": [
-          0.4385,
-          1.0
+          0.4365,
+          0.9699
         ]
       }
     },
     "StackInitialized": {
       "primary_in_repair": {
-        "hits": 2,
-        "n": 2,
+        "hits": 3,
+        "n": 4,
         "wilson95": [
-          0.3424,
-          1.0
+          0.3006,
+          0.9544
         ]
       },
       "any_label_in_repair": {
-        "hits": 2,
-        "n": 2,
+        "hits": 3,
+        "n": 4,
         "wilson95": [
-          0.3424,
-          1.0
+          0.3006,
+          0.9544
         ]
       },
       "primary_within_3": {
-        "hits": 2,
-        "n": 2,
+        "hits": 4,
+        "n": 4,
         "wilson95": [
-          0.3424,
+          0.5101,
           1.0
         ]
       }
@@ -219,26 +297,80 @@
     "TypeContract": {
       "primary_in_repair": {
         "hits": 1,
-        "n": 1,
+        "n": 2,
         "wilson95": [
-          0.2065,
-          1.0
+          0.0945,
+          0.9055
         ]
       },
       "any_label_in_repair": {
         "hits": 1,
-        "n": 1,
+        "n": 2,
         "wilson95": [
-          0.2065,
-          1.0
+          0.0945,
+          0.9055
         ]
       },
       "primary_within_3": {
-        "hits": 1,
-        "n": 1,
+        "hits": 2,
+        "n": 2,
         "wilson95": [
-          0.2065,
+          0.3424,
           1.0
+        ]
+      }
+    }
+  },
+  "by_case_kind": {
+    "canary": {
+      "primary_in_repair": {
+        "hits": 20,
+        "n": 35,
+        "wilson95": [
+          0.4086,
+          0.7202
+        ]
+      },
+      "any_label_in_repair": {
+        "hits": 25,
+        "n": 35,
+        "wilson95": [
+          0.5495,
+          0.8367
+        ]
+      },
+      "primary_within_3": {
+        "hits": 29,
+        "n": 35,
+        "wilson95": [
+          0.6732,
+          0.919
+        ]
+      }
+    },
+    "real-project seed": {
+      "primary_in_repair": {
+        "hits": 10,
+        "n": 32,
+        "wilson95": [
+          0.1795,
+          0.4857
+        ]
+      },
+      "any_label_in_repair": {
+        "hits": 20,
+        "n": 32,
+        "wilson95": [
+          0.4525,
+          0.7707
+        ]
+      },
+      "primary_within_3": {
+        "hits": 18,
+        "n": 32,
+        "wilson95": [
+          0.3933,
+          0.7183
         ]
       }
     }
@@ -860,6 +992,64 @@
       ]
     },
     {
+      "case_id": "map_value_branch_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "primary": 65,
+      "primary_zero": false,
+      "label_lines": [
+        60,
+        65
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 2,
+      "n_semantic_hunks": 2,
+      "repair_sites": [
+        39,
+        40,
+        56,
+        57,
+        58,
+        59,
+        60
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": true,
+      "primary_within_3": false,
+      "primary_distance": 5,
+      "n_code_lines": 42,
+      "chance_line_in_repair": 0.1429,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 40,
+          "buggy_end": 39,
+          "fixed_start": 40,
+          "fixed_end": 40,
+          "sites": [
+            39,
+            40
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 56,
+          "buggy_end": 60,
+          "fixed_start": 57,
+          "fixed_end": 60,
+          "sites": [
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
       "case_id": "map_value_index_guard_oob_001",
       "error_id": "E005",
       "upstream_obligation": "ScalarRange",
@@ -948,6 +1138,106 @@
       ]
     },
     {
+      "case_id": "map_value_inline_cookie_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "primary": 67,
+      "primary_zero": false,
+      "label_lines": [
+        39,
+        67
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 2,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        63,
+        64
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": true,
+      "primary_distance": 3,
+      "n_code_lines": 37,
+      "chance_line_in_repair": 0.0541,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 63,
+          "buggy_end": 64,
+          "fixed_start": 63,
+          "fixed_end": 68,
+          "sites": [
+            63,
+            64
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "insert",
+          "buggy_start": 67,
+          "buggy_end": 66,
+          "fixed_start": 71,
+          "fixed_end": 71,
+          "sites": [
+            66,
+            67
+          ],
+          "semantic": false
+        }
+      ]
+    },
+    {
+      "case_id": "map_value_pointer_cookie_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "primary": 67,
+      "primary_zero": false,
+      "label_lines": [
+        63,
+        67
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 2,
+      "n_semantic_hunks": 2,
+      "repair_sites": [
+        61,
+        62,
+        63
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": true,
+      "primary_within_3": false,
+      "primary_distance": 4,
+      "n_code_lines": 38,
+      "chance_line_in_repair": 0.0789,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 62,
+          "buggy_end": 61,
+          "fixed_start": 62,
+          "fixed_end": 63,
+          "sites": [
+            61,
+            62
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 63,
+          "buggy_end": 63,
+          "fixed_start": 65,
+          "fixed_end": 67,
+          "sites": [
+            63
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
       "case_id": "map_value_signed_index_001",
       "error_id": "E005",
       "upstream_obligation": "ScalarRange",
@@ -1006,6 +1296,44 @@
           "fixed_end": 49,
           "sites": [
             47
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "map_value_spill_cookie_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "primary": 62,
+      "primary_zero": false,
+      "label_lines": [
+        58,
+        62
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        58,
+        59
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 3,
+      "n_code_lines": 39,
+      "chance_line_in_repair": 0.0513,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 59,
+          "buggy_end": 58,
+          "fixed_start": 59,
+          "fixed_end": 60,
+          "sites": [
+            58,
+            59
           ],
           "semantic": true
         }
@@ -1313,6 +1641,136 @@
       ]
     },
     {
+      "case_id": "packet_macro_payload_undercheck_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "primary": 52,
+      "primary_zero": false,
+      "label_lines": [
+        46,
+        52
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        50
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": true,
+      "primary_distance": 2,
+      "n_code_lines": 31,
+      "chance_line_in_repair": 0.0323,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 50,
+          "buggy_end": 50,
+          "fixed_start": 50,
+          "fixed_end": 50,
+          "sites": [
+            50
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "packet_vlan_cookie_001",
+      "error_id": "E006",
+      "upstream_obligation": "PointerProvenance",
+      "primary": 67,
+      "primary_zero": false,
+      "label_lines": [
+        57,
+        59,
+        67
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        66,
+        67,
+        68,
+        69,
+        70
+      ],
+      "primary_in_repair": true,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 0,
+      "n_code_lines": 39,
+      "chance_line_in_repair": 0.1026,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 66,
+          "buggy_end": 70,
+          "fixed_start": 66,
+          "fixed_end": 66,
+          "sites": [
+            66,
+            67,
+            68,
+            69,
+            70
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "perf_event_packet_payload_001",
+      "error_id": "E010",
+      "upstream_obligation": "HelperArgument",
+      "primary": 43,
+      "primary_zero": false,
+      "label_lines": [
+        43
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 2,
+      "n_semantic_hunks": 2,
+      "repair_sites": [
+        33,
+        34,
+        43
+      ],
+      "primary_in_repair": true,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 0,
+      "n_code_lines": 22,
+      "chance_line_in_repair": 0.1364,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 34,
+          "buggy_end": 33,
+          "fixed_start": 34,
+          "fixed_end": 34,
+          "sites": [
+            33,
+            34
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 43,
+          "buggy_end": 43,
+          "fixed_start": 44,
+          "fixed_end": 45,
+          "sites": [
+            43
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
       "case_id": "ringbuf_branch_cookie_001",
       "error_id": "E006",
       "upstream_obligation": "PointerProvenance",
@@ -1566,7 +2024,2276 @@
           "semantic": true
         }
       ]
+    },
+    {
+      "case_id": "ringbuf_pointer_cookie_001",
+      "error_id": "E006",
+      "upstream_obligation": "PointerProvenance",
+      "primary": 64,
+      "primary_zero": false,
+      "label_lines": [
+        42,
+        52,
+        58,
+        64
+      ],
+      "snippet_lines_not_matching_buggy": [
+        42,
+        52,
+        58,
+        64
+      ],
+      "n_hunks": 3,
+      "n_semantic_hunks": 3,
+      "repair_sites": [
+        40,
+        71,
+        72,
+        73,
+        74,
+        75,
+        77
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": false,
+      "primary_distance": 7,
+      "n_code_lines": 51,
+      "chance_line_in_repair": 0.1176,
+      "hunks": [
+        {
+          "tag": "delete",
+          "buggy_start": 40,
+          "buggy_end": 40,
+          "fixed_start": 40,
+          "fixed_end": 39,
+          "sites": [
+            40
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 71,
+          "buggy_end": 75,
+          "fixed_start": 70,
+          "fixed_end": 70,
+          "sites": [
+            71,
+            72,
+            73,
+            74,
+            75
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 77,
+          "buggy_end": 77,
+          "fixed_start": 72,
+          "fixed_end": 72,
+          "sites": [
+            77
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "ringbuf_ref_leak_001",
+      "error_id": "E004",
+      "upstream_obligation": "ReferenceLifecycle",
+      "primary": 53,
+      "primary_zero": false,
+      "label_lines": [
+        43,
+        50,
+        53
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 2,
+      "n_semantic_hunks": 2,
+      "repair_sites": [
+        40,
+        41,
+        42
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": false,
+      "primary_distance": 11,
+      "n_code_lines": 33,
+      "chance_line_in_repair": 0.0606,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 40,
+          "buggy_end": 40,
+          "fixed_start": 40,
+          "fixed_end": 41,
+          "sites": [
+            40
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "insert",
+          "buggy_start": 42,
+          "buggy_end": 41,
+          "fixed_start": 43,
+          "fixed_end": 43,
+          "sites": [
+            41,
+            42
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "ringbuf_stack_discard_001",
+      "error_id": "E008",
+      "upstream_obligation": "TypeContract",
+      "primary": 27,
+      "primary_zero": false,
+      "label_lines": [
+        27
+      ],
+      "snippet_lines_not_matching_buggy": [
+        27
+      ],
+      "n_hunks": 2,
+      "n_semantic_hunks": 2,
+      "repair_sites": [
+        25,
+        32,
+        33
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": true,
+      "primary_distance": 2,
+      "n_code_lines": 22,
+      "chance_line_in_repair": 0.1364,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 25,
+          "buggy_end": 25,
+          "fixed_start": 25,
+          "fixed_end": 25,
+          "sites": [
+            25
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 32,
+          "buggy_end": 33,
+          "fixed_start": 32,
+          "fixed_end": 38,
+          "sites": [
+            32,
+            33
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "ringbuf_stack_submit_001",
+      "error_id": "E008",
+      "upstream_obligation": "TypeContract",
+      "primary": 30,
+      "primary_zero": false,
+      "label_lines": [
+        30
+      ],
+      "snippet_lines_not_matching_buggy": [
+        30
+      ],
+      "n_hunks": 4,
+      "n_semantic_hunks": 4,
+      "repair_sites": [
+        25,
+        32,
+        34,
+        37
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": true,
+      "primary_distance": 2,
+      "n_code_lines": 24,
+      "chance_line_in_repair": 0.1667,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 25,
+          "buggy_end": 25,
+          "fixed_start": 25,
+          "fixed_end": 25,
+          "sites": [
+            25
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 32,
+          "buggy_end": 32,
+          "fixed_start": 32,
+          "fixed_end": 38,
+          "sites": [
+            32
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 34,
+          "buggy_end": 34,
+          "fixed_start": 40,
+          "fixed_end": 40,
+          "sites": [
+            34
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 37,
+          "buggy_end": 37,
+          "fixed_start": 43,
+          "fixed_end": 43,
+          "sites": [
+            37
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "ringbuf_submit_after_discard_001",
+      "error_id": "E008",
+      "upstream_obligation": "TypeContract",
+      "primary": 49,
+      "primary_zero": false,
+      "label_lines": [
+        49
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 4,
+      "n_semantic_hunks": 4,
+      "repair_sites": [
+        40,
+        46,
+        47,
+        48,
+        50
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": true,
+      "primary_distance": 1,
+      "n_code_lines": 28,
+      "chance_line_in_repair": 0.1429,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 40,
+          "buggy_end": 40,
+          "fixed_start": 40,
+          "fixed_end": 43,
+          "sites": [
+            40
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 46,
+          "buggy_end": 46,
+          "fixed_start": 49,
+          "fixed_end": 49,
+          "sites": [
+            46
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "insert",
+          "buggy_start": 48,
+          "buggy_end": 47,
+          "fixed_start": 51,
+          "fixed_end": 52,
+          "sites": [
+            47,
+            48
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 50,
+          "buggy_end": 50,
+          "fixed_start": 55,
+          "fixed_end": 55,
+          "sites": [
+            50
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "ringbuf_two_record_cookie_001",
+      "error_id": "E006",
+      "upstream_obligation": "PointerProvenance",
+      "primary": 63,
+      "primary_zero": false,
+      "label_lines": [
+        39,
+        49,
+        55,
+        63
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        62,
+        63,
+        64,
+        65
+      ],
+      "primary_in_repair": true,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 0,
+      "n_code_lines": 40,
+      "chance_line_in_repair": 0.075,
+      "hunks": [
+        {
+          "tag": "delete",
+          "buggy_start": 62,
+          "buggy_end": 65,
+          "fixed_start": 62,
+          "fixed_end": 61,
+          "sites": [
+            62,
+            63,
+            64,
+            65
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_actplane_cap_dynptr_payload_null_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "primary": 94,
+      "primary_zero": false,
+      "label_lines": [
+        64,
+        94
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 2,
+      "n_semantic_hunks": 2,
+      "repair_sites": [
+        90,
+        91,
+        92,
+        106,
+        107,
+        108
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": true,
+      "primary_distance": 2,
+      "n_code_lines": 79,
+      "chance_line_in_repair": 0.0506,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 90,
+          "buggy_end": 92,
+          "fixed_start": 90,
+          "fixed_end": 91,
+          "sites": [
+            90,
+            91,
+            92
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 106,
+          "buggy_end": 108,
+          "fixed_start": 105,
+          "fixed_end": 106,
+          "sites": [
+            106,
+            107,
+            108
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_actplane_lsm_bpf_ringbuf_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "primary": 54,
+      "primary_zero": false,
+      "label_lines": [
+        49,
+        54
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 2,
+      "n_semantic_hunks": 2,
+      "repair_sites": [
+        44,
+        45,
+        50
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": false,
+      "primary_distance": 4,
+      "n_code_lines": 38,
+      "chance_line_in_repair": 0.0526,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 45,
+          "buggy_end": 44,
+          "fixed_start": 45,
+          "fixed_end": 45,
+          "sites": [
+            44,
+            45
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 50,
+          "buggy_end": 50,
+          "fixed_start": 51,
+          "fixed_end": 51,
+          "sites": [
+            50
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_actplane_mmap_pending_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "primary": 217,
+      "primary_zero": false,
+      "label_lines": [
+        214,
+        217
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 4,
+      "n_semantic_hunks": 4,
+      "repair_sites": [
+        195,
+        209,
+        210,
+        211,
+        212,
+        213,
+        214,
+        217,
+        222
+      ],
+      "primary_in_repair": true,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 0,
+      "n_code_lines": 180,
+      "chance_line_in_repair": 0.0389,
+      "hunks": [
+        {
+          "tag": "delete",
+          "buggy_start": 195,
+          "buggy_end": 195,
+          "fixed_start": 195,
+          "fixed_end": 194,
+          "sites": [
+            195
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 209,
+          "buggy_end": 214,
+          "fixed_start": 208,
+          "fixed_end": 209,
+          "sites": [
+            209,
+            210,
+            211,
+            212,
+            213,
+            214
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 217,
+          "buggy_end": 217,
+          "fixed_start": 212,
+          "fixed_end": 212,
+          "sites": [
+            217
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 222,
+          "buggy_end": 222,
+          "fixed_start": 217,
+          "fixed_end": 217,
+          "sites": [
+            222
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_actplane_policy_map_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "primary": 57,
+      "primary_zero": false,
+      "label_lines": [
+        54,
+        57
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        51,
+        52,
+        53,
+        54
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 3,
+      "n_code_lines": 34,
+      "chance_line_in_repair": 0.0882,
+      "hunks": [
+        {
+          "tag": "delete",
+          "buggy_start": 51,
+          "buggy_end": 54,
+          "fixed_start": 51,
+          "fixed_end": 50,
+          "sites": [
+            51,
+            52,
+            53,
+            54
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_actplane_taint_loop_count_bound_001",
+      "error_id": "E005",
+      "upstream_obligation": "ScalarRange",
+      "primary": 29,
+      "primary_zero": false,
+      "label_lines": [
+        29,
+        42
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        28,
+        29
+      ],
+      "primary_in_repair": true,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 0,
+      "n_code_lines": 27,
+      "chance_line_in_repair": 0.0741,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 29,
+          "buggy_end": 28,
+          "fixed_start": 29,
+          "fixed_end": 30,
+          "sites": [
+            28,
+            29
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_agentsight_fs_overflow_counter_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "primary": 123,
+      "primary_zero": false,
+      "label_lines": [
+        84,
+        120,
+        123
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 2,
+      "n_semantic_hunks": 2,
+      "repair_sites": [
+        118,
+        119,
+        120
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 3,
+      "n_code_lines": 93,
+      "chance_line_in_repair": 0.0215,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 119,
+          "buggy_end": 118,
+          "fixed_start": 119,
+          "fixed_end": 119,
+          "sites": [
+            118,
+            119
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 120,
+          "buggy_end": 120,
+          "fixed_start": 121,
+          "fixed_end": 122,
+          "sites": [
+            120
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_agentsight_process_ringbuf_null_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "primary": 45,
+      "primary_zero": false,
+      "label_lines": [
+        44,
+        45
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        44,
+        45
+      ],
+      "primary_in_repair": true,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 0,
+      "n_code_lines": 30,
+      "chance_line_in_repair": 0.0667,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 45,
+          "buggy_end": 44,
+          "fixed_start": 45,
+          "fixed_end": 46,
+          "sites": [
+            44,
+            45
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_agentsight_stdiocap_user_copy_len_001",
+      "error_id": "E005",
+      "upstream_obligation": "ScalarRange",
+      "primary": 57,
+      "primary_zero": false,
+      "label_lines": [
+        46,
+        56,
+        57
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        56,
+        57
+      ],
+      "primary_in_repair": true,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 0,
+      "n_code_lines": 49,
+      "chance_line_in_repair": 0.0408,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 57,
+          "buggy_end": 56,
+          "fixed_start": 57,
+          "fixed_end": 58,
+          "sites": [
+            56,
+            57
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_agentsight_write_ctx_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "primary": 132,
+      "primary_zero": false,
+      "label_lines": [
+        119,
+        129,
+        132
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        126,
+        127,
+        128,
+        129,
+        130,
+        131
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 1,
+      "n_code_lines": 107,
+      "chance_line_in_repair": 0.0374,
+      "hunks": [
+        {
+          "tag": "delete",
+          "buggy_start": 126,
+          "buggy_end": 131,
+          "fixed_start": 126,
+          "fixed_end": 125,
+          "sites": [
+            126,
+            127,
+            128,
+            129,
+            130,
+            131
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_bpftime_opensnoop_ringbuf_filter_ref_001",
+      "error_id": "E004",
+      "upstream_obligation": "ReferenceLifecycle",
+      "primary": 82,
+      "primary_zero": false,
+      "label_lines": [
+        63,
+        77,
+        82
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 2,
+      "n_semantic_hunks": 2,
+      "repair_sites": [
+        62,
+        63,
+        66,
+        67,
+        68
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": true,
+      "primary_within_3": false,
+      "primary_distance": 14,
+      "n_code_lines": 64,
+      "chance_line_in_repair": 0.0469,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 63,
+          "buggy_end": 62,
+          "fixed_start": 63,
+          "fixed_end": 65,
+          "sites": [
+            62,
+            63
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "delete",
+          "buggy_start": 66,
+          "buggy_end": 68,
+          "fixed_start": 69,
+          "fixed_end": 68,
+          "sites": [
+            66,
+            67,
+            68
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_bpftime_opensnoop_stack_wrong_prog_type_001",
+      "error_id": "E009",
+      "upstream_obligation": "EnvironmentCapability",
+      "primary": 50,
+      "primary_zero": false,
+      "label_lines": [
+        50
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 2,
+      "n_semantic_hunks": 2,
+      "repair_sites": [
+        57,
+        58,
+        60,
+        61,
+        62
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": false,
+      "primary_distance": 7,
+      "n_code_lines": 43,
+      "chance_line_in_repair": 0.1163,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 57,
+          "buggy_end": 58,
+          "fixed_start": 57,
+          "fixed_end": 58,
+          "sites": [
+            57,
+            58
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 60,
+          "buggy_end": 62,
+          "fixed_start": 60,
+          "fixed_end": 61,
+          "sites": [
+            60,
+            61,
+            62
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_bpftime_sslsniff_perf_copy_len_001",
+      "error_id": "E005",
+      "upstream_obligation": "ScalarRange",
+      "primary": 101,
+      "primary_zero": false,
+      "label_lines": [
+        90,
+        98,
+        101
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 0,
+      "repair_sites": [],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": false,
+      "primary_distance": null,
+      "n_code_lines": 84,
+      "chance_line_in_repair": 0.0,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 10,
+          "buggy_end": 10,
+          "fixed_start": 10,
+          "fixed_end": 10,
+          "sites": [
+            10
+          ],
+          "semantic": false
+        }
+      ]
+    },
+    {
+      "case_id": "rs_cilium_change_proto_stale_001",
+      "error_id": "E011",
+      "upstream_obligation": "ContextAccess",
+      "primary": 43,
+      "primary_zero": false,
+      "label_lines": [
+        33,
+        40,
+        43
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        42,
+        43
+      ],
+      "primary_in_repair": true,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 0,
+      "n_code_lines": 19,
+      "chance_line_in_repair": 0.0526,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 43,
+          "buggy_end": 42,
+          "fixed_start": 43,
+          "fixed_end": 49,
+          "sites": [
+            42,
+            43
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_cilium_fib_lookup_param_len_001",
+      "error_id": "E003",
+      "upstream_obligation": "StackInitialized",
+      "primary": 46,
+      "primary_zero": false,
+      "label_lines": [
+        46
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        46
+      ],
+      "primary_in_repair": true,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 0,
+      "n_code_lines": 27,
+      "chance_line_in_repair": 0.037,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 46,
+          "buggy_end": 46,
+          "fixed_start": 46,
+          "fixed_end": 46,
+          "sites": [
+            46
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_cilium_ip_options_traceid_payload_bound_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "primary": 37,
+      "primary_zero": false,
+      "label_lines": [
+        34,
+        37
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        36,
+        37
+      ],
+      "primary_in_repair": true,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 0,
+      "n_code_lines": 77,
+      "chance_line_in_repair": 0.013,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 37,
+          "buggy_end": 36,
+          "fixed_start": 37,
+          "fixed_end": 38,
+          "sites": [
+            36,
+            37
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_cilium_ipv6_exthdr_l4_offset_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "primary": 87,
+      "primary_zero": false,
+      "label_lines": [
+        47,
+        77,
+        87
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 5,
+      "n_semantic_hunks": 5,
+      "repair_sites": [
+        58,
+        60,
+        74,
+        75,
+        82,
+        83,
+        86
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": true,
+      "primary_distance": 1,
+      "n_code_lines": 53,
+      "chance_line_in_repair": 0.1321,
+      "hunks": [
+        {
+          "tag": "delete",
+          "buggy_start": 58,
+          "buggy_end": 58,
+          "fixed_start": 58,
+          "fixed_end": 57,
+          "sites": [
+            58
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "delete",
+          "buggy_start": 60,
+          "buggy_end": 60,
+          "fixed_start": 59,
+          "fixed_end": 58,
+          "sites": [
+            60
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 74,
+          "buggy_end": 75,
+          "fixed_start": 72,
+          "fixed_end": 72,
+          "sites": [
+            74,
+            75
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 82,
+          "buggy_end": 83,
+          "fixed_start": 79,
+          "fixed_end": 80,
+          "sites": [
+            82,
+            83
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "delete",
+          "buggy_start": 86,
+          "buggy_end": 86,
+          "fixed_start": 83,
+          "fixed_end": 82,
+          "sites": [
+            86
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_cilium_mcast_igmpv3_grec_bound_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "primary": 86,
+      "primary_zero": false,
+      "label_lines": [
+        74,
+        86
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        85,
+        86
+      ],
+      "primary_in_repair": true,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 0,
+      "n_code_lines": 58,
+      "chance_line_in_repair": 0.0345,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 86,
+          "buggy_end": 85,
+          "fixed_start": 86,
+          "fixed_end": 87,
+          "sites": [
+            85,
+            86
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_cilium_proxy_skc_assign_ref_leak_001",
+      "error_id": "E004",
+      "upstream_obligation": "ReferenceLifecycle",
+      "primary": 34,
+      "primary_zero": false,
+      "label_lines": [
+        24,
+        32,
+        34
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 2,
+      "n_semantic_hunks": 2,
+      "repair_sites": [
+        28,
+        29,
+        32
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 2,
+      "n_code_lines": 20,
+      "chance_line_in_repair": 0.15,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 29,
+          "buggy_end": 28,
+          "fixed_start": 29,
+          "fixed_end": 30,
+          "sites": [
+            28,
+            29
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "delete",
+          "buggy_start": 32,
+          "buggy_end": 32,
+          "fixed_start": 34,
+          "fixed_end": 33,
+          "sites": [
+            32
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_cilium_srv6_segment_bound_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "primary": 60,
+      "primary_zero": false,
+      "label_lines": [
+        50,
+        60
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        50
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": true,
+      "primary_within_3": false,
+      "primary_distance": 10,
+      "n_code_lines": 52,
+      "chance_line_in_repair": 0.0192,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 50,
+          "buggy_end": 50,
+          "fixed_start": 50,
+          "fixed_end": 50,
+          "sites": [
+            50
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_datrail_browsertrace_start_ns_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "primary": 69,
+      "primary_zero": false,
+      "label_lines": [
+        60,
+        65,
+        69
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        60,
+        61,
+        62,
+        63
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": true,
+      "primary_within_3": false,
+      "primary_distance": 6,
+      "n_code_lines": 65,
+      "chance_line_in_repair": 0.0615,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 60,
+          "buggy_end": 63,
+          "fixed_start": 60,
+          "fixed_end": 61,
+          "sites": [
+            60,
+            61,
+            62,
+            63
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_datrail_cgroup_filter_key_width_001",
+      "error_id": "E003",
+      "upstream_obligation": "StackInitialized",
+      "primary": 42,
+      "primary_zero": false,
+      "label_lines": [
+        42
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        41
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": true,
+      "primary_distance": 1,
+      "n_code_lines": 48,
+      "chance_line_in_repair": 0.0208,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 41,
+          "buggy_end": 41,
+          "fixed_start": 41,
+          "fixed_end": 41,
+          "sites": [
+            41
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_eunomia_energy_runtime_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "primary": 130,
+      "primary_zero": false,
+      "label_lines": [
+        127,
+        130
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        124,
+        125,
+        126,
+        127,
+        128,
+        129
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 1,
+      "n_code_lines": 123,
+      "chance_line_in_repair": 0.0325,
+      "hunks": [
+        {
+          "tag": "delete",
+          "buggy_start": 124,
+          "buggy_end": 129,
+          "fixed_start": 124,
+          "fixed_end": 123,
+          "sites": [
+            124,
+            125,
+            126,
+            127,
+            128,
+            129
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_eunomia_http_doff_copy_bound_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "primary": 131,
+      "primary_zero": false,
+      "label_lines": [
+        107,
+        131
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        116,
+        117
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": false,
+      "primary_distance": 14,
+      "n_code_lines": 112,
+      "chance_line_in_repair": 0.0089,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 117,
+          "buggy_end": 116,
+          "fixed_start": 117,
+          "fixed_end": 124,
+          "sites": [
+            116,
+            117
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_eunomia_wq_container_map_001",
+      "error_id": "E010",
+      "upstream_obligation": "HelperArgument",
+      "primary": 99,
+      "primary_zero": false,
+      "label_lines": [
+        99
+      ],
+      "snippet_lines_not_matching_buggy": [
+        99
+      ],
+      "n_hunks": 2,
+      "n_semantic_hunks": 2,
+      "repair_sites": [
+        70,
+        99
+      ],
+      "primary_in_repair": true,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 0,
+      "n_code_lines": 83,
+      "chance_line_in_repair": 0.0241,
+      "hunks": [
+        {
+          "tag": "delete",
+          "buggy_start": 70,
+          "buggy_end": 70,
+          "fixed_start": 70,
+          "fixed_end": 69,
+          "sites": [
+            70
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 99,
+          "buggy_end": 99,
+          "fixed_start": 98,
+          "fixed_end": 98,
+          "sites": [
+            99
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_nccl_cpu_observer_slot_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "primary": 102,
+      "primary_zero": false,
+      "label_lines": [
+        77,
+        94,
+        102
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 2,
+      "n_semantic_hunks": 2,
+      "repair_sites": [
+        94,
+        95,
+        97,
+        98
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": true,
+      "primary_within_3": false,
+      "primary_distance": 4,
+      "n_code_lines": 103,
+      "chance_line_in_repair": 0.0291,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 95,
+          "buggy_end": 94,
+          "fixed_start": 95,
+          "fixed_end": 96,
+          "sites": [
+            94,
+            95
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "delete",
+          "buggy_start": 97,
+          "buggy_end": 98,
+          "fixed_start": 99,
+          "fixed_end": 98,
+          "sites": [
+            97,
+            98
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_tetragon_data_event_size_guard_001",
+      "error_id": "E005",
+      "upstream_obligation": "ScalarRange",
+      "primary": 51,
+      "primary_zero": false,
+      "label_lines": [
+        51
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        96
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": false,
+      "primary_distance": 45,
+      "n_code_lines": 77,
+      "chance_line_in_repair": 0.013,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 96,
+          "buggy_end": 96,
+          "fixed_start": 96,
+          "fixed_end": 96,
+          "sites": [
+            96
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_tutorial_dynptr_tc_ref_leak_001",
+      "error_id": "E004",
+      "upstream_obligation": "ReferenceLifecycle",
+      "primary": 137,
+      "primary_zero": false,
+      "label_lines": [
+        119,
+        135,
+        137
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 4,
+      "n_semantic_hunks": 4,
+      "repair_sites": [
+        120,
+        121,
+        122,
+        124,
+        125,
+        126
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": false,
+      "primary_distance": 11,
+      "n_code_lines": 107,
+      "chance_line_in_repair": 0.0374,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 120,
+          "buggy_end": 120,
+          "fixed_start": 120,
+          "fixed_end": 121,
+          "sites": [
+            120
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "insert",
+          "buggy_start": 122,
+          "buggy_end": 121,
+          "fixed_start": 123,
+          "fixed_end": 123,
+          "sites": [
+            121,
+            122
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 124,
+          "buggy_end": 124,
+          "fixed_start": 126,
+          "fixed_end": 127,
+          "sites": [
+            124
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "insert",
+          "buggy_start": 126,
+          "buggy_end": 125,
+          "fixed_start": 129,
+          "fixed_end": 129,
+          "sites": [
+            125,
+            126
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_tutorial_memleak_free_info_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "primary": 73,
+      "primary_zero": false,
+      "label_lines": [
+        65,
+        73
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 2,
+      "n_semantic_hunks": 2,
+      "repair_sites": [
+        67,
+        68,
+        69,
+        70,
+        73
+      ],
+      "primary_in_repair": true,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 0,
+      "n_code_lines": 50,
+      "chance_line_in_repair": 0.1,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 67,
+          "buggy_end": 70,
+          "fixed_start": 67,
+          "fixed_end": 71,
+          "sites": [
+            67,
+            68,
+            69,
+            70
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 73,
+          "buggy_end": 73,
+          "fixed_start": 74,
+          "fixed_end": 74,
+          "sites": [
+            73
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_tutorial_pidhide_tailcall_map_type_001",
+      "error_id": "E009",
+      "upstream_obligation": "EnvironmentCapability",
+      "primary": 34,
+      "primary_zero": false,
+      "label_lines": [
+        34
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        19
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": false,
+      "primary_distance": 15,
+      "n_code_lines": 23,
+      "chance_line_in_repair": 0.0435,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 19,
+          "buggy_end": 19,
+          "fixed_start": 19,
+          "fixed_end": 19,
+          "sites": [
+            19
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_tutorial_user_ringbuf_dynptr_merge_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "primary": 50,
+      "primary_zero": false,
+      "label_lines": [
+        36,
+        40,
+        50
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 2,
+      "n_semantic_hunks": 2,
+      "repair_sites": [
+        39,
+        40,
+        41,
+        42,
+        43,
+        44
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": true,
+      "primary_within_3": false,
+      "primary_distance": 6,
+      "n_code_lines": 46,
+      "chance_line_in_repair": 0.1087,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 40,
+          "buggy_end": 39,
+          "fixed_start": 40,
+          "fixed_end": 44,
+          "sites": [
+            39,
+            40
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "delete",
+          "buggy_start": 41,
+          "buggy_end": 44,
+          "fixed_start": 46,
+          "fixed_end": 45,
+          "sites": [
+            41,
+            42,
+            43,
+            44
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_xdp_tools_ihl_macro_wrong_base_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "primary": 30,
+      "primary_zero": false,
+      "label_lines": [
+        30
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 3,
+      "n_semantic_hunks": 3,
+      "repair_sites": [
+        41,
+        53,
+        55
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": false,
+      "primary_distance": 11,
+      "n_code_lines": 32,
+      "chance_line_in_repair": 0.0938,
+      "hunks": [
+        {
+          "tag": "delete",
+          "buggy_start": 41,
+          "buggy_end": 41,
+          "fixed_start": 41,
+          "fixed_end": 40,
+          "sites": [
+            41
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "delete",
+          "buggy_start": 53,
+          "buggy_end": 53,
+          "fixed_start": 52,
+          "fixed_end": 51,
+          "sites": [
+            53
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 55,
+          "buggy_end": 55,
+          "fixed_start": 53,
+          "fixed_end": 53,
+          "sites": [
+            55
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_xdp_tools_load_bytes_stack_len_001",
+      "error_id": "E003",
+      "upstream_obligation": "StackInitialized",
+      "primary": 27,
+      "primary_zero": false,
+      "label_lines": [
+        27
+      ],
+      "snippet_lines_not_matching_buggy": [
+        27
+      ],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        30
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": true,
+      "primary_distance": 3,
+      "n_code_lines": 14,
+      "chance_line_in_repair": 0.0714,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 30,
+          "buggy_end": 30,
+          "fixed_start": 30,
+          "fixed_end": 34,
+          "sites": [
+            30
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_xdp_tools_xdpdump_perf_map_type_001",
+      "error_id": "E009",
+      "upstream_obligation": "EnvironmentCapability",
+      "primary": 62,
+      "primary_zero": false,
+      "label_lines": [
+        62
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 2,
+      "n_semantic_hunks": 2,
+      "repair_sites": [
+        29,
+        31
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": false,
+      "primary_distance": 31,
+      "n_code_lines": 43,
+      "chance_line_in_repair": 0.0465,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 29,
+          "buggy_end": 29,
+          "fixed_start": 29,
+          "fixed_end": 29,
+          "sites": [
+            29
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "replace",
+          "buggy_start": 31,
+          "buggy_end": 31,
+          "fixed_start": 31,
+          "fixed_end": 31,
+          "sites": [
+            31
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_xdp_tools_xdpfilt_udp_macro_bound_001",
+      "error_id": "E001",
+      "upstream_obligation": "PacketBounds",
+      "primary": 92,
+      "primary_zero": false,
+      "label_lines": [
+        61,
+        92
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        91,
+        92
+      ],
+      "primary_in_repair": true,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 0,
+      "n_code_lines": 59,
+      "chance_line_in_repair": 0.0339,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 92,
+          "buggy_end": 91,
+          "fixed_start": 92,
+          "fixed_end": 93,
+          "sites": [
+            91,
+            92
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "rs_xdp_tools_xdpsock_redirect_map_type_001",
+      "error_id": "E009",
+      "upstream_obligation": "EnvironmentCapability",
+      "primary": 38,
+      "primary_zero": false,
+      "label_lines": [
+        38
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        18
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": false,
+      "primary_distance": 20,
+      "n_code_lines": 20,
+      "chance_line_in_repair": 0.05,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 18,
+          "buggy_end": 18,
+          "fixed_start": 18,
+          "fixed_end": 18,
+          "sites": [
+            18
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "subprog_adjust_tail_stale_001",
+      "error_id": "E011",
+      "upstream_obligation": "ContextAccess",
+      "primary": 37,
+      "primary_zero": false,
+      "label_lines": [
+        31,
+        34,
+        37
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        36,
+        37
+      ],
+      "primary_in_repair": true,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 0,
+      "n_code_lines": 17,
+      "chance_line_in_repair": 0.0588,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 37,
+          "buggy_end": 36,
+          "fixed_start": 37,
+          "fixed_end": 43,
+          "sites": [
+            36,
+            37
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "subprog_map_value_null_001",
+      "error_id": "E002",
+      "upstream_obligation": "NullablePointer",
+      "primary": 53,
+      "primary_zero": false,
+      "label_lines": [
+        35,
+        53
+      ],
+      "snippet_lines_not_matching_buggy": [
+        53
+      ],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        53,
+        54
+      ],
+      "primary_in_repair": true,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 0,
+      "n_code_lines": 39,
+      "chance_line_in_repair": 0.0513,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 54,
+          "buggy_end": 53,
+          "fixed_start": 54,
+          "fixed_end": 56,
+          "sites": [
+            53,
+            54
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "xdp_adjust_head_map_value_001",
+      "error_id": "E011",
+      "upstream_obligation": "ContextAccess",
+      "primary": 59,
+      "primary_zero": false,
+      "label_lines": [
+        43,
+        55,
+        59
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 2,
+      "n_semantic_hunks": 2,
+      "repair_sites": [
+        48,
+        51,
+        52,
+        53
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": false,
+      "primary_distance": 6,
+      "n_code_lines": 33,
+      "chance_line_in_repair": 0.0909,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 48,
+          "buggy_end": 48,
+          "fixed_start": 48,
+          "fixed_end": 54,
+          "sites": [
+            48
+          ],
+          "semantic": true
+        },
+        {
+          "tag": "delete",
+          "buggy_start": 51,
+          "buggy_end": 53,
+          "fixed_start": 57,
+          "fixed_end": 56,
+          "sites": [
+            51,
+            52,
+            53
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "xdp_adjust_head_ringbuf_001",
+      "error_id": "E011",
+      "upstream_obligation": "ContextAccess",
+      "primary": 59,
+      "primary_zero": false,
+      "label_lines": [
+        38,
+        51,
+        52,
+        59
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        55,
+        56
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": true,
+      "primary_distance": 3,
+      "n_code_lines": 32,
+      "chance_line_in_repair": 0.0312,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 56,
+          "buggy_end": 55,
+          "fixed_start": 56,
+          "fixed_end": 63,
+          "sites": [
+            55,
+            56
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "xdp_adjust_head_stale_001",
+      "error_id": "E011",
+      "upstream_obligation": "ContextAccess",
+      "primary": 46,
+      "primary_zero": false,
+      "label_lines": [
+        40,
+        44,
+        46
+      ],
+      "snippet_lines_not_matching_buggy": [
+        40,
+        44,
+        46
+      ],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        44
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": true,
+      "primary_within_3": true,
+      "primary_distance": 2,
+      "n_code_lines": 35,
+      "chance_line_in_repair": 0.0286,
+      "hunks": [
+        {
+          "tag": "replace",
+          "buggy_start": 44,
+          "buggy_end": 44,
+          "fixed_start": 44,
+          "fixed_end": 47,
+          "sites": [
+            44
+          ],
+          "semantic": true
+        }
+      ]
+    },
+    {
+      "case_id": "xdp_adjust_tail_stale_001",
+      "error_id": "E011",
+      "upstream_obligation": "ContextAccess",
+      "primary": 43,
+      "primary_zero": false,
+      "label_lines": [
+        32,
+        37,
+        43
+      ],
+      "snippet_lines_not_matching_buggy": [],
+      "n_hunks": 1,
+      "n_semantic_hunks": 1,
+      "repair_sites": [
+        39,
+        40
+      ],
+      "primary_in_repair": false,
+      "any_label_in_repair": false,
+      "primary_within_3": true,
+      "primary_distance": 3,
+      "n_code_lines": 31,
+      "chance_line_in_repair": 0.0323,
+      "hunks": [
+        {
+          "tag": "insert",
+          "buggy_start": 40,
+          "buggy_end": 39,
+          "fixed_start": 40,
+          "fixed_end": 48,
+          "sites": [
+            39,
+            40
+          ],
+          "semantic": true
+        }
+      ]
     }
   ],
-  "caveat": "Hunk-level agreement with upstream's fix, not root-cause ground truth. Cases are the depth-21 keyword-stratified selection, not a random sample of main75."
+  "caveat": "Hunk-level agreement with upstream's fix, not root-cause ground truth. Cases are the full main75 split."
 }

@@ -1,0 +1,35 @@
+{
+  "case_id": "rs_xdp_tools_xdpdump_perf_map_type_001",
+  "error_id": "E009",
+  "anchor": 62,
+  "anchor_source": "primary",
+  "pad_skipped": null,
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        29,
+        31
+      ]
+    },
+    "pad8": {
+      "shift_from": 62,
+      "shift": 10,
+      "repair_sites": [
+        29,
+        31
+      ],
+      "anchor_in_variant": 72
+    },
+    "pad32": {
+      "shift_from": 62,
+      "shift": 34,
+      "repair_sites": [
+        29,
+        31
+      ],
+      "anchor_in_variant": 96
+    }
+  }
+}

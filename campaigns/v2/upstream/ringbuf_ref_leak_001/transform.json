@@ -1,0 +1,31 @@
+{
+  "case_id": "ringbuf_ref_leak_001",
+  "error_id": "E004",
+  "anchor": 53,
+  "anchor_source": "primary",
+  "pad_skipped": "anchor starts with '}'",
+  "variants": {
+    "orig": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        40,
+        41,
+        42
+      ]
+    },
+    "rename": {
+      "shift_from": null,
+      "shift": 0,
+      "repair_sites": [
+        40,
+        41,
+        42
+      ],
+      "from": "rec",
+      "to": "ptr",
+      "check_line": 36,
+      "direction": "idiomatic->listed"
+    }
+  }
+}
