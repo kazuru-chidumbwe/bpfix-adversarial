@@ -1,6 +1,10 @@
-PREVAIL exit=64
-please specify a program
-available programs:
-section=.text function=rs_mmap_index_remember
-section=xdp function=rs_actplane_mmap_pending_merge
+PREVAIL exit=1
+(program xdp/rs_actplane_mmap_pending_merge)
+FAIL: xdp/rs_actplane_mmap_pending_merge
 
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/rs_actplane_mmap_pending_merge_001/pad8.bpf.c:227
+;     fd = pending->fd;
+
+57: Possible null access (valid_access(r7.offset, width=4) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

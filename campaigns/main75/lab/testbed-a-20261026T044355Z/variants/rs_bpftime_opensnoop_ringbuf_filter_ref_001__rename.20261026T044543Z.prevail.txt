@@ -1,6 +1,10 @@
-PREVAIL exit=64
-please specify a program
-available programs:
-section=tracepoint/syscalls/sys_enter_openat function=rs_bpftime_opensnoop_enter
-section=tracepoint/syscalls/sys_exit_openat function=rs_bpftime_opensnoop_exit
+PREVAIL exit=1
+(program tracepoint/syscalls/sys_exit_openat/rs_bpftime_opensnoop_exit)
+FAIL: tracepoint/syscalls/sys_exit_openat/rs_bpftime_opensnoop_exit
 
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/rs_bpftime_opensnoop_ringbuf_filter_ref_001/rename.bpf.c:75
+;     bpf_get_current_comm(&event->comm, sizeof(event->comm));
+
+33: Invalid type (r1.type in {number, ctx, stack, packet, shared})
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

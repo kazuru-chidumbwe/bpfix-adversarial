@@ -1,6 +1,10 @@
-PREVAIL exit=64
-please specify a program
-available programs:
-section=.text function=lookup_config
-section=xdp function=subprog_map_value_null
+PREVAIL exit=1
+(program xdp/subprog_map_value_null)
+FAIL: xdp/subprog_map_value_null
 
+; /home/test/bpfix-v2-git/campaigns/n3/subprog_map_value_null_001/VPAD.buggy.bpf.c:54
+;     cfg->seen_packets += 1;
+
+11: Possible null access (valid_access(r0.offset+4, width=4) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

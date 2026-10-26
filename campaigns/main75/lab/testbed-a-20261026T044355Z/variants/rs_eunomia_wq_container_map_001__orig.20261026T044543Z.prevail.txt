@@ -1,6 +1,10 @@
-PREVAIL exit=64
-please specify a program
-available programs:
-section=.text function=wq_callback
-section=xdp function=rs_eunomia_wq_container_map
+PREVAIL exit=1
+(program xdp/rs_eunomia_wq_container_map)
+FAIL: xdp/rs_eunomia_wq_container_map
 
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/rs_eunomia_wq_container_map_001/orig.bpf.c:100
+; 	if (bpf_wq_init(wq, &work_items, 0))
+
+58: Invalid type (r1.type == number)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

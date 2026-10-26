@@ -90,22 +90,22 @@
     },
     "PREVAIL": {
      "pairs": 45,
-     "orig_on_site": 8,
-     "rewrite_on_site": 2,
-     "lost": 6,
-     "gained": 0,
-     "mcnemar_p": 0.03125,
-     "lost_primary_unmoved": 6,
+     "orig_on_site": 9,
+     "rewrite_on_site": 3,
+     "lost": 7,
+     "gained": 1,
+     "mcnemar_p": 0.070312,
+     "lost_primary_unmoved": 7,
      "lost_primary_moved": 0,
-     "label_orig_on_site": 8,
-     "label_rewrite_on_site": 2,
-     "label_lost": 6,
-     "label_gained": 0,
-     "label_mcnemar_p": 0.03125,
-     "primary_moved": 5,
+     "label_orig_on_site": 9,
+     "label_rewrite_on_site": 3,
+     "label_lost": 7,
+     "label_gained": 1,
+     "label_mcnemar_p": 0.070312,
+     "primary_moved": 6,
      "primary_moved_wilson95": [
-      0.0484,
-      0.235
+      0.0626,
+      0.2618
      ]
     },
     "StaleLine (control)": {
@@ -1126,7 +1126,7 @@
        "rewrite_on_site": false,
        "orig_label_on_site": false,
        "rewrite_label_on_site": false,
-       "primary": null,
+       "primary": 59,
        "primary_moved": false
       },
       "StaleLine (control)": {
@@ -1999,7 +1999,7 @@
        "rewrite_on_site": false,
        "orig_label_on_site": false,
        "rewrite_label_on_site": false,
-       "primary": null,
+       "primary": 108,
        "primary_moved": false
       },
       "StaleLine (control)": {
@@ -2456,11 +2456,11 @@
        "primary_moved": false
       },
       "PREVAIL": {
-       "orig_on_site": false,
+       "orig_on_site": true,
        "rewrite_on_site": false,
-       "orig_label_on_site": false,
+       "orig_label_on_site": true,
        "rewrite_label_on_site": false,
-       "primary": null,
+       "primary": 45,
        "primary_moved": false
       },
       "StaleLine (control)": {
@@ -2514,11 +2514,11 @@
       },
       "PREVAIL": {
        "orig_on_site": false,
-       "rewrite_on_site": false,
+       "rewrite_on_site": true,
        "orig_label_on_site": false,
-       "rewrite_label_on_site": false,
-       "primary": null,
-       "primary_moved": false
+       "rewrite_label_on_site": true,
+       "primary": 54,
+       "primary_moved": true
       },
       "StaleLine (control)": {
        "orig_on_site": false,
@@ -2848,22 +2848,22 @@
     },
     "PREVAIL": {
      "pairs": 67,
-     "orig_on_site": 22,
-     "rewrite_on_site": 16,
-     "lost": 6,
-     "gained": 0,
-     "mcnemar_p": 0.03125,
-     "lost_primary_unmoved": 6,
+     "orig_on_site": 24,
+     "rewrite_on_site": 18,
+     "lost": 7,
+     "gained": 1,
+     "mcnemar_p": 0.070312,
+     "lost_primary_unmoved": 7,
      "lost_primary_moved": 0,
-     "label_orig_on_site": 22,
-     "label_rewrite_on_site": 16,
-     "label_lost": 6,
-     "label_gained": 0,
-     "label_mcnemar_p": 0.03125,
-     "primary_moved": 5,
+     "label_orig_on_site": 24,
+     "label_rewrite_on_site": 18,
+     "label_lost": 7,
+     "label_gained": 1,
+     "label_mcnemar_p": 0.070312,
+     "primary_moved": 6,
      "primary_moved_wilson95": [
-      0.0323,
-      0.1631
+      0.0417,
+      0.1819
      ]
     },
     "StaleLine (control)": {
@@ -4786,11 +4786,11 @@
        "primary_moved": false
       },
       "PREVAIL": {
-       "orig_on_site": false,
-       "rewrite_on_site": false,
-       "orig_label_on_site": false,
-       "rewrite_label_on_site": false,
-       "primary": null,
+       "orig_on_site": true,
+       "rewrite_on_site": true,
+       "orig_label_on_site": true,
+       "rewrite_label_on_site": true,
+       "primary": 225,
        "primary_moved": false
       },
       "StaleLine (control)": {
@@ -4906,7 +4906,7 @@
        "rewrite_on_site": false,
        "orig_label_on_site": false,
        "rewrite_label_on_site": false,
-       "primary": null,
+       "primary": 59,
        "primary_moved": false
       },
       "StaleLine (control)": {
@@ -5199,7 +5199,7 @@
        "rewrite_on_site": false,
        "orig_label_on_site": false,
        "rewrite_label_on_site": false,
-       "primary": null,
+       "primary": 75,
        "primary_moved": false
       },
       "StaleLine (control)": {
@@ -5895,7 +5895,7 @@
        "rewrite_on_site": false,
        "orig_label_on_site": false,
        "rewrite_label_on_site": false,
-       "primary": null,
+       "primary": 108,
        "primary_moved": false
       },
       "StaleLine (control)": {
@@ -6529,11 +6529,11 @@
        "primary_moved": false
       },
       "PREVAIL": {
-       "orig_on_site": false,
+       "orig_on_site": true,
        "rewrite_on_site": false,
-       "orig_label_on_site": false,
+       "orig_label_on_site": true,
        "rewrite_label_on_site": false,
-       "primary": null,
+       "primary": 45,
        "primary_moved": false
       },
       "StaleLine (control)": {
@@ -6587,11 +6587,11 @@
       },
       "PREVAIL": {
        "orig_on_site": false,
-       "rewrite_on_site": false,
+       "rewrite_on_site": true,
        "orig_label_on_site": false,
-       "rewrite_label_on_site": false,
-       "primary": null,
-       "primary_moved": false
+       "rewrite_label_on_site": true,
+       "primary": 54,
+       "primary_moved": true
       },
       "StaleLine (control)": {
        "orig_on_site": false,
@@ -6921,15 +6921,15 @@
     },
     "PREVAIL": {
      "pairs": 31,
-     "orig_on_site": 11,
-     "rewrite_on_site": 11,
+     "orig_on_site": 12,
+     "rewrite_on_site": 12,
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
      "lost_primary_unmoved": 0,
      "lost_primary_moved": 0,
-     "label_orig_on_site": 11,
-     "label_rewrite_on_site": 11,
+     "label_orig_on_site": 12,
+     "label_rewrite_on_site": 12,
      "label_lost": 0,
      "label_gained": 0,
      "label_mcnemar_p": null,
@@ -7785,11 +7785,11 @@
        "primary_moved": false
       },
       "PREVAIL": {
-       "orig_on_site": false,
-       "rewrite_on_site": false,
-       "orig_label_on_site": false,
-       "rewrite_label_on_site": false,
-       "primary": null,
+       "orig_on_site": true,
+       "rewrite_on_site": true,
+       "orig_label_on_site": true,
+       "rewrite_label_on_site": true,
+       "primary": 219,
        "primary_moved": false
       },
       "StaleLine (control)": {
@@ -8540,7 +8540,7 @@
        "rewrite_on_site": false,
        "orig_label_on_site": false,
        "rewrite_label_on_site": false,
-       "primary": null,
+       "primary": 36,
        "primary_moved": false
       },
       "StaleLine (control)": {
@@ -8771,7 +8771,7 @@
        "rewrite_on_site": false,
        "orig_label_on_site": false,
        "rewrite_label_on_site": false,
-       "primary": null,
+       "primary": 57,
        "primary_moved": false
       },
       "StaleLine (control)": {
@@ -8894,15 +8894,15 @@
     },
     "PREVAIL": {
      "pairs": 43,
-     "orig_on_site": 16,
-     "rewrite_on_site": 16,
+     "orig_on_site": 17,
+     "rewrite_on_site": 17,
      "lost": 0,
      "gained": 0,
      "mcnemar_p": null,
      "lost_primary_unmoved": 0,
      "lost_primary_moved": 0,
-     "label_orig_on_site": 16,
-     "label_rewrite_on_site": 16,
+     "label_orig_on_site": 17,
+     "label_rewrite_on_site": 17,
      "label_lost": 0,
      "label_gained": 0,
      "label_mcnemar_p": null,
@@ -10233,11 +10233,11 @@
        "primary_moved": false
       },
       "PREVAIL": {
-       "orig_on_site": false,
-       "rewrite_on_site": false,
-       "orig_label_on_site": false,
-       "rewrite_label_on_site": false,
-       "primary": null,
+       "orig_on_site": true,
+       "rewrite_on_site": true,
+       "orig_label_on_site": true,
+       "rewrite_label_on_site": true,
+       "primary": 219,
        "primary_moved": false
       },
       "StaleLine (control)": {
@@ -10478,7 +10478,7 @@
        "rewrite_on_site": false,
        "orig_label_on_site": false,
        "rewrite_label_on_site": false,
-       "primary": null,
+       "primary": 77,
        "primary_moved": false
       },
       "StaleLine (control)": {
@@ -10951,7 +10951,7 @@
        "rewrite_on_site": false,
        "orig_label_on_site": false,
        "rewrite_label_on_site": false,
-       "primary": null,
+       "primary": 102,
        "primary_moved": false
       },
       "StaleLine (control)": {
@@ -11308,7 +11308,7 @@
        "rewrite_on_site": false,
        "orig_label_on_site": false,
        "rewrite_label_on_site": false,
-       "primary": null,
+       "primary": 57,
        "primary_moved": false
       },
       "StaleLine (control)": {

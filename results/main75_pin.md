@@ -14,7 +14,7 @@ Excluded: `rs_bpftime_sslsniff_perf_copy_len_001` (no-semantic-hunk)
 | VerifierState | 34/74 (0.35–0.57) | 44/74 (0.48–0.70) | 38/74 (0.40–0.62) |
 | SourceComment | 9/74 (0.07–0.22) | 11/74 (0.09–0.25) | 10/74 (0.08–0.23) |
 | PrettyVerifier | 27/74 (0.26–0.48) | 35/74 (0.36–0.59) | 31/74 (0.31–0.53) |
-| PREVAIL | 27/74 (0.26–0.48) | 36/74 (0.38–0.60) | 32/74 (0.33–0.55) |
+| PREVAIL | 29/74 (0.29–0.51) | 40/74 (0.43–0.65) | 34/74 (0.35–0.57) |
 | uniform random (expected hits) | 7.0 | 14.7 | 10.2 |
 
 bpfix, any label on a repair site (all): R0 50/74 (0.56–0.77), R1 64/74 (0.77–0.92), R2 54/74 (0.62–0.82); primary within 3 lines: R0 55/74 (0.63–0.83), R1 59/74 (0.69–0.87), R2 55/74 (0.63–0.83)
@@ -27,7 +27,7 @@ bpfix, any label on a repair site (all): R0 50/74 (0.56–0.77), R1 64/74 (0.77�
 | VerifierState | 30/69 (0.32–0.55) | 39/69 (0.45–0.68) | 34/69 (0.38–0.61) |
 | SourceComment | 8/69 (0.06–0.21) | 10/69 (0.08–0.25) | 9/69 (0.07–0.23) |
 | PrettyVerifier | 25/69 (0.26–0.48) | 32/69 (0.35–0.58) | 29/69 (0.31–0.54) |
-| PREVAIL | 26/69 (0.27–0.49) | 31/69 (0.34–0.57) | 28/69 (0.30–0.52) |
+| PREVAIL | 28/69 (0.30–0.52) | 35/69 (0.39–0.62) | 30/69 (0.32–0.55) |
 | uniform random (expected hits) | 5.3 | 11.5 | 7.5 |
 
 bpfix, any label on a repair site (informative): R0 46/69 (0.55–0.77), R1 59/69 (0.75–0.92), R2 50/69 (0.61–0.82); primary within 3 lines: R0 50/69 (0.61–0.82), R1 54/69 (0.67–0.86), R2 50/69 (0.61–0.82)
@@ -36,18 +36,18 @@ bpfix, any label on a repair site (informative): R0 46/69 (0.55–0.77), R1 59/6
 
 | case kind | bpfix primary | bpfix any label | VerifierState | SourceComment | PrettyVerifier | PREVAIL |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| canary | 23/40 (0.42–0.71) | 29/40 (0.57–0.84) | 23/40 (0.42–0.71) | 5/40 (0.05–0.26) | 19/40 (0.33–0.62) | 18/40 (0.31–0.60) |
-| real-project seed | 11/34 (0.19–0.49) | 21/34 (0.45–0.76) | 11/34 (0.19–0.49) | 4/34 (0.05–0.27) | 8/34 (0.12–0.40) | 9/34 (0.15–0.43) |
+| canary | 23/40 (0.42–0.71) | 29/40 (0.57–0.84) | 23/40 (0.42–0.71) | 5/40 (0.05–0.26) | 19/40 (0.33–0.62) | 19/40 (0.33–0.62) |
+| real-project seed | 11/34 (0.19–0.49) | 21/34 (0.45–0.76) | 11/34 (0.19–0.49) | 4/34 (0.05–0.27) | 8/34 (0.12–0.40) | 10/34 (0.17–0.46) |
 
 ## By upstream obligation (R0, all cases)
 
 | upstream obligation | bpfix primary | bpfix any label | VerifierState | SourceComment | PrettyVerifier | PREVAIL |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| ContextAccess | 2/6 (0.10–0.70) | 2/6 (0.10–0.70) | 2/6 (0.10–0.70) | 0/6 (0.00–0.39) | 2/6 (0.10–0.70) | 1/6 (0.03–0.56) |
+| ContextAccess | 2/6 (0.10–0.70) | 2/6 (0.10–0.70) | 2/6 (0.10–0.70) | 0/6 (0.00–0.39) | 2/6 (0.10–0.70) | 2/6 (0.10–0.70) |
 | DynptrSafety | 1/2 (0.09–0.91) | 1/2 (0.09–0.91) | 1/2 (0.09–0.91) | 0/2 (0.00–0.66) | 0/2 (0.00–0.66) | 0/2 (0.00–0.66) |
 | EnvironmentCapability | 0/4 (0.00–0.49) | 0/4 (0.00–0.49) | 0/4 (0.00–0.49) | 0/4 (0.00–0.49) | 0/4 (0.00–0.49) | 0/4 (0.00–0.49) |
 | HelperArgument | 2/3 (0.21–0.94) | 2/3 (0.21–0.94) | 2/3 (0.21–0.94) | 0/3 (0.00–0.56) | 1/3 (0.06–0.79) | 0/3 (0.00–0.56) |
-| NullablePointer | 6/20 (0.15–0.52) | 16/20 (0.58–0.92) | 6/20 (0.15–0.52) | 5/20 (0.11–0.47) | 6/20 (0.15–0.52) | 4/20 (0.08–0.42) |
+| NullablePointer | 6/20 (0.15–0.52) | 16/20 (0.58–0.92) | 6/20 (0.15–0.52) | 5/20 (0.11–0.47) | 6/20 (0.15–0.52) | 5/20 (0.11–0.47) |
 | PacketBounds | 4/11 (0.15–0.65) | 7/11 (0.35–0.85) | 4/11 (0.15–0.65) | 3/11 (0.10–0.57) | 4/11 (0.15–0.65) | 4/11 (0.15–0.65) |
 | PointerProvenance | 9/9 (0.70–1.00) | 9/9 (0.70–1.00) | 9/9 (0.70–1.00) | 0/9 (0.00–0.30) | 9/9 (0.70–1.00) | 8/9 (0.56–0.98) |
 | ReferenceLifecycle | 0/5 (0.00–0.43) | 2/5 (0.12–0.77) | 0/5 (0.00–0.43) | 0/5 (0.00–0.43) | 0/5 (0.00–0.43) | 0/5 (0.00–0.43) |
@@ -68,27 +68,27 @@ bpfix, any label on a repair site (informative): R0 46/69 (0.55–0.77), R1 59/6
 | bpfix vs PrettyVerifier | R0 | 7 | 0 | 0.0156 |
 | bpfix vs PrettyVerifier | R1 | 9 | 0 | 0.0039 |
 | bpfix vs PrettyVerifier | R2 | 7 | 0 | 0.0156 |
-| bpfix vs PREVAIL | R0 | 8 | 1 | 0.0391 |
-| bpfix vs PREVAIL | R1 | 10 | 2 | 0.0386 |
-| bpfix vs PREVAIL | R2 | 6 | 0 | 0.0312 |
+| bpfix vs PREVAIL | R0 | 6 | 1 | 0.1250 |
+| bpfix vs PREVAIL | R1 | 6 | 2 | 0.2891 |
+| bpfix vs PREVAIL | R2 | 4 | 0 | 0.1250 |
 | VerifierState vs SourceComment | R0 | 30 | 5 | 0.0000 |
 | VerifierState vs SourceComment | R1 | 38 | 5 | 0.0000 |
 | VerifierState vs SourceComment | R2 | 33 | 5 | 0.0000 |
 | VerifierState vs PrettyVerifier | R0 | 7 | 0 | 0.0156 |
 | VerifierState vs PrettyVerifier | R1 | 9 | 0 | 0.0039 |
 | VerifierState vs PrettyVerifier | R2 | 7 | 0 | 0.0156 |
-| VerifierState vs PREVAIL | R0 | 8 | 1 | 0.0391 |
-| VerifierState vs PREVAIL | R1 | 10 | 2 | 0.0386 |
-| VerifierState vs PREVAIL | R2 | 6 | 0 | 0.0312 |
+| VerifierState vs PREVAIL | R0 | 6 | 1 | 0.1250 |
+| VerifierState vs PREVAIL | R1 | 6 | 2 | 0.2891 |
+| VerifierState vs PREVAIL | R2 | 4 | 0 | 0.1250 |
 | SourceComment vs PrettyVerifier | R0 | 5 | 23 | 0.0009 |
 | SourceComment vs PrettyVerifier | R1 | 7 | 31 | 0.0001 |
 | SourceComment vs PrettyVerifier | R2 | 5 | 26 | 0.0002 |
-| SourceComment vs PREVAIL | R0 | 5 | 23 | 0.0009 |
-| SourceComment vs PREVAIL | R1 | 6 | 31 | 0.0000 |
-| SourceComment vs PREVAIL | R2 | 5 | 27 | 0.0001 |
-| PrettyVerifier vs PREVAIL | R0 | 5 | 5 | 1.0000 |
-| PrettyVerifier vs PREVAIL | R1 | 7 | 8 | 1.0000 |
-| PrettyVerifier vs PREVAIL | R2 | 5 | 6 | 1.0000 |
+| SourceComment vs PREVAIL | R0 | 5 | 25 | 0.0003 |
+| SourceComment vs PREVAIL | R1 | 6 | 35 | 0.0000 |
+| SourceComment vs PREVAIL | R2 | 5 | 29 | 0.0000 |
+| PrettyVerifier vs PREVAIL | R0 | 3 | 5 | 0.7266 |
+| PrettyVerifier vs PREVAIL | R1 | 4 | 9 | 0.2668 |
+| PrettyVerifier vs PREVAIL | R2 | 3 | 6 | 0.5078 |
 
 ## Metamorphic pairs (R0 sites mapped into each variant)
 
@@ -98,19 +98,19 @@ bpfix, any label on a repair site (informative): R0 46/69 (0.55–0.77), R1 59/6
 | pad8 | VerifierState | 65 | 33 | 33 | 0 | 0 | n/a | 4/65 (0.02–0.15) |
 | pad8 | SourceComment | 65 | 9 | 9 | 0 | 0 | n/a | 0/65 (0.00–0.06) |
 | pad8 | PrettyVerifier | 65 | 26 | 26 | 0 | 0 | n/a | 4/65 (0.02–0.15) |
-| pad8 | PREVAIL | 65 | 25 | 25 | 0 | 0 | n/a | 4/65 (0.02–0.15) |
+| pad8 | PREVAIL | 65 | 28 | 28 | 0 | 0 | n/a | 4/65 (0.02–0.15) |
 | pad8 | StaleLine (control) | 65 | 33 | 0 | 33 | 0 | 0.0000 | 65/65 (0.94–1.00) |
 | pad32 | bpfix | 65 | 33 | 33 | 0 | 0 | n/a | 4/65 (0.02–0.15) |
 | pad32 | VerifierState | 65 | 33 | 33 | 0 | 0 | n/a | 4/65 (0.02–0.15) |
 | pad32 | SourceComment | 65 | 9 | 9 | 0 | 0 | n/a | 0/65 (0.00–0.06) |
 | pad32 | PrettyVerifier | 65 | 26 | 26 | 0 | 0 | n/a | 4/65 (0.02–0.15) |
-| pad32 | PREVAIL | 65 | 25 | 25 | 0 | 0 | n/a | 4/65 (0.02–0.15) |
+| pad32 | PREVAIL | 65 | 28 | 28 | 0 | 0 | n/a | 4/65 (0.02–0.15) |
 | pad32 | StaleLine (control) | 65 | 33 | 0 | 33 | 0 | 0.0000 | 65/65 (0.94–1.00) |
 | rename | bpfix | 35 | 12 | 12 | 0 | 0 | n/a | 0/35 (0.00–0.10) |
 | rename | VerifierState | 35 | 12 | 12 | 0 | 0 | n/a | 0/35 (0.00–0.10) |
 | rename | SourceComment | 35 | 5 | 1 | 4 | 0 | 0.1250 | 14/35 (0.26–0.56) |
 | rename | PrettyVerifier | 35 | 11 | 11 | 0 | 0 | n/a | 0/35 (0.00–0.10) |
-| rename | PREVAIL | 35 | 12 | 12 | 0 | 0 | n/a | 0/35 (0.00–0.10) |
+| rename | PREVAIL | 35 | 11 | 11 | 0 | 0 | n/a | 0/35 (0.00–0.10) |
 | rename | StaleLine (control) | 35 | 12 | 12 | 0 | 0 | n/a | 0/35 (0.00–0.10) |
 
 Metamorphic pairs excluded: `rs_actplane_mmap_pending_merge_001` rename (orig REJECT / rename COMPILE_FAIL)

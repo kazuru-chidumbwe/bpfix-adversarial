@@ -1,2 +1,9 @@
 PREVAIL exit=1
-error: rejected: helper function is unavailable on this platform (at 18)
+FAIL: tc/rs_cilium_change_proto_stale
+
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/rs_cilium_change_proto_stale_001/pad8.bpf.c:53
+;     eth->h_proto = bpf_htons(ETH_P_IP);
+
+48: Invalid type (r6.type in {ctx, stack, packet, shared, socket, alloc_mem})
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

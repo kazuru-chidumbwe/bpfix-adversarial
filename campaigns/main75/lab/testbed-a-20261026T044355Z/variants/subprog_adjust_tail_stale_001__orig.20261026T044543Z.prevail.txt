@@ -1,6 +1,10 @@
-PREVAIL exit=64
-please specify a program
-available programs:
-section=.text function=trim_tail
-section=xdp function=subprog_adjust_tail_stale
+PREVAIL exit=1
+(program xdp/subprog_adjust_tail_stale)
+FAIL: xdp/subprog_adjust_tail_stale
 
+; /home/test/bpfix-v2-git/campaigns/v2/upstream/subprog_adjust_tail_stale_001/orig.bpf.c:37
+;     return bpf_ntohs(eth->h_proto) == ETH_P_IP ? XDP_DROP : XDP_PASS;
+
+10: Invalid type (r7.type in {ctx, stack, packet, shared, socket, alloc_mem})
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.
