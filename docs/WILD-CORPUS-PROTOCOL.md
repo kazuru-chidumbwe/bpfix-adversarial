@@ -76,6 +76,15 @@ Each included case is captured once on the pin and replayed through every regist
 
 Codes used in the decision files: `E1`–`E5` as in Section 4; `C` complexity or resource limit (inclusion 4: instruction, program-size or stack budget); `I4` environment or capability (inclusion 4: unsupported feature or helper, loader or map-creation failure, error code without a verifier message); `N0` not a fix for a verifier rejection (see the changes below). A later duplicate of an earlier-ranked patch is `E3`.
 
+## Pass 3 procedure (`tools/wild_pass3.py`, written before any candidate was built)
+
+1. Worktrees of the parent (first parent) and the fix commit.
+2. **Build.** *Project build* where a recipe exists (cilium/tetragon and cilium/cilium: `make -C bpf V=1`), with the pin's clang. Otherwise *direct compile*: each BPF compilation unit that is changed, or that includes a changed header, compiled unchanged with `clang -g -O2 -target bpf -D__TARGET_ARCH_x86`, its own directory and the repository's BPF include directories on the include path, and the pin kernel's `vmlinux.h`. The build type is recorded per case. A build that fails at either commit is E5.
+3. **Objects.** Only objects whose dependency list (the build's own compile command rerun with `-MM`) contains a changed file are loaded.
+4. **Load.** Every program of every selected object is loaded on its own (`tools/wildload.c`, `bpftool -d` log layout, maps pinned under a temporary bpffs directory that is removed afterwards).
+5. **Decision.** A program *flips* if it REJECTS at the parent and the same program in the same object ACCEPTS at the fix. A REJECT counts only if its verifier error is a safety rejection (not complexity or size, not a missing helper, kfunc, BTF or attach target). Included if at least one program flips; the case is the first flip in sorted (object, program) order. Otherwise: E4 if no program rejects at the parent, `I3` if every safety rejection at the parent still rejects at the fix, `C`/`I4` if the parent's only rejections are complexity or environment.
+6. **Stored per case:** the parent and fix versions of every changed file, the parent's log of the chosen program, all flips, and the build commands.
+
 ## Changes after the freeze
 
 - **26 Oct 2026, during pass 2, before any candidate was built. N0 code added.** Commits matched by the search that do not fix a verifier rejection at all (features, refactors, test frameworks, documentation) are excluded at pass 2 with code N0. Their parent is not expected to reject, so inclusion 2 would exclude them at pass 3. N0 saves builds and does not change which cases are included. A commit whose message names a verifier rejection it fixes is never N0, even when the diff also carries other changes.
