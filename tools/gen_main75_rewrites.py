@@ -28,7 +28,7 @@ from bpfix_adversarial.oracle import code_line_mask  # noqa: E402
 
 CASES = ROOT / "fixtures" / "upstream" / "bpfix-bench-cases"
 OUT = ROOT / "campaigns" / "n3"
-REWRITES = ("VPAD", "MACRO", "INLINE", "REORDER", "SPLIT")
+REWRITES = ("VPAD", "VPADC", "MACRO", "INLINE", "REORDER", "SPLIT")
 PAD = "{ volatile __u32 __adv_pad = 0; __adv_pad++; }"
 NPAD = 8
 
@@ -255,7 +255,7 @@ def split(lines: list[str], a: int):
     return None, "no splittable one-line if above the anchor"
 
 
-FUNCS = {"VPAD": vpad, "MACRO": macro, "INLINE": inline, "REORDER": reorder, "SPLIT": split}
+FUNCS = {"VPAD": vpad, "VPADC": vpad, "MACRO": macro, "INLINE": inline, "REORDER": reorder, "SPLIT": split}
 
 
 def counterpart(buggy: list[str], fixed: list[str], a: int) -> int | None:
