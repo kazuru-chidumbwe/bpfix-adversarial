@@ -68,6 +68,12 @@ The repair site is the set of lines changed by the semantic hunks of the parent 
 
 Each included case is captured once on the pin and replayed through every registered reporter. Metrics as for main75: primary location on a repair site, any label on a repair site, within k lines, informative-case flag, Wilson 95% intervals over distinct cases.
 
+## Screening passes
+
+1. **Files** (`tools/wild_screen_files.py`): inclusion 1 and E2, from the commit's changed-file list.
+2. **Message and diff** (`tools/wild_dump_for_review.py`, decisions in `fixtures/wild/pass2_decisions.tsv`): E1, the complexity exclusion of inclusion 4, and N0 (below), from the commit message and the BPF C diff.
+3. **Build** on the pin: inclusions 2–4 and E3–E5.
+
 ## Changes after the freeze
 
-None yet.
+- **26 Oct 2026, during pass 2, before any candidate was built. N0 code added.** Commits matched by the search that do not fix a verifier rejection at all (features, refactors, test frameworks, documentation) are excluded at pass 2 with code N0. Their parent is not expected to reject, so inclusion 2 would exclude them at pass 3. N0 saves builds and does not change which cases are included. A commit whose message names a verifier rejection it fixes is never N0, even when the diff also carries other changes.
