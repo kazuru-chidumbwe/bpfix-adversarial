@@ -1,0 +1,280 @@
+{"screen_rank": 0, "repo": "DataDog/datadog-agent", "commit": "f8a86d4f6f224447e0b93217a58fd7f2c67ae01c", "n_files": 55, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1, "repo": "cilium/cilium", "commit": "cf88cad9bbdbaf6704219559ece9be20e3ec9e45", "n_files": 6, "bpf_c_files": ["bpf/bpf_lxc.c", "bpf/bpf_overlay.c", "bpf/lib/common.h", "bpf/node_config.h"], "pass1": "bpf-c"}
+{"screen_rank": 2, "repo": "DataDog/datadog-agent", "commit": "849d794592c0b846ccbcdadd811d424b48e9798a", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 3, "repo": "cilium/cilium", "commit": "3f356b0156d86016695f97a0d8e747ca8f3f2ee0", "n_files": 2, "bpf_c_files": ["bpf/bpf_host.c", "bpf/lib/common.h"], "pass1": "bpf-c"}
+{"screen_rank": 4, "repo": "cilium/cilium", "commit": "b021b64dcf13047082b96c3d6060d52ac1d74a88", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 5, "repo": "cilium/cilium", "commit": "65922c6d0f8a27abae61b200e83214357d334b19", "n_files": 7, "bpf_c_files": ["bpf/probes/raw_insn.h", "bpf/probes/raw_main.c", "bpf/probes/skb_change_tail.c"], "pass1": "bpf-c"}
+{"screen_rank": 6, "repo": "cilium/tetragon", "commit": "b4d901f005e290f282eb04c7ddf56dcac3233b1e", "n_files": 1, "bpf_c_files": ["bpf/process/types/basic.h"], "pass1": "bpf-c"}
+{"screen_rank": 7, "repo": "cilium/cilium", "commit": "2f2bc2afc279689b04da091d43eeafe785f39937", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 8, "repo": "cilium/ebpf", "commit": "7bbc7384cbe1fec7c7e281786cdb789b5e36f21d", "n_files": 7, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 9, "repo": "cilium/cilium", "commit": "0aa0f68b0765ad4a1ddd6f7502055742612cb358", "n_files": 24, "bpf_c_files": ["bpf/bpf_lb.c", "bpf/bpf_lxc.c", "bpf/bpf_netdev.c", "bpf/lb_config.h", "bpf/lib/common.h", "bpf/lib/conntrack.h", "bpf/lib/dbg.h", "bpf/lib/ipv6.h", "bpf/lib/l4.h", "bpf/lib/lb.h", "bpf/lib/maps.h"], "pass1": "bpf-c"}
+{"screen_rank": 10, "repo": "DataDog/datadog-agent", "commit": "22263bb74b4904a5a8166997a8447712915e42d2", "n_files": 6, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 11, "repo": "cilium/cilium", "commit": "4bb6b56b5c2276045efdfadae7452d6d85bf7e6f", "n_files": 1, "bpf_c_files": ["bpf/include/linux/bpf.h"], "pass1": "bpf-c"}
+{"screen_rank": 12, "repo": "DataDog/datadog-agent", "commit": "2616d106ef4c9b2e9b53ad8da480741ff1371951", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 13, "repo": "cilium/cilium", "commit": "9100ffbef97968f8bf27edc1e489829a73129f99", "n_files": 1, "bpf_c_files": ["bpf/bpf_sock.c"], "pass1": "bpf-c"}
+{"screen_rank": 14, "repo": "cilium/cilium", "commit": "847014aa62f94e5a53178670cad1eacea455b227", "n_files": 3, "bpf_c_files": ["bpf/include/bpf/ctx/common.h", "bpf/include/bpf/ctx/skb.h", "bpf/include/bpf/ctx/xdp.h"], "pass1": "bpf-c"}
+{"screen_rank": 15, "repo": "parca-dev/parca-agent", "commit": "2566c58614c7a5e69654a7228dcf03f17ee77699", "n_files": 1, "bpf_c_files": ["bpf/unwinders/native.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 16, "repo": "inspektor-gadget/inspektor-gadget", "commit": "17389126010cbc3737654437fa2f5ef19b6bd12d", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 17, "repo": "DataDog/datadog-agent", "commit": "a44076f68e3d305ed7c3174f9a50efe146537c7a", "n_files": 7, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 18, "repo": "falcosecurity/libs", "commit": "347edcbd60448c0ca60c25d6e2db3a76826a7449", "n_files": 3, "bpf_c_files": ["driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/recvmmsg.bpf.c", "driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/sendmmsg.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 19, "repo": "parca-dev/parca-agent", "commit": "8e9f580a79f4cfdabc74688b10ed259bf88b4a81", "n_files": 4, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 20, "repo": "parca-dev/parca-agent", "commit": "7413b22c70580891f286d56478e345823eeca008", "n_files": 1, "bpf_c_files": ["bpf/unwinders/native.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 21, "repo": "iovisor/bcc", "commit": "f09b5b8acdd5123ba4101a80c87eaa4b8a687c4c", "n_files": 6, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 22, "repo": "cilium/tetragon", "commit": "4a411d7385bae94bb132b17feea2daf1d270b7be", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 23, "repo": "cilium/cilium", "commit": "1d679b6c96768acbdcbd9be8def89a9a01fe3f6b", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 24, "repo": "DataDog/datadog-agent", "commit": "784ab66328b6e712f810c4cdfe04f0033dab9fc4", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 25, "repo": "cilium/pwru", "commit": "286623e3d93dfdf6f0baa18330315a1eaaaac3b6", "n_files": 26, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 26, "repo": "iovisor/bcc", "commit": "89c7f409b4a683abc5524057dfb6d2047ba1a827", "n_files": 1, "bpf_c_files": ["libbpf-tools/ksnoop.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 27, "repo": "inspektor-gadget/inspektor-gadget", "commit": "fa85ba5057903d77e37902f26a8f1cd82fffad0d", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 28, "repo": "cilium/cilium", "commit": "c11a0ab6622597b98a91e7cb64fdf65d5528819b", "n_files": 2, "bpf_c_files": ["bpf/lib/nat.h", "bpf/lib/nodeport_egress.h"], "pass1": "bpf-c"}
+{"screen_rank": 29, "repo": "cilium/tetragon", "commit": "ef2203d05daac30e9a70fcd6506ae7188785b6f4", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 30, "repo": "cilium/tetragon", "commit": "a7205fc9a9022d99c8fcedb99a9472011c6f0058", "n_files": 1, "bpf_c_files": ["bpf/process/data_event.h"], "pass1": "bpf-c"}
+{"screen_rank": 31, "repo": "iovisor/bcc", "commit": "8319d52dc8834daa0766f61487f75ed3c3c731fe", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 32, "repo": "inspektor-gadget/inspektor-gadget", "commit": "aa7706192a3c85103c391928e6ef11bc20f0d697", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 33, "repo": "cilium/tetragon", "commit": "fee8d33831f0c9e76861f0098cffc193261b9a64", "n_files": 6, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 34, "repo": "cilium/cilium", "commit": "290fe79c75bc757966ee6c5332012868d10e9584", "n_files": 1, "bpf_c_files": ["common/bpf/lxc_bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 35, "repo": "libbpf/libbpf-bootstrap", "commit": "a4169a2108fe1ab812e33471e0fcab214fde73a9", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 36, "repo": "cilium/cilium", "commit": "9bb7aa0481f3837257153a21d947aecc48c760d1", "n_files": 1, "bpf_c_files": ["bpf/lib/nat.h"], "pass1": "bpf-c"}
+{"screen_rank": 37, "repo": "DataDog/datadog-agent", "commit": "c67afc5d9c81833d4853ea18b8665e30f0a7552b", "n_files": 11, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 38, "repo": "cilium/cilium", "commit": "db0e2c287bb2f50d951d8b118aae79f6755d4032", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 39, "repo": "DataDog/datadog-agent", "commit": "62c0e9c761b4acce478133264f4e48aca9327cc9", "n_files": 3, "bpf_c_files": ["pkg/network/ebpf/c/protocols/http2/decoding-defs.h", "pkg/network/ebpf/c/protocols/http2/decoding.h"], "pass1": "bpf-c"}
+{"screen_rank": 40, "repo": "DataDog/datadog-agent", "commit": "077f23dbd7cbeb6ed5d7f469c4251b989af3bcd8", "n_files": 3, "bpf_c_files": ["pkg/network/ebpf/c/protocols/tls/native-tls.h", "pkg/network/ebpf/c/runtime/usm.c"], "pass1": "bpf-c"}
+{"screen_rank": 41, "repo": "cilium/tetragon", "commit": "933c80c51b59606558517c0e83fcaa4f45261876", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 42, "repo": "cilium/tetragon", "commit": "be23b74a5027f9175fdafb6dc677e207e19d8f92", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 43, "repo": "DataDog/datadog-agent", "commit": "a0310db565b03130a52a8dfff8e701f8255f4726", "n_files": 42, "bpf_c_files": ["pkg/network/ebpf/c/prebuilt/usm.c", "pkg/network/ebpf/c/protocols/classification/defs.h", "pkg/network/ebpf/c/protocols/classification/dispatcher-helpers.h", "pkg/network/ebpf/c/protocols/postgres/decoding-maps.h", "pkg/network/ebpf/c/protocols/postgres/decoding.h", "pkg/network/ebpf/c/protocols/postgres/types.h", "pkg/network/ebpf/c/protocols/postgres/usm-events.h", "pkg/network/ebpf/c/runtime/usm.c"], "pass1": "bpf-c"}
+{"screen_rank": 44, "repo": "cilium/tetragon", "commit": "0ed915a5970dd3f499831577da96b9e832dd00ee", "n_files": 1, "bpf_c_files": ["bpf/process/pfilter.h"], "pass1": "bpf-c"}
+{"screen_rank": 45, "repo": "cilium/tetragon", "commit": "fff8fee13a825a90e537036383b8022dfab2c9f3", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 46, "repo": "cilium/cilium", "commit": "3740e9db8fef9adc382f9dfecb5c404bda278afb", "n_files": 1, "bpf_c_files": ["bpf/lib/lb.h"], "pass1": "bpf-c"}
+{"screen_rank": 47, "repo": "cilium/cilium", "commit": "d5f91364209ed3c5c2e3ce77744c3086062d7f70", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 48, "repo": "DataDog/datadog-agent", "commit": "0f86e1db662e5c0713206e9d48ff3e04dc6b9f9c", "n_files": 2, "bpf_c_files": ["pkg/network/ebpf/c/runtime/usm.c"], "pass1": "bpf-c"}
+{"screen_rank": 49, "repo": "cilium/ebpf", "commit": "83897f7e3f73a8a5b4168289c0e63b9bb3b6ce38", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 50, "repo": "cilium/tetragon", "commit": "89b73a6b398c8332a2be13d5b17f49ff868a8f7a", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 51, "repo": "cilium/cilium", "commit": "3801c14ef454a426a74b2e49d6d3ea3e1be69fb9", "n_files": 2, "bpf_c_files": ["bpf/tests/builtins.c", "bpf/tests/common.h"], "pass1": "bpf-c"}
+{"screen_rank": 52, "repo": "DataDog/datadog-agent", "commit": "8c0f4fa0003823d45153a959551e580977140516", "n_files": 8, "bpf_c_files": ["pkg/network/ebpf/c/protocols/http2/decoding-defs.h", "pkg/network/ebpf/c/protocols/http2/decoding.h", "pkg/network/ebpf/c/protocols/http2/maps-defs.h"], "pass1": "bpf-c"}
+{"screen_rank": 53, "repo": "iovisor/bcc", "commit": "47502c2350b5de01dbcd35170e5542f2bc91118f", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 54, "repo": "DataDog/datadog-agent", "commit": "38ac0da6f60ea755ebe33ee629e2dc757350acc1", "n_files": 6, "bpf_c_files": ["pkg/dyninst/ebpf/stack_machine.h"], "pass1": "bpf-c"}
+{"screen_rank": 55, "repo": "cilium/cilium", "commit": "df8c91f0845221d83c8f6068526dd55495dfe715", "n_files": 7, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 56, "repo": "iovisor/bcc", "commit": "0ae562c8862f4aa7a028a3f9bc561636a63a507d", "n_files": 1, "bpf_c_files": ["libbpf-tools/ksnoop.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 57, "repo": "inspektor-gadget/inspektor-gadget", "commit": "4f88e74d9225bf483d48f0cee3e658ad178c56a0", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 58, "repo": "cilium/ebpf", "commit": "cc4947e88a916cf69b368982cfd524451f50eccd", "n_files": 7, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 59, "repo": "aquasecurity/tracee", "commit": "e3b085df63f4888bc6a46bcbf78a5421963b74ca", "n_files": 5, "bpf_c_files": ["pkg/ebpf/c/common/buffer.h", "pkg/ebpf/c/common/common.h", "pkg/ebpf/c/common/network.h", "pkg/ebpf/c/tracee.bpf.c", "pkg/ebpf/c/vmlinux.h"], "pass1": "bpf-c"}
+{"screen_rank": 60, "repo": "cilium/tetragon", "commit": "c7886a68ebeec13a9e52bd38a3977eaa9f8b3e1e", "n_files": 1, "bpf_c_files": ["bpf/lib/bpf_cgroup.h"], "pass1": "bpf-c"}
+{"screen_rank": 61, "repo": "DataDog/datadog-agent", "commit": "a07c4f78dfbc04dc5da0fdd28a0ab52cb0c9cf70", "n_files": 16, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 62, "repo": "DataDog/datadog-agent", "commit": "2ac55a06821e3c346b8ece10d6283ca50d524dc3", "n_files": 9, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 63, "repo": "parca-dev/parca-agent", "commit": "3422ad75ba067ffce4f9d02483bc1edce3811422", "n_files": 1, "bpf_c_files": ["bpf/cpu/cpu.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 64, "repo": "DataDog/datadog-agent", "commit": "4a7400a0aaa3ddff7bd94809e67fa4958429db32", "n_files": 2, "bpf_c_files": ["pkg/network/ebpf/c/protocols/classification/protocol-classification.h"], "pass1": "bpf-c"}
+{"screen_rank": 65, "repo": "cilium/tetragon", "commit": "c550d9f35a4175452345fe6db1c50680540c2d35", "n_files": 1, "bpf_c_files": ["bpf/process/pfilter.h"], "pass1": "bpf-c"}
+{"screen_rank": 66, "repo": "iovisor/bcc", "commit": "7c4cf38828638a976da9e20a2cb737772536839e", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 67, "repo": "iovisor/bcc", "commit": "6b8a89673dbba9b9203a6555735e451dd9477836", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 68, "repo": "cilium/cilium", "commit": "f51f4dfac5421dcf01b95bf682419b939f91995e", "n_files": 1, "bpf_c_files": ["bpf/lib/nat.h"], "pass1": "bpf-c"}
+{"screen_rank": 69, "repo": "inspektor-gadget/inspektor-gadget", "commit": "b61c034503fba7be82ea458cfb0b8e66a086a1df", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 70, "repo": "iovisor/bcc", "commit": "2070a2aefb0bb30f675d0ebdfb804b5873bb0200", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 71, "repo": "parca-dev/parca-agent", "commit": "d03d8648ac90517f5a5e556d4f7f6aa36a8aea32", "n_files": 3, "bpf_c_files": ["bpf/cpu/cpu.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 72, "repo": "falcosecurity/libs", "commit": "2b71e52bb642dbda4dab32215d5a4aa53babbfed", "n_files": 3, "bpf_c_files": ["driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/recvmmsg.bpf.c", "driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/sendmmsg.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 73, "repo": "DataDog/datadog-agent", "commit": "6759b3cb6ba79d053e4dad6e42b1b2848af2f70e", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 74, "repo": "inspektor-gadget/inspektor-gadget", "commit": "af55dd8cf522cf9e8c495a4c815e32f85e6532fa", "n_files": 2, "bpf_c_files": ["gadgets/trace_dns/program.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 75, "repo": "DataDog/datadog-agent", "commit": "c65352e0bddcfc0e2cf40920ebc959f83c092688", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 76, "repo": "iovisor/bcc", "commit": "2a5a8e34859ed05a641cd700fd6b252753f11356", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 77, "repo": "cilium/cilium", "commit": "80a3023ddb743a259e6a37a8bdd38ee57e4c54da", "n_files": 1, "bpf_c_files": ["bpf/bpf_xdp.c"], "pass1": "bpf-c"}
+{"screen_rank": 78, "repo": "cilium/tetragon", "commit": "bd1235c609da5d4ce03c12143a54ad57d3e2a53c", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 79, "repo": "cilium/tetragon", "commit": "c8c8b2b77689266502e7b78106ddc2ba3b2b7bc0", "n_files": 1, "bpf_c_files": ["bpf/process/types/basic.h"], "pass1": "bpf-c"}
+{"screen_rank": 80, "repo": "cilium/pwru", "commit": "9824afb57dc06a7c0d82c86b145ac5d629038d89", "n_files": 1, "bpf_c_files": ["bpf/kprobe_pwru.c"], "pass1": "bpf-c"}
+{"screen_rank": 81, "repo": "cilium/cilium", "commit": "609919a17bd6c95d2b2050e82420994936f7bfc2", "n_files": 7, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 82, "repo": "iovisor/bcc", "commit": "61484e17ee6d05604fe2890d1396b6c17e3bf29d", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 83, "repo": "cilium/tetragon", "commit": "7aae9ea2ebbbeef1ead1dfda1c9f8d5218f02e36", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 84, "repo": "cilium/cilium", "commit": "e3e1a299678c775fc1364f038506d313bcd975b0", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 85, "repo": "inspektor-gadget/inspektor-gadget", "commit": "17907af1898b5115ca6025c64adc773f7c5f2df1", "n_files": 15, "bpf_c_files": ["gadgets/trace_selinux/program.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 86, "repo": "inspektor-gadget/inspektor-gadget", "commit": "6178e7372dd47a061e884ceb69d4fa43f9c16e64", "n_files": 8, "bpf_c_files": ["gadgets/gpu_top/program.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 87, "repo": "kubearmor/KubeArmor", "commit": "15d146bcda3db9c67c9bdfea217aa070a0d9a360", "n_files": 3, "bpf_c_files": ["KubeArmor/BPF/enforcer.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 88, "repo": "iovisor/bcc", "commit": "4fa2ed7d052921dec3a0d8624f06215feee928c7", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 89, "repo": "open-telemetry/opentelemetry-ebpf-profiler", "commit": "ed2e5eee80cd7484af1226215e019d24da5669fd", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 90, "repo": "cilium/cilium", "commit": "0ed817c78b54f9b1d6b0ef184e1670354768993b", "n_files": 4, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 91, "repo": "parca-dev/parca-agent", "commit": "5aa6b3544311d12d608378739e7d37e0181e26fe", "n_files": 1, "bpf_c_files": ["bpf/unwinders/native.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 92, "repo": "cilium/tetragon", "commit": "3ee33ed73024842a5f8a2c048b8f3709a039bded", "n_files": 10, "bpf_c_files": ["bpf/process/cel_expr.h"], "pass1": "bpf-c"}
+{"screen_rank": 93, "repo": "inspektor-gadget/inspektor-gadget", "commit": "95bfe306cf5cb74301f9b61ffba3053f90bc9f27", "n_files": 3, "bpf_c_files": ["pkg/gadgets/traceloop/tracer/bpf/traceloop.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 94, "repo": "cilium/tetragon", "commit": "c137f9bc6cfa4d5ae9413df09422e71358b4982e", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 95, "repo": "netobserv/netobserv-ebpf-agent", "commit": "528ec8c1eb421c2a21e86709e056b145d8baada1", "n_files": 9, "bpf_c_files": ["bpf/flows.c", "bpf/network_events_monitoring.h", "bpf/pkt_drops.h", "bpf/pkt_translation.h", "bpf/rtt_tracker.h"], "pass1": "bpf-c"}
+{"screen_rank": 96, "repo": "DataDog/datadog-agent", "commit": "44e743560b590dc650c9706f33d1e8655348abbf", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 97, "repo": "iovisor/bcc", "commit": "ce5c8938c494eb03f0784c6e4ae81507139ca779", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 98, "repo": "cilium/ebpf", "commit": "64d4fa2f8940358f62ebc6237084d55db5b5d538", "n_files": 11, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 99, "repo": "iovisor/bcc", "commit": "bee777f19c0bd046bf7fe854b6abf0bf1e70e137", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 100, "repo": "cilium/cilium", "commit": "dcf2bb0705301b26ed18012c2ad2e843d6ee2efd", "n_files": 2, "bpf_c_files": ["bpf/tests/pktgen.h"], "pass1": "bpf-c"}
+{"screen_rank": 101, "repo": "DataDog/datadog-agent", "commit": "6ce82ee268116ecc76b98ddc51208e46f166dca6", "n_files": 7, "bpf_c_files": ["pkg/network/ebpf/c/http-buffer.h", "pkg/network/ebpf/c/http-maps.h", "pkg/network/ebpf/c/prebuilt/http.c", "pkg/network/ebpf/c/runtime/http.c"], "pass1": "bpf-c"}
+{"screen_rank": 102, "repo": "cilium/ebpf", "commit": "f0c26fdbbd63a426177b343ebade714519ee1641", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 103, "repo": "DataDog/datadog-agent", "commit": "fd4f9d29cfbc484d87de947c389865c86786ec8e", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 104, "repo": "cilium/tetragon", "commit": "e5924a651bdb993ea6bfaaabde684c718d93fde9", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 105, "repo": "iovisor/bcc", "commit": "564095260aab156782128ea1d04b1eca66167fd1", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 106, "repo": "cilium/cilium", "commit": "142c0f7128c7fac22eb18b2c21a56433f19a5ef8", "n_files": 1, "bpf_c_files": ["bpf/lib/policy.h"], "pass1": "bpf-c"}
+{"screen_rank": 107, "repo": "aquasecurity/tracee", "commit": "9f013c2766df380b6462975a5198a2bc275c01a4", "n_files": 2, "bpf_c_files": ["pkg/ebpf/c/tracee.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 108, "repo": "cilium/pwru", "commit": "1de15ffe7b50c8897ef0e5f981099b879dc2e08b", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 109, "repo": "facebookincubator/katran", "commit": "c46afd52ed6a471ec2b1785cecb4acde5c20339a", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 110, "repo": "parca-dev/parca-agent", "commit": "ebd9e307dcee0e914e73c532cd658c14046e4a15", "n_files": 33, "bpf_c_files": ["parca-agent.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 111, "repo": "iovisor/bcc", "commit": "02daf8d84ecd23d4b8c55ccf5b4a0246abe38765", "n_files": 1, "bpf_c_files": ["libbpf-tools/biosnoop.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 112, "repo": "cilium/cilium", "commit": "442003456364a4a38974bbf4627dfd8b8454737a", "n_files": 2, "bpf_c_files": ["bpf/tests/common.h", "bpf/tests/ipv6_test.c"], "pass1": "bpf-c"}
+{"screen_rank": 113, "repo": "iovisor/bcc", "commit": "1c0808dead7379d6deeeb2bbd6c0135584a3c757", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 114, "repo": "cilium/cilium", "commit": "968227de9cc5c447d64fc266b14e55856ee60e4f", "n_files": 1, "bpf_c_files": ["bpf/lib/nat.h"], "pass1": "bpf-c"}
+{"screen_rank": 115, "repo": "cilium/ebpf", "commit": "22cc87b898238a2bebcf11968161788c619b506e", "n_files": 5, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 116, "repo": "aquasecurity/tracee", "commit": "719d6ae0419e83ba42fca856dcac4725a88ec278", "n_files": 1, "bpf_c_files": ["tracee-ebpf/tracee/tracee.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 117, "repo": "cilium/tetragon", "commit": "ab79e3998917de942b764aa6da3d7a4fff59e039", "n_files": 7, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 118, "repo": "parca-dev/parca-agent", "commit": "7a2a3e76a9fcdc5a87806f20ba49c1896f5820f9", "n_files": 6, "bpf_c_files": ["bpf/common.h", "bpf/cpu/cpu.bpf.c", "bpf/vmlinux.h"], "pass1": "bpf-c"}
+{"screen_rank": 119, "repo": "cilium/tetragon", "commit": "0028f6f4068431255a716f399d84b6ab882d04f1", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 120, "repo": "cilium/tetragon", "commit": "a43e1061c2c3d616e5a8d40bd71d9663d3692519", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 121, "repo": "cilium/tetragon", "commit": "15d5ff634a0ea2b5c07a489450045eb6a91cb60d", "n_files": 1, "bpf_c_files": ["bpf/process/bpf_execve_event.h"], "pass1": "bpf-c"}
+{"screen_rank": 122, "repo": "kubearmor/KubeArmor", "commit": "4833e47fe510cf150d441a7f207350370b384b20", "n_files": 1, "bpf_c_files": ["KubeArmor/BPF/system_monitor.c"], "pass1": "bpf-c"}
+{"screen_rank": 123, "repo": "DataDog/datadog-agent", "commit": "b88e0b5500fb1846e5d4d0e4180c90d4f45334a0", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 124, "repo": "falcosecurity/libs", "commit": "79bb88bbd39d1d8e71e2a74e77b9f0af0197deeb", "n_files": 1, "bpf_c_files": ["driver/bpf/filler_helpers.h"], "pass1": "bpf-c"}
+{"screen_rank": 125, "repo": "iovisor/bcc", "commit": "799acc7ca2c618d9b467f79e63ba9a0059a22121", "n_files": 3, "bpf_c_files": ["libbpf-tools/softirqs.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 126, "repo": "DataDog/datadog-agent", "commit": "cf170dcca222414233b59f6a42eb72ba881f1099", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 127, "repo": "iovisor/bcc", "commit": "60b0166f8ed41b82c4632cab6b2188a2b0afb2dc", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 128, "repo": "aquasecurity/tracee", "commit": "e6974d8dc1672cb624a0bd614c4c6cb2786e21ff", "n_files": 6, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 129, "repo": "falcosecurity/libs", "commit": "3460c60a785ef41fdba1e6bc06dfb9dae2399b35", "n_files": 1, "bpf_c_files": ["driver/bpf/filler_helpers.h"], "pass1": "bpf-c"}
+{"screen_rank": 130, "repo": "iovisor/bcc", "commit": "3318c261a9e6ef82484fc0f5f5254599b191b289", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 131, "repo": "iovisor/bcc", "commit": "39b62cb450f8f094fd5576f35004be3a0047b4c4", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 132, "repo": "cilium/tetragon", "commit": "a2f038473fc34184b76cba8fd638da72b73388e3", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 133, "repo": "DataDog/datadog-agent", "commit": "757eb5e14cb0a42cbded964563184247386af114", "n_files": 12, "bpf_c_files": ["pkg/network/ebpf/c/prebuilt/tracer.c", "pkg/network/ebpf/c/tracer.h"], "pass1": "bpf-c"}
+{"screen_rank": 134, "repo": "cilium/cilium", "commit": "8eb389403823188d809021653bb73f2c598b4def", "n_files": 1, "bpf_c_files": ["bpf/tests/tc_nodeport_lb4_nat_lb.c"], "pass1": "bpf-c"}
+{"screen_rank": 135, "repo": "cilium/cilium", "commit": "7575ba03ccaa5038255c8c1e5c31a8011ed9aaa1", "n_files": 4, "bpf_c_files": ["bpf/bpf_lxc.c", "bpf/lib/common.h", "bpf/lib/lb.h"], "pass1": "bpf-c"}
+{"screen_rank": 136, "repo": "DataDog/datadog-agent", "commit": "c3fb6f75366c644504964feb8bf381248edcc36f", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 137, "repo": "inspektor-gadget/inspektor-gadget", "commit": "35b9e87be4c80c7a0e0b149fe3ba31116c453b7e", "n_files": 12, "bpf_c_files": ["pkg/gadgets/internal/socketenricher/bpf/socket-enricher-helpers.h", "pkg/gadgets/internal/socketenricher/bpf/socket-enricher.bpf.c", "pkg/gadgets/internal/socketenricher/bpf/sockets-iter.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 138, "repo": "cilium/tetragon", "commit": "1581196dc22ec84db6f19c1ca4c7945dd04f0bbe", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 139, "repo": "cilium/pwru", "commit": "1ea0741991eef933dde73095a15204a0b430f4ef", "n_files": 1, "bpf_c_files": ["bpf/kprobe_pwru.c"], "pass1": "bpf-c"}
+{"screen_rank": 140, "repo": "inspektor-gadget/inspektor-gadget", "commit": "9dc9ea874cd2f240b530389e407e7b0ed29a3e1d", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 141, "repo": "cilium/cilium", "commit": "ec3529b5ddfe40d7bbbe0d00981c53585db3b96a", "n_files": 9, "bpf_c_files": ["bpf/bpf_sock.c", "bpf/lib/icmp6.h", "bpf/lib/ipv6.h", "bpf/lib/lxc.h", "bpf/lib/nat.h", "bpf/lib/nat_46x64.h", "bpf/tests/tc_nodeport_lb6_dsr_backend.c", "bpf/tests/tc_nodeport_lb6_dsr_lb.c", "bpf/tests/xdp_nodeport_lb6_dsr_lb.c"], "pass1": "bpf-c"}
+{"screen_rank": 142, "repo": "falcosecurity/libs", "commit": "f9770899e6aa808d8e6ce949c35365fbc5182b8e", "n_files": 9, "bpf_c_files": ["driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/bind.bpf.c", "driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/listen.bpf.c", "driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/recv.bpf.c", "driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/recvfrom.bpf.c", "driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/recvmsg.bpf.c", "driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/send.bpf.c", "driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/shutdown.bpf.c", "driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/socket.bpf.c", "driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/socketpair.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 143, "repo": "cilium/cilium", "commit": "c3b65fce8b8405f913bfaa11351fc931a1499362", "n_files": 1, "bpf_c_files": ["bpf/include/bpf/ctx/xdp.h"], "pass1": "bpf-c"}
+{"screen_rank": 144, "repo": "netobserv/netobserv-ebpf-agent", "commit": "ecdb483078033445e60bf3e9fc0fa670f2be542d", "n_files": 9, "bpf_c_files": ["bpf/flows.c", "bpf/network_events_monitoring.h", "bpf/pkt_drops.h", "bpf/pkt_translation.h", "bpf/rtt_tracker.h"], "pass1": "bpf-c"}
+{"screen_rank": 145, "repo": "cilium/cilium", "commit": "ad0d3cf341402feaf34cb612c0f57732b0f5d5b4", "n_files": 8, "bpf_c_files": ["bpf/include/bpf/ctx/skb.h", "bpf/include/bpf/ctx/xdp.h", "bpf/lib/common.h", "bpf/lib/csum.h", "bpf/lib/encap.h", "bpf/lib/metrics.h", "bpf/lib/nat.h", "bpf/lib/nodeport.h"], "pass1": "bpf-c"}
+{"screen_rank": 146, "repo": "aquasecurity/tracee", "commit": "89f3770f2b3b078ab5ed65cff980382b1bed8fe6", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 147, "repo": "netobserv/netobserv-ebpf-agent", "commit": "1b85351eee43ce0f56830fa1497da95f1fe9cc8c", "n_files": 22, "bpf_c_files": ["bpf/configs.h", "bpf/flows.c", "bpf/maps_definition.h", "bpf/rtt_tracker.h", "bpf/types.h", "bpf/utils.h"], "pass1": "bpf-c"}
+{"screen_rank": 148, "repo": "cilium/ebpf", "commit": "9598c011294a934df9e686b549ed0acb15fc7aed", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 149, "repo": "falcosecurity/libs", "commit": "c8036ab2edd10ad14bb4c86680607138b07ead72", "n_files": 19, "bpf_c_files": ["driver/modern_bpf/programs/attached/events/sched_process_exec.bpf.c", "driver/modern_bpf/programs/attached/events/sched_process_fork.bpf.c", "driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/clone.bpf.c", "driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/clone3.bpf.c", "driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/execve.bpf.c", "driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/execveat.bpf.c", "driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/fork.bpf.c", "driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/open_by_handle_at.bpf.c", "driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/vfork.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 150, "repo": "cilium/tetragon", "commit": "13f6ba703b0707c0120e07235dfd0d74a29b58ed", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 151, "repo": "cilium/cilium", "commit": "5dc6baaf390b420a24ff0e6408fef8172a63e97e", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 152, "repo": "cilium/cilium", "commit": "f67102a95b9a8dde9e1699b78608cf5cd0747f83", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 153, "repo": "DataDog/datadog-agent", "commit": "7762a5126b819e54f1f7003991e34852b62ca95b", "n_files": 5, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 154, "repo": "iovisor/bcc", "commit": "dccc4f28b7404b2f77f8ad8c7ad1ea741db589f2", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 155, "repo": "DataDog/datadog-agent", "commit": "3d1baa4230919f73dca0ea575ad65a9b26eec9e7", "n_files": 2, "bpf_c_files": ["pkg/network/ebpf/c/protocols/http2/decoding-defs.h"], "pass1": "bpf-c"}
+{"screen_rank": 156, "repo": "cilium/ebpf", "commit": "af1262bbbe7810bddbfa7e4f8ef5b0853c2ffc35", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 157, "repo": "falcosecurity/libs", "commit": "acaf2de4ceefeb1633cca44100255ada6280b0fc", "n_files": 1, "bpf_c_files": ["driver/modern_bpf/programs/attached/events/signal_deliver.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 158, "repo": "cilium/tetragon", "commit": "bb6f985d32a3a5777d9c922961c77ac5d0bdbfb9", "n_files": 5, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 159, "repo": "cilium/cilium", "commit": "fdca23e2b23f91f6672211961ee3b0a29449506c", "n_files": 2, "bpf_c_files": ["bpf/lib/common.h"], "pass1": "bpf-c"}
+{"screen_rank": 160, "repo": "aquasecurity/tracee", "commit": "d2d00619b9f5bcce399d435fe5b7e4c60ebf286e", "n_files": 1, "bpf_c_files": ["pkg/ebpf/c/tracee.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 161, "repo": "cilium/cilium", "commit": "a185c11035188b1338a48174db9746907527a675", "n_files": 2, "bpf_c_files": ["bpf/lib/lb.h", "bpf/lib/network_device.h"], "pass1": "bpf-c"}
+{"screen_rank": 162, "repo": "inspektor-gadget/inspektor-gadget", "commit": "829717b6a68d664ba3fc9c919638decc2495fd9f", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 163, "repo": "falcosecurity/libs", "commit": "87c59f5a5dd34664ff05af619d8d551116575a14", "n_files": 1, "bpf_c_files": ["driver/bpf/ring_helpers.h"], "pass1": "bpf-c"}
+{"screen_rank": 164, "repo": "cilium/ebpf", "commit": "d03929404a8fe8df3f0d4cbec1a24618a7c59f7c", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 165, "repo": "DataDog/datadog-agent", "commit": "1b556e5359b3fdd11cb8cd87c10846bdf8f40d3e", "n_files": 8, "bpf_c_files": ["pkg/network/ebpf/c/protocols/http2/decoding-common.h", "pkg/network/ebpf/c/protocols/http2/decoding-defs.h", "pkg/network/ebpf/c/protocols/http2/decoding-tls.h", "pkg/network/ebpf/c/protocols/http2/decoding.h"], "pass1": "bpf-c"}
+{"screen_rank": 166, "repo": "DataDog/datadog-agent", "commit": "4f5c312f26c884b15b98e8e94e2e50959a021338", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 167, "repo": "cilium/tetragon", "commit": "cadfcb51dc5d3b76caf700c5449e126307db5135", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 168, "repo": "cilium/tetragon", "commit": "43f7b154b1fb8b17e367d20f76bc9994c27dbef4", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 169, "repo": "parca-dev/parca-agent", "commit": "bc6fe85d0f33fa4611a413c173f03f9d69fb74a2", "n_files": 3, "bpf_c_files": ["bpf/cpu/cpu.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 170, "repo": "cilium/tetragon", "commit": "25ff4431b6409277062fde545dfb402dc0edd35a", "n_files": 2, "bpf_c_files": ["bpf/process/generic_calls.h", "bpf/process/types/basic.h"], "pass1": "bpf-c"}
+{"screen_rank": 171, "repo": "cilium/tetragon", "commit": "fbe9b7d146a0c4ddfcfdc6d1a28a013ed86a12c5", "n_files": 4, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 172, "repo": "cilium/cilium", "commit": "737262d8d52d47c50ef08c1269ae9da6c9fb6e6d", "n_files": 2, "bpf_c_files": ["bpf/bpf_lxc.c", "bpf/lib/fib.h"], "pass1": "bpf-c"}
+{"screen_rank": 173, "repo": "iovisor/bcc", "commit": "d84803df88268effe0e80911ea2e42c3b4f5596a", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 174, "repo": "cilium/cilium", "commit": "6b3c9f16c99f7744ca5b294254b59b061059ff88", "n_files": 1, "bpf_c_files": ["bpf/lib/ipv6.h"], "pass1": "bpf-c"}
+{"screen_rank": 175, "repo": "parca-dev/parca-agent", "commit": "607887fe08a411ed4a443dd54964e249e402ca15", "n_files": 1, "bpf_c_files": ["bpf/unwinders/native.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 176, "repo": "elastic/ebpf", "commit": "6cad2baef9a0e6d786d2a114b6d0675d7a408605", "n_files": 2, "bpf_c_files": ["ebpf/host_isolation/tc_filter/tc_filter.c"], "pass1": "bpf-c"}
+{"screen_rank": 177, "repo": "cilium/tetragon", "commit": "ff7f795d62fde25349461f2bd4325e460fd60751", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 178, "repo": "kubearmor/KubeArmor", "commit": "b0f1f3fd9f0147698aa68cd9489c74b925111a05", "n_files": 1, "bpf_c_files": ["KubeArmor/BPF/system_monitor.c"], "pass1": "bpf-c"}
+{"screen_rank": 179, "repo": "DataDog/datadog-agent", "commit": "7601154876f54f244db8317f912a120233da637e", "n_files": 22, "bpf_c_files": ["pkg/network/ebpf/c/protocols/amqp-helpers.h", "pkg/network/ebpf/c/protocols/http-classification-helpers.h", "pkg/network/ebpf/c/protocols/http2-helpers.h", "pkg/network/ebpf/c/protocols/mongo-helpers.h", "pkg/network/ebpf/c/protocols/postgres-defs.h", "pkg/network/ebpf/c/protocols/postgres-helpers.h", "pkg/network/ebpf/c/protocols/protocol-classification-common.h", "pkg/network/ebpf/c/protocols/protocol-classification-defs.h", "pkg/network/ebpf/c/protocols/protocol-classification.h", "pkg/network/ebpf/c/protocols/redis-helpers.h", "pkg/network/ebpf/c/protocols/sql-defs.h", "pkg/network/ebpf/c/protocols/sql-helpers.h"], "pass1": "bpf-c"}
+{"screen_rank": 180, "repo": "netobserv/netobserv-ebpf-agent", "commit": "c62173ac9558581fee03e63955a7eb8941178d05", "n_files": 15, "bpf_c_files": ["bpf/flow.h", "bpf/flows.c"], "pass1": "bpf-c"}
+{"screen_rank": 181, "repo": "cilium/ebpf", "commit": "31d2e2b51febe1cab4c4aa77ad0efeb147e63f59", "n_files": 8, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 182, "repo": "cilium/cilium", "commit": "64dddf73b6a6e897ac7c06dacb4b203dcd43bca6", "n_files": 5, "bpf_c_files": ["bpf/bpf_host.c", "bpf/bpf_overlay.c", "bpf/lib/common.h", "bpf/lib/nodeport.h"], "pass1": "bpf-c"}
+{"screen_rank": 183, "repo": "cilium/cilium", "commit": "394e72478a8d120dab0bff2c41db77695877ce57", "n_files": 2, "bpf_c_files": ["bpf/bpf_sock.c"], "pass1": "bpf-c"}
+{"screen_rank": 184, "repo": "parca-dev/parca-agent", "commit": "5e51e930551d25f28809926ec99d84cef437c15f", "n_files": 5, "bpf_c_files": ["bpf/cpu/cpu.bpf.c", "bpf/cpu/hash.h"], "pass1": "bpf-c"}
+{"screen_rank": 185, "repo": "cilium/tetragon", "commit": "83a8a2a5796211b9dd3208cda4ffa97b5182cc47", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 186, "repo": "DataDog/datadog-agent", "commit": "8748d593161365805d9e4663b38b3dbf6f0af89c", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 187, "repo": "facebookincubator/katran", "commit": "b07d96c32d586493cc3baa03a7b3c471e29827bc", "n_files": 16, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 188, "repo": "cilium/cilium", "commit": "a2927d29acb767b729ca3179197f3000d432c536", "n_files": 4, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 189, "repo": "DataDog/datadog-agent", "commit": "89b27708ab6872a0208fae3b98ccf70a8bac6b79", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 190, "repo": "cilium/tetragon", "commit": "c39f55e9ce853bef748123c6d9a0878c3bdd2ccf", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 191, "repo": "cilium/tetragon", "commit": "9ef7b39a00ece0d036a18968aa2f73be1ef00d5e", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 192, "repo": "cilium/cilium", "commit": "50c319d0cbfe0ab7c5999c83f47025563948b170", "n_files": 1, "bpf_c_files": ["bpf/lib/nat.h"], "pass1": "bpf-c"}
+{"screen_rank": 193, "repo": "facebookincubator/katran", "commit": "a2cdcde79c59224bebdf887cf2df08242d417f8f", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 194, "repo": "cilium/cilium", "commit": "5a76cf2c5e9648693ec15f59fc73847be3c5a1b6", "n_files": 1, "bpf_c_files": ["bpf/bpf_sock.c"], "pass1": "bpf-c"}
+{"screen_rank": 195, "repo": "iovisor/bcc", "commit": "118bf168f9f66f757684e653c080d034b34db2ff", "n_files": 1, "bpf_c_files": ["libbpf-tools/tcpconnect.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 196, "repo": "aquasecurity/tracee", "commit": "02dad67878f811b4e25b3da6196f7cbd7cbd97d4", "n_files": 1, "bpf_c_files": ["pkg/ebpf/c/tracee.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 197, "repo": "inspektor-gadget/inspektor-gadget", "commit": "91769d6f67eb7c36fe47348e8465f8deee0ee1de", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 198, "repo": "DataDog/datadog-agent", "commit": "b79ad274324c22b49669dde2f495123d8eee15b2", "n_files": 4, "bpf_c_files": ["pkg/network/ebpf/c/protocols/http2/decoding-defs.h", "pkg/network/ebpf/c/protocols/http2/decoding.h", "pkg/network/ebpf/c/protocols/http2/maps-defs.h"], "pass1": "bpf-c"}
+{"screen_rank": 199, "repo": "cilium/tetragon", "commit": "e540d11870958a71be87bd29c9c0db47c8e8e035", "n_files": 1, "bpf_c_files": ["bpf/process/generic_calls.h"], "pass1": "bpf-c"}
+{"screen_rank": 200, "repo": "cilium/cilium", "commit": "ff54dbd703b6f30140a2671c3e03074bfa4642ed", "n_files": 2, "bpf_c_files": ["bpf/bpf_lxc.c"], "pass1": "bpf-c"}
+{"screen_rank": 201, "repo": "iovisor/bcc", "commit": "a75f0180b71484c82855a8e9f98a9393fcaa5e22", "n_files": 1, "bpf_c_files": ["libbpf-tools/tcprtt.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 202, "repo": "inspektor-gadget/inspektor-gadget", "commit": "d00ec08d4d8f3dd5757a7553de4803f9c8ce7354", "n_files": 2, "bpf_c_files": ["gadgets/snapshot_file/program.bpf.c", "gadgets/snapshot_process/program.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 203, "repo": "cilium/ebpf", "commit": "e37e6348fa41880b11f0d41297cff818d0b43dff", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 204, "repo": "cilium/tetragon", "commit": "e0b9c3be284b999feced7edb0b69f087ce8008b6", "n_files": 1, "bpf_c_files": ["bpf/lib/bpf_task.h"], "pass1": "bpf-c"}
+{"screen_rank": 205, "repo": "DataDog/datadog-agent", "commit": "13b7a5e7a42a15d784ae18c31365bf8580821236", "n_files": 10, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 206, "repo": "cilium/pwru", "commit": "d6727224481c29a8bced1b83e89aa4d80b36ed21", "n_files": 3, "bpf_c_files": ["bpf/kprobe_pwru.c"], "pass1": "bpf-c"}
+{"screen_rank": 207, "repo": "cilium/tetragon", "commit": "b9a931e8af2b35583fa21047077a5087cf50ba38", "n_files": 1, "bpf_c_files": ["bpf/process/bpf_execve_event.h"], "pass1": "bpf-c"}
+{"screen_rank": 208, "repo": "cilium/cilium", "commit": "6e18eb020b68c619dbd6e0f7dc4c194fa885a523", "n_files": 1, "bpf_c_files": ["bpf/lib/lb.h"], "pass1": "bpf-c"}
+{"screen_rank": 209, "repo": "cilium/cilium", "commit": "d3ff998f2b30b41227a395b6415627d8cb611e69", "n_files": 2, "bpf_c_files": ["bpf/lib/conntrack.h", "bpf/lib/nodeport.h"], "pass1": "bpf-c"}
+{"screen_rank": 210, "repo": "DataDog/datadog-agent", "commit": "9c2025e61ef8ef80c1583c44fa847e47373ced5d", "n_files": 1, "bpf_c_files": ["pkg/network/ebpf/c/protocols/http2/decoding.h"], "pass1": "bpf-c"}
+{"screen_rank": 211, "repo": "parca-dev/parca-agent", "commit": "bba4d735cef7b38435461d82a73f8fa5fc895bac", "n_files": 1, "bpf_c_files": ["bpf/unwinders/native.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 212, "repo": "inspektor-gadget/inspektor-gadget", "commit": "b7981f4aa825d4c7c6e5909c73585ffcb3740331", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 213, "repo": "iovisor/bcc", "commit": "69cc7f674d2996e411432dfa383c9eb02f77538f", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 214, "repo": "DataDog/datadog-agent", "commit": "65fd45d1c5ed6f71c590cd8053b942a3368652f3", "n_files": 1, "bpf_c_files": ["pkg/network/ebpf/c/protocols/read_into_buffer.h"], "pass1": "bpf-c"}
+{"screen_rank": 215, "repo": "iovisor/bcc", "commit": "d8595ee3bf4b489688558f69831d5067d63c774c", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 216, "repo": "cilium/cilium", "commit": "2fe8ce47afdf4c9fdbb4afa8704f1559d05e32f4", "n_files": 1, "bpf_c_files": ["bpf/node_config.h"], "pass1": "bpf-c"}
+{"screen_rank": 217, "repo": "cilium/tetragon", "commit": "f06dd60e140b1409acfec5c4fede6923707104f1", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 218, "repo": "cilium/ebpf", "commit": "65fb774468cbc51047f7115a57623832e8388eff", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 219, "repo": "cilium/cilium", "commit": "1e25adb69b44573ecaea42803fff7312fbfe9372", "n_files": 2, "bpf_c_files": ["bpf/lib/lxc.h"], "pass1": "bpf-c"}
+{"screen_rank": 220, "repo": "iovisor/bcc", "commit": "0cfd665b49d8d2dfe8ee2599763cbca3f4b54015", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 221, "repo": "cilium/tetragon", "commit": "1cc4ba46a533baea697bb43b71a9669da92b582d", "n_files": 1, "bpf_c_files": ["bpf/lib/process.h"], "pass1": "bpf-c"}
+{"screen_rank": 222, "repo": "cilium/cilium", "commit": "0cf10993335045c0a35ac6b80efaa5eb99a4ab8e", "n_files": 1, "bpf_c_files": ["bpf/lib/lb.h"], "pass1": "bpf-c"}
+{"screen_rank": 223, "repo": "cilium/tetragon", "commit": "0ee605ab0670d566ff953248436ea971da8adf92", "n_files": 4, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 224, "repo": "DataDog/datadog-agent", "commit": "f2afd959a095a70a288753dba9350cc04d8a551a", "n_files": 11, "bpf_c_files": ["pkg/network/ebpf/c/prebuilt/usm.c", "pkg/network/ebpf/c/protocols/http/maps.h", "pkg/network/ebpf/c/protocols/tls/java-tls-erpc.h", "pkg/network/ebpf/c/protocols/tls/java/erpc_dispatcher.h", "pkg/network/ebpf/c/protocols/tls/java/erpc_handlers.h", "pkg/network/ebpf/c/protocols/tls/java/maps.h", "pkg/network/ebpf/c/protocols/tls/java/types.h", "pkg/network/ebpf/c/runtime/usm.c"], "pass1": "bpf-c"}
+{"screen_rank": 225, "repo": "DataDog/datadog-agent", "commit": "642417d64d613522541f37f0aa5c824c7aef7bb4", "n_files": 19, "bpf_c_files": ["pkg/network/ebpf/c/protocols/classification/defs.h", "pkg/network/ebpf/c/protocols/classification/protocol-classification.h", "pkg/network/ebpf/c/protocols/grpc/defs.h", "pkg/network/ebpf/c/protocols/grpc/helpers.h", "pkg/network/ebpf/c/protocols/http2/decoding-defs.h", "pkg/network/ebpf/c/protocols/http2/defs.h", "pkg/network/ebpf/c/tracer.c"], "pass1": "bpf-c"}
+{"screen_rank": 226, "repo": "cilium/cilium", "commit": "072968feb4150d55c4ea2d1c888347764f401873", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 227, "repo": "iovisor/bcc", "commit": "8a7ac0dc24b4f3c1b76ce97d3b15336f18472a61", "n_files": 1, "bpf_c_files": ["libbpf-tools/memleak.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 228, "repo": "cilium/ebpf", "commit": "3fadfee1cd71ef7cba15f4ea92ef4e2f8dc8a8d9", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 229, "repo": "cilium/cilium", "commit": "b35560e3896c23181a78447417bf5330ce6f321a", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 230, "repo": "cilium/ebpf", "commit": "740adb6c24889dc02349c4cad1d2ab8823f00283", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 231, "repo": "kubearmor/KubeArmor", "commit": "ac83e82d4a55597f815e468f9a9209fb777a6f71", "n_files": 1, "bpf_c_files": ["KubeArmor/BPF/system_monitor.c"], "pass1": "bpf-c"}
+{"screen_rank": 232, "repo": "elastic/ebpf", "commit": "b852d8ec8dac0f683decff20da3d956f5d26c93e", "n_files": 8, "bpf_c_files": ["GPL/Events/Process/Probe.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 233, "repo": "inspektor-gadget/inspektor-gadget", "commit": "cc0a1436cb04862ec318fa702eac6aabf95e8bf7", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 234, "repo": "cilium/tetragon", "commit": "66fd45b476278323fb11e1c6d64147dcc1c1798e", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 235, "repo": "iovisor/bcc", "commit": "dcf2344e623896f629e212eff5d7412944fc8798", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 236, "repo": "iovisor/bcc", "commit": "c0995ce2c830bb1400278f1be9227c60ac3c70a7", "n_files": 1, "bpf_c_files": ["libbpf-tools/syscount.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 237, "repo": "cilium/cilium", "commit": "ebb781e5ba1bb4b7c4f99c215799eaf8ed37620e", "n_files": 2, "bpf_c_files": ["bpf/sockops/bpf_sockops.h"], "pass1": "bpf-c"}
+{"screen_rank": 238, "repo": "DataDog/datadog-agent", "commit": "c7f76a597341d06dd004981901bce46d108f0e4a", "n_files": 6, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 239, "repo": "cilium/cilium", "commit": "b7af6e8ffda12aeb7045fdcba3cd8db1e3d75038", "n_files": 4, "bpf_c_files": ["bpf/lib/conntrack.h", "bpf/lib/lxc.h", "bpf/lib/utils.h"], "pass1": "bpf-c"}
+{"screen_rank": 240, "repo": "falcosecurity/libs", "commit": "73a1ccf43ff29df033f189a10ba8a07b27848bb9", "n_files": 1, "bpf_c_files": ["driver/bpf/fillers.h"], "pass1": "bpf-c"}
+{"screen_rank": 241, "repo": "inspektor-gadget/inspektor-gadget", "commit": "f5fdfa5a7b726e08c435386c7f2e8fe570c21f4b", "n_files": 1, "bpf_c_files": ["pkg/gadgets/snisnoop/tracer/bpf/snisnoop.c"], "pass1": "bpf-c"}
+{"screen_rank": 242, "repo": "inspektor-gadget/inspektor-gadget", "commit": "281a7ffa903faf79e8fe6631303fc3774cbf9161", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 243, "repo": "cilium/cilium", "commit": "8f1bc21bc5756c81b3b3058f6d9727ad7e53d9d7", "n_files": 1, "bpf_c_files": ["bpf/tests/tc_nodeport_lb4_nat_lb.c"], "pass1": "bpf-c"}
+{"screen_rank": 244, "repo": "DataDog/datadog-agent", "commit": "6ab63e5cbf7327d039385198aafa8ffe87ca1002", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 245, "repo": "cilium/cilium", "commit": "5d882fdd1f8a7ecf4383bce66a76cfa10e41ddff", "n_files": 2, "bpf_c_files": ["bpf/lib/lxc.h"], "pass1": "bpf-c"}
+{"screen_rank": 246, "repo": "cilium/cilium", "commit": "77685c2280aedd670ed19bf15f60bd7d086fffdb", "n_files": 1, "bpf_c_files": ["bpf/tests/tc_nodeport_lb4_nat_lb.c"], "pass1": "bpf-c"}
+{"screen_rank": 247, "repo": "cilium/cilium", "commit": "efb5d6509fea263bd6d36998f8e524d9942b8a79", "n_files": 1, "bpf_c_files": ["bpf/lib/fib.h"], "pass1": "bpf-c"}
+{"screen_rank": 248, "repo": "cilium/cilium", "commit": "d06ad90b1a4b37048778dd7435c1bcf08f437783", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 249, "repo": "cilium/pwru", "commit": "5455e747d71c24774a3c0296c04abe9f50b972ff", "n_files": 1, "bpf_c_files": ["bpf/kprobe_pwru.c"], "pass1": "bpf-c"}
+{"screen_rank": 250, "repo": "falcosecurity/libs", "commit": "747934f75e3c497403c4d5ee51d3fbb373076575", "n_files": 2, "bpf_c_files": ["driver/bpf/filler_helpers.h", "driver/bpf/fillers.h"], "pass1": "bpf-c"}
+{"screen_rank": 251, "repo": "cilium/cilium", "commit": "1aa2a51e05ff0d0543f790ffcfcc2a38808dbe15", "n_files": 1, "bpf_c_files": ["bpf/lib/ratelimit.h"], "pass1": "bpf-c"}
+{"screen_rank": 252, "repo": "cilium/cilium", "commit": "6cd44840199ba79cc59397743e0f01409262851e", "n_files": 1, "bpf_c_files": ["bpf/lib/ipv6.h"], "pass1": "bpf-c"}
+{"screen_rank": 253, "repo": "falcosecurity/libs", "commit": "961362aed0977dc26700d0f2ffe7e2581ac4c4d5", "n_files": 1, "bpf_c_files": ["driver/modern_bpf/programs/attached/iterators/task.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 254, "repo": "iovisor/bcc", "commit": "419a7db43d080c1ae3d8984bf4e29505b79039c7", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 255, "repo": "inspektor-gadget/inspektor-gadget", "commit": "6a2c5e949cbfc464b40d7b61196c9f2e1cffffaf", "n_files": 2, "bpf_c_files": ["gadgets/trace_dns/program.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 256, "repo": "falcosecurity/libs", "commit": "ad79fc1d7975b5e5335018feed107cc60896f2f4", "n_files": 5, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 257, "repo": "cilium/cilium", "commit": "4095bae6b72a10a033b1cd5f577913e13c2c1648", "n_files": 2, "bpf_c_files": ["bpf/lib/lb.h"], "pass1": "bpf-c"}
+{"screen_rank": 258, "repo": "kubearmor/KubeArmor", "commit": "da4cb33c3351075aa2d66db8d12588b9550f06ca", "n_files": 1, "bpf_c_files": ["KubeArmor/BPF/system_monitor.c"], "pass1": "bpf-c"}
+{"screen_rank": 259, "repo": "cilium/cilium", "commit": "de679382fe1ed0b325c4d3cc76ab88af6752fac1", "n_files": 1, "bpf_c_files": ["bpf/lib/icmp6.h"], "pass1": "bpf-c"}
+{"screen_rank": 260, "repo": "iovisor/bcc", "commit": "fc245dfe9dabbd77e3adbf89a45aaab0cb1552fd", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 261, "repo": "falcosecurity/libs", "commit": "50aa2a0c9bb5f7e3c61dc0f2470f513521e34ec2", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 262, "repo": "cilium/cilium", "commit": "f1c3c71f0003a62c6db65342fa87b68c9ceb8e9b", "n_files": 1, "bpf_c_files": ["bpf/bpf_sock.c"], "pass1": "bpf-c"}
+{"screen_rank": 263, "repo": "DataDog/datadog-agent", "commit": "8d24881eeb29de57bfc9e250be878eaca138615f", "n_files": 10, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 264, "repo": "falcosecurity/libs", "commit": "4a07fbf7c845736d6f086f0d3c6e9cddf99bc60b", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 265, "repo": "parca-dev/parca-agent", "commit": "3ddab1b95b413e8b8d909dfcb1ea06e4d809d5b3", "n_files": 1, "bpf_c_files": ["bpf/unwinders/native.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 266, "repo": "kubearmor/KubeArmor", "commit": "026c31c617ab0c193a785c8eeec740aa3ce1cd4e", "n_files": 1, "bpf_c_files": ["KubeArmor/BPF/system_monitor.c"], "pass1": "bpf-c"}
+{"screen_rank": 267, "repo": "cilium/tetragon", "commit": "0dae3bae6ffe3e42232d9eed0d3e93a10db49f62", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 268, "repo": "cilium/cilium", "commit": "ceaa4c42b0101c69d82407046e8437942237edcb", "n_files": 2, "bpf_c_files": ["bpf/tests/ipv6_test.c", "bpf/tests/pktgen.h"], "pass1": "bpf-c"}
+{"screen_rank": 269, "repo": "cilium/tetragon", "commit": "eee73ae6e12acd1a4d3814124b0e7895b16689c9", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 270, "repo": "cilium/tetragon", "commit": "ca5e095710a8640cf0012118cf5c8586f7bacc7f", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 271, "repo": "elastic/ebpf", "commit": "457eb2a7a9c71f41a413e7234c8d8c6aa9811b16", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 272, "repo": "inspektor-gadget/inspektor-gadget", "commit": "48c85b7e2c3ef9f58515415d6cb3a5a8c74c7af7", "n_files": 1, "bpf_c_files": ["pkg/gadgets/snisnoop/tracer/bpf/snisnoop.c"], "pass1": "bpf-c"}
+{"screen_rank": 273, "repo": "DataDog/datadog-agent", "commit": "1f38d0be838b310e64bafa7ff1615384bf9ca2c2", "n_files": 5, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 274, "repo": "aquasecurity/tracee", "commit": "8b036cd652e230b03f76132fab41afcf0655ded2", "n_files": 1, "bpf_c_files": ["pkg/ebpf/c/common/filesystem.h"], "pass1": "bpf-c"}
+{"screen_rank": 275, "repo": "inspektor-gadget/inspektor-gadget", "commit": "5327815b8f7c9245c4e2697bedbc2c39126b6ad7", "n_files": 3, "bpf_c_files": ["pkg/gadgets/traceloop/tracer/bpf/traceloop.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 276, "repo": "iovisor/bcc", "commit": "d1791f0b06ee3e7234fec407b9df847e5275e002", "n_files": 14, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 277, "repo": "cilium/cilium", "commit": "46024c6c4a30016b467b746753902b6805505a31", "n_files": 1, "bpf_c_files": ["bpf/lib/nodeport.h"], "pass1": "bpf-c"}
+{"screen_rank": 278, "repo": "cilium/ebpf", "commit": "148c76cf32ddb279b650f106febb1f4a6f9d11ee", "n_files": 9, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 279, "repo": "cilium/cilium", "commit": "1e3174b1fcc3901d054b50c19a11cf7c18933fd2", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
