@@ -1,0 +1,149 @@
+libbpf: object 'libbpf-tools__b': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: extern (kcfg) 'LINUX_KERNEL_VERSION': set to 0x60c56
+libbpf: sec 'kprobe/blk_account_io_merge_bio': found 1 CO-RE relocations
+libbpf: sec 'tp_btf/block_rq_insert': found 12 CO-RE relocations
+libbpf: sec 'tp_btf/block_rq_issue': found 12 CO-RE relocations
+libbpf: sec 'tp_btf/block_rq_complete': found 5 CO-RE relocations
+libbpf: CO-RE relocating [17] struct request: found target candidate [12660] struct request in [vmlinux]
+libbpf: prog 'block_rq_complete': relo #0: <byte_off> [17] struct request.q (0:0 @ offset 0)
+libbpf: prog 'block_rq_complete': relo #0: matching candidate #0 <byte_off> [12660] struct request.q (0:0 @ offset 0)
+libbpf: prog 'block_rq_complete': relo #0: patched insn #65 (ALU/ALU64) imm 0 -> 0
+libbpf: CO-RE relocating [143] struct request_queue: found target candidate [1048] struct request_queue in [vmlinux]
+libbpf: prog 'block_rq_complete': relo #1: <byte_off> [143] struct request_queue.elevator (0:1 @ offset 8)
+libbpf: prog 'block_rq_complete': relo #1: matching candidate #0 <byte_off> [1048] struct request_queue.elevator (0:1 @ offset 8)
+libbpf: prog 'block_rq_complete': relo #1: patched insn #72 (ALU/ALU64) imm 8 -> 8
+libbpf: prog 'block_rq_complete': relo #2: <byte_off> [17] struct request.__sector (0:9 @ offset 48)
+libbpf: prog 'block_rq_complete': relo #2: matching candidate #0 <byte_off> [12660] struct request.__sector (0:9 @ offset 48)
+libbpf: prog 'block_rq_complete': relo #2: patched insn #90 (LDX/ST/STX) off 48 -> 48
+libbpf: prog 'block_rq_complete': relo #3: <byte_off> [17] struct request.__data_len (0:8 @ offset 44)
+libbpf: prog 'block_rq_complete': relo #3: matching candidate #0 <byte_off> [12660] struct request.__data_len (0:8 @ offset 44)
+libbpf: prog 'block_rq_complete': relo #3: patched insn #92 (LDX/ST/STX) off 44 -> 44
+libbpf: prog 'block_rq_complete': relo #4: <byte_off> [17] struct request.cmd_flags (0:3 @ offset 24)
+libbpf: prog 'block_rq_complete': relo #4: matching candidate #0 <byte_off> [12660] struct request.cmd_flags (0:3 @ offset 24)
+libbpf: prog 'block_rq_complete': relo #4: patched insn #94 (LDX/ST/STX) off 24 -> 24
+libbpf: map 'cgroup_map': created successfully, fd=4
+libbpf: map 'infobyreq': created successfully, fd=5
+libbpf: map 'start': created successfully, fd=6
+libbpf: map 'events': setting size to 4
+libbpf: map 'events': created successfully, fd=7
+libbpf: map 'libbpf_t.rodata': created successfully, fd=8
+libbpf: map 'libbpf_.kconfig': created successfully, fd=9
+libbpf: prog 'blk_account_io_start': skipped loading
+libbpf: prog 'blk_account_io_merge_bio': skipped loading
+libbpf: prog 'block_rq_insert': skipped loading
+libbpf: prog 'block_rq_issue': skipped loading
+libbpf: prog 'block_rq_complete': BPF program load failed: Permission denied
+libbpf: prog 'block_rq_complete': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int BPF_PROG(block_rq_complete, struct request *rq, int error, @ biosnoop.bpf.c:148
+0: (bf) r6 = r1                       ; R1=ctx() R6_w=ctx()
+1: (79) r1 = *(u64 *)(r6 +0)
+func 'block_rq_complete' arg0 has btf_id 12660 type STRUCT 'request'
+2: R1_w=trusted_ptr_request() R6_w=ctx()
+2: (7b) *(u64 *)(r10 -8) = r1         ; R1_w=trusted_ptr_request() R10=fp0 fp-8_w=trusted_ptr_request()
+; if (filter_cg && !bpf_current_task_under_cgroup(&cgroup_map, 0)) @ biosnoop.bpf.c:151
+3: (18) r1 = 0xffffd1bb00afa000       ; R1_w=map_value(map=libbpf_t.rodata,ks=4,vs=16)
+5: (71) r1 = *(u8 *)(r1 +0)           ; R1_w=0
+6: (55) if r1 != 0x1 goto pc+5
+mark_precise: frame0: last_idx 6 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 5: (71) r1 = *(u8 *)(r1 +0)
+6: R1_w=0
+; u64 ts = bpf_ktime_get_ns(); @ biosnoop.bpf.c:154
+12: (85) call bpf_ktime_get_ns#5      ; R0=scalar()
+13: (bf) r7 = r0                      ; R0=scalar(id=1) R7_w=scalar(id=1)
+14: (b7) r8 = 0                       ; R8_w=0
+; struct event event = {}; @ biosnoop.bpf.c:156
+15: (7b) *(u64 *)(r10 -16) = r8       ; R8_w=0 R10=fp0 fp-16_w=0
+16: (7b) *(u64 *)(r10 -24) = r8       ; R8_w=0 R10=fp0 fp-24_w=0
+17: (7b) *(u64 *)(r10 -32) = r8       ; R8_w=0 R10=fp0 fp-32_w=0
+18: (7b) *(u64 *)(r10 -40) = r8       ; R8_w=0 R10=fp0 fp-40_w=0
+19: (7b) *(u64 *)(r10 -48) = r8       ; R8_w=0 R10=fp0 fp-48_w=0
+20: (7b) *(u64 *)(r10 -56) = r8       ; R8_w=0 R10=fp0 fp-56_w=0
+21: (7b) *(u64 *)(r10 -64) = r8       ; R8_w=0 R10=fp0 fp-64_w=0
+22: (7b) *(u64 *)(r10 -72) = r8       ; R8_w=0 R10=fp0 fp-72_w=0
+23: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+24: (07) r2 += -8                     ; R2_w=fp-8
+; stagep = bpf_map_lookup_elem(&start, &rq); @ biosnoop.bpf.c:160
+25: (18) r1 = 0xffff8d0e2734dc00      ; R1_w=map_ptr(map=start,ks=8,vs=24)
+27: (85) call bpf_map_lookup_elem#1   ; R0_w=map_value_or_null(id=2,map=start,ks=8,vs=24)
+; if (!stagep) @ biosnoop.bpf.c:161
+28: (15) if r0 == 0x0 goto pc+88      ; R0_w=map_value(map=start,ks=8,vs=24)
+; delta = (s64)(ts - stagep->issue); @ biosnoop.bpf.c:163
+29: (79) r1 = *(u64 *)(r0 +8)         ; R0_w=map_value(map=start,ks=8,vs=24) R1_w=scalar()
+30: (bf) r9 = r7                      ; R7_w=scalar(id=1) R9_w=scalar(id=1)
+31: (1f) r9 -= r1                     ; R1=scalar() R9=scalar()
+; if (delta < 0 || delta < min_ns) @ biosnoop.bpf.c:164
+32: (6d) if r8 s> r9 goto pc+74       ; R8=0 R9=scalar(smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff))
+33: (18) r1 = 0xffffd1bb00afa008      ; R1_w=map_value(map=libbpf_t.rodata,ks=4,vs=16,off=8)
+35: (79) r1 = *(u64 *)(r1 +0)         ; R1_w=0
+36: (2d) if r1 > r9 goto pc+70
+mark_precise: frame0: last_idx 36 first_idx 32 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 35: (79) r1 = *(u64 *)(r1 +0)
+mark_precise: frame0: last_idx 36 first_idx 32 subseq_idx -1 
+mark_precise: frame0: regs=r9 stack= before 35: (79) r1 = *(u64 *)(r1 +0)
+mark_precise: frame0: regs=r9 stack= before 33: (18) r1 = 0xffffd1bb00afa008
+mark_precise: frame0: regs=r9 stack= before 32: (6d) if r8 s> r9 goto pc+74
+mark_precise: frame0: parent state regs=r8,r9 stack=:  R0_w=map_value(map=start,ks=8,vs=24) R1_w=scalar() R6=ctx() R7_w=scalar(id=1) R8_rw=P0 R9_rw=Pscalar() R10=fp0 fp-8=mmmmmmmm fp-16_w=0 fp-24_w=0 fp-32_w=0 fp-40_w=0 fp-48_w=0 fp-56_w=0 fp-64_w=0 fp-72_w=0
+mark_precise: frame0: last_idx 31 first_idx 13 subseq_idx 32 
+mark_precise: frame0: regs=r8,r9 stack= before 31: (1f) r9 -= r1
+mark_precise: frame0: regs=r1,r8,r9 stack= before 30: (bf) r9 = r7
+mark_precise: frame0: regs=r1,r7,r8 stack= before 29: (79) r1 = *(u64 *)(r0 +8)
+mark_precise: frame0: regs=r7,r8 stack= before 28: (15) if r0 == 0x0 goto pc+88
+mark_precise: frame0: regs=r7,r8 stack= before 27: (85) call bpf_map_lookup_elem#1
+mark_precise: frame0: regs=r7,r8 stack= before 25: (18) r1 = 0xffff8d0e2734dc00
+mark_precise: frame0: regs=r7,r8 stack= before 24: (07) r2 += -8
+mark_precise: frame0: regs=r7,r8 stack= before 23: (bf) r2 = r10
+mark_precise: frame0: regs=r7,r8 stack= before 22: (7b) *(u64 *)(r10 -72) = r8
+mark_precise: frame0: regs=r7,r8 stack= before 21: (7b) *(u64 *)(r10 -64) = r8
+mark_precise: frame0: regs=r7,r8 stack= before 20: (7b) *(u64 *)(r10 -56) = r8
+mark_precise: frame0: regs=r7,r8 stack= before 19: (7b) *(u64 *)(r10 -48) = r8
+mark_precise: frame0: regs=r7,r8 stack= before 18: (7b) *(u64 *)(r10 -40) = r8
+mark_precise: frame0: regs=r7,r8 stack= before 17: (7b) *(u64 *)(r10 -32) = r8
+mark_precise: frame0: regs=r7,r8 stack= before 16: (7b) *(u64 *)(r10 -24) = r8
+mark_precise: frame0: regs=r7,r8 stack= before 15: (7b) *(u64 *)(r10 -16) = r8
+mark_precise: frame0: regs=r7,r8 stack= before 14: (b7) r8 = 0
+mark_precise: frame0: regs=r7 stack= before 13: (bf) r7 = r0
+mark_precise: frame0: parent state regs=r0 stack=:  R0_rw=Pscalar() R6_w=ctx() R10=fp0 fp-8_rw=trusted_ptr_request()
+mark_precise: frame0: last_idx 12 first_idx 0 subseq_idx 13 
+mark_precise: frame0: regs=r0 stack= before 12: (85) call bpf_ktime_get_ns#5
+36: R1_w=0 R9=scalar(smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff))
+37: (bf) r8 = r0                      ; R0=map_value(map=start,ks=8,vs=24) R8_w=map_value(map=start,ks=8,vs=24)
+38: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+39: (07) r2 += -8                     ; R2_w=fp-8
+; piddatap = bpf_map_lookup_elem(&infobyreq, &rq); @ biosnoop.bpf.c:166
+40: (18) r1 = 0xffff8d0e2734cc00      ; R1_w=map_ptr(map=infobyreq,ks=8,vs=20)
+42: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=3,map=infobyreq,ks=8,vs=20)
+; if (!piddatap) { @ biosnoop.bpf.c:167
+43: (55) if r0 != 0x0 goto pc+3       ; R0=0
+44: (b7) r1 = 63                      ; R1_w=63
+; event.comm[0] = '?'; @ biosnoop.bpf.c:168
+45: (73) *(u8 *)(r10 -72) = r1        ; R1_w=63 R10=fp0 fp-72=mmmmmmm63
+; } else { @ biosnoop.bpf.c:169
+46: (05) goto pc+12
+; event.delta = delta; @ biosnoop.bpf.c:174
+59: (7b) *(u64 *)(r10 -56) = r9       ; R9=scalar(id=4,smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff)) R10=fp0 fp-56_w=scalar(id=4,smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff))
+; if (targ_queued && BPF_CORE_READ(rq, q, elevator)) { @ biosnoop.bpf.c:175
+60: (18) r1 = 0xffffd1bb00afa001      ; R1_w=map_value(map=libbpf_t.rodata,ks=4,vs=16,off=1)
+62: (71) r2 = *(u8 *)(r1 +0)          ; R1_w=map_value(map=libbpf_t.rodata,ks=4,vs=16,off=1) R2_w=0
+63: (bf) r1 = r8                      ; R1=map_value(map=start,ks=8,vs=24) R8=map_value(map=start,ks=8,vs=24)
+64: (55) if r2 != 0x1 goto pc+23
+mark_precise: frame0: last_idx 64 first_idx 64 subseq_idx -1 
+mark_precise: frame0: parent state regs=r2 stack=:  R0=0 R1_w=map_value(map=start,ks=8,vs=24) R2_rw=P0 R6=ctx() R7=scalar(id=1) R8=map_value(map=start,ks=8,vs=24) R9=scalar(id=4,smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff)) R10=fp0 fp-8=mmmmmmmm fp-16=0 fp-24=0 fp-32=0 fp-40=0 fp-48=0 fp-56_w=scalar(id=4,smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff)) fp-64=0 fp-72=mmmmmmm63
+mark_precise: frame0: last_idx 63 first_idx 43 subseq_idx 64 
+mark_precise: frame0: regs=r2 stack= before 63: (bf) r1 = r8
+mark_precise: frame0: regs=r2 stack= before 62: (71) r2 = *(u8 *)(r1 +0)
+64: R2=0
+; event.ts = ts; @ biosnoop.bpf.c:181
+88: (7b) *(u64 *)(r10 -40) = r7       ; R7=scalar(id=1) R10=fp0 fp-40_w=scalar(id=1)
+; event.sector = rq->__sector; @ biosnoop.bpf.c:182
+89: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=scalar() R10=fp0 fp-8=mmmmmmmm
+90: (79) r3 = *(u64 *)(r2 +48)
+R2 invalid mem access 'scalar'
+verification time 427 usec
+stack depth 72
+processed 46 insns (limit 1000000) max_states_per_insn 0 total_states 4 peak_states 4 mark_read 3
+-- END PROG LOAD LOG --
+libbpf: prog 'block_rq_complete': failed to load: -13
+libbpf: failed to load object '/home/test/wild/tmp/111/parent-keep/libbpf-tools__biosnoop.bpf.c.o'

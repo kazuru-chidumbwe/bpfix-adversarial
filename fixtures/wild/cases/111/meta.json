@@ -1,0 +1,24 @@
+{
+ "screen_rank": 111,
+ "repo": "iovisor/bcc",
+ "commit": "02daf8d84ecd23d4b8c55ccf5b4a0246abe38765",
+ "parent": "6ef0f0dd2c8d315e2b6dda26e63d014a49ca9ec1",
+ "build_type": "direct compile",
+ "flips": [
+  {
+   "object": "biosnoop.bpf.c::libbpf-tools__biosnoop.bpf.c.o",
+   "program": "block_rq_complete",
+   "section": "tp_btf/block_rq_complete"
+  }
+ ],
+ "decided_by": "default",
+ "feature_macros": null,
+ "object": "biosnoop.bpf.c::libbpf-tools__biosnoop.bpf.c.o",
+ "program": "block_rq_complete",
+ "section": "tp_btf/block_rq_complete",
+ "parent_cmd": "clang -g -O2 -target bpf -D__TARGET_ARCH_x86 -I /home/test/wild/tmp/111/parent/libbpf-tools -I /home/test/wild/tmp/111/parent/libbpf-tools/x86 -I /home/test/wild/tmp/111/parent -I /home/test/bpfix-v2-git/.cache/vmlinux-6.12.86+deb13-amd64 -I /usr/include -c /home/test/wild/tmp/111/parent/libbpf-tools/biosnoop.bpf.c -o /home/test/wild/tmp/111/parent-objs/libbpf-tools__biosnoop.bpf.c.o",
+ "fix_cmd": "clang -g -O2 -target bpf -D__TARGET_ARCH_x86 -I /home/test/wild/tmp/111/fix/libbpf-tools -I /home/test/wild/tmp/111/fix/libbpf-tools/x86 -I /home/test/wild/tmp/111/fix -I /home/test/bpfix-v2-git/.cache/vmlinux-6.12.86+deb13-amd64 -I /usr/include -c /home/test/wild/tmp/111/fix/libbpf-tools/biosnoop.bpf.c -o /home/test/wild/tmp/111/fix-objs/libbpf-tools__biosnoop.bpf.c.o",
+ "changed_files": [
+  "libbpf-tools/biosnoop.bpf.c"
+ ]
+}
