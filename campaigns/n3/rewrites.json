@@ -1,0 +1,1609 @@
+{
+ "generator": "tools/gen_main75_rewrites.py",
+ "anchor_run": "campaigns/main75/lab/testbed-a-20261026T044355Z",
+ "applied": {
+  "VPAD": 46,
+  "MACRO": 32,
+  "INLINE": 48,
+  "REORDER": 0,
+  "SPLIT": 3
+ },
+ "cases": {
+  "alu32_pointer_cookie_001": {
+   "anchor": 42,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "dynptr_slice_missing_null_check_001": {
+   "anchor": 33,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "condition has an assignment, call or sizeof"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "dynptr_slice_short_mem_001": {
+   "anchor": 35,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "dynptr_slice_stack_buffer_001": {
+   "anchor": 30,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "condition has an assignment, call or sizeof"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "dynptr_stack_copy_001": {
+   "anchor": 36,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "condition has an assignment, call or sizeof"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "dynptr_uninitialized_slice_arg_001": {
+   "anchor": 27,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "no if above the anchor in this function"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "helper_csum_diff_stack_len_001": {
+   "anchor": 61,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "condition has an assignment, call or sizeof"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "helper_map_arg_stack_001": {
+   "anchor": 57,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   }
+  },
+  "map_value_branch_merge_001": {
+   "anchor": 65,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is a declaration, return, break or continue"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "map_value_index_guard_oob_001": {
+   "anchor": 48,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is a declaration, return, break or continue"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "fixed: no splittable one-line if above the anchor"
+   }
+  },
+  "map_value_inline_cookie_001": {
+   "anchor": 67,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is a declaration, return, break or continue"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "map_value_pointer_cookie_001": {
+   "anchor": 67,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is a declaration, return, break or continue"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "map_value_signed_index_001": {
+   "anchor": 47,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is a declaration, return, break or continue"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "map_value_spill_cookie_001": {
+   "anchor": 62,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is a declaration, return, break or continue"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "packet_checked_wrong_base_001": {
+   "anchor": 31,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "the statements share an identifier"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "packet_eth_off_by_one_001": {
+   "anchor": 36,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "packet_ihl_udp_undercheck_001": {
+   "anchor": 72,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "packet_inline_return_cookie_001": {
+   "anchor": 54,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   }
+  },
+  "packet_l4_branch_cookie_001": {
+   "anchor": 61,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   }
+  },
+  "packet_macro_cookie_001": {
+   "anchor": 39,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "packet_macro_payload_undercheck_001": {
+   "anchor": 52,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "packet_vlan_cookie_001": {
+   "anchor": 67,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "perf_event_packet_payload_001": {
+   "anchor": 43,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "ringbuf_branch_cookie_001": {
+   "anchor": 59,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   }
+  },
+  "ringbuf_double_submit_001": {
+   "anchor": 53,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "the statements share an identifier"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "ringbuf_missing_null_check_001": {
+   "anchor": 35,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "ringbuf_nested_missing_null_001": {
+   "anchor": 48,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "fixed: anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "ringbuf_nested_reserve_leak_001": {
+   "anchor": 55,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "ringbuf_pointer_cookie_001": {
+   "anchor": 72,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "ringbuf_ref_leak_001": {
+   "anchor": 53,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": true
+   }
+  },
+  "ringbuf_stack_discard_001": {
+   "anchor": 33,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "fixed: anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "ringbuf_stack_submit_001": {
+   "anchor": 37,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "no simple one-line declaration for 'ctx'"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "ringbuf_submit_after_discard_001": {
+   "anchor": 49,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "ringbuf_two_record_cookie_001": {
+   "anchor": 63,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "anchor deleted by the fix (no counterpart in fixed)"
+   }
+  },
+  "rs_actplane_cap_dynptr_payload_null_001": {
+   "anchor": 94,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_actplane_lsm_bpf_ringbuf_merge_001": {
+   "anchor": 54,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "no simple one-line declaration for 'privileged'"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "the statements share an identifier"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "fixed: no splittable one-line if above the anchor"
+   }
+  },
+  "rs_actplane_mmap_pending_merge_001": {
+   "anchor": 217,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_actplane_policy_map_merge_001": {
+   "anchor": 57,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is a declaration, return, break or continue"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_actplane_taint_loop_count_bound_001": {
+   "anchor": 29,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is a declaration, return, break or continue"
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "no if above the anchor in this function"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "the statements share an identifier"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_agentsight_fs_overflow_counter_merge_001": {
+   "anchor": 123,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_agentsight_process_ringbuf_null_001": {
+   "anchor": 45,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_agentsight_stdiocap_user_copy_len_001": {
+   "anchor": 57,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "fixed: condition has an assignment, call or sizeof"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_agentsight_write_ctx_merge_001": {
+   "anchor": 132,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_bpftime_opensnoop_ringbuf_filter_ref_001": {
+   "anchor": 82,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_bpftime_opensnoop_stack_wrong_prog_type_001": {
+   "anchor": 50,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_bpftime_sslsniff_perf_copy_len_001": {
+   "anchor": 101,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_cilium_change_proto_stale_001": {
+   "anchor": 43,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "condition has an assignment, call or sizeof"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_cilium_fib_lookup_param_len_001": {
+   "anchor": 46,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is a declaration, return, break or continue"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_cilium_ip_options_traceid_payload_bound_001": {
+   "anchor": 37,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_cilium_ipv6_exthdr_l4_offset_001": {
+   "anchor": 87,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is a declaration, return, break or continue"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_cilium_mcast_igmpv3_grec_bound_001": {
+   "anchor": 86,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "fixed: condition has an assignment, call or sizeof"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_cilium_proxy_skc_assign_ref_leak_001": {
+   "anchor": 34,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "no simple one-line declaration for 'skb'"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": true
+   }
+  },
+  "rs_cilium_srv6_segment_bound_001": {
+   "anchor": 60,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_datrail_browsertrace_start_ns_merge_001": {
+   "anchor": 69,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_datrail_cgroup_filter_key_width_001": {
+   "anchor": 42,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is a declaration, return, break or continue"
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "no simple one-line declaration for 'filter_cgroup_children'"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_eunomia_energy_runtime_merge_001": {
+   "anchor": 130,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is a declaration, return, break or continue"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_eunomia_http_doff_copy_bound_001": {
+   "anchor": 131,
+   "VPAD": {
+    "applied": false,
+    "reason": "previous code line does not end a statement"
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "no simple one-line declaration for 'i'"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_eunomia_wq_container_map_001": {
+   "anchor": 100,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_nccl_cpu_observer_slot_merge_001": {
+   "anchor": 102,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is a declaration, return, break or continue"
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "fixed: no simple one-line declaration for 'prev_pid'"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_tetragon_data_event_size_guard_001": {
+   "anchor": 51,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "no if above the anchor in this function"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_tutorial_dynptr_tc_ref_leak_001": {
+   "anchor": 137,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": true
+   }
+  },
+  "rs_tutorial_memleak_free_info_merge_001": {
+   "anchor": 73,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_tutorial_pidhide_tailcall_map_type_001": {
+   "anchor": 34,
+   "VPAD": {
+    "applied": false,
+    "reason": "previous code line does not end a statement"
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "no simple one-line declaration for 'xaa'"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_tutorial_user_ringbuf_dynptr_merge_001": {
+   "anchor": 50,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_xdp_tools_ihl_macro_wrong_base_001": {
+   "anchor": 30,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is a declaration, return, break or continue"
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "no if above the anchor in this function"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_xdp_tools_load_bytes_stack_len_001": {
+   "anchor": 30,
+   "VPAD": {
+    "applied": false,
+    "reason": "anchor line not found exactly once in both files"
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "no if above the anchor in this function"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_xdp_tools_xdpdump_perf_map_type_001": {
+   "anchor": 62,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement is not single-line ending in ';'"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_xdp_tools_xdpfilt_udp_macro_bound_001": {
+   "anchor": 92,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "rs_xdp_tools_xdpsock_redirect_map_type_001": {
+   "anchor": 38,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is a declaration, return, break or continue"
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "no simple one-line declaration for 'xff'"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "subprog_adjust_tail_stale_001": {
+   "anchor": 37,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is a declaration, return, break or continue"
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "condition has an assignment, call or sizeof"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "subprog_map_value_null_001": {
+   "anchor": 55,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": true
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "the statements share an identifier"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "xdp_adjust_head_map_value_001": {
+   "anchor": 59,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is a declaration, return, break or continue"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "xdp_adjust_head_ringbuf_001": {
+   "anchor": 59,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is a declaration, return, break or continue"
+   },
+   "INLINE": {
+    "applied": false,
+    "reason": "condition has an assignment, call or sizeof"
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "xdp_adjust_head_stale_001": {
+   "anchor": 47,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  },
+  "xdp_adjust_tail_stale_001": {
+   "anchor": 43,
+   "VPAD": {
+    "applied": true
+   },
+   "MACRO": {
+    "applied": false,
+    "reason": "anchor is not one statement ending in ';'"
+   },
+   "INLINE": {
+    "applied": true
+   },
+   "REORDER": {
+    "applied": false,
+    "reason": "a statement has a call, return, label or brace"
+   },
+   "SPLIT": {
+    "applied": false,
+    "reason": "no splittable one-line if above the anchor"
+   }
+  }
+ }
+}
