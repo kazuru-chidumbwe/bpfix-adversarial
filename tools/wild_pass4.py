@@ -121,9 +121,45 @@ def compile_unit(wt: Path, u: Path, obj: Path, vmlinux_dir: str, index: list[str
     return None, f"{u.relative_to(wt)}: {err}"
 
 
+INCLUDE_DEPTH = 1  # batch 2 item 10 sets 4: follow #include chains, through headers and included .c files
+
+
+def marked(f: Path) -> bool:
+    return bool(UNIT_MARK.search(f.read_text(errors="replace")))
+
+
+def units_via_includes(wt: Path, changed: list[str], deadline: float) -> set[Path]:
+    """.c files with programs that compile a changed file, directly or through up to INCLUDE_DEPTH #include steps.
+
+    A file in the chain that holds the programs (HEADER_MARK_COUNTS) makes every .c file above it a unit."""
+    units: set[Path] = set()
+    frontier = [((wt / rel).resolve(), False) for rel in changed if (wt / rel).is_file()]
+    seen = {f for f, _ in frontier}
+    for _ in range(INCLUDE_DEPTH + 1):
+        nxt = []
+        for f, chain_marked in frontier:
+            here = marked(f)
+            if f.suffix == ".c" and (here or (HEADER_MARK_COUNTS and chain_marked)):
+                units.add(f)
+                continue
+            name = re.escape(f.name)
+            g = p3.run(f"grep -rlE '#include.*[\"</]{name}[\">]' --include='*.c' --include='*.h' .", cwd=wt,
+                       timeout=min(300, p3.left(deadline)))
+            for hit in g.stdout.split():
+                h = (wt / hit).resolve()
+                if h not in seen:
+                    seen.add(h)
+                    nxt.append((h, chain_marked or (HEADER_MARK_COUNTS and here)))
+        frontier = nxt
+    return units
+
+
 def build_direct(wt: Path, changed: list[str], vmlinux_dir: str, objdir: Path, deadline: float):
     index = p3.run(["git", "-C", str(wt), "ls-files"]).stdout.split()
     units: set[Path] = set()
+    if INCLUDE_DEPTH > 1:
+        units = units_via_includes(wt, changed, deadline)
+        changed = []  # found above
     for rel in changed:
         f = wt / rel
         if not f.is_file():
