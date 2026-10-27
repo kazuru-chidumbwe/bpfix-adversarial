@@ -42,6 +42,8 @@ OUT = B2 / "build.jsonl"
 WINDOW = "2024-01-01..2026-10-25"
 SEED = 20261027
 RANK_BASE = 1000
+BATCH = 2
+PRIOR_BUILDS: list[Path] = []  # build rows of earlier batches, for the stop rule
 
 REPOS_FILE = B2 / "repos.json"
 TOPICS = ("ebpf", "bpf", "xdp", "libbpf")
@@ -268,7 +270,9 @@ def build(argv: list[str]) -> int:
         raise SystemExit(f"missing {vmlinux_dir}/vmlinux.h")
 
     def included() -> int:
-        return p4.included_so_far() + sum(1 for r in done.values() if r.get("outcome") == "included")
+        prior = sum(1 for f in PRIOR_BUILDS if f.is_file() for ln in f.read_text(encoding="utf-8").splitlines()
+                    if ln.strip() and json.loads(ln).get("outcome") == "included")
+        return p4.included_so_far() + prior + sum(1 for r in done.values() if r.get("outcome") == "included")
 
     n = 0
     for rank in todo:
@@ -299,7 +303,7 @@ def build(argv: list[str]) -> int:
             row["outcome"] = p4.final_outcome(row)
             if row["outcome"] == "E5":
                 row["note"] = "no program loaded from: " + ", ".join(sorted(set(p4.OPEN_ERRORS)))[:700]
-        row["batch"] = 2
+        row["batch"] = BATCH
         row["seconds"] = round(time.time() - t0)
         with OUT.open("a", encoding="utf-8", newline="\n") as f:
             f.write(json.dumps(row) + "\n")
@@ -307,7 +311,7 @@ def build(argv: list[str]) -> int:
         n += 1
         status = (f"{dt.datetime.now(dt.timezone.utc):%Y-%m-%d %H:%M}Z rank {rank} {row['outcome']} "
                   f"({row['seconds']}s); screened {len(done)}/{len(todo)}; included (both batches) {included()}")
-        (p3.WORK / "batch2.status").write_text(status + "\n")
+        (p3.WORK / f"batch{BATCH}.status").write_text(status + "\n")
         print(status, flush=True)
     return 0
 
