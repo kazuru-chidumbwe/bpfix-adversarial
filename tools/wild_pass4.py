@@ -188,8 +188,24 @@ def load(obj: Path, outdir: Path, tag: str, deadline: float) -> dict[str, dict]:
     """Pass-3 load, but an object that yields no program (open failure or none found) is recorded."""
     res = P3_LOAD(obj, outdir, tag, deadline)
     if not res:
-        OPEN_ERRORS.append(f"{tag}:{Path(obj).name}")
+        code = OPEN_CODE.get(str(obj), "no program")
+        OPEN_ERRORS.append(f"{tag}:{Path(obj).name}:{code}")
     return res
+
+
+OPEN_CODE: dict[str, str] = {}
+P3_RUN = p3.run
+
+
+def run(cmd, cwd=None, timeout=None, env=None):
+    """p3.run, keeping the loader's OPEN_ERROR code per object (95 = legacy `maps` section)."""
+    p = P3_RUN(cmd, cwd=cwd, timeout=timeout, env=env)
+    if isinstance(cmd, list) and any(Path(c).name == "wildload" for c in cmd[:6]) and "OPEN_ERROR" in p.stdout:
+        obj = next((c for c in cmd if c.endswith(".o")), None)
+        m = re.search(r"OPEN_ERROR (-?\d+)", p.stdout)
+        if obj and m:
+            OPEN_CODE[obj] = f"OPEN_ERROR {m.group(1)}"
+    return p
 
 
 P3_LOAD = p3.load
@@ -219,7 +235,7 @@ def main(argv: list[str] | None = None) -> int:
         if not d.is_dir():
             raise SystemExit(f"missing pin kernel headers: {d}")
     install_clang_wrapper(p3.WORK)
-    p3.build_direct, p3.build_make, p3.load = build_direct, build_make, load
+    p3.build_direct, p3.build_make, p3.load, p3.run = build_direct, build_make, load, run
     cands = {c["screen_rank"]: c for c in json.loads((p3.WILD / "candidates.json").read_text(encoding="utf-8"))["candidates"]}
     files = {json.loads(ln)["screen_rank"]: json.loads(ln)["bpf_c_files"]
              for ln in (p3.WILD / "screen_files.jsonl").read_text(encoding="utf-8").splitlines() if ln.strip()}
