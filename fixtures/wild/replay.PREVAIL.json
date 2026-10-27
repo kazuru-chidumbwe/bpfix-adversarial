@@ -1,0 +1,11 @@
+{
+  "reporter": "PREVAIL",
+  "binary": "/home/test/src/prevail/bin/prevail",
+  "version": "v0.2.6-23-g3211393d",
+  "source_commit": "3211393d326b885025f3ad626bf372e3880cf0b2",
+  "input": "compiled object only; the kernel log is not read",
+  "cases": [
+    "111"
+  ],
+  "missing_object": []
+}

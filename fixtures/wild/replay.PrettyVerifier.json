@@ -1,0 +1,10 @@
+{
+  "reporter": "PrettyVerifier",
+  "cli": "/home/test/pv-venv/bin/pretty-verifier",
+  "source_commit": "0f8875a158c5f846d218c6669a330b386a0ccce3",
+  "input": "program-load log without 'verification time' and 'stack depth' lines",
+  "cases": [
+    "111"
+  ],
+  "missing_object": []
+}

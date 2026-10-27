@@ -1,0 +1,10 @@
+PREVAIL exit=1
+(program tp_btf/block_rq_complete/block_rq_complete)
+FAIL: tp_btf/block_rq_complete/block_rq_complete
+
+; /home/test/wild/tmp/111/parent/libbpf-tools/biosnoop.bpf.c:182
+; 	event.sector = rq->__sector;
+
+90: Invalid type (r2.type in {ctx, stack, packet, shared, socket, alloc_mem})
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.
