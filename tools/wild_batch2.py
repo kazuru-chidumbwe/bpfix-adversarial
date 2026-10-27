@@ -199,7 +199,19 @@ def files() -> int:
 def review() -> int:
     from tools import wild_dump_for_review as wd
 
-    wd.PASS1, wd.OUT = FILES, REVIEW
+    plain = wd.gh
+
+    def gh(path: str, jq: str) -> str:
+        for _ in range(30):
+            try:
+                return plain(path, jq)
+            except RuntimeError as e:
+                if "error connecting" not in str(e).lower():
+                    raise
+                time.sleep(65)
+        raise RuntimeError(f"{path}: network not back")
+
+    wd.PASS1, wd.OUT, wd.gh = FILES, REVIEW, gh
     return wd.main([])
 
 
