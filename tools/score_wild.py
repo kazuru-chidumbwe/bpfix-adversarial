@@ -49,7 +49,46 @@ REPORTERS = tuple(REGISTRY)
 
 
 def batch_of(rank: int) -> str:
-    return "batch 2" if rank >= 1000 else "batch 1"
+    return "batch 3" if rank >= 2000 else "batch 2" if rank >= 1000 else "batch 1"
+
+
+BATCHES = ("batch 1", "batch 2", "batch 3")
+CODES = ("included", "I3", "I4", "C", "E4", "E5")
+
+
+def jsonl(p: Path) -> list[dict]:
+    return [json.loads(ln) for ln in read(p).splitlines() if ln.strip()] if p.is_file() else []
+
+
+def yields() -> dict:
+    """Per batch: candidates, pass-1 survivors, screened, outcome codes (protocol, batch 3 item 7)."""
+    from tools.wild_pass4 import final_outcome
+
+    out: dict = {}
+    b1 = {r["screen_rank"]: r for r in jsonl(WILD / "pass3.jsonl")}
+    b1.update({r["screen_rank"]: {**r, "outcome": final_outcome(r)} for r in jsonl(WILD / "pass4.jsonl")})
+    if (WILD / "pass5.jsonl").is_file():  # batch 1 rebuilt with the final build step replaces passes 3 and 4
+        b1 = {r["screen_rank"]: r for r in jsonl(WILD / "pass5.jsonl")}
+    layout = {"batch 1": (WILD / "candidates.json", WILD / "screen_files.jsonl", list(b1.values())),
+              "batch 2": (WILD / "batch2/candidates.json", WILD / "batch2/screen_files.jsonl", jsonl(WILD / "batch2/build.jsonl")),
+              "batch 3": (WILD / "batch3/candidates.json", WILD / "batch3/screen_files.jsonl", jsonl(WILD / "batch3/build.jsonl"))}
+    for b, (cands, files, rows) in layout.items():
+        if not cands.is_file():
+            continue
+        n = json.loads(read(cands))["n"]
+        p1 = sum(1 for r in jsonl(files) if r["pass1"] == "bpf-c")
+        codes = {c: sum(1 for r in rows if r["outcome"] == c) for c in CODES}
+        out[b] = {"candidates": n, "pass1_survivors": p1, "screened": len(rows), "outcomes": codes,
+                  "included_over_screened": wilson(codes["included"], len(rows)) and
+                  {"rate": round(codes["included"] / len(rows), 4), "wilson95": wilson(codes["included"], len(rows))}}
+    tot = {"candidates": sum(v["candidates"] for v in out.values()),
+           "pass1_survivors": sum(v["pass1_survivors"] for v in out.values()),
+           "screened": sum(v["screened"] for v in out.values()),
+           "outcomes": {c: sum(v["outcomes"][c] for v in out.values()) for c in CODES}}
+    k, m = tot["outcomes"]["included"], tot["screened"]
+    tot["included_over_screened"] = {"rate": round(k / m, 4), "wilson95": wilson(k, m)} if m else None
+    out["pooled"] = tot
+    return out
 
 
 def hand_checks() -> dict[int, dict]:
@@ -156,7 +195,7 @@ def main(argv: list[str] | None = None) -> int:
     rows = [score_case(d, hand.get(int(d.name))) for d in dirs]
     scored = [r for r in rows if not r["excluded"]]
     groups = {"pooled": scored}
-    for b in ("batch 1", "batch 2"):
+    for b in BATCHES:
         groups[b] = [r for r in scored if r["batch"] == b]
     payload = {
         "generator": "tools/score_wild.py",
@@ -164,6 +203,7 @@ def main(argv: list[str] | None = None) -> int:
         "n_cases": len(rows),
         "n_scored": len(scored),
         "excluded": [{"rank": r["rank"], "reason": r["excluded"]} for r in rows if r["excluded"]],
+        "yield": yields(),
         "summary": {g: summarise(rs) for g, rs in groups.items()},
         "rows": rows,
     }
@@ -182,6 +222,14 @@ def render_md(p: dict) -> str:
     L = ["# Wild cases on the cite pin", "",
          f"Rules `{p['protocol']}`. Included cases {p['n_cases']}; scored {p['n_scored']}.",
          "Oracle: lines of the developer's own parent → fix edit, per file. Intervals: Wilson 95% over distinct cases.", ""]
+    L += ["## Yield per batch", "", "| batch | candidates | pass 1 | screened | " + " | ".join(CODES)
+          + " | included / screened |", "| --- | " + " | ".join("---:" for _ in range(4 + len(CODES))) + " |"]
+    for b, y in p["yield"].items():
+        r = y["included_over_screened"]
+        rate = f"{r['rate']:.3f} ({r['wilson95'][0]:.3f}–{r['wilson95'][1]:.3f})" if r else "n/a"
+        L.append(f"| {b} | {y['candidates']} | {y['pass1_survivors']} | {y['screened']} | "
+                 + " | ".join(str(y["outcomes"][c]) for c in CODES) + f" | {rate} |")
+    L.append("")
     if p["excluded"]:
         L += ["Not scored: " + ", ".join(f"rank {e['rank']} ({e['reason']})" for e in p["excluded"]), ""]
     for g, s in p["summary"].items():

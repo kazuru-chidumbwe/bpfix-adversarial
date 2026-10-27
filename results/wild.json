@@ -4,6 +4,82 @@
  "n_cases": 1,
  "n_scored": 1,
  "excluded": [],
+ "yield": {
+  "batch 1": {
+   "candidates": 280,
+   "pass1_survivors": 143,
+   "screened": 81,
+   "outcomes": {
+    "included": 1,
+    "I3": 9,
+    "I4": 7,
+    "C": 0,
+    "E4": 22,
+    "E5": 42
+   },
+   "included_over_screened": {
+    "rate": 0.0123,
+    "wilson95": [
+     0.0022,
+     0.0667
+    ]
+   }
+  },
+  "batch 2": {
+   "candidates": 141,
+   "pass1_survivors": 41,
+   "screened": 41,
+   "outcomes": {
+    "included": 0,
+    "I3": 2,
+    "I4": 4,
+    "C": 0,
+    "E4": 21,
+    "E5": 14
+   },
+   "included_over_screened": {
+    "rate": 0.0,
+    "wilson95": [
+     0.0,
+     0.0857
+    ]
+   }
+  },
+  "batch 3": {
+   "candidates": 4606,
+   "pass1_survivors": 355,
+   "screened": 0,
+   "outcomes": {
+    "included": 0,
+    "I3": 0,
+    "I4": 0,
+    "C": 0,
+    "E4": 0,
+    "E5": 0
+   },
+   "included_over_screened": null
+  },
+  "pooled": {
+   "candidates": 5027,
+   "pass1_survivors": 539,
+   "screened": 122,
+   "outcomes": {
+    "included": 1,
+    "I3": 11,
+    "I4": 11,
+    "C": 0,
+    "E4": 43,
+    "E5": 56
+   },
+   "included_over_screened": {
+    "rate": 0.0082,
+    "wilson95": [
+     0.0014,
+     0.045
+    ]
+   }
+  }
+ },
  "summary": {
   "pooled": {
    "all": {
@@ -1642,6 +1718,554 @@
    }
   },
   "batch 2": {
+   "all": {
+    "bpfix": {
+     "R0": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R1": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R2": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     }
+    },
+    "VerifierState": {
+     "R0": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R1": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R2": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     }
+    },
+    "SourceComment": {
+     "R0": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R1": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R2": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R1": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R2": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     }
+    },
+    "PREVAIL": {
+     "R0": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R1": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R2": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     }
+    },
+    "random_expected": {
+     "R0": 0,
+     "R1": 0,
+     "R2": 0
+    },
+    "n": 0
+   },
+   "informative": {
+    "bpfix": {
+     "R0": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R1": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R2": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     }
+    },
+    "VerifierState": {
+     "R0": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R1": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R2": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     }
+    },
+    "SourceComment": {
+     "R0": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R1": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R2": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R1": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R2": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     }
+    },
+    "PREVAIL": {
+     "R0": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R1": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     },
+     "R2": {
+      "primary_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "label_on_site": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      },
+      "primary_within_3": {
+       "hits": 0,
+       "n": 0,
+       "wilson95": null
+      }
+     }
+    },
+    "random_expected": {
+     "R0": 0,
+     "R1": 0,
+     "R2": 0
+    },
+    "n": 0
+   }
+  },
+  "batch 3": {
    "all": {
     "bpfix": {
      "R0": {

@@ -3,6 +3,15 @@
 Rules `docs/WILD-CORPUS-PROTOCOL.md (scoring rules for the wild cases)`. Included cases 1; scored 1.
 Oracle: lines of the developer's own parent → fix edit, per file. Intervals: Wilson 95% over distinct cases.
 
+## Yield per batch
+
+| batch | candidates | pass 1 | screened | included | I3 | I4 | C | E4 | E5 | included / screened |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| batch 1 | 280 | 143 | 81 | 1 | 9 | 7 | 0 | 22 | 42 | 0.012 (0.002–0.067) |
+| batch 2 | 141 | 41 | 41 | 0 | 2 | 4 | 0 | 21 | 14 | 0.000 (0.000–0.086) |
+| batch 3 | 4606 | 355 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | n/a |
+| pooled | 5027 | 539 | 122 | 1 | 11 | 11 | 0 | 43 | 56 | 0.008 (0.001–0.045) |
+
 ## Primary location on a repair site, pooled (1 cases, 1 informative)
 
 | reporter | R0 | R1 | R2 | any label R0 | within 3 R0 |
