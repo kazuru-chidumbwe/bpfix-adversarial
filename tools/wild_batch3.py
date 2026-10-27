@@ -29,6 +29,7 @@ RANK_BASE = 2000
 
 b2.CANDS, b2.FILES, b2.REVIEW, b2.OUT = B3 / "candidates.json", B3 / "screen_files.jsonl", B3 / "review", B3 / "build.jsonl"
 b2.BATCH = 3
+b2.MAKE_BPF = {"cilium/tetragon", "cilium/cilium"}  # batch-1 project builds (batch 3 item 4, correction)
 b2.PRIOR_BUILDS = [ROOT / "fixtures" / "wild" / "batch2" / "build.jsonl"]
 
 
