@@ -1,0 +1,1222 @@
+repo: open-telemetry/opentelemetry-ebpf-instrumentation
+commit: 418f103d056c2911321cb4590be743183811a13d
+rank: 1063
+
+gotracer: support nested spans in shared ctx (#3199)
+
+* shared ctx: support nested spans
+
+Signed-off-by: Mattia Meleleo <mattia.meleleo@coralogix.com>
+
+* address PR feedback
+
+* fix verifier failures
+
+---------
+
+Signed-off-by: Mattia Meleleo <mattia.meleleo@coralogix.com>
+
+--- bpf/common/trace_lifecycle.h
+@@ -35,9 +35,34 @@ static __always_inline void delete_server_trace(pid_connection_info_t *pid_conn,
+     }
+ }
+ 
++// A client span ended: point the thread's context back at its parent server span
++static __always_inline void obi_ctx__restore_server(const tp_info_t *client_tp) {
++    if (!client_tp) {
++        return;
++    }
++    // only when the thread still points at this client span
++    const obi_ctx_info_t *current = obi_ctx__get(bpf_get_current_pid_tgid());
++    if (!current || *(const u64 *)current->span_id != *(const u64 *)client_tp->span_id) {
++        return;
++    }
++    trace_key_t t_key = {0};
++    task_tid(&t_key.p_key);
++    if (java_vt_translate_tid(&t_key.p_key)) {
++        return; // virtual thread requests do not use the thread context
++    }
++    t_key.extra_id = extra_runtime_id();
++    tp_info_pid_t *server_tp = bpf_map_lookup_elem(&server_traces, &t_key);
++    if (server_tp && server_tp->valid &&
++        *(const u64 *)server_tp->tp.span_id == *(const u64 *)client_tp->parent_id) {
++        obi_ctx__set(bpf_get_current_pid_tgid(), &server_tp->tp);
++    }
++}
++
+ static __always_inline void delete_client_trace_info(pid_connection_info_t *pid_conn) {
+-    bpf_dbg_printk("Deleting client trace map for connection, pid=%d", pid_conn->pid);
+-    dbg_print_http_connection_info(&pid_conn->conn);
++    const tp_info_pid_t *client_tp = trace_info_for_connection(&pid_conn->conn, TRACE_TYPE_CLIENT);
++    if (client_tp) {
++        obi_ctx__restore_server(&client_tp->tp);
++    }
+ 
+     delete_trace_info_for_connection(&pid_conn->conn, TRACE_TYPE_CLIENT);
+ 
+
+--- bpf/generictracer/protocol_http2.h
+@@ -371,6 +371,9 @@ http2_grpc_end(http2_conn_stream_t *stream, http2_grpc_request_t *prev_info, voi
+             __builtin_memcpy(trace, prev_info, sizeof(http2_grpc_request_t));
+             bpf_ringbuf_submit(trace, get_flags());
+         }
++        if (prev_info->type == k_event_type_http_client) {
++            obi_ctx__restore_server(&prev_info->tp);
++        }
+     }
+ 
+     bpf_map_delete_elem(&ongoing_http2_grpc, stream);
+
+--- bpf/gotracer/go_grpc.c
+@@ -41,7 +41,7 @@
+ 
+ #include <pid/pid_helpers.h>
+ 
+-#include <shared/obi_ctx.h>
++#include <gotracer/go_obi_ctx.h>
+ 
+ #define TRANSPORT_HTTP2 1
+ #define TRANSPORT_HANDLER 2
+@@ -160,7 +160,7 @@ int GUARDED_PROG(obi_uprobe_server_handleStream, struct pt_regs *, ctx) {
+         bpf_dbg_printk("can't update grpc map element");
+     }
+ 
+-    obi_ctx__set(bpf_get_current_pid_tgid(), &invocation.tp);
++    go_obi_ctx__begin(&g_key, k_obi_ctx_grpc_server, &invocation.tp, go_obi_ctx__stack_off(ctx));
+ 
+     return 0;
+ }
+@@ -338,10 +338,10 @@ int GUARDED_PROG(obi_uprobe_server_handleStream_return, struct pt_regs *, ctx) {
+     bpf_ringbuf_submit(trace, get_flags());
+ 
+ done:
++    go_obi_ctx__end(&g_key, k_obi_ctx_grpc_server, invocation ? &invocation->tp : NULL);
+     bpf_map_delete_elem(&ongoing_grpc_server_requests, &g_key);
+     bpf_map_delete_elem(&ongoing_grpc_request_status, &g_key);
+     bpf_map_delete_elem(&go_trace_map, &g_key);
+-    obi_ctx__del(bpf_get_current_pid_tgid());
+ 
+     return 0;
+ }
+@@ -384,8 +384,12 @@ int GUARDED_PROG(obi_uprobe_transport_writeStatus, struct pt_regs *, ctx) {
+ }
+ 
+ /* GRPC client */
+-static __always_inline void clientConnStart(
+-    void *goroutine_addr, void *cc_ptr, void *ctx_ptr, void *method_ptr, void *method_len) {
++static __always_inline void clientConnStart(void *goroutine_addr,
++                                            void *cc_ptr,
++                                            void *ctx_ptr,
++                                            void *method_ptr,
++                                            void *method_len,
++                                            u64 stack_off) {
+     grpc_client_func_invocation_t invocation = {
+         .start_monotime_ns = bpf_ktime_get_ns(),
+         .cc = (u64)cc_ptr,
+@@ -418,7 +422,7 @@ static __always_inline void clientConnStart(
+         bpf_dbg_printk("can't update grpc client map element");
+     }
+ 
+-    obi_ctx__set(bpf_get_current_pid_tgid(), &invocation.tp);
++    go_obi_ctx__begin(&g_key, k_obi_ctx_grpc_client, &invocation.tp, stack_off);
+ }
+ 
+ SEC("uprobe/ClientConn_Invoke")
+@@ -433,7 +437,8 @@ int GUARDED_PROG(obi_uprobe_ClientConn_Invoke, struct pt_regs *, ctx) {
+     void *method_ptr = GO_PARAM4(ctx);
+     void *method_len = GO_PARAM5(ctx);
+ 
+-    clientConnStart(goroutine_addr, cc_ptr, ctx_ptr, method_ptr, method_len);
++    clientConnStart(
++        goroutine_addr, cc_ptr, ctx_ptr, method_ptr, method_len, go_obi_ctx__stack_off(ctx));
+ 
+     return 0;
+ }
+@@ -451,7 +456,8 @@ int GUARDED_PROG(obi_uprobe_ClientConn_NewStream, struct pt_regs *, ctx) {
+     void *method_ptr = GO_PARAM5(ctx);
+     void *method_len = GO_PARAM6(ctx);
+ 
+-    clientConnStart(goroutine_addr, cc_ptr, ctx_ptr, method_ptr, method_len);
++    clientConnStart(
++        goroutine_addr, cc_ptr, ctx_ptr, method_ptr, method_len, go_obi_ctx__stack_off(ctx));
+ 
+     return 0;
+ }
+@@ -523,8 +529,8 @@ static __always_inline int grpc_connect_done(struct pt_regs *ctx, void *err) {
+     bpf_ringbuf_submit(trace, get_flags());
+ 
+ done:
++    go_obi_ctx__end(&g_key, k_obi_ctx_grpc_client, invocation ? &invocation->tp : NULL);
+     bpf_map_delete_elem(&ongoing_grpc_client_requests, &g_key);
+-    obi_ctx__del(bpf_get_current_pid_tgid());
+     return 0;
+ }
+ 
+@@ -547,12 +553,20 @@ int GUARDED_PROG(obi_uprobe_ClientConn_Close, struct pt_regs *, ctx) {
+     bpf_dbg_printk("=== uprobe/ClientConn_Close ===");
+ 
+     void *goroutine_addr = GOROUTINE_PTR(ctx);
+-    bpf_dbg_printk("goroutine_addr=%lx", goroutine_addr);
++    void *cc_ptr = GO_PARAM1(ctx);
++    bpf_dbg_printk("goroutine_addr=%lx, cc_ptr=%llx", goroutine_addr, cc_ptr);
+     go_addr_key_t g_key = {};
+     go_addr_key_from_id(&g_key, goroutine_addr);
+ 
++    const grpc_client_func_invocation_t *invocation =
++        bpf_map_lookup_elem(&ongoing_grpc_client_requests, &g_key);
++    // an interceptor can close another connection while this goroutine's RPC runs
++    if (!invocation || invocation->cc != (u64)cc_ptr) {
++        return 0;
++    }
++
++    go_obi_ctx__end(&g_key, k_obi_ctx_grpc_client, &invocation->tp);
+     bpf_map_delete_elem(&ongoing_grpc_client_requests, &g_key);
+-    obi_ctx__del(bpf_get_current_pid_tgid());
+ 
+     return 0;
+ }
+
+--- bpf/gotracer/go_kafka_go.c
+@@ -31,7 +31,7 @@
+ 
+ #include <logger/bpf_dbg.h>
+ 
+-#include <shared/obi_ctx.h>
++#include <gotracer/go_obi_ctx.h>
+ 
+ // Code for the produce messages path
+ SEC("uprobe/writer_write_messages")
+@@ -53,7 +53,7 @@ int GUARDED_PROG(obi_uprobe_writer_write_messages, struct pt_regs *, ctx) {
+     bpf_map_update_elem(&produce_traceparents, &p_key, &tp, BPF_ANY);
+     bpf_map_update_elem(&produce_traceparents_by_goroutine, &g_key, &tp, BPF_ANY);
+ 
+-    obi_ctx__set(bpf_get_current_pid_tgid(), &tp);
++    go_obi_ctx__begin(&g_key, k_obi_ctx_kafka_produce, &tp, go_obi_ctx__stack_off(ctx));
+ 
+     return 0;
+ }
+@@ -69,8 +69,9 @@ int GUARDED_PROG(obi_uprobe_writer_write_messages_ret, struct pt_regs *, ctx) {
+ 
+     // Drop the goroutine-keyed traceparent so casgstatus can't re-install this
+     // produce's context after the request ends (issue #2046).
++    const tp_info_t *tp = bpf_map_lookup_elem(&produce_traceparents_by_goroutine, &g_key);
++    go_obi_ctx__end(&g_key, k_obi_ctx_kafka_produce, tp);
+     bpf_map_delete_elem(&produce_traceparents_by_goroutine, &g_key);
+-    obi_ctx__del(bpf_get_current_pid_tgid());
+ 
+     return 0;
+ }
+
+--- bpf/gotracer/go_mongo.c
+@@ -28,7 +28,7 @@
+ 
+ #include <logger/bpf_dbg.h>
+ 
+-#include <shared/obi_ctx.h>
++#include <gotracer/go_obi_ctx.h>
+ 
+ #define MONGO_OP_DEF(name, str)                                                                    \
+     static const char name[] = str;                                                                \
+@@ -77,7 +77,7 @@ obi_uprobe_mongo_coll_op(struct pt_regs *ctx, const char *op, const u32 op_len)
+ 
+     bpf_map_update_elem(&ongoing_mongo_requests, &g_key, &req, BPF_ANY);
+ 
+-    obi_ctx__set(bpf_get_current_pid_tgid(), &req.tp);
++    go_obi_ctx__begin(&g_key, k_obi_ctx_mongo, &req.tp, go_obi_ctx__stack_off(ctx));
+ 
+     return 0;
+ }
+@@ -151,6 +151,8 @@ int GUARDED_PROG(obi_uprobe_mongo_op_execute, struct pt_regs *, ctx) {
+     go_addr_key_from_id(&g_key, goroutine_addr);
+ 
+     mongo_go_client_req_t *req = bpf_map_lookup_elem(&ongoing_mongo_requests, &g_key);
++    // the collection op already began this span
++    const u8 begun = req != NULL;
+ 
+     if (!req) {
+         client_trace_parent(goroutine_addr, &fresh_req.tp);
+@@ -188,7 +190,9 @@ int GUARDED_PROG(obi_uprobe_mongo_op_execute, struct pt_regs *, ctx) {
+ 
+     bpf_map_update_elem(&ongoing_mongo_requests, &g_key, req, BPF_ANY);
+ 
+-    obi_ctx__set(bpf_get_current_pid_tgid(), &req->tp);
++    if (!begun) {
++        go_obi_ctx__begin(&g_key, k_obi_ctx_mongo, &req->tp, go_obi_ctx__stack_off(ctx));
++    }
+ 
+     return 0;
+ }
+@@ -223,8 +227,8 @@ int GUARDED_PROG(obi_uprobe_mongo_op_execute_ret, struct pt_regs *, ctx) {
+         }
+     }
+ 
++    go_obi_ctx__end(&g_key, k_obi_ctx_mongo, req ? &req->tp : NULL);
+     bpf_map_delete_elem(&ongoing_mongo_requests, &g_key);
+-    obi_ctx__del(bpf_get_current_pid_tgid());
+ 
+     return 0;
+ }
+
+--- bpf/gotracer/go_nethttp.c
+@@ -54,7 +54,7 @@
+ 
+ #include <pid/pid_helpers.h>
+ 
+-#include <shared/obi_ctx.h>
++#include <gotracer/go_obi_ctx.h>
+ 
+ static __always_inline unsigned char *temp_header_mem() {
+     const u32 zero = 0;
+@@ -156,7 +156,7 @@ int GUARDED_PROG(obi_uprobe_ServeHTTP, struct pt_regs *, ctx) {
+         bpf_dbg_printk("can't update map element");
+     }
+ 
+-    obi_ctx__set(bpf_get_current_pid_tgid(), &invocation->tp);
++    go_obi_ctx__begin(&g_key, k_obi_ctx_http_server, &invocation->tp, go_obi_ctx__stack_off(ctx));
+ 
+ done:
+     return 0;
+@@ -393,7 +393,7 @@ static __always_inline void handle_traceparent_header(server_http_func_invocatio
+         bpf_memset(minimal_inv, 0, sizeof(*minimal_inv));
+         update_traceparent(minimal_inv, traceparent_start);
+         bpf_map_update_elem(&ongoing_http_server_requests, g_key, minimal_inv, BPF_ANY);
+-        obi_ctx__set(bpf_get_current_pid_tgid(), &minimal_inv->tp);
++        go_obi_ctx__begin(g_key, k_obi_ctx_http_server, &minimal_inv->tp, 0);
+     }
+ }
+ 
+@@ -620,10 +620,10 @@ static __always_inline int serve_http_returns(struct pt_regs *ctx) {
+     bpf_ringbuf_submit(trace, get_flags());
+ 
+ done:
++    go_obi_ctx__end(&g_key, k_obi_ctx_http_server, invocation ? &invocation->tp : NULL);
+     bpf_map_delete_elem(&ongoing_server_bufr, &g_key);
+     bpf_map_delete_elem(&ongoing_http_server_requests, &g_key);
+     bpf_map_delete_elem(&go_trace_map, &g_key);
+-    obi_ctx__del(bpf_get_current_pid_tgid());
+     return 0;
+ }
+ 
+@@ -1218,7 +1218,8 @@ int GUARDED_PROG(obi_uprobe_http2serverConn_runHandler, struct pt_regs *, ctx) {
+                 __builtin_memcpy(&inv->tp, tp, sizeof(tp_info_t));
+                 bpf_dbg_printk("Found traceparent in HTTP2 headers");
+                 bpf_map_update_elem(&ongoing_http_server_requests, &g_key, inv, BPF_ANY);
+-                obi_ctx__set(bpf_get_current_pid_tgid(), &inv->tp);
++                go_obi_ctx__begin(
++                    &g_key, k_obi_ctx_http_server, &inv->tp, go_obi_ctx__stack_off(ctx));
+                 bpf_map_delete_elem(&http2_server_requests_tp, &sc_key);
+             }
+         }
+
+--- bpf/gotracer/go_obi_ctx.h
+@@ -0,0 +1,275 @@
++// Copyright The OpenTelemetry Authors
++// SPDX-License-Identifier: Apache-2.0
++
++#pragma once
++
++#include <bpfcore/vmlinux.h>
++#include <bpfcore/bpf_helpers.h>
++#include <bpfcore/bpf_builtins.h>
++#include <bpfcore/utils.h>
++
++#include <common/go_addr_key.h>
++#include <common/map_sizing.h>
++#include <common/pin_internal.h>
++#include <common/scratch_mem.h>
++#include <common/tp_info.h>
++
++#include <shared/obi_ctx.h>
++
++// One stack per goroutine with the spans that are still running. Logs get the top span
++
++enum obi_ctx_kind : u8 {
++    k_obi_ctx_none = 0,
++    k_obi_ctx_http_server = 1,
++    k_obi_ctx_grpc_server = 2,
++    k_obi_ctx_grpc_client = 3,
++    k_obi_ctx_sql = 4,
++    k_obi_ctx_redis = 5,
++    k_obi_ctx_mongo = 6,
++    k_obi_ctx_kafka_produce = 7,
++};
++
++enum { k_obi_ctx_kind_count = k_obi_ctx_kafka_produce + 1 };
++
++// saturation cap for the per-kind unstored span counters
++enum { k_obi_ctx_overflow_max = 255 };
++
++enum { k_obi_ctx_max_depth = 4 };
++
++enum { k_g_stack_hi_off = 8 }; // runtime.g.stack.hi
++
++typedef struct obi_ctx_frame {
++    tp_info_t tp;
++    u32 stack_off;
++    u8 kind;
++    u8 _pad[3];
++} obi_ctx_frame_t;
++
++typedef struct obi_ctx_stack {
++    obi_ctx_frame_t frames[k_obi_ctx_max_depth];
++    u32 depth;
++    u32 unstored_stack_off;
++    // how many spans of each kind started after the stack was full and were not
++    // stored, so that an end of an unrelated kind cannot consume their count
++    u8 overflow[k_obi_ctx_kind_count];
++    // the last span that was not stored, so that its restart is not counted twice
++    // and its context survives a reschedule while it runs
++    u8 unstored_kind;
++    u8 _pad[7];
++    tp_info_t unstored_tp;
++} obi_ctx_stack_t;
++
++struct {
++    __uint(type, BPF_MAP_TYPE_LRU_HASH);
++    __type(key, go_addr_key_t);
++    __type(value, obi_ctx_stack_t);
++    __uint(max_entries, MAX_CONCURRENT_REQUESTS);
++    __uint(pinning, OBI_PIN_INTERNAL);
++} obi_ctx_stacks SEC(".maps");
++
++SCRATCH_MEM_TYPED(obi_ctx_stack_scratch, obi_ctx_stack_t)
++
++// How deep the probed call is in the goroutine stack. When Go grows the stack it
++// restarts the function, so the entry probe fires twice at the same depth. A nested
++// call of the same kind is always deeper
++static __always_inline u32 go_obi_ctx__stack_off(struct pt_regs *ctx) {
++    u64 stack_hi = 0;
++    bpf_probe_read_user(
++        &stack_hi, sizeof(stack_hi), (void *)((char *)GOROUTINE_PTR(ctx) + k_g_stack_hi_off));
++    return (u32)(stack_hi - PT_REGS_SP(ctx));
++}
++
++// The bounds are clamped in asm so that older verifiers see a single consistent
++// range for every frame index derived from the stored depth. The load is volatile
++// so a depth just stored is read back, not forwarded: the forwarded index carries
++// bounds older verifiers cannot reconcile with the clamp
++static __always_inline u32 obi_ctx__depth(const obi_ctx_stack_t *st) {
++    u32 depth = *(volatile const u32 *)&st->depth;
++    bpf_clamp_umax(depth, k_obi_ctx_max_depth);
++    return depth;
++}
++
++static __always_inline u32 obi_ctx__slot(u32 idx) {
++    bpf_clamp_umax(idx, k_obi_ctx_max_depth - 1);
++    return idx;
++}
++
++static __always_inline u32 obi_ctx__kind_slot(u8 kind) {
++    u32 slot = kind;
++    bpf_clamp_umax(slot, k_obi_ctx_kind_count - 1);
++    return slot;
++}
++
++static __always_inline u8 obi_ctx__same_span(const tp_info_t *a, const tp_info_t *b) {
++    return *(const u64 *)a->span_id == *(const u64 *)b->span_id;
++}
++
++// a goroutine serves one request at a time: a second server begin is the same request
++static __always_inline u8 obi_ctx__is_server(u8 kind) {
++    return kind == k_obi_ctx_http_server || kind == k_obi_ctx_grpc_server;
++}
++
++// Newest frame of this span, or of this kind when tp is NULL. k_obi_ctx_max_depth if none
++static __always_inline u32 obi_ctx__find(const obi_ctx_stack_t *st,
++                                         u32 depth,
++                                         u8 kind,
++                                         const tp_info_t *tp) {
++    for (u32 i = 0; i < k_obi_ctx_max_depth; i++) {
++        if (i >= depth) {
++            break;
++        }
++        const obi_ctx_frame_t *frame = &st->frames[obi_ctx__slot(depth - 1 - i)];
++        if (tp ? obi_ctx__same_span(&frame->tp, tp) : frame->kind == kind) {
++            return depth - 1 - i;
++        }
++    }
++
++    return k_obi_ctx_max_depth;
++}
++
++// Frame already created for this call, if any
++static __always_inline u32 obi_ctx__reentered(
++    const obi_ctx_stack_t *st, u32 depth, u8 kind, const tp_info_t *tp, u32 stack_off) {
++    u32 idx = obi_ctx__find(st, depth, kind, tp);
++    if (idx < k_obi_ctx_max_depth) {
++        return idx;
++    }
++
++    if (obi_ctx__is_server(kind)) {
++        return obi_ctx__find(st, depth, kind, NULL);
++    }
++
++    if (depth > 0) {
++        const obi_ctx_frame_t *top = &st->frames[obi_ctx__slot(depth - 1)];
++        if (top->kind == kind && top->stack_off == stack_off) {
++            return depth - 1;
++        }
++    }
++
++    return k_obi_ctx_max_depth;
++}
++
++// The goroutine's current span: the newest unstored one while it runs, else the
++// top frame. NULL when nothing is running
++static __always_inline const tp_info_t *obi_ctx__current(const obi_ctx_stack_t *st) {
++    if (st->unstored_kind != k_obi_ctx_none) {
++        return &st->unstored_tp;
++    }
++
++    const u32 depth = obi_ctx__depth(st);
++    if (depth == 0) {
++        return NULL;
++    }
++
++    return &st->frames[obi_ctx__slot(depth - 1)].tp;
++}
++
++static __always_inline void
++obi_ctx__publish_current(u64 pid_tgid, const go_addr_key_t *g_key, const obi_ctx_stack_t *st) {
++    const tp_info_t *tp = obi_ctx__current(st);
++    if (!tp) {
++        bpf_map_delete_elem(&obi_ctx_stacks, g_key);
++        obi_ctx__del(pid_tgid);
++        return;
++    }
++
++    obi_ctx__set(pid_tgid, tp);
++}
++
++// A span started: it becomes the goroutine's current context
++static __always_inline void
++go_obi_ctx__begin(const go_addr_key_t *g_key, u8 kind, const tp_info_t *tp, u32 stack_off) {
++    obi_ctx__set(bpf_get_current_pid_tgid(), tp);
++
++    obi_ctx_stack_t *st = bpf_map_lookup_elem(&obi_ctx_stacks, g_key);
++    if (!st) {
++        obi_ctx_stack_t *fresh = obi_ctx_stack_scratch_mem();
++        if (!fresh) {
++            return;
++        }
++        bpf_memset(fresh, 0, sizeof(*fresh));
++        fresh->frames[0].tp = *tp;
++        fresh->frames[0].stack_off = stack_off;
++        fresh->frames[0].kind = kind;
++        fresh->depth = 1;
++        bpf_map_update_elem(&obi_ctx_stacks, g_key, fresh, BPF_ANY);
++        return;
++    }
++
++    const u32 depth = obi_ctx__depth(st);
++
++    // the call is already on the stack: it is the top of the real stack, so
++    // anything above it has ended
++    const u32 idx = obi_ctx__reentered(st, depth, kind, tp, stack_off);
++    if (idx < k_obi_ctx_max_depth) {
++        st->frames[obi_ctx__slot(idx)].tp = *tp;
++        st->depth = idx + 1;
++        bpf_memset(st->overflow, 0, sizeof(st->overflow));
++        st->unstored_kind = k_obi_ctx_none;
++        return;
++    }
++
++    if (depth >= k_obi_ctx_max_depth) {
++        u8 *unstored = &st->overflow[obi_ctx__kind_slot(kind)];
++        const u8 restarted =
++            *unstored > 0 && st->unstored_kind == kind && st->unstored_stack_off == stack_off;
++        if (restarted) {
++            st->unstored_tp = *tp;
++        } else if (*unstored < k_obi_ctx_overflow_max) {
++            (*unstored)++;
++            st->unstored_kind = kind;
++            st->unstored_stack_off = stack_off;
++            st->unstored_tp = *tp;
++        }
++        return;
++    }
++
++    obi_ctx_frame_t *frame = &st->frames[obi_ctx__slot(depth)];
++    frame->tp = *tp;
++    frame->stack_off = stack_off;
++    frame->kind = kind;
++    st->depth = depth + 1;
++    st->unstored_kind = k_obi_ctx_none;
++}
++
++// A span ended: drop its frame and everything above it, then make the span below current.
++// Spans of one kind end in reverse start order, so an end we cannot find, or an end
++// without tp while its kind has unstored spans, belongs to a span that was never stored
++static __always_inline void
++go_obi_ctx__end(const go_addr_key_t *g_key, u8 kind, const tp_info_t *tp) {
++    const u64 pid_tgid = bpf_get_current_pid_tgid();
++
++    obi_ctx_stack_t *st = bpf_map_lookup_elem(&obi_ctx_stacks, g_key);
++    if (!st) {
++        obi_ctx__del(pid_tgid);
++        return;
++    }
++
++    u8 *unstored = &st->overflow[obi_ctx__kind_slot(kind)];
++    const u32 idx = obi_ctx__find(st, obi_ctx__depth(st), kind, tp);
++
++    if (idx < k_obi_ctx_max_depth && (tp || *unstored == 0)) {
++        st->depth = idx;
++        bpf_memset(st->overflow, 0, sizeof(st->overflow));
++    } else if (*unstored > 0) {
++        (*unstored)--;
++    } else {
++        // none of this goroutine's spans ended (e.g. ClientConn.Close without
++        // a begin): leave the context and the restart marker alone
++        return;
++    }
++    st->unstored_kind = k_obi_ctx_none;
++
++    obi_ctx__publish_current(pid_tgid, g_key, st);
++}
++
++// The goroutine got scheduled: put its current span on this thread, or clear the thread
++static __always_inline void go_obi_ctx__resume(u64 pid_tgid, const go_addr_key_t *g_key) {
++    const obi_ctx_stack_t *st = bpf_map_lookup_elem(&obi_ctx_stacks, g_key);
++    const tp_info_t *tp = st ? obi_ctx__current(st) : NULL;
++    if (tp) {
++        obi_ctx__set(pid_tgid, tp);
++        return;
++    }
++    obi_ctx__del(pid_tgid);
++}
+
+--- bpf/gotracer/go_redis.c
+@@ -28,7 +28,7 @@
+ 
+ #include <logger/bpf_dbg.h>
+ 
+-#include <shared/obi_ctx.h>
++#include <gotracer/go_obi_ctx.h>
+ 
+ SCRATCH_MEM_TYPED(req_client, redis_client_req_t);
+ 
+@@ -64,7 +64,7 @@ int GUARDED_PROG(obi_uprobe_redis_process, struct pt_regs *, ctx) {
+     go_addr_key_from_id(&g_key, goroutine_addr);
+     redis_client_req_t *req = bpf_map_lookup_elem(&ongoing_redis_requests, &g_key);
+     if (req) {
+-        obi_ctx__set(bpf_get_current_pid_tgid(), &req->tp);
++        go_obi_ctx__begin(&g_key, k_obi_ctx_redis, &req->tp, go_obi_ctx__stack_off(ctx));
+     }
+ 
+     return 0;
+@@ -90,8 +90,8 @@ int GUARDED_PROG(obi_uprobe_redis_process_ret, struct pt_regs *, ctx) {
+         }
+     }
+ 
++    go_obi_ctx__end(&g_key, k_obi_ctx_redis, req ? &req->tp : NULL);
+     bpf_map_delete_elem(&ongoing_redis_requests, &g_key);
+-    obi_ctx__del(bpf_get_current_pid_tgid());
+ 
+     return 0;
+ }
+
+--- bpf/gotracer/go_runtime.c
+@@ -40,7 +40,7 @@
+ 
+ #include <pid/pid_helpers.h>
+ 
+-#include <shared/obi_ctx.h>
++#include <gotracer/go_obi_ctx.h>
+ 
+ typedef struct new_func_invocation {
+     u64 parent;
+@@ -1262,39 +1262,8 @@ enum gstatus {
+ // }
+ enum offsets : u8 {
+     k_g_m_off = 0x30,
+-    k_m_procid_off = 0x40,
+ };
+ 
+-SEC("uprobe/runtime.mstart1")
+-int GUARDED_PROG(obi_uprobe_runtime_mstart1, struct pt_regs *, ctx) {
+-    const u64 pid_tgid = bpf_get_current_pid_tgid();
+-
+-    void *g = (void *)GOROUTINE_PTR(ctx);
+-    void *m = NULL;
+-
+-    bpf_probe_read_user(&m, sizeof(m), (void *)((char *)g + k_g_m_off));
+-    if (!m) {
+-        return 0;
+-    }
+-
+-    bpf_map_update_elem(&mptr_to_root_tid, &m, &(u32){pid_tgid}, BPF_ANY);
+-    return 0;
+-}
+-
+-SEC("uprobe/runtime.mexit")
+-int GUARDED_PROG(obi_uprobe_runtime_mexit, struct pt_regs *, ctx) {
+-    void *g = (void *)GOROUTINE_PTR(ctx);
+-    void *m = NULL;
+-
+-    bpf_probe_read_user(&m, sizeof(m), (void *)((char *)g + k_g_m_off));
+-    if (!m) {
+-        return 0;
+-    }
+-
+-    bpf_map_delete_elem(&mptr_to_root_tid, &m);
+-    return 0;
+-}
+-
+ // gp *g, oldval, newval uint32
+ SEC("uprobe/runtime.casgstatus")
+ int GUARDED_PROG(obi_uprobe_runtime_casgstatus, struct pt_regs *, ctx) {
+@@ -1308,86 +1277,25 @@ int GUARDED_PROG(obi_uprobe_runtime_casgstatus, struct pt_regs *, ctx) {
+         return 0;
+     }
+ 
+-    u64 procid = 0;
+-    bpf_probe_read_user(&procid, sizeof(procid), (void *)((char *)m + k_m_procid_off));
+-    if (procid == 0) {
+-        return 0;
+-    }
+-
+     const u32 pid = pid_tgid >> 32;
+-    u32 *root_tid = bpf_map_lookup_elem(&mptr_to_root_tid, &m);
+-    if (root_tid != NULL) {
+-        procid = *root_tid;
+-    }
+-
+-    const u64 g_pid_tgid = ((u64)pid << 32) | (procid & 0xffffffff);
++    const u64 g_pid_tgid = pid_tgid;
+     go_addr_key_t g_key = {
+         .addr = (u64)g,
+         .pid = pid,
+     };
+ 
+-    // grpc
+-    grpc_srv_func_invocation_t *grpc_server_inv;
+-    grpc_client_func_invocation_t *grpc_client_inv;
+-    // http
+-    server_http_func_invocation_t *http_server_inv;
+-    // kafka_go
+-    tp_info_t *kafka_go_tp;
+-    // mongo
+-    mongo_go_client_req_t *mongo;
+-    // redis
+-    redis_client_req_t *redis;
+-    // sql
+-    sql_func_invocation_t *sql;
+-
+-    obi_ctx_info_t obi_info = {};
+-
+     const u32 newval = (u32)(uintptr_t)GO_PARAM3(ctx);
+     switch (newval) {
+     case g_running:
++        go_obi_ctx__resume(g_pid_tgid, &g_key);
++        break;
+     case g_syscall:
+-        // grpc
+-        grpc_server_inv = bpf_map_lookup_elem(&ongoing_grpc_server_requests, &g_key);
+-        if (grpc_server_inv) {
+-            obi_ctx__set_(g_pid_tgid, &grpc_server_inv->tp, &obi_info);
+-            return 0;
+-        }
+-        grpc_client_inv = bpf_map_lookup_elem(&ongoing_grpc_client_requests, &g_key);
+-        if (grpc_client_inv) {
+-            obi_ctx__set_(g_pid_tgid, &grpc_client_inv->tp, &obi_info);
+-            return 0;
+-        }
+-        // http
+-        http_server_inv = bpf_map_lookup_elem(&ongoing_http_server_requests, &g_key);
+-        if (http_server_inv) {
+-            obi_ctx__set_(g_pid_tgid, &http_server_inv->tp, &obi_info);
+-            return 0;
+-        }
+-        // kafka_go
+-        kafka_go_tp = bpf_map_lookup_elem(&produce_traceparents_by_goroutine, &g_key);
+-        if (kafka_go_tp) {
+-            obi_ctx__set_(g_pid_tgid, kafka_go_tp, &obi_info);
+-            return 0;
+-        }
+-        // mongo
+-        mongo = bpf_map_lookup_elem(&ongoing_mongo_requests, &g_key);
+-        if (mongo) {
+-            obi_ctx__set_(g_pid_tgid, &mongo->tp, &obi_info);
+-            return 0;
+-        }
+-        // redis
+-        redis = bpf_map_lookup_elem(&ongoing_redis_requests, &g_key);
+-        if (redis) {
+-            obi_ctx__set_(g_pid_tgid, &redis->tp, &obi_info);
+-            return 0;
+-        }
+-        // sql
+-        sql = bpf_map_lookup_elem(&ongoing_sql_queries, &g_key);
+-        if (sql) {
+-            obi_ctx__set_(g_pid_tgid, &sql->tp, &obi_info);
+-            return 0;
+-        }
+-
++        // same goroutine, same thread: the context is already right
++        break;
++    case g_dead:
++        // Go reuses g objects: drop the stack before the next goroutine gets it
++        bpf_map_delete_elem(&obi_ctx_stacks, &g_key);
++        obi_ctx__del(g_pid_tgid);
+         break;
+     default:
+         obi_ctx__del(g_pid_tgid);
+
+--- bpf/gotracer/go_sql.c
+@@ -29,7 +29,7 @@
+ 
+ #include <maps/go_sql.h>
+ 
+-#include <shared/obi_ctx.h>
++#include <gotracer/go_obi_ctx.h>
+ 
+ // Sets the driver type based on the Go enum:
+ // const (
+@@ -299,8 +299,8 @@ static __always_inline void extract_sql_hostname(sql_request_trace_t *trace,
+     }
+ }
+ 
+-static __always_inline void
+-set_sql_info(void *goroutine_addr, void *driver_conn, void *sql_param, void *query_len) {
++static __always_inline void set_sql_info(
++    void *goroutine_addr, void *driver_conn, void *sql_param, void *query_len, u64 stack_off) {
+     sql_func_invocation_t invocation = {.start_monotime_ns = bpf_ktime_get_ns(),
+                                         .sql_param = (u64)sql_param,
+                                         .query_len = (u64)query_len,
+@@ -317,7 +317,7 @@ set_sql_info(void *goroutine_addr, void *driver_conn, void *sql_param, void *que
+         bpf_dbg_printk("can't update map element");
+     }
+ 
+-    obi_ctx__set(bpf_get_current_pid_tgid(), &invocation.tp);
++    go_obi_ctx__begin(&g_key, k_obi_ctx_sql, &invocation.tp, stack_off);
+ }
+ 
+ // Common SQL query return handler.
+@@ -329,10 +329,12 @@ static __always_inline int process_sql_return(void *goroutine_addr, u8 error, u8
+     sql_func_invocation_t *invocation = bpf_map_lookup_elem(&ongoing_sql_queries, &g_key);
+     if (invocation == NULL) {
+         bpf_dbg_printk("Request not found for this goroutine");
++        // an inner query overwrote our map entry, but our frame still has to be popped
++        go_obi_ctx__end(&g_key, k_obi_ctx_sql, NULL);
+         return 0;
+     }
++    go_obi_ctx__end(&g_key, k_obi_ctx_sql, &invocation->tp);
+     bpf_map_delete_elem(&ongoing_sql_queries, &g_key);
+-    obi_ctx__del(bpf_get_current_pid_tgid());
+ 
+     sql_request_trace_t *trace = bpf_ringbuf_reserve(&events, sizeof(sql_request_trace_t), 0);
+     if (trace) {
+@@ -380,7 +382,7 @@ int GUARDED_PROG(obi_uprobe_queryDC, struct pt_regs *, ctx) {
+     void *sql_param = GO_PARAM8(ctx);
+     void *query_len = GO_PARAM9(ctx);
+ 
+-    set_sql_info(goroutine_addr, driver_conn, sql_param, query_len);
++    set_sql_info(goroutine_addr, driver_conn, sql_param, query_len, go_obi_ctx__stack_off(ctx));
+     return 0;
+ }
+ 
+@@ -394,7 +396,7 @@ int GUARDED_PROG(obi_uprobe_pgx_Query, struct pt_regs *, ctx) {
+     void *sql_param = GO_PARAM4(ctx);
+     void *query_len = GO_PARAM5(ctx);
+ 
+-    set_sql_info(goroutine_addr, pgx_conn, sql_param, query_len);
++    set_sql_info(goroutine_addr, pgx_conn, sql_param, query_len, go_obi_ctx__stack_off(ctx));
+     return 0;
+ }
+ 
+@@ -408,7 +410,7 @@ int GUARDED_PROG(obi_uprobe_pgx_Exec, struct pt_regs *, ctx) {
+     void *sql_param = GO_PARAM4(ctx);
+     void *query_len = GO_PARAM5(ctx);
+ 
+-    set_sql_info(goroutine_addr, pgx_conn, sql_param, query_len);
++    set_sql_info(goroutine_addr, pgx_conn, sql_param, query_len, go_obi_ctx__stack_off(ctx));
+     return 0;
+ }
+ 
+@@ -422,7 +424,7 @@ int GUARDED_PROG(obi_uprobe_execDC, struct pt_regs *, ctx) {
+     void *sql_param = GO_PARAM6(ctx);
+     void *query_len = GO_PARAM7(ctx);
+ 
+-    set_sql_info(goroutine_addr, driver_conn, sql_param, query_len);
++    set_sql_info(goroutine_addr, driver_conn, sql_param, query_len, go_obi_ctx__stack_off(ctx));
+     return 0;
+ }
+ 
+
+--- bpf/gotracer/maps/runtime.h
+@@ -38,13 +38,6 @@ typedef struct direct_chan_handoff {
+     u8 _pad[7];
+ } direct_chan_handoff_t;
+ 
+-struct {
+-    __uint(type, BPF_MAP_TYPE_LRU_HASH);
+-    __type(key, void *); // *m
+-    __type(value, u32);
+-    __uint(max_entries, 5000);
+-} mptr_to_root_tid SEC(".maps");
+-
+ struct {
+     __uint(type, BPF_MAP_TYPE_LRU_HASH);
+     __type(key, go_addr_key_t);
+
+--- bpf/shared/obi_ctx.h
+@@ -35,13 +35,6 @@ static __always_inline long obi_ctx__set(const u64 pid_tgid, const tp_info_t *in
+     return bpf_map_update_elem(&traces_ctx_v1, &pid_tgid, &obi_info, BPF_ANY);
+ }
+ 
+-static __always_inline long
+-obi_ctx__set_(const u64 pid_tgid, const tp_info_t *info, obi_ctx_info_t *obi_info) {
+-    bpf_memcpy(obi_info->trace_id, info->trace_id, TRACE_ID_SIZE_BYTES);
+-    bpf_memcpy(obi_info->span_id, info->span_id, SPAN_ID_SIZE_BYTES);
+-    return bpf_map_update_elem(&traces_ctx_v1, &pid_tgid, obi_info, BPF_ANY);
+-}
+-
+ static __always_inline long obi_ctx__del(const u64 pid_tgid) {
+     return bpf_map_delete_elem(&traces_ctx_v1, &pid_tgid);
+ }
+
+--- bpf/tests/bpf_go_obi_ctx.c
+@@ -0,0 +1,426 @@
++// Copyright The OpenTelemetry Authors
++// SPDX-License-Identifier: Apache-2.0
++
++// Per-goroutine context stack: what the thread's traces_ctx_v1 entry points at
++// while spans begin, restart, nest, overflow and end.
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++#include <bpfcore/vmlinux.h>
++#include <bpfcore/bpf_helpers.h>
++
++#ifndef LIBBPF_PIN_BY_NAME
++#define LIBBPF_PIN_BY_NAME 1
++#endif
++
++struct pt_regs {
++    u64 sp;
++};
++
++static unsigned char test_g[16];
++static u64 test_stack_hi;
++
++#define GOROUTINE_PTR(x) ((void *)test_g)
++#define PT_REGS_SP(x) ((x)->sp)
++
++enum { k_max_maps = 4, k_max_entries = 16, k_max_key = 16, k_max_val = 512 };
++
++typedef struct mock_entry {
++    int used;
++    unsigned char key[k_max_key];
++    unsigned char val[k_max_val];
++} mock_entry_t;
++
++typedef struct mock_map {
++    void *map;
++    unsigned int key_size;
++    unsigned int val_size;
++    mock_entry_t entries[k_max_entries];
++} mock_map_t;
++
++static mock_map_t mock_maps[k_max_maps];
++
++static mock_map_t *mock_for(void *map) {
++    for (int i = 0; i < k_max_maps; i++) {
++        if (mock_maps[i].map == map) {
++            return &mock_maps[i];
++        }
++    }
++    fprintf(stderr, "FAIL: unregistered map %p\n", map);
++    exit(1);
++}
++
++static void mock_register(void *map, unsigned int key_size, unsigned int val_size) {
++    for (int i = 0; i < k_max_maps; i++) {
++        if (!mock_maps[i].map) {
++            mock_maps[i].map = map;
++            mock_maps[i].key_size = key_size;
++            mock_maps[i].val_size = val_size;
++            return;
++        }
++    }
++    exit(1);
++}
++
++static void *test_map_lookup(void *map, const void *key) {
++    mock_map_t *m = mock_for(map);
++    for (int i = 0; i < k_max_entries; i++) {
++        if (m->entries[i].used && memcmp(m->entries[i].key, key, m->key_size) == 0) {
++            return m->entries[i].val;
++        }
++    }
++    return NULL;
++}
++
++static long test_map_update(void *map, const void *key, const void *val, unsigned long long flags) {
++    (void)flags;
++    mock_map_t *m = mock_for(map);
++    for (int i = 0; i < k_max_entries; i++) {
++        if (m->entries[i].used && memcmp(m->entries[i].key, key, m->key_size) == 0) {
++            memcpy(m->entries[i].val, val, m->val_size);
++            return 0;
++        }
++    }
++    for (int i = 0; i < k_max_entries; i++) {
++        if (!m->entries[i].used) {
++            m->entries[i].used = 1;
++            memcpy(m->entries[i].key, key, m->key_size);
++            memcpy(m->entries[i].val, val, m->val_size);
++            return 0;
++        }
++    }
++    return -1;
++}
++
++static long test_map_delete(void *map, const void *key) {
++    mock_map_t *m = mock_for(map);
++    for (int i = 0; i < k_max_entries; i++) {
++        if (m->entries[i].used && memcmp(m->entries[i].key, key, m->key_size) == 0) {
++            m->entries[i].used = 0;
++            return 0;
++        }
++    }
++    return -1;
++}
++
++// the only user read is g.stack.hi
++static long test_probe_read_user(void *dst, unsigned int size, const void *src) {
++    (void)src;
++    memcpy(dst, &test_stack_hi, size);
++    return 0;
++}
++
++#define bpf_map_lookup_elem test_map_lookup
++#define bpf_map_update_elem test_map_update
++#define bpf_map_delete_elem test_map_delete
++#define bpf_probe_read_user test_probe_read_user
++
++#include <gotracer/go_obi_ctx.h>
++
++#undef bpf_map_lookup_elem
++#undef bpf_map_update_elem
++#undef bpf_map_delete_elem
++#undef bpf_probe_read_user
++
++enum { k_thread = 0x0000002a00000042ULL };
++
++static const go_addr_key_t g_key = {.pid = 0x2a, .addr = 0x1000};
++static const go_addr_key_t other_g_key = {.pid = 0x2a, .addr = 0x2000};
++
++static int failures;
++
++static void check(int ok, const char *message) {
++    if (!ok) {
++        fprintf(stderr, "FAIL: %s\n", message);
++        failures++;
++    }
++}
++
++static void check_u64(u64 expected, u64 actual, const char *message) {
++    if (expected != actual) {
++        fprintf(stderr,
++                "FAIL: %s\n  expected %llu, got %llu\n",
++                message,
++                (unsigned long long)expected,
++                (unsigned long long)actual);
++        failures++;
++    }
++}
++
++static tp_info_t span(u64 id) {
++    tp_info_t tp = {0};
++    memset(tp.trace_id, 0xab, sizeof(tp.trace_id));
++    memcpy(tp.span_id, &id, sizeof(id));
++    return tp;
++}
++
++// span id the thread's logs would be attributed to; 0 when there is none
++static u64 thread_span(void) {
++    const u64 key = k_thread;
++    const obi_ctx_info_t *ctx = test_map_lookup(&traces_ctx_v1, &key);
++    u64 id = 0;
++    if (ctx) {
++        memcpy(&id, ctx->span_id, sizeof(id));
++    }
++    return id;
++}
++
++static obi_ctx_stack_t *stack(void) {
++    return test_map_lookup(&obi_ctx_stacks, &g_key);
++}
++
++static void begin(u8 kind, tp_info_t tp, u32 stack_off) {
++    go_obi_ctx__begin(&g_key, kind, &tp, stack_off);
++}
++
++static void end(u8 kind, tp_info_t tp) {
++    go_obi_ctx__end(&g_key, kind, &tp);
++}
++
++static void end_unknown(u8 kind) {
++    go_obi_ctx__end(&g_key, kind, NULL);
++}
++
++static void reset(void) {
++    for (int i = 0; i < k_max_maps; i++) {
++        for (int e = 0; e < k_max_entries; e++) {
++            mock_maps[i].entries[e].used = 0;
++        }
++    }
++    // the per-cpu scratch slot always exists
++    const u32 zero = 0;
++    const obi_ctx_stack_t empty = {0};
++    test_map_update(&obi_ctx_stack_scratch_storage, &zero, &empty, 0);
++    bpf_current_pid_tgid_value = k_thread;
++}
++
++static void test_begin_end_nesting(void) {
++    reset();
++    begin(k_obi_ctx_http_server, span(1), 100);
++    check_u64(1, thread_span(), "server begin sets the thread context");
++    begin(k_obi_ctx_sql, span(2), 200);
++    check_u64(2, thread_span(), "nested client begin takes over");
++    check_u64(2, stack()->depth, "nested client is a second frame");
++
++    end(k_obi_ctx_sql, span(2));
++    check_u64(1, thread_span(), "client end restores the server span");
++    end(k_obi_ctx_http_server, span(1));
++    check(stack() == NULL, "last end drops the stack");
++    check_u64(0, thread_span(), "last end clears the thread context");
++}
++
++static void test_stack_growth_restart_refreshes_frame(void) {
++    reset();
++    begin(k_obi_ctx_kafka_produce, span(3), 300);
++    // Go grew the stack and restarted the function: same depth, new span id
++    begin(k_obi_ctx_kafka_produce, span(4), 300);
++    check_u64(1, stack()->depth, "restart does not add a frame");
++    check_u64(4, thread_span(), "restart updates the span");
++
++    end(k_obi_ctx_kafka_produce, span(4));
++    check(stack() == NULL, "one end closes the restarted span");
++    check_u64(0, thread_span(), "nothing stale is left on the thread");
++}
++
++static void test_same_kind_nesting_keeps_both(void) {
++    reset();
++    begin(k_obi_ctx_http_server, span(5), 100);
++    begin(k_obi_ctx_sql, span(6), 200);
++    begin(k_obi_ctx_sql, span(7), 260);
++    check_u64(3, stack()->depth, "a deeper same-kind call is a new frame");
++
++    end(k_obi_ctx_sql, span(7));
++    check_u64(6, thread_span(), "inner end restores the outer SQL span");
++    // the inner query overwrote the outer one's map entry: its end has no tp
++    end_unknown(k_obi_ctx_sql);
++    check_u64(5, thread_span(), "outer end by kind restores the server span");
++}
++
++static void test_server_begin_replaces_and_unwinds(void) {
++    reset();
++    begin(k_obi_ctx_http_server, span(8), 100);
++    begin(k_obi_ctx_sql, span(9), 200);
++    // the SQL return was never seen; a new request starts on this goroutine
++    begin(k_obi_ctx_http_server, span(10), 100);
++    check_u64(1, stack()->depth, "new request drops the stale client frame");
++    check_u64(10, thread_span(), "new request owns the thread context");
++
++    go_obi_ctx__resume(k_thread, &g_key);
++    check_u64(10, thread_span(), "rescheduling keeps the new request");
++}
++
++static void test_overflow_counts_each_span_once(void) {
++    reset();
++    begin(k_obi_ctx_http_server, span(11), 100);
++    begin(k_obi_ctx_sql, span(12), 210);
++    begin(k_obi_ctx_sql, span(13), 220);
++    begin(k_obi_ctx_sql, span(14), 230);
++    check_u64(k_obi_ctx_max_depth, stack()->depth, "stack is full");
++
++    begin(k_obi_ctx_sql, span(15), 240);
++    check_u64(1, stack()->overflow[k_obi_ctx_sql], "fifth span is counted, not stored");
++    check_u64(15, thread_span(), "unstored span is still the current one");
++    // stack growth restart of the unstored span
++    begin(k_obi_ctx_sql, span(16), 240);
++    check_u64(
++        1, stack()->overflow[k_obi_ctx_sql], "restart of an unstored span is not counted again");
++    begin(k_obi_ctx_sql, span(17), 250);
++    check_u64(2, stack()->overflow[k_obi_ctx_sql], "a deeper unstored span is counted");
++
++    end(k_obi_ctx_sql, span(17));
++    check_u64(
++        1, stack()->overflow[k_obi_ctx_sql], "unknown end while overflowed consumes one count");
++    check_u64(14, thread_span(), "and falls back to the deepest stored span");
++    end_unknown(k_obi_ctx_sql);
++    check_u64(0, stack()->overflow[k_obi_ctx_sql], "end without tp also consumes the count");
++    check_u64(k_obi_ctx_max_depth, stack()->depth, "and does not pop a stored frame");
++
++    end(k_obi_ctx_sql, span(14));
++    check_u64(13, thread_span(), "stored spans unwind normally afterwards");
++    end_unknown(k_obi_ctx_sql);
++    check_u64(12, thread_span(), "end by kind pops the newest SQL frame");
++    end(k_obi_ctx_sql, span(12));
++    end(k_obi_ctx_http_server, span(11));
++    check(stack() == NULL, "stack is gone once everything ended");
++}
++
++static void test_sibling_after_unstored_end_is_counted(void) {
++    reset();
++    begin(k_obi_ctx_http_server, span(18), 100);
++    begin(k_obi_ctx_sql, span(19), 210);
++    begin(k_obi_ctx_sql, span(20), 220);
++    begin(k_obi_ctx_sql, span(21), 230);
++    begin(k_obi_ctx_sql, span(22), 240);
++    begin(k_obi_ctx_sql, span(23), 250);
++    check_u64(2, stack()->overflow[k_obi_ctx_sql], "two unstored spans");
++
++    end(k_obi_ctx_sql, span(23));
++    // a second query at the same depth as the one that just ended
++    begin(k_obi_ctx_sql, span(24), 250);
++    check_u64(2, stack()->overflow[k_obi_ctx_sql], "a sibling after an end is a new span");
++    end(k_obi_ctx_sql, span(24));
++    end(k_obi_ctx_sql, span(22));
++    check_u64(0, stack()->overflow[k_obi_ctx_sql], "all unstored spans ended");
++    check_u64(k_obi_ctx_max_depth, stack()->depth, "no stored frame was popped");
++}
++
++static void test_unknown_end_without_overflow_is_a_noop(void) {
++    reset();
++    begin(k_obi_ctx_http_server, span(25), 100);
++    // e.g. ClientConn.Close on a goroutine with no gRPC client span
++    end_unknown(k_obi_ctx_grpc_client);
++    check_u64(1, stack()->depth, "nothing was popped");
++    check_u64(25, thread_span(), "the server span stays current");
++}
++
++static void test_unrelated_end_keeps_overflow_accounting(void) {
++    reset();
++    begin(k_obi_ctx_http_server, span(27), 100);
++    begin(k_obi_ctx_sql, span(28), 210);
++    begin(k_obi_ctx_sql, span(29), 220);
++    begin(k_obi_ctx_sql, span(30), 230);
++    begin(k_obi_ctx_sql, span(31), 240);
++    check_u64(1, stack()->overflow[k_obi_ctx_sql], "fifth span overflows");
++
++    // ClientConn.Close while overflowed: no gRPC client span exists here
++    end_unknown(k_obi_ctx_grpc_client);
++    check_u64(1, stack()->overflow[k_obi_ctx_sql], "an unrelated end must not consume the count");
++    check_u64(k_obi_ctx_max_depth, stack()->depth, "an unrelated end must not pop a frame");
++    check_u64(31, thread_span(), "the unstored span is still current");
++    go_obi_ctx__resume(k_thread, &g_key);
++    check_u64(31, thread_span(), "and stays current across a reschedule");
++
++    // stack growth restart of the unstored span, after the unrelated end
++    begin(k_obi_ctx_sql, span(32), 240);
++    check_u64(1, stack()->overflow[k_obi_ctx_sql], "the restart marker survived the unrelated end");
++    check_u64(32, thread_span(), "the restarted span is current");
++
++    end_
+[truncated]
+

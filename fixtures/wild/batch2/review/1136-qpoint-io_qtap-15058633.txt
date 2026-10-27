@@ -1,0 +1,20 @@
+repo: qpoint-io/qtap
+commit: 150586333f1593a3b0e5ddd885c7415b1808fd16
+rank: 1136
+
+Fixes unbounded eBPF verifier check (#258)
+
+Resolves error:
+R2 unbounded memory access, use 'var &= const' or 'if (var < const)'
+
+--- bpf/tap/protocol.bpf.c
+@@ -115,6 +115,8 @@ static bool capture_tls_server_hello(struct socket_tls_server_hello_event *hands
+ 			return false;
+ 		}
+ 
++		total_size &= (MAX_MSG_SIZE - 1);
++
+ 		// Read the entire handshake into our buffer
+ 		if (buf_read((char *)handshake->data, total_size, buf_info, 0) == 0) {
+ 			return false;
+

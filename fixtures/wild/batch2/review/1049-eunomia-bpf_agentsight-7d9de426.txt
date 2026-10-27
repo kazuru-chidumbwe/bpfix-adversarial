@@ -1,0 +1,27 @@
+repo: eunomia-bpf/agentsight
+commit: 7d9de426d85dc233dc49ce78f30442cfbf176333
+rank: 1049
+
+ix the issue where the eBPF verifier rejects the probe_SSL_write_ex_exit (#21)
+
+function with 'R2 min value is negative' error when the collector attempts
+to load the eBPF program.
+
+Co-authored-by: lipeng hao <lipenghao@qingteng.cn>
+
+--- bpf/sslsniff.bpf.c
+@@ -236,7 +236,12 @@ static int ex_SSL_exit(struct pt_regs *ctx, int rw, int len) {
+     data->buf_size = 0;
+     data->rw = rw;
+     data->is_handshake = false;
+-    u32 buf_copy_size = min((size_t)MAX_BUF_SIZE, (size_t)len);
++    
++    /* Explicit bounds clamping to satisfy eBPF verifier
++     * Use bitmask first to ensure value range, then clamp to actual max */
++    u32 buf_copy_size = (u32)len & 0xFFFFF;  /* Mask to 20 bits (1MB-1) */
++    if (buf_copy_size > MAX_BUF_SIZE)
++        buf_copy_size = MAX_BUF_SIZE;
+ 
+     bpf_get_current_comm(&data->comm, sizeof(data->comm));
+ 
+

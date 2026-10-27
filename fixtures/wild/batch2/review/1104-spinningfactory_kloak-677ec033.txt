@@ -1,0 +1,418 @@
+repo: spinningfactory/kloak
+commit: 677ec033aa139ccb2fb2040bb6dba2a18969a9eb
+rank: 1104
+
+fix(ebpf): load tc_ghash_update on Linux 7.2 (#354)
+
+* fix(ebpf): load tc_ghash_update on Linux 7.2
+
+Since Linux 7.2 the controller exits at startup, v0.2.0 and main alike:
+the verifier rejects tc_ghash_update with "R4 unbounded memory access".
+7.2 keeps a constant added to a pointer in its variable bounds instead of
+a fixed offset, and a negative constant reads as an unsigned bound of
+U64_MAX. gf128_mul_iter's shift loop (v[j] = v[j] >> 1 | v[j - 1] << 7,
+j from 15 down) was compiled to a pointer that steps down from mul_v by
+-1, -2, ..., so its second pass was rejected, though every byte it reads
+is in the map value. 7.3-rc3 has the same check.
+
+The step now lives in helpers.h as gf128_mul_step, with the loop fully
+unrolled so every index is a constant. The XOR into z is masked rather
+than a branch on the bit: with the branch, clang loads all of v ahead of
+it and spills it, taking the callback's stack frame from 8 bytes to 144.
+The reduction stays a branch; without one the callback has nowhere for
+7.2's verifier to prune repeated visits, which cost it 60K more
+instructions. gf128_mul and gf128_mul_ws use the same step, so the
+userspace tests now cover what BPF runs, and a GCM test case 2 known
+answer checks the reduction, which the algebraic tests could not.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+* perf(ebpf): build the GHASH block delta without a branch per byte
+
+On Linux 7.2 the verifier walked 361K instructions of tc_ghash_update
+(2.6K on 6.8), 99% of them in ghash_block_iter's block delta loop: two
+comparisons per byte against patch bounds it does not know, 16 bytes, so
+the paths multiply and 7.2 no longer prunes them. BPF has no conditional
+set, so any comparison is a branch.
+
+ghash_block_delta (helpers.h) does the range check with arithmetic: d is
+pos - sec_off in 64 bits, and the byte is in the patch when d's top bit
+is clear and d - len's is set. The loop is unrolled so every out index is
+a constant, and barrier_var keeps each byte's arithmetic in its own
+iteration; without it clang computes all 16 up front and spills them,
+taking the callback's frame from 32 bytes to 248. The memset goes, since
+every byte is now written.
+
+tc_ghash_update now costs the verifier 2,701 instructions on 7.2 and
+1,786 on 6.8, with the same stack; it grows from 1,042 to 1,232
+instructions. A helper test checks the new code against the old loop for
+every patch length at every offset in the first 400 bytes, and at the
+edges, including offsets where the old u32 sec_end wrapped.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+* perf(ebpf): verify the SNI host copy once, not once per extension
+
+On Linux 7.2 the verifier walked 859K instructions of
+bpf_kprobe_tcp_sendmsg_sni (160K on 6.8), 86% of its 1M budget, and 86%
+of that in tls_parse_sni's host copy loop. name_off indexes buf, so the
+verifier tracks it precisely, and its range differs with the extension
+that held server_name: each of those paths walked the 64-byte copy on
+its own.
+
+tls_parse_sni now stores name_off to *host_len and reads it back through
+volatile before the copy, and the kprobe points host_len at the map
+value (s->st.len) instead of the stack. The verifier does not track map
+memory, so every path reaches the copy with the same unknown name_off,
+which is only used masked. *host_len is reset to 0 straight after, so
+the results are the same.
+
+The program now costs 166K instructions on 7.2 and 168K on 6.8, with 16
+bytes less stack.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+---------
+
+Co-authored-by: Claude Opus 5.5 <noreply@anthropic.com>
+
+--- pkg/ebpf/bpf/helpers.h
+@@ -25,6 +25,8 @@ typedef uint64_t __u64;
+ #endif
+ typedef uint16_t __u16;
+ typedef int int32_t;
++// libbpf's, from bpf_helpers.h.
++#define barrier_var(var) asm volatile("" : "+r"(var))
+ #endif
+ 
+ // Parse HTTP "Host: " header from a data buffer.
+@@ -125,30 +127,46 @@ HELPER_INLINE int is_kloak_prefix_huffman(const unsigned char *buf) {
+ // Reference: NIST SP 800-38D Section 6.3.
+ // ============================================================================
+ 
++// One of the 128 steps of a GF(2^128) multiply, for bit i of a (MSB-first:
++// bit 0 is the MSB of byte 0): z ^= v if the bit is set, then v = v * x, a
++// 1-bit right shift that folds the bit shifted out of v[15] back in as R.
++// Start with z = 0 and v = b; after steps 0..127, z = a * b.
++//
++// The loop is fully unrolled, so every index is a constant: left as a loop,
++// clang walks v with a pointer offset by a negative constant, which the
++// verifier rejects as an unbounded access since Linux 7.2 (it now keeps a
++// pointer's constant offset in its variable bounds). It is one pass with no
++// branch on the bit: with the branch, clang loads all of v ahead of it and
++// spills it, which takes the BPF callback's stack frame from 8 bytes to 144.
++// The reduction stays a branch, where the verifier can prune the callback's
++// repeated visits once i is dead: made branch-free too, it cost Linux 7.2's
++// verifier 60K more instructions in tc_ghash_update.
++HELPER_INLINE void gf128_mul_step(const __u8 a[16], __u8 v[16], __u8 z[16],
++                                  __u32 i) {
++  // The masks keep the index bounded for the verifier (i < 128 anyway).
++  __u8 mask = -(__u8)((a[(i >> 3) & 0xF] >> (7 - (i & 7))) & 1);
++  __u8 prev = 0;
++#pragma GCC unroll 16
++  for (int j = 0; j < 16; j++) {
++    __u8 cur = v[j];
++    z[j] ^= cur & mask;
++    v[j] = (cur >> 1) | (__u8)(prev << 7);
++    prev = cur;
++  }
++  if (prev & 1)
++    v[0] ^= 0xe1;
++}
++
+ // Multiply two 128-bit elements in GF(2^128) using the GHASH bit convention.
+ // result = a * b in GF(2^128) with reduction polynomial x^128 + x^7 + x^2 + x + 1.
+ HELPER_INLINE void gf128_mul(const __u8 a[16], const __u8 b[16], __u8 result[16]) {
+   __u8 v[16], z[16];
+-  int i, j;
+ 
+   __builtin_memset(z, 0, 16);
+   __builtin_memcpy(v, b, 16);
+ 
+-  for (i = 0; i < 128; i++) {
+-    // If bit i of a is set (MSB-first: bit 0 is the MSB of byte 0)
+-    if (a[i / 8] & ((__u8)0x80 >> (i % 8))) {
+-      for (j = 0; j < 16; j++)
+-        z[j] ^= v[j];
+-    }
+-    // Right-shift v by 1 bit (MSB-first convention)
+-    __u8 carry = v[15] & 1;
+-    for (j = 15; j > 0; j--)
+-      v[j] = (v[j] >> 1) | (v[j - 1] << 7);
+-    v[0] >>= 1;
+-    // If the shifted-out bit was 1, XOR with reduction polynomial
+-    if (carry)
+-      v[0] ^= 0xe1;
+-  }
++  for (__u32 i = 0; i < 128; i++)
++    gf128_mul_step(a, v, z, i);
+   __builtin_memcpy(result, z, 16);
+ }
+ 
+@@ -200,23 +218,11 @@ HELPER_INLINE void gf128_h_power_table(const __u8 h_powers[11][16],
+ // ws_v and ws_z must each be 16-byte buffers (e.g., fields in a per-CPU map).
+ HELPER_INLINE void gf128_mul_ws(const __u8 a[16], const __u8 b[16], __u8 result[16],
+                                  __u8 ws_v[16], __u8 ws_z[16]) {
+-  int i, j;
+-
+   __builtin_memset(ws_z, 0, 16);
+   __builtin_memcpy(ws_v, b, 16);
+ 
+-  for (i = 0; i < 128; i++) {
+-    if (a[i / 8] & ((__u8)0x80 >> (i % 8))) {
+-      for (j = 0; j < 16; j++)
+-        ws_z[j] ^= ws_v[j];
+-    }
+-    __u8 carry = ws_v[15] & 1;
+-    for (j = 15; j > 0; j--)
+-      ws_v[j] = (ws_v[j] >> 1) | (ws_v[j - 1] << 7);
+-    ws_v[0] >>= 1;
+-    if (carry)
+-      ws_v[0] ^= 0xe1;
+-  }
++  for (__u32 i = 0; i < 128; i++)
++    gf128_mul_step(a, ws_v, ws_z, i);
+   __builtin_memcpy(result, ws_z, 16);
+ }
+ 
+@@ -287,6 +293,36 @@ HELPER_INLINE void gf128_halve_to_h(__u64 lo, __u64 hi, __u8 out[16]) {
+   }
+ }
+ 
++// ghash_block_delta writes the XOR delta of GHASH block `block` (bytes
++// block * 16 .. block * 16 + 15 of the ciphertext; block is masked to 10
++// bits) to out:
++// byte i is xor_delta[pos - sec_off] when pos = block * 16 + i falls in the
++// patch [sec_off, sec_off + len), and 0 elsewhere. len is at most
++// SECRET_MAX_LEN.
++//
++// The range check is arithmetic, not a comparison: BPF has no conditional
++// set, so a comparison is a branch, and 16 of them against bounds the
++// verifier doesn't know made Linux 7.2's verifier walk ~320K instructions of
++// tc_ghash_update here. d is pos - sec_off in 64 bits, negative (top bit
++// set) when pos is before the patch; the byte is in the patch when d's top
++// bit is clear and d - len's is set. The loop is unrolled so every out index
++// is a constant (see gf128_mul_step), and barrier_var keeps each byte's
++// arithmetic in its own iteration: without it clang computes all 16 up
++// front and spills them, taking the callback's stack frame from 32 bytes to
++// 248.
++HELPER_INLINE void ghash_block_delta(const __u8 xor_delta[SECRET_MAX_LEN],
++                                     __u32 block, __u32 sec_off, __u32 len,
++                                     __u8 out[16]) {
++  __u64 start = (__u64)(block & 0x3FF) * 16 - sec_off;
++#pragma GCC unroll 16
++  for (int i = 0; i < 16; i++) {
++    __u64 d = start + i;
++    barrier_var(d);
++    __u8 in = (__u8)((~d & (d - len)) >> 63);
++    out[i] = xor_delta[d & (SECRET_MAX_LEN - 1)] & -in;
++  }
++}
++
+ // Kloak internal cipher type enum (not TLS cipher suite IDs).
+ // The cipher type is determined implicitly: successful H extraction = AES-GCM.
+ #define KLOAK_CIPHER_UNKNOWN 0
+@@ -459,7 +495,8 @@ HELPER_INLINE int sni_host_char_ok(__u8 c) {
+ // *host_len. Returns SNI_NOT_CLIENT_HELLO when the buffer does not start with
+ // a handshake record carrying a ClientHello, otherwise an SNI_STATUS_* value.
+ // An ECH extension wins over a readable server_name: with ECH the outer SNI
+-// is the front end's public name, not the host the request is for.
++// is the front end's public name, not the host the request is for. In BPF,
++// host_len must point into map memory, not the stack (see the copy below).
+ HELPER_INLINE __u32 tls_parse_sni(const __u8 *buf, __u32 len, char *host_out,
+                                   __u32 *host_len) {
+   *host_len = 0;
+@@ -561,6 +598,17 @@ HELPER_INLINE __u32 tls_parse_sni(const __u8 *buf, __u32 len, char *host_out,
+   if (!found)
+     return SNI_STATUS_ABSENT;
+ 
++  // Park name_off in *host_len and read it back, for the BPF verifier: the
++  // BPF caller points host_len into map memory, whose contents it does not
++  // track, so name_off comes back with no range. Otherwise it is tracked
++  // precisely (it indexes buf), with a range that differs with the
++  // extension that held server_name, and each of those paths walks the copy
++  // loop below on its own: 86% of the 859K instructions Linux 7.2's
++  // verifier spent on bpf_kprobe_tcp_sendmsg_sni.
++  *(volatile __u32 *)host_len = name_off;
++  name_off = *(volatile __u32 *)host_len;
++  *host_len = 0;
++
+   for (__u32 j = 0; j < MAX_HOST_LEN; j++) {
+     if (j >= n)
+       break;
+
+--- pkg/ebpf/bpf/helpers_test.c
+@@ -265,6 +265,32 @@ static void test_gf128_mul_known_vector(void) {
+   assert(bytes_equal(h_cubed_1, h_cubed_2, 16));
+ }
+ 
++static void test_gf128_mul_gcm_vector(void) {
++  // GCM spec test case 2 (K = 0, P = 0^128, IV = 0^96): X1 = C * H, and
++  // GHASH = (X1 ^ len(A)||len(C)) * H, which is T ^ E(K, Y0). Checks the
++  // reduction too, which the algebraic tests above can't tell apart.
++  __u8 h[16], c[16], x1[16], ghash[16], result[16], ws_v[16], ws_z[16];
++  hex_to_bytes("66e94bd4ef8a2c3b884cfa59ca342b2e", h, 16);
++  hex_to_bytes("0388dace60b6a392f328c2b971b2fe78", c, 16);
++  hex_to_bytes("5e2ec746917062882c85b0685353deb7", x1, 16);
++  hex_to_bytes("f38cbb1ad69223dcc3457ae5b6b0f885", ghash, 16);
++
++  gf128_mul(c, h, result);
++  assert(bytes_equal(result, x1, 16));
++  gf128_mul_ws(c, h, result, ws_v, ws_z);
++  assert(bytes_equal(result, x1, 16));
++
++  // The steps one by one, as the BPF gf128_mul_iter callback runs them.
++  __builtin_memset(ws_z, 0, 16);
++  __builtin_memcpy(ws_v, h, 16);
++  __u8 a[16];
++  __builtin_memcpy(a, x1, 16);
++  a[15] ^= 0x80; // len(A) || len(C) = 0 || 128
++  for (__u32 i = 0; i < 128; i++)
++    gf128_mul_step(a, ws_v, ws_z, i);
++  assert(bytes_equal(ws_z, ghash, 16));
++}
++
+ static void test_gf128_mul_commutativity(void) {
+   __u8 a[16], b[16], ab[16], ba[16];
+   hex_to_bytes("0388dace60b6a392f328c2b971b2fe78", a, 16);
+@@ -577,6 +603,60 @@ static void test_gf128_halve_to_h_edges(void) {
+   }
+ }
+ 
++// ============================================================================
++// ghash_block_delta
++// ============================================================================
++
++// The block delta as ghash_block_iter built it with a branch per byte.
++static void block_delta_branchy(const __u8 *xor_delta, __u32 b, __u32 sec_off,
++                                __u32 len, __u8 out[16]) {
++  memset(out, 0, 16);
++  __u32 sec_end = sec_off + len;
++  for (__u32 i = 0; i < 16; i++) {
++    __u32 pos = (b & 0x3FF) * 16 + i;
++    if (pos >= sec_off && pos < sec_end)
++      out[i] = xor_delta[(pos - sec_off) & (SECRET_MAX_LEN - 1)];
++  }
++}
++
++static void check_block_delta(const __u8 *xor_delta, __u32 b, __u32 sec_off,
++                              __u32 len) {
++  __u8 want[16], got[16];
++  block_delta_branchy(xor_delta, b, sec_off, len, want);
++  memset(got, 0xAA, 16);
++  ghash_block_delta(xor_delta, b, sec_off, len, got);
++  if (memcmp(want, got, 16) != 0) {
++    printf("\n    block=%u sec_off=%u len=%u", b, sec_off, len);
++    print_hex("want", want, 16);
++    print_hex("got ", got, 16);
++  }
++  assert(memcmp(want, got, 16) == 0);
++}
++
++static void test_ghash_block_delta(void) {
++  __u8 xor_delta[SECRET_MAX_LEN];
++  for (int i = 0; i < SECRET_MAX_LEN; i++)
++    xor_delta[i] = (__u8)(i * 37 + 1); // no zero bytes, so a miss shows
++
++  // Every patch (len 1..SECRET_MAX_LEN) at every offset in the first 400
++  // bytes, against every block it can touch and its neighbours.
++  for (__u32 len = 1; len <= SECRET_MAX_LEN; len++)
++    for (__u32 sec_off = 0; sec_off < 400; sec_off++)
++      for (__u32 b = 0; b < 35; b++)
++        check_block_delta(xor_delta, b, sec_off, len);
++
++  // The last blocks, a block number past the 0x3FF mask, and offsets so
++  // large that the old u32 sec_end wrapped.
++  static const __u32 offs[] = {16352, 16367, 16368, 16383, 16384,
++                               0xFFFFFFFFu - SECRET_MAX_LEN, 0xFFFFFFF0u,
++                               0xFFFFFFFFu};
++  static const __u32 blocks[] = {0, 1, 1021, 1022, 1023, 1024, 1025, 0xFFFFFFFFu};
++  for (unsigned o = 0; o < sizeof(offs) / sizeof(offs[0]); o++)
++    for (unsigned k = 0; k < sizeof(blocks) / sizeof(blocks[0]); k++)
++      for (__u32 len = 1; len <= SECRET_MAX_LEN; len++)
++        check_block_delta(xor_delta, blocks[k], offs[o], len);
++}
++
+ // ============================================================================
+ // main
+ // ============================================================================
+@@ -1393,6 +1473,7 @@ int main(void) {
+   RUN_TEST(test_gf128_mul_identity);
+   RUN_TEST(test_gf128_mul_zero);
+   RUN_TEST(test_gf128_mul_known_vector);
++  RUN_TEST(test_gf128_mul_gcm_vector);
+   RUN_TEST(test_gf128_mul_commutativity);
+   RUN_TEST(test_gf128_h_power_1);
+   RUN_TEST(test_gf128_h_power_2);
+@@ -1419,6 +1500,9 @@ int main(void) {
+   RUN_TEST(test_gf128_halve_to_h_aes_keys);
+   RUN_TEST(test_gf128_halve_to_h_edges);
+ 
++  printf("ghash_block_delta:\n");
++  RUN_TEST(test_ghash_block_delta);
++
+   printf("tls_parse_sni (SNI check):\n");
+   RUN_TEST(test_sni_go);
+   RUN_TEST(test_sni_node);
+
+--- pkg/ebpf/bpf/tls_uprobe.c
+@@ -1778,18 +1778,7 @@ static int gf128_mul_iter(__u32 i, void *_unused) {
+   if (!w)
+     return 1; // stop
+ 
+-  __u32 byte_idx = (i >> 3) & 0xF;  // i/8 clamped to [0,15] for verifier
+-  __u32 bit_idx = i & 7;            // i%8 clamped to [0,7]
+-  if (w->mul_a[byte_idx] & ((__u8)0x80 >> bit_idx)) {
+-    for (int j = 0; j < 16; j++)
+-      w->mul_z[j] ^= w->mul_v[j];
+-  }
+-  __u8 carry = w->mul_v[15] & 1;
+-  for (int j = 15; j > 0; j--)
+-    w->mul_v[j] = (w->mul_v[j] >> 1) | (w->mul_v[j - 1] << 7);
+-  w->mul_v[0] >>= 1;
+-  if (carry)
+-    w->mul_v[0] ^= 0xe1;
++  gf128_mul_step(w->mul_a, w->mul_v, w->mul_z, i);
+   return 0;
+ }
+ 
+@@ -1896,16 +1885,8 @@ static int ghash_block_iter(__u32 block_idx, void *_unused) {
+     return 1;
+ 
+   // Build 16-byte block delta.
+-  __builtin_memset(w->block_delta, 0, 16);
+-  __u32 sec_off = w->ghash_secret_offset;
+-  __u32 sec_end = sec_off + w->ghash_patch_len;
+-  for (__u32 i = 0; i < 16; i++) {
+-    __u32 pos = (b & 0x3FF) * 16 + i;
+-    if (pos >= sec_off && pos < sec_end) {
+-      __u32 si = (pos - sec_off) & (SECRET_MAX_LEN - 1);
+-      w->block_delta[i] = w->ghash_xor_delta[si];
+-    }
+-  }
++  ghash_block_delta(w->ghash_xor_delta, b, w->ghash_secret_offset,
++                    w->ghash_patch_len, w->block_delta);
+ 
+   // Compute H^power via bpf_loop (no inline functions — avoids stale w).
+   __u32 power = w->ghash_ct_blocks - b + 1;
+@@ -2123,8 +2104,9 @@ int bpf_kprobe_tcp_sendmsg_sni(void *ctx) {
+   if (bpf_probe_read_user(s->buf, n, (void *)base) < 0)
+     return 0;
+   __builtin_memset(&s->st, 0, sizeof(s->st));
+-  __u32 host_len = 0;
+-  __u32 status = tls_parse_sni(s->buf, n, s->st.sni, &host_len);
++  // The host length goes straight to the map value, not the stack: see the
++  // end of tls_parse_sni.
++  __u32 status = tls_parse_sni(s->buf, n, s->st.sni, &s->st.len);
+ 
+   if (cur_status == SNI_STATUS_SEEN) {
+     // Only a fully valid ClientHello can change a decided connection: an
+@@ -2143,7 +2125,6 @@ int bpf_kprobe_tcp_sendmsg_sni(void *ctx) {
+   if (status == SNI_NOT_CLIENT_HELLO)
+     status = SNI_STATUS_MALFORMED; // a handshake record, but not a ClientHello
+   s->st.status = status;
+-  s->st.len = host_len;
+   bpf_map_update_elem(&sni_state, &sk_key, &s->st, BPF_ANY);
+   dbg_inc(DBG_SNI_CAPTURED);
+   return 0;
+

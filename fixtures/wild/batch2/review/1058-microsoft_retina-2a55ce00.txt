@@ -1,0 +1,191 @@
+repo: microsoft/retina
+commit: 2a55ce008147619e730c453b9115dfd356a8a350
+rank: 1058
+
+fix(dropreason): handle inet_csk_accept signature change on Linux 6.10+ (#2206)
+
+## Problem
+
+Closes #1906
+
+Linux 6.10-rc1
+([torvalds/linux@92ef0fd](https://github.com/torvalds/linux/commit/92ef0fd55ac80dfc2e4654edfe5d1ddfa6e070fe))
+changed the signature of `inet_csk_accept` from:
+
+```c
+struct sock *inet_csk_accept(struct sock *sk, int flags, int *err, bool kern)
+```
+
+to:
+
+```c
+struct sock *inet_csk_accept(struct sock *sk, struct proto_accept_arg *arg)
+```
+
+This causes the BPF verifier to reject the Retina dropreason `fexit`
+program on kernels ≥ 6.10 because it declares 4 typed parameters for a
+function that now only has 2. As a result, the dropreason plugin fails
+to load on any node running kernel 6.10+.
+
+## Solution
+
+Use **BPF CO-RE** (Compile Once – Run Everywhere) to handle both the old
+and new signatures at runtime:
+
+1. **CO-RE flavor struct** — Define `proto_accept_arg___new` with
+`preserve_access_index`. The `___new` suffix is stripped during BTF type
+lookup, so `bpf_core_type_exists()` checks for `proto_accept_arg` in the
+running kernel's BTF.
+
+2. **kprobe handler** — Remove typed params from
+`BPF_KPROBE(inet_csk_accept)`. Use `bpf_core_type_exists()` to branch:
+- **6.10+**: read `err` as an inline field offset inside
+`proto_accept_arg` (param 2)
+   - **Pre-6.10**: read `err` directly from register param 3
+
+3. **fexit handler** — Remove typed params from
+`BPF_PROG(inet_csk_accept_fexit)` and read `retsk` from the raw tracing
+context at the correct slot:
+   - **6.10+**: 2 params → `retsk` at `ctx[2]`
+   - **Pre-6.10**: 4 params → `retsk` at `ctx[4]`
+
+Each branch is kept fully self-contained (no merging into a
+ternary/select) to avoid a verifier rejection on variable-offset ctx
+access.
+
+4. **Correctness fix** — The old fexit handler unconditionally called
+`update_metrics_map_basic(TCP_ACCEPT_BASIC, ...)` even when the accept
+succeeded (`retsk != NULL`). The new code only reports a drop metric
+when `retsk` is `NULL`, matching the intended "failed accept" semantics.
+
+## Validation
+
+Tested on an Azure VM running Ubuntu 24.04 with HWE kernel
+**6.17.0-1011-azure** using a kind cluster:
+
+- All eBPF programs attach successfully, including
+`inet_csk_accept_fexit`
+- Drop reason metrics are collected and exposed:
+
+<img width="1351" height="404" alt="image"
+src="https://github.com/user-attachments/assets/6eaae162-e453-4497-a90f-b11adda62de0"
+/>
+
+## Related Issue
+
+Fixes #1906
+
+## Checklist
+
+- [x] I have read the [contributing
+documentation](https://retina.sh/docs/Contributing/overview).
+- [x] I signed and signed-off the commits (`git commit -S -s ...`). See
+[this
+documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification)
+on signing commits.
+- [x] I have correctly attributed the author(s) of the code.
+- [x] I have tested the changes locally.
+- [x] I have followed the project's style guidelines.
+- [ ] I have updated the documentation, if necessary.
+- [ ] I have added tests, if applicable.
+
+## Screenshots (if applicable) or Testing Completed
+
+(See above)
+
+## Additional Notes
+
+- We need to improve the testing infra / automation to test different
+kernels, created #2205
+---
+
+Please refer to the [CONTRIBUTING.md](../CONTRIBUTING.md) file for more
+information on how to contribute to this project.
+
+Signed-off-by: Simone Rodigari <srodigari@microsoft.com>
+
+--- pkg/plugin/dropreason/_cprog/drop_reason.c
+@@ -12,6 +12,19 @@
+ #include "dynamic.h"
+ #include "retina_filter.c"
+ 
++// CO-RE flavor struct for Linux 6.10+ where inet_csk_accept changed signature from
++// (struct sock *sk, int flags, int *err, bool kern) to
++// (struct sock *sk, struct proto_accept_arg *arg).
++// The ___new suffix is stripped during BTF type lookup, so bpf_core_type_exists()
++// checks for 'proto_accept_arg' in the running kernel's BTF.
++// https://github.com/torvalds/linux/commit/92ef0fd55ac80dfc2e4654edfe5d1ddfa6e070fe
++struct proto_accept_arg___new {
++    int flags;
++    int err;
++    int is_empty;
++    bool kern;
++} __attribute__((preserve_access_index));
++
+ char __license[] SEC("license") = "Dual MIT/GPL";
+ 
+ #define ETH_P_IP 0x0800
+@@ -358,15 +371,28 @@ int BPF_PROG(tcp_v4_connect_fexit, struct sock *sk, struct sockaddr *uaddr, int
+ }
+ 
+ SEC("kprobe/inet_csk_accept")
+-int BPF_KPROBE(inet_csk_accept, struct sock *sk, int flags, int *err, bool kern)
++int BPF_KPROBE(inet_csk_accept)
+ {
+     /*
+     This function will save the reference value to error.
+     in kretprobe we look at the value we got back in that reference
+     */
+     __u64 pid_tgid = bpf_get_current_pid_tgid();
+     __u32 pid = pid_tgid >> 32;
+-    __u64 err_ptr = (__u64)err;
++
++    __u64 err_ptr = 0;
++
++    // Linux 6.10+: inet_csk_accept(struct sock *sk, struct proto_accept_arg *arg)
++    // err is an inline int field inside proto_accept_arg.
++    if (bpf_core_type_exists(struct proto_accept_arg___new)) {
++        struct proto_accept_arg___new *arg = (struct proto_accept_arg___new *)PT_REGS_PARM2(ctx);
++        err_ptr = (__u64)&arg->err;
++    } else {
++        // Pre-6.10: inet_csk_accept(struct sock *sk, int flags, int *err, bool kern)
++        int *err = (int *)PT_REGS_PARM3(ctx);
++        err_ptr = (__u64)err;
++    }
++
+     bpf_map_update_elem(&retina_dropreason_accept_pids, &pid, &err_ptr, BPF_ANY);
+     return 0;
+ }
+@@ -415,17 +441,23 @@ int BPF_KRETPROBE(inet_csk_accept_ret, struct sock *sk)
+ }
+ 
+ SEC("fexit/inet_csk_accept")
+-int BPF_PROG(inet_csk_accept_fexit, struct sock *sk, int flags, int *err, struct sock *retsk)
++int BPF_PROG(inet_csk_accept_fexit)
+ {
+-    if (retsk != NULL) {
+-        return 0;
++    // Each branch must be fully self-contained so the compiler generates a real
++    // branch instruction. If merged into a select, the verifier rejects the
++    // variable-offset ctx access ("dereference of modified ctx ptr").
++    //
++    // fexit ctx layout: [param1, param2, ..., paramN, return_value]
++    // Linux 6.10+: 2 params (sk, arg) -> retsk at ctx[2]
++    // Pre-6.10:    4 params (sk, flags, err, kern) -> retsk at ctx[4]
++    if (bpf_core_type_exists(struct proto_accept_arg___new)) {
++        if ((struct sock *)ctx[2] == NULL)
++            update_metrics_map_basic(TCP_ACCEPT_BASIC, 0, 0);
++    } else {
++        if ((struct sock *)ctx[4] == NULL)
++            update_metrics_map_basic(TCP_ACCEPT_BASIC, 0, 0);
+     }
+ 
+-    // TODO
+-    // Pass 0 packet length - get_packet_from_sock above doesn't obtain this value, either.
+-    // Pass 0 return value; verifier failure, same as buggy kprobe above.
+-    update_metrics_map_basic(TCP_ACCEPT_BASIC, 0, 0); 
+-
+     return 0;
+ }
+ 
+

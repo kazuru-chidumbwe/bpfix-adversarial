@@ -1,0 +1,21 @@
+repo: projectcalico/calico
+commit: 447f11c4cc17711bd27a0ba52fc32abf7146cbfe
+rank: 1088
+
+[BPF] 6.1 verifier struggles with zero store
+
+We will never hit the condition of having zero sized fragment. So we can
+make the length explicitly size 1 as the value is not going to be used.
+But it makes verifier happy.
+
+--- felix/bpf-gpl/ip_v4_fragment.h
+@@ -72,7 +72,7 @@ static long frag_to_skb(__u64 i, void *_ctx)
+ 	__u16 len = v->len;
+ 
+ 	if (len == 0) {
+-		return 1;
++		len = 1; /* prevent verifier from complaining about zero-length copy */
+ 	}
+ 
+ 	barrier(); /* verifier needs some help with recognizing that len is non-zero */
+

@@ -1,0 +1,202 @@
+repo: xdp-project/bpf-examples
+commit: d1cc8a27e75498b6c06ee67fd66bf37b05900f80
+rank: 1095
+
+port track tcp payload offset as scalar in xdp_synproxy
+
+commit 977bc146d4eb7070118d8a974919b33bb52732b4
+Author: Eduard Zingerman <eddyz87@gmail.com>
+Date:   Tue Nov 21 04:06:51 2023 +0200
+
+    selftests/bpf: track tcp payload offset as scalar in xdp_synproxy
+
+    This change prepares syncookie_{tc,xdp} for update in callbakcs
+    verification logic. To allow bpf_loop() verification converge when
+    multiple callback itreations are considered:
+    - track offset inside TCP payload explicitly, not as a part of the
+      pointer;
+    - make sure that offset does not exceed MAX_PACKET_OFF enforced by
+      verifier;
+    - make sure that offset is tracked as unbound scalar between
+      iterations, otherwise verifier won't be able infer that bpf_loop
+      callback reaches identical states.
+
+    Acked-by: Andrii Nakryiko <andrii@kernel.org>
+    Signed-off-by: Eduard Zingerman <eddyz87@gmail.com>
+    Link: https://lore.kernel.org/r/20231121020701.26440-2-eddyz87@gmail.com
+    Signed-off-by: Alexei Starovoitov <ast@kernel.org>
+
+without above commit, syncookie_xdp program failed on kernel 6.7
+with verifier error:
+"BPF program is too large. Processed 1000001 insn"
+
+Signed-off-by: Vincent Li <vincent.mc.li@gmail.com>
+
+--- xdp-synproxy/xdp_synproxy_kern.c
+@@ -61,6 +61,8 @@
+ #define DEFAULT_TTL 64
+ #define MAX_ALLOWED_PORTS 8
+ 
++#define MAX_PACKET_OFF 0xffff
++
+ #define swap(a, b) \
+ 	do { typeof(a) __tmp = (a); (a) = (b); (b) = __tmp; } while (0)
+ 
+@@ -179,69 +181,82 @@ static __always_inline __u32 tcp_ns_to_ts(__u64 ns)
+ 	return ns / (NSEC_PER_SEC / TCP_TS_HZ);
+ }
+ 
+-static __always_inline __u32 tcp_time_stamp_raw(void)
++static __always_inline __u32 tcp_clock_ms(void)
+ {
+ 	return tcp_ns_to_ts(tcp_clock_ns());
+ }
+ 
+ struct tcpopt_context {
+-	__u8 *ptr;
+-	__u8 *end;
++	void *data;
+ 	void *data_end;
+ 	__be32 *tsecr;
+ 	__u8 wscale;
+ 	bool option_timestamp;
+ 	bool option_sack;
++	__u32 off;
+ };
+ 
+-static int tscookie_tcpopt_parse(struct tcpopt_context *ctx)
++static __always_inline u8 *next(struct tcpopt_context *ctx, __u32 sz)
+ {
+-	__u8 opcode, opsize;
++	__u64 off = ctx->off;
++	__u8 *data;
+ 
+-	if (ctx->ptr >= ctx->end)
+-		return 1;
+-	if (ctx->ptr >= ctx->data_end)
+-		return 1;
++	/* Verifier forbids access to packet when offset exceeds MAX_PACKET_OFF */
++	if (off > MAX_PACKET_OFF - sz)
++		return NULL;
+ 
+-	opcode = ctx->ptr[0];
++	data = ctx->data + off;
++	barrier_var(data);
++	if (data + sz >= ctx->data_end)
++		return NULL;
+ 
+-	if (opcode == TCPOPT_EOL)
+-		return 1;
+-	if (opcode == TCPOPT_NOP) {
+-		++ctx->ptr;
+-		return 0;
+-	}
++	ctx->off += sz;
++	return data;
++}
+ 
+-	if (ctx->ptr + 1 >= ctx->end)
+-		return 1;
+-	if (ctx->ptr + 1 >= ctx->data_end)
++static int tscookie_tcpopt_parse(struct tcpopt_context *ctx)
++{
++	__u8 *opcode, *opsize, *wscale, *tsecr;
++	__u32 off = ctx->off;
++
++	opcode = next(ctx, 1);
++	if (!opcode)
+ 		return 1;
+-	opsize = ctx->ptr[1];
+-	if (opsize < 2)
++
++	if (*opcode == TCPOPT_EOL)
+ 		return 1;
++	if (*opcode == TCPOPT_NOP)
++		return 0;
+ 
+-	if (ctx->ptr + opsize > ctx->end)
++	opsize = next(ctx, 1);
++	if (!opsize || *opsize < 2)
+ 		return 1;
+ 
+-	switch (opcode) {
++	switch (*opcode) {
+ 	case TCPOPT_WINDOW:
+-		if (opsize == TCPOLEN_WINDOW && ctx->ptr + TCPOLEN_WINDOW <= ctx->data_end)
+-			ctx->wscale = ctx->ptr[2] < TCP_MAX_WSCALE ? ctx->ptr[2] : TCP_MAX_WSCALE;
++		wscale = next(ctx, 1);
++		if (!wscale)
++			return 1;
++		if (*opsize == TCPOLEN_WINDOW)
++			ctx->wscale = *wscale < TCP_MAX_WSCALE ? *wscale : TCP_MAX_WSCALE;
+ 		break;
+ 	case TCPOPT_TIMESTAMP:
+-		if (opsize == TCPOLEN_TIMESTAMP && ctx->ptr + TCPOLEN_TIMESTAMP <= ctx->data_end) {
++		tsecr = next(ctx, 4);
++		if (!tsecr)
++			return 1;
++		if (*opsize == TCPOLEN_TIMESTAMP) {
+ 			ctx->option_timestamp = true;
+ 			/* Client's tsval becomes our tsecr. */
+-			*ctx->tsecr = get_unaligned((__be32 *)(ctx->ptr + 2));
++			*ctx->tsecr = get_unaligned((__be32 *)tsecr);
+ 		}
+ 		break;
+ 	case TCPOPT_SACK_PERM:
+-		if (opsize == TCPOLEN_SACK_PERM)
++		if (*opsize == TCPOLEN_SACK_PERM)
+ 			ctx->option_sack = true;
+ 		break;
+ 	}
+ 
+-	ctx->ptr += opsize;
++	ctx->off = off + *opsize;
+ 
+ 	return 0;
+ }
+@@ -258,25 +273,30 @@ static int tscookie_tcpopt_parse_batch(__u32 index, void *context)
+ 
+ static __always_inline bool tscookie_init(struct tcphdr *tcp_header,
+ 					  __u16 tcp_len, __be32 *tsval,
+-					  __be32 *tsecr, void *data_end)
++					  __be32 *tsecr, void *data, void *data_end)
+ {
+ 	struct tcpopt_context loop_ctx = {
+-		.ptr = (__u8 *)(tcp_header + 1),
+-		.end = (__u8 *)tcp_header + tcp_len,
++		.data = data,
+ 		.data_end = data_end,
+ 		.tsecr = tsecr,
+ 		.wscale = TS_OPT_WSCALE_MASK,
+ 		.option_timestamp = false,
+ 		.option_sack = false,
++		/* Note: currently verifier would track .off as unbound scalar.
++		*       In case if verifier would at some point get smarter and
++		*       compute bounded value for this var, beware that it might
++		*       hinder bpf_loop() convergence validation.
++		*/
++		.off = (__u8 *)(tcp_header + 1) - (__u8 *)data,
+ 	};
+-	__u32 cookie;
++	u32 cookie;
+ 
+ 	bpf_loop(6, tscookie_tcpopt_parse_batch, &loop_ctx, 0);
+ 
+ 	if (!loop_ctx.option_timestamp)
+ 		return false;
+ 
+-	cookie = tcp_time_stamp_raw() & ~TSMASK;
++	cookie = tcp_clock_ms() & ~TSMASK;
+ 	cookie |= loop_ctx.wscale & TS_OPT_WSCALE_MASK;
+ 	if (loop_ctx.option_sack)
+ 		cookie |= TS_OPT_SACK;
+@@ -628,7 +648,7 @@ static __always_inline int syncookie_handle_syn(struct header_pointers *hdr,
+ 	cookie = (__u32)value;
+ 
+ 	if (tscookie_init((void *)hdr->tcp, hdr->tcp_len,
+-			  &tsopt_buf[0], &tsopt_buf[1], data_end))
++			  &tsopt_buf[0], &tsopt_buf[1], data, data_end))
+ 		tsopt = tsopt_buf;
+ 
+ 	/* Check that there is enough space for a SYNACK. It also covers
+

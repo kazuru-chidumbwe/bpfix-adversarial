@@ -1,0 +1,45 @@
+repo: gojue/ecapture
+commit: 782e4370a07d549cdd86845fe61f40b922636a77
+rank: 1010
+
+fix: invalid indirect read from stack (#694)
+
+The following verifier log is caused by uninitilized stack variable.
+
+```log
+couldn't init manager xxx verifier error:load program: permission denied:
+	0: R1=ctx(off=0,imm=0) R10=fp0
+	; struct sock *sk = (struct sock *)PT_REGS_PARM1(ctx);
+	0: (79) r2 = *(u64 *)(r1 +112)        ; R1=ctx(off=0,imm=0) R2_w=scalar()
+	1: (b7) r3 = 1                        ; R3_w=1
+	; conn.is_destroy = 1;
+	2: (73) *(u8 *)(r10 -8) = r3          ; R3_w=1 R10=fp0 fp-8=1
+	; conn.sock = (u64)sk;
+	3: (7b) *(u64 *)(r10 -16) = r2        ; R2_w=scalar() R10=fp0 fp-16_w=mmmmmmmm
+	4: (bf) r4 = r10                      ; R4_w=fp0 R10=fp0
+	;
+	5: (07) r4 += -64                     ; R4_w=fp-64
+	; bpf_perf_event_output(ctx, &connect_events, BPF_F_CURRENT_CPU, &conn,
+	6: (18) r2 = 0xffff8dd41e9c0000       ; R2_w=map_ptr(off=0,ks=4,vs=4,imm=0)
+	8: (18) r3 = 0xffffffff               ; R3_w=4294967295
+	10: (b7) r5 = 64                      ; R5_w=64
+	11: (85) call bpf_perf_event_output#25
+	invalid indirect read from stack R4 off -64+0 size 64
+	processed 10 insns (limit 1000000) max_states_per_insn 0 total_states 0 peak_states 0 mark_read 0
+```
+
+Signed-off-by: Leon Hwang <hffilwlqm@gmail.com>
+
+--- kern/openssl.h
+@@ -633,8 +633,9 @@ int retprobe_accept4(struct pt_regs* ctx) {
+ SEC("kprobe/tcp_v4_destroy_sock")
+ int probe_tcp_v4_destroy_sock(struct pt_regs* ctx) {
+     struct sock *sk = (struct sock *)PT_REGS_PARM1(ctx);
+-
+     struct connect_event_t conn;
++
++    __builtin_memset(&conn, 0, sizeof(conn));
+     conn.sock = (u64)sk;
+     conn.is_destroy = 1;
+ 
+

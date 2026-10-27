@@ -1,0 +1,18 @@
+repo: open-telemetry/opentelemetry-ebpf-instrumentation
+commit: fa8280b9ecfd2ca41a440dd7f5f5a64c186e4aab
+rank: 1118
+
+fix verifier error on 6.18 (#1071)
+
+--- bpf/pid/pid_helpers.h
+@@ -45,8 +45,7 @@ static __always_inline void task_pid(pid_info *pid) {
+     pid->user_pid = (u32)upid.nr;
+ 
+     // set PIDs namespace
+-    struct ns_common ns = BPF_CORE_READ(task, nsproxy, pid_ns_for_children, ns);
+-    pid->ns = (u32)ns.inum;
++    pid->ns = (u32)BPF_CORE_READ(task, nsproxy, pid_ns_for_children, ns.inum);
+ }
+ 
+ static __always_inline u32 get_task_tid() {
+

@@ -1,0 +1,54 @@
+repo: libbpf/bpftool
+commit: 8407ffa404447a010def45b18acf1b5cefb29811
+rank: 1089
+
+bpf: Add callx instruction to call bpf subprogs indirectly
+
+Introduce BPF_JMP | BPF_CALL | BPF_X (opcode 0x8d) 'callx dst_reg'
+instruction: indirect call of bpf subprog with address in dst_reg.
+That's the encoding LLVM emits for calls via function pointer.
+src_reg, off, imm are reserved and must be zero.
+
+dst_reg must be PTR_TO_FUNC produced by ld_imm64 BPF_PSEUDO_FUNC.
+check_ld_imm() allows it for static subprogs only, so callx cannot call
+global subprogs or the main prog. Since every callee has its address
+taken by ld_imm64, add_subprogs() and check_cfg() see all of them before
+the main pass, and might_sleep, changes_pkt_data, might_throw of
+the callee are already merged into the subprog that takes the address.
+
+reg->subprogno is the callee. Verify callx as a direct call of that
+static subprog: split check_func_call() into check_static_func_call()
+that is shared with new check_func_callx(). Different paths through
+the same callx may call different subprogs.
+
+Arithmetic on PTR_TO_FUNC is allowed, so check that the pointer wasn't
+modified. Allow callx while holding a lock like direct calls of static
+subprogs.
+
+The interpreter doesn't support callx. Set jit_required and add
+bpf_jit_supports_callx() for JITs to opt in. No JIT does yet, so callx
+is still rejected.
+
+Print it as "callx rN" in the verifier log and xlated dump.
+
+Adjust "invalid call insn1" test_verifier test that used opcode 0x8d as
+unknown opcode. It fails with "R0 !read_ok" now.
+
+Signed-off-by: Alexei Starovoitov <ast@kernel.org>
+Acked-by: Eduard Zingerman <eddyz87@gmail.com>
+Link: https://patch.msgid.link/20260924031042.1690890-6-alexei.starovoitov@gmail.com
+
+--- src/kernel/bpf/disasm.c
+@@ -350,7 +350,10 @@ void print_bpf_insn(const struct bpf_insn_cbs *cbs,
+ 		if (opcode == BPF_CALL) {
+ 			char tmp[64];
+ 
+-			if (insn->src_reg == BPF_PSEUDO_CALL) {
++			if (BPF_SRC(insn->code) == BPF_X) {
++				verbose(cbs->private_data, "(%02x) callx r%d",
++					insn->code, insn->dst_reg);
++			} else if (insn->src_reg == BPF_PSEUDO_CALL) {
+ 				verbose(cbs->private_data, "(%02x) call pc%s",
+ 					insn->code,
+ 					__func_get_name(cbs, insn,
+

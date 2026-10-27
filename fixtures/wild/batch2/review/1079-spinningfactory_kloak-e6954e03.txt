@@ -1,0 +1,649 @@
+repo: spinningfactory/kloak
+commit: e6954e0316eeb17658fa6b8784d07916ce3508f9
+rank: 1079
+
+feat: DNS-verified host filtering with kprobe-based DNS interception (#42)
+
+* feat: DNS-verified host filtering via connect-time verification
+
+Replace SNI/Host header host resolution with a DNS-verified chain that
+uses only kernel-controlled data:
+
+1. DNS interception (recvfrom tracepoint) captures hostname→IP mappings,
+   filtered to only watched hosts (from getkloak.io/hosts annotations)
+2. Connect tracepoint cross-checks destination IP against dns_ip_map;
+   stores verified fd in last_verified_fd[tgid] on match
+3. SSL_write resolve_host uses last_verified_fd to walk the verified chain:
+   fd → conn_ip_map → IP → dns_ip_map → hostname
+
+Works for all languages (Python, Node.js, Go, Go-BoringSSL) since
+connect() is a kernel syscall every app calls.
+
+DNS parsing uses flat-loop + barrier_var pattern for BPF verifier safety.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: BPF verifier bounds error in DNS answer parsing
+
+Use __builtin_memcpy into stack buffer for the 10-byte RR header
+(TYPE/CLASS/TTL/RDLENGTH) instead of per-byte pkt[m+N] accesses.
+The verifier can't prove m+9 < 512 after dns_skip_name returns an
+unbounded offset. Copying via memcpy with barrier_var + bitmask
+ensures the access is provably in-bounds.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: language-agnostic DNS interception via kprobe, BPF verifier fixes
+
+Replace syscall-level DNS tracepoints (recvfrom/read/recvmsg) with a
+single kprobe/kretprobe on udp_recvmsg. This captures DNS responses
+for all languages regardless of which syscall they use:
+- Python: recvfrom (worked before)
+- Go: read on connected UDP socket (was missed)
+- Node.js: sendto/recvmsg on unconnected UDP (was missed)
+
+The kprobe filters on skc_dport==53 for connected sockets and allows
+dport==0 for unconnected sockets (c-ares pattern), with tracked_tgids
+and DNS response validation limiting scope.
+
+Also fixes:
+- BPF verifier bounds errors for RR header, A record, and AAAA record
+  reads on second+ loop iteration (masked offset + N could exceed map)
+- iov_iter read using __ubuf_iovec.iov_base for kernel 6.x ITER_UBUF
+- Mount tracefs in Helm chart for tracepoint attachment
+- Remove dns_config map and is_dns_server (no longer needed)
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: adapt SNI demo to DNS-verified host filtering with in-cluster echo server
+
+Replace the local echo server approach with a K8s Service + sidecar pattern.
+The TLS echo server runs as a sidecar behind a Service named "tls", so the
+client's DNS resolution of the Service name populates dns_ip_map and enables
+host-based secret filtering at the TCP level (no HTTP involved).
+
+- Echo server runs as sidecar container in the same pod
+- Client connects via K8s Service DNS name (triggers DNS verification)
+- Tests use FQDN (tls.<ns>.svc.cluster.local) in getkloak.io/hosts
+- Renamed test to TestEBPFRawTLSHostFiltering
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: mount tracefs in k3d clusters for tracepoint attachment
+
+The controller now requires /sys/kernel/tracing for connect tracepoints.
+Add the volume mount to both CI workflow k3d cluster creation steps.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: truncate BPF verifier log to prevent OOM in CI
+
+The VerifierError can be hundreds of MB when formatted. Truncate to 4KB
+to prevent OOM kill in memory-constrained k3d containers. Also log
+non-verifier errors explicitly.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: remove verifier log retry to prevent OOM, add --previous log capture
+
+The verifier log retry with 1MB allocation was causing the controller to
+OOM in k3d. Removed the retry — the first load attempt will return the
+error directly. Also capture --previous container logs in e2e test
+failure dump to see crash reasons from restarted containers.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: use bpf_loop for DNS answer parsing to stay under verifier limit
+
+The for-loop over MAX_DNS_ANSWERS (8 iterations) with dns_skip_name
+(8 inner iterations) caused verifier state explosion on x86_64, hitting
+the 1M instruction limit. Replace with bpf_loop() callback which the
+verifier checks as a single iteration.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: split DNS parsing into tail call to stay under 1M insn on x86_64
+
+Move process_dns_packet into a separate SEC program (dns_parse_packet)
+invoked via tail call from kretprobe_udp_recvmsg. The verifier checks
+each program independently, so the kretprobe stays small (read packet,
+store in scratch, tail call) and the DNS parser (qname decode + answer
+loop) is verified separately. This avoids the 1M instruction limit that
+x86_64 hits due to wider register state tracking.
+
+prog_array slot 0 = phase2_rewrite (unchanged)
+prog_array slot 1 = dns_parse_packet (new)
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: convert dns_skip_name to bpf_loop to reduce x86_64 verifier cost
+
+Replace the 8-iteration for-loop in dns_skip_name with a bpf_loop
+callback. The callback only uses scalar reads/writes (no pointer-to-stack
+variable-offset writes), avoiding the JIT issues that broke earlier
+bpf_loop attempts.
+
+This eliminates the nested for-loop inside parse_dns_answer's bpf_loop
+callback, which was the main verifier cost on x86_64.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: revert prog_array to max_entries=1, call DNS parsing directly
+
+max_entries=2 breaks bpf_tail_call silently on both ARM64 and x86_64.
+Revert to max_entries=1 (phase2_rewrite only). The kretprobe now calls
+do_dns_parse() directly via __noinline subprogram instead of tail call.
+
+The dns_skip_name bpf_loop conversion from the previous commit should
+keep the combined kretprobe + DNS parsing under the x86_64 verifier
+limit since it eliminates the 8-iteration nested for-loop.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: change return 0 to return in void do_dns_parse
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: remove dns_parse_packet SEC program entirely
+
+The unused dns_parse_packet SEC program may interfere with prog_array
+loading. It's no longer needed since the kretprobe calls do_dns_parse()
+directly. Removing it eliminates any potential interaction with the
+prog_array map that could break the phase2_rewrite tail call.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: set KLOAK_TARGET_ARCH in Dockerfile to match TARGETARCH
+
+The go:generate directive defaults to arm64 for KLOAK_TARGET_ARCH, but
+the Dockerfile compiles .o files for the actual TARGETARCH (amd64).
+This caused the .go bindings (generated from arm64 compilation) to not
+match the .o files (compiled for x86_64), potentially causing struct
+layout mismatches and broken prog_array tail calls.
+
+Set KLOAK_TARGET_ARCH before go generate so bpf2go compiles for the
+correct architecture, matching the subsequent clang compilation.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: revert vmlinux.h to main branch (x86_64) version
+
+The vmlinux.h was regenerated from an ARM64 Lima kernel and committed
+to this branch. This caused struct layout differences when compiling
+for x86_64, breaking CO-RE relocations for sock_common, msghdr, and
+iov_iter fields used in the udp_recvmsg kprobe.
+
+Revert to main's vmlinux.h which was generated from an x86_64 kernel.
+CO-RE handles cross-arch field relocation at load time.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* debug: add BPF debug counters for DNS interception pipeline
+
+Add a percpu_array map with counters at each checkpoint in the DNS
+interception pipeline. The controller logs these every 5 seconds.
+This will reveal exactly where the pipeline breaks on x86_64 k3d:
+
+- kprobe_entry: udp_recvmsg fired
+- kprobe_tracked: process in tracked_tgids
+- kprobe_dport53/dport0/dport_other: socket port classification
+- kprobe_iov_ok: user buffer read successfully
+- kretprobe_entry: has pending entry from kprobe
+- kretprobe_ret_small: return value <= 12
+- kretprobe_read_fail/read_ok: bpf_probe_read_user result
+- dns_parse_entry: do_dns_parse called
+- dns_not_response/no_answers/qname_fail/not_watched/watched_hit
+- dns_answer_stored: A/AAAA record added to dns_ip_map
+- phase2_entered: phase2_rewrite tail call succeeded
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: make DNS interception global, remove tracked_tgids filter from kprobe
+
+Debug counters revealed that kprobe_entry fires 177 times but
+kprobe_tracked is 0 — no UDP receives come from tracked app processes
+in k3d/Docker. Docker's DNS proxy handles DNS in a different process
+context, so the app's TGID never appears in udp_recvmsg.
+
+Fix: remove the tracked_tgids check from the kprobe. DNS mappings are
+now global (keyed by IP only, not per-TGID). The watched_hosts filter
+in do_dns_parse still limits which hostnames are stored.
+
+Also confirmed phase2_entered counter is non-zero — the tail call works
+fine on x86_64. The issue was purely DNS interception.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: restore pid_tgid in kprobe for udp_recv_scratch key
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: scan fds 3-10 in resolve_host when last_verified_fd is not set
+
+When DNS is captured globally (by a Docker DNS proxy), the timing is:
+1. App connects to server (conn_ip_map populated)
+2. DNS response captured (dns_ip_map populated)
+3. App writes TLS data (resolve_host called)
+
+Step 2 happens after step 1, so tp_exit_connect doesn't find the IP in
+dns_ip_map and never sets last_verified_fd. With persistent connections,
+there's no second connect to fix this.
+
+Fix: when last_verified_fd is not set, scan fds 3-10 in conn_ip_map
+for any connection whose IP is DNS-verified. Cache the result in
+last_verified_fd for future calls.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* debug: add resolve_host counters, expand fd scan to 3-30
+
+Add counters to each path in resolve_host to identify where the
+hostname resolution fails on x86_64 k3d. Expand fd scan range from
+3-10 to 3-30 to cover higher fd numbers (Node.js uses fd=21).
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: remove tracked_tgids filter from connect tracepoints
+
+The connect tracepoints filtered by tracked_tgids, causing a startup
+race: the app connects before the controller tracks its TGID, so
+conn_ip_map is never populated. With persistent connections, there's
+no second connect to fix this.
+
+Make connect tracepoints global (like the DNS kprobe). conn_ip_map is
+LRU so it self-evicts. Also add ip_to_conn reverse map to retroactively
+set last_verified_fd when DNS is captured after connect.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: remove unused tgid variable in tp_enter_connect
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* refactor: rename demo-python-sni to demo-python-raw-tls
+
+The demo no longer tests SNI-based host filtering — it tests DNS-verified
+host filtering with raw TLS sockets. Rename to reflect the actual purpose.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* refactor: split vmlinux.h into arch-specific files
+
+Replace the single vmlinux.h with vmlinux_x86.h and vmlinux_arm64.h.
+The C source conditionally includes the correct one based on the
+__TARGET_ARCH_* define. This prevents cross-arch contamination where
+an ARM64-generated vmlinux.h was used for x86_64 compilation.
+
+Both files are committed and tagged as generated. To regenerate:
+  bpftool btf dump file /sys/kernel/btf/vmlinux format c > pkg/ebpf/bpf/vmlinux_<arch>.h
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* chore: remove duplicate e2e-ebpf.yml workflow
+
+The eBPF e2e tests already run in ci.yml (with coverage collection).
+The standalone e2e-ebpf.yml was redundant.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: exit controller on eBPF initialization failure
+
+When --enable-ebpf is true but eBPF fails to initialize (verifier
+error, missing kernel features, attachment failure), the controller
+should exit rather than silently running without secret rewriting.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+---------
+
+Co-authored-by: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+--- pkg/ebpf/bpf/tls_uprobe.c
+@@ -4,9 +4,14 @@
+ // Uses a per-CPU array as scratch buffer (not ringbuf) to avoid verifier
+ // issues with ringbuf_mem pointer tracking in loops.
+ // Supports both x86_64 and ARM64 architectures.
+-// Host filtering uses TLS SNI (protocol-agnostic) with HTTP Host fallback.
++// Host filtering uses DNS-verified connect-time resolution.
+ 
+-#include "vmlinux.h"
++// Include arch-specific vmlinux.h (generated, committed per-arch).
++#if defined(__TARGET_ARCH_x86) || defined(__x86_64__) || defined(__amd64__)
++#include "vmlinux_x86.h"
++#else
++#include "vmlinux_arm64.h"
++#endif
+ #include <bpf/bpf_helpers.h>
+ 
+ // Architecture detection
+@@ -19,6 +24,7 @@
+ #endif
+ 
+ #include <bpf/bpf_core_read.h>
++#include <bpf/bpf_endian.h>
+ #include <bpf/bpf_tracing.h>
+ 
+ /* Define KLOAK_DEBUG at compile time to enable verbose bpf_printk tracing.
+@@ -41,10 +47,11 @@
+ #define CHUNK_STRIDE (MAX_DATA_SIZE - (SECRET_KEY_LEN - 1)) // 249
+ // Max host length for matching (compared as 4 x uint64, no loop needed)
+ #define MAX_HOST_LEN 32
+-// Max hostname to read from SNI
+-#define MAX_SNI_LEN 64
+-// OpenSSL SSL_ctrl cmd value for SSL_set_tlsext_host_name macro
+-#define SSL_CTRL_SET_TLSEXT_HOSTNAME 55
++// Maximum DNS packet size we can parse in BPF
++#define MAX_DNS_PKT 512
++// Maximum number of DNS answer records to process
++#define MAX_DNS_ANSWERS 8
++// Maximum DNS server IPs we can configure
+ 
+ #include "helpers.h"
+ 
+@@ -56,10 +63,10 @@ struct secret_key {
+ struct secret_value {
+   __u32 len;
+   char real_secret[SECRET_MAX_LEN];
+-  __u32 host_len;                        // 0 = wildcard (allow all hosts)
+-  char allowed_host[MAX_HOST_LEN];       // e.g. "httpbin.org"
+-  __u32 prefix_len;                      // actual prefix length (8..42)
+-  char full_prefix[SECRET_PREFIX_MAX];   // full kloak:UUID prefix for verification
++  __u32 host_len;                      // 0 = wildcard (allow all hosts)
++  char allowed_host[MAX_HOST_LEN];     // e.g. "httpbin.org"
++  __u32 prefix_len;                    // actual prefix length (8..42)
++  char full_prefix[SECRET_PREFIX_MAX]; // full kloak:UUID prefix for verification
+ };
+ 
+ struct {
+@@ -69,38 +76,14 @@ struct {
+   __type(value, struct secret_value);
+ } secret_map SEC(".maps");
+ 
+-// -----------------------------------------------------------------------------
+-// SNI hostname cache: {tgid, ssl_ptr} → hostname
+-// Populated by SSL_set_tlsext_host_name uprobe (runs once per connection).
+-// Looked up by SSL_write uprobe to get the destination hostname.
+-// Uses LRU to auto-evict stale entries when connections close.
+-// -----------------------------------------------------------------------------
+-struct conn_key {
+-  __u64 ssl_ptr; // pointer to SSL object (unique per connection)
+-  __u32 tgid;
+-  __u32 _pad;    // explicit padding — BPF hashes the full key including padding
+-};
+-
+-struct conn_host {
+-  __u32 host_len;
+-  char hostname[MAX_HOST_LEN];
+-};
+-
+-struct {
+-  __uint(type, BPF_MAP_TYPE_LRU_HASH);
+-  __uint(max_entries, 4096);
+-  __type(key, struct conn_key);
+-  __type(value, struct conn_host);
+-} conn_hosts SEC(".maps");
+-
+ // Per-CPU array used as scratch space for reading and scanning data.
+ struct scratch_buf {
+   __u64 user_data_ptr;
+   __u32 read_len;       // bytes read into data[] (max 256, for host parsing)
+   __u32 total_data_len; // full TLS write length (for bpf_loop scanning)
+   __u32 host_offset;
+   __u32 host_value_len; // length of extracted host value
+-  char host_value[MAX_HOST_LEN]; // host from SNI cache or HTTP header
++  char host_value[MAX_HOST_LEN]; // host from DNS chain
+   char data[MAX_DATA_SIZE];
+ };
+ 
+@@ -132,171 +115,797 @@ struct tls_event {
+   __u8 is_rewritten; // 1 = secret was rewritten in-kernel
+ };
+ 
+-// -----------------------------------------------------------------------------
+-// SNI hostname extraction uprobe.
+-// Hooks SSL_set_tlsext_host_name(SSL *ssl, const char *name).
+-// Called once per connection before SSL_connect/handshake.
+-// Caches {tgid, ssl_ptr} → hostname for later lookup in SSL_write.
+-// Works for OpenSSL, BoringSSL, and any compatible TLS library.
+-// -----------------------------------------------------------------------------
+-SEC("uprobe/ssl_set_host")
+-int bpf_uprobe_ssl_set_host(void *ctx) {
+-  void *ssl_ptr;
+-  void *name_ptr;
++// Debug counters for diagnosing DNS interception issues.
++// Index: see DBG_* constants below.
++enum {
++  DBG_KPROBE_ENTRY = 0,       // udp_recvmsg kprobe entered
++  DBG_KPROBE_TRACKED,         // tracked_tgids hit
++  DBG_KPROBE_DPORT53,         // skc_dport == 53
++  DBG_KPROBE_DPORT0,          // skc_dport == 0 (unconnected)
++  DBG_KPROBE_DPORT_OTHER,     // skc_dport != 53 and != 0
++  DBG_KPROBE_IOV_OK,          // iov_base read successfully
++  DBG_KRETPROBE_ENTRY,        // kretprobe entered (has pending)
++  DBG_KRETPROBE_RET_SMALL,    // ret <= 12
++  DBG_KRETPROBE_READ_FAIL,    // bpf_probe_read_user failed
++  DBG_KRETPROBE_READ_OK,      // packet read into scratch
++  DBG_DNS_PARSE_ENTRY,        // do_dns_parse entered
++  DBG_DNS_NOT_RESPONSE,       // QR bit not set or RCODE != 0
++  DBG_DNS_NO_ANSWERS,         // qdcount < 1 or ancount < 1
++  DBG_DNS_QNAME_FAIL,         // qname decode failed
++  DBG_DNS_NOT_WATCHED,        // hostname not in watched_hosts
++  DBG_DNS_WATCHED_HIT,        // hostname IS in watched_hosts
++  DBG_DNS_ANSWER_STORED,      // A/AAAA record stored in dns_ip_map
++  DBG_PHASE2_ENTERED,         // phase2_rewrite entered
++  DBG_RESOLVE_SSL_FD_HIT,     // ssl_fd_map cache hit
++  DBG_RESOLVE_LAST_VFD_HIT,   // last_verified_fd hit
++  DBG_RESOLVE_FD_SCAN_HIT,    // fd scan found DNS-verified connection
++  DBG_RESOLVE_NO_FD,          // no fd found at all
++  DBG_RESOLVE_NO_CONN,        // fd found but no conn_ip_map entry
++  DBG_RESOLVE_NO_DNS,         // conn found but IP not in dns_ip_map
++  DBG_RESOLVE_HOST_OK,        // hostname resolved successfully
++  DBG_MAX,
++};
+ 
+-#if defined(bpf_target_x86)
+-  // x86_64 C ABI: RDI=ssl, RSI=name
+-  // pt_regs offsets: rdi=112, rsi=104
+-  bpf_probe_read_kernel(&ssl_ptr, sizeof(void *), (char *)ctx + 112);
+-  bpf_probe_read_kernel(&name_ptr, sizeof(void *), (char *)ctx + 104);
+-#elif defined(bpf_target_arm64)
+-  // ARM64 C ABI: X0=ssl, X1=name
+-  bpf_probe_read_kernel(&ssl_ptr, sizeof(void *), (char *)ctx + 0);
+-  bpf_probe_read_kernel(&name_ptr, sizeof(void *), (char *)ctx + 8);
+-#else
+-  return 0;
+-#endif
++struct {
++  __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
++  __uint(max_entries, 32); // must be >= DBG_MAX
++  __type(key, __u32);
++  __type(value, __u64);
++} debug_counters SEC(".maps");
+ 
+-  if (!ssl_ptr || !name_ptr)
+-    return 0;
++static __always_inline void dbg_inc(__u32 idx) {
++  __u64 *val = bpf_map_lookup_elem(&debug_counters, &idx);
++  if (val)
++    __sync_fetch_and_add(val, 1);
++}
+ 
+-  __u64 pid_tgid = bpf_get_current_pid_tgid();
+-  __u32 tgid = (__u32)(pid_tgid >> 32);
++// =============================================================================
++// DNS-verified host filtering maps
++// =============================================================================
+ 
+-  // Read the hostname string from user space
+-  char sni_buf[MAX_SNI_LEN] = {};
+-  long ret = bpf_probe_read_user_str(sni_buf, sizeof(sni_buf), name_ptr);
+-  if (ret <= 1) // empty or error
+-    return 0;
++// Per-process opt-in filter: only track DNS/connect for these TGIDs.
++// Populated from userspace when attaching uprobes to a process.
++struct {
++  __uint(type, BPF_MAP_TYPE_HASH);
++  __uint(max_entries, 1024);
++  __type(key, __u32);   // tgid
++  __type(value, __u8);  // 1 = tracked
++} tracked_tgids SEC(".maps");
++
++// DNS-verified IP -> hostname mapping (global, not per-process).
++// Populated by kretprobe_udp_recvmsg when a DNS response contains an A/AAAA
++// record whose qname is in watched_hosts. Global because in containerized
++// environments (k3d/Docker), DNS may be resolved by a proxy process.
++struct dns_ip_key {
++  __u8 ip[16]; // IPv4-mapped-IPv6 or native IPv6
++};
++
++struct dns_ip_val {
++  char hostname[MAX_HOST_LEN];
++  __u32 host_len;
++  __u32 ttl_sec;
++  __u64 inserted_at;
++};
+ 
+-  // Store in conn_hosts map — memset key to zero padding bytes
+-  struct conn_key key;
+-  __builtin_memset(&key, 0, sizeof(key));
+-  key.tgid = tgid;
+-  key.ssl_ptr = (__u64)ssl_ptr;
++struct {
++  __uint(type, BPF_MAP_TYPE_LRU_HASH);
++  __uint(max_entries, 8192);
++  __type(key, struct dns_ip_key);
++  __type(value, struct dns_ip_val);
++} dns_ip_map SEC(".maps");
++
++// TCP connection fd -> peer IP per process.
++// Populated by tp_exit_connect for every connect() call.
++struct conn_ip_key {
++  __u32 tgid;
++  __u32 fd;
++};
++
++struct conn_ip_val {
++  __u8 ip[16]; // IPv4-mapped-IPv6 or native IPv6
++};
+ 
+-  struct conn_host host = {};
+-  // Copy up to MAX_HOST_LEN bytes
+-  __u32 copy_len = ret - 1; // ret includes null terminator
+-  if (copy_len > MAX_HOST_LEN)
+-    copy_len = MAX_HOST_LEN;
+-  __builtin_memcpy(host.hostname, sni_buf, MAX_HOST_LEN);
+-  host.host_len = copy_len;
++// Reverse mapping: peer IP -> {tgid, fd}.
++// Used to retroactively set last_verified_fd when DNS is captured
++// after the connect (common with Docker DNS proxy timing).
++struct ip_conn_val {
++  __u32 tgid;
++  __u32 fd;
++};
+ 
+-  bpf_map_update_elem(&conn_hosts, &key, &host, BPF_ANY);
++struct {
++  __uint(type, BPF_MAP_TYPE_LRU_HASH);
++  __uint(max_entries, 4096);
++  __type(key, struct dns_ip_key); // IP only
++  __type(value, struct ip_conn_val);
++} ip_to_conn SEC(".maps");
+ 
+-#ifdef KLOAK_DEBUG
+-  bpf_printk("kloak sni: tgid=%u ssl=%llx host=%s", tgid, (__u64)ssl_ptr,
+-             sni_buf);
++struct {
++  __uint(type, BPF_MAP_TYPE_LRU_HASH);
++  __uint(max_entries, 16384);
++  __type(key, struct conn_ip_key);
++  __type(value, struct conn_ip_val);
++} conn_ip_map SEC(".maps");
++
++// SSL pointer -> fd cache per process.
++// Populated lazily in resolve_host when last_verified_fd provides an fd.
++struct ssl_fd_key {
++  __u32 tgid;
++  __u32 _pad;
++  __u64 ssl_ptr;
++};
++
++struct ssl_fd_val {
++  __u32 fd;
++  __u32 _pad;
++};
++
++struct {
++  __uint(type, BPF_MAP_TYPE_LRU_HASH);
++  __uint(max_entries, 4096);
++  __type(key, struct ssl_fd_key);
++  __type(value, struct ssl_fd_val);
++} ssl_fd_map SEC(".maps");
++
++// Most recent DNS-verified connect fd per tgid.
++// Written by tp_exit_connect when the destination IP has a dns_ip_map entry.
++struct {
++  __uint(type, BPF_MAP_TYPE_HASH);
++  __uint(max_entries, 1024);
++  __type(key, __u32);   // tgid
++  __type(value, __u32); // fd
++} last_verified_fd SEC(".maps");
++
++// Scratch for kprobe udp_recvmsg enter->return correlation.
++// Saves the user buffer pointer from msghdr on entry so the
++// kretprobe can read the DNS response after it's been copied.
++struct udp_recv_pending {
++  __u64 iov_base;  // user buffer (first iovec base)
++};
++
++struct {
++  __uint(type, BPF_MAP_TYPE_HASH);
++  __uint(max_entries, 1024);
++  __type(key, __u64);   // pid_tgid
++  __type(value, struct udp_recv_pending);
++} udp_recv_scratch SEC(".maps");
++
++// Scratch for connect enter->exit correlation: save fd and sockaddr.
++struct connect_pending_val {
++  __u32 fd;
++  __u8 ip[16]; // destination IP (IPv4-mapped-IPv6)
++};
++
++struct {
++  __uint(type, BPF_MAP_TYPE_HASH);
++  __uint(max_entries, 1024);
++  __type(key, __u64);   // pid_tgid
++  __type(value, struct connect_pending_val);
++} connect_pending SEC(".maps");
++
++// Per-CPU scratch buffer for DNS packet parsing.
++// Also carries tgid/pkt_len for the tail-called dns_parse_packet program.
++struct dns_scratch_buf {
++  char pkt[MAX_DNS_PKT];
++  __u32 pkt_len;
++};
++
++struct {
++  __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
++  __uint(max_entries, 1);
++  __type(key, __u32);
++  __type(value, struct dns_scratch_buf);
++} dns_scratch SEC(".maps");
++
++// Watched hostnames: only DNS responses for these hosts are recorded.
++// Populated from userspace with the unique AllowedHosts from synced secrets.
++struct watched_host_key {
++  char host[MAX_HOST_LEN];
++};
++
++struct {
++  __uint(type, BPF_MAP_TYPE_HASH);
++  __uint(max_entries, 256);
++  
+[truncated]
+
+--- pkg/ebpf/bpf/vmlinux_arm64.h
+(no patch: binary or too large)
+
+--- pkg/ebpf/bpf/vmlinux_x86.h
+(no patch: binary or too large)
+

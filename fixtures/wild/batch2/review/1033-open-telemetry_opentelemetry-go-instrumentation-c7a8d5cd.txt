@@ -1,0 +1,323 @@
+repo: open-telemetry/opentelemetry-go-instrumentation
+commit: c7a8d5cd0329ce13a473661f63e11f7386967906
+rank: 1033
+
+Remove support for Go < 1.19 instrumentation (#1815)
+
+* Remove support for Go < 1.19 in inspect
+
+* Regenerate offsets
+
+Drop Go 1.12 to 1.18 offsets.
+
+* Drop check for ABI registration
+
+Include clean-up of both Go and C code that no longer need to track go
+context for consistent keys.
+
+* Update COMPATIBILITY.md
+
+* Add changelog entry
+
+* Fix verifier error
+
+* Remove get_consistent_key
+
+Flatten GOROUTINE call instead.
+
+---------
+
+Co-authored-by: Ron Federman <73110295+RonFed@users.noreply.github.com>
+
+--- internal/pkg/instrumentation/bpf/database/sql/bpf/probe.bpf.c
+@@ -61,15 +61,15 @@ int uprobe_queryDC(struct pt_regs *ctx) {
+     start_span(&start_span_params);
+ 
+     // Get key
+-    void *key = get_consistent_key(ctx, go_context.data);
++    void *key = (void *)GOROUTINE(ctx);
+ 
+     bpf_map_update_elem(&sql_events, &key, &sql_request, 0);
+     return 0;
+ }
+ 
+ // This instrumentation attaches uprobe to the following function:
+ // func (db *DB) queryDC(ctx, txctx context.Context, dc *driverConn, releaseConn func(error), query string, args []any)
+-UPROBE_RETURN(queryDC, struct sql_request_t, sql_events, events, 2, 0, true)
++UPROBE_RETURN(queryDC, struct sql_request_t, sql_events)
+ 
+ // This instrumentation attaches uprobe to the following function:
+ // func (db *DB) execDC(ctx context.Context, dc *driverConn, release func(error), query string, args []any)
+@@ -104,12 +104,12 @@ int uprobe_execDC(struct pt_regs *ctx) {
+     start_span(&start_span_params);
+ 
+     // Get key
+-    void *key = get_consistent_key(ctx, go_context.data);
++    void *key = (void *)GOROUTINE(ctx);
+ 
+     bpf_map_update_elem(&sql_events, &key, &sql_request, 0);
+     return 0;
+ }
+ 
+ // This instrumentation attaches uprobe to the following function:
+ // func (db *DB) execDC(ctx context.Context, dc *driverConn, release func(error), query string, args []any)
+-UPROBE_RETURN(execDC, struct sql_request_t, sql_events, events, 3, 0, true)
++UPROBE_RETURN(execDC, struct sql_request_t, sql_events)
+
+--- internal/pkg/instrumentation/bpf/github.com/segmentio/kafka-go/producer/bpf/probe.bpf.c
+@@ -135,7 +135,7 @@ int uprobe_WriteMessages(struct pt_regs *ctx) {
+ 
+     struct go_iface go_context = {0};
+     get_Go_context(ctx, 2, 0, true, &go_context);
+-    void *key = get_consistent_key(ctx, go_context.data);
++    void *key = (void *)GOROUTINE(ctx);
+ 
+     void *kafka_request_ptr = bpf_map_lookup_elem(&kafka_events, &key);
+     if (kafka_request_ptr != NULL)
+@@ -215,9 +215,7 @@ int uprobe_WriteMessages(struct pt_regs *ctx) {
+ SEC("uprobe/WriteMessages")
+ int uprobe_WriteMessages_Returns(struct pt_regs *ctx) {
+     u64 end_time = bpf_ktime_get_ns();
+-    struct go_iface go_context = {0};
+-    get_Go_context(ctx, 2, 0, true, &go_context);
+-    void *key = get_consistent_key(ctx, go_context.data);
++    void *key = (void *)GOROUTINE(ctx);
+ 
+     struct kafka_request_t *kafka_request = bpf_map_lookup_elem(&kafka_events, &key);
+     if (kafka_request == NULL) {
+
+--- internal/pkg/instrumentation/bpf/go.opentelemetry.io/otel/traceglobal/bpf/probe.bpf.c
+@@ -446,9 +446,7 @@ int uprobe_Start(struct pt_regs *ctx) {
+     read_span_name(&span_name, span_name_len, span_name_ptr);
+ 
+     // Save the span name in map to be read once the Start function returns
+-    struct go_iface go_context = {0};
+-    get_Go_context(ctx, 2, 0, true, &go_context);
+-    void *key = get_consistent_key(ctx, go_context.data);
++    void *key = (void *)GOROUTINE(ctx);
+     bpf_map_update_elem(&span_name_by_context, &key, &span_name, 0);
+ 
+     // Get the tracer id
+@@ -476,7 +474,8 @@ int uprobe_Start_Returns(struct pt_regs *ctx) {
+     struct go_iface go_context = {0};
+     // In return probe, the context is the first return value
+     get_Go_context(ctx, 1, 0, true, &go_context);
+-    void *key = get_consistent_key(ctx, go_context.data);
++
++    void *key = (void *)GOROUTINE(ctx);
+     struct span_name_t *span_name = bpf_map_lookup_elem(&span_name_by_context, &key); 
+     if (span_name == NULL) {
+         return 0;
+
+--- internal/pkg/instrumentation/bpf/google.golang.org/grpc/client/bpf/probe.bpf.c
+@@ -72,7 +72,7 @@ int uprobe_ClientConn_Invoke(struct pt_regs *ctx)
+     get_Go_context(ctx, 2, 0, true, &go_context);
+ 
+     // Get key
+-    void *key = get_consistent_key(ctx, go_context.data);
++    void *key = (void *)GOROUTINE(ctx);
+     void *grpcReq_ptr = bpf_map_lookup_elem(&grpc_events, &key);
+     if (grpcReq_ptr != NULL)
+     {
+@@ -118,9 +118,7 @@ int uprobe_ClientConn_Invoke(struct pt_regs *ctx)
+ // func (cc *ClientConn) Invoke(ctx context.Context, method string, args, reply interface{}, opts ...CallOption) error
+ SEC("uprobe/ClientConn_Invoke")
+ int uprobe_ClientConn_Invoke_Returns(struct pt_regs *ctx) {
+-    struct go_iface go_context = {0};
+-    get_Go_context(ctx, 3, 0, true, &go_context);
+-    void *key = get_consistent_key(ctx, go_context.data);
++    void *key = (void *)GOROUTINE(ctx);
+     struct grpc_request_t *grpc_span = bpf_map_lookup_elem(&grpc_events, &key);
+     if (grpc_span == NULL) {
+         bpf_printk("event is NULL in ret probe");
+
+--- internal/pkg/instrumentation/bpf/google.golang.org/grpc/server/bpf/probe.bpf.c
+@@ -94,7 +94,7 @@ static __always_inline int handleStream(struct pt_regs *ctx, void *stream_ptr, s
+         return -1;
+     }
+ 
+-    void *key = get_consistent_key(ctx, go_context->data);
++    void *key = (void *)GOROUTINE(ctx);
+     void *grpcReq_event_ptr = bpf_map_lookup_elem(&grpc_events, &key);
+     if (grpcReq_event_ptr != NULL) {
+         bpf_printk("grpc:server:handleStream: event already tracked");
+@@ -170,21 +170,15 @@ static __always_inline int handleStream(struct pt_regs *ctx, void *stream_ptr, s
+ // Arguments:
+ //   - ctx: the pt_regs passed to the uprobe function
+ //   - status_ptr: pointer to the status.Stream holding the status info
+-//   - go_context: the parsed Go context.Context
+ //
+ // Returns 0 on success, otherwise a negative error value in case of failure.
+-static __always_inline int writeStatus(struct pt_regs *ctx, void *status_ptr, struct go_iface *go_context) {
+-    if (go_context == NULL) {
+-        bpf_printk("grpc:server:writeStatus: NULL go_context");
+-        return -1;
+-    }
+-
++static __always_inline int writeStatus(struct pt_regs *ctx, void *status_ptr) {
+     if (status_ptr == NULL) {
+         bpf_printk("grpc:server:writeStatus: NULL status_ptr");
+         return -1;
+     }
+ 
+-    void *key = get_consistent_key(ctx, go_context->data);
++    void *key = (void *)GOROUTINE(ctx);
+ 
+     struct grpc_request_t *req_ptr = bpf_map_lookup_elem(&grpc_events, &key);
+     if (req_ptr == NULL) {
+@@ -225,7 +219,7 @@ int uprobe_server_handleStream(struct pt_regs *ctx) {
+     return handleStream(ctx, stream_ptr, &go_context);
+ }
+ 
+-UPROBE_RETURN(server_handleStream, struct grpc_request_t, grpc_events, events, 4, stream_ctx_pos, false)
++UPROBE_RETURN(server_handleStream, struct grpc_request_t, grpc_events)
+ 
+ // This instrumentation attaches uprobe to the following function:
+ // func (s *Server) handleStream(t transport.ServerTransport, stream *transport.ServerStream)
+@@ -273,7 +267,6 @@ SEC("uprobe/server_handleStream2")
+ int uprobe_server_handleStream2_Returns(struct pt_regs *ctx) {
+     u64 server_stream_pos = 4;
+     void *server_stream_ptr = get_argument(ctx, server_stream_pos);
+-    struct go_iface go_context = {0};
+     void *key = NULL;
+     if (server_stream_ptr == NULL) {
+         // We might fail to get the pointer for versions of Go which use register ABI, as this function does not return anything.
+@@ -288,20 +281,8 @@ int uprobe_server_handleStream2_Returns(struct pt_regs *ctx) {
+         return -2;
+     }
+ 
+-    rc = bpf_probe_read_user(&go_context.type, sizeof(go_context.type), (void *)(stream_ptr + stream_ctx_pos));
+-    if (rc != 0) {
+-        bpf_printk("grpc:server:uprobe/server_handleStream2Return: failed to read context type");
+-        return -3;
+-    }
+-
+-    rc = bpf_probe_read_user(&go_context.data, sizeof(go_context.data), get_go_interface_instance(stream_ptr + stream_ctx_pos));
+-    if (rc != 0) {
+-        bpf_printk("grpc:server:uprobe/server_handleStream2Return: failed to read context data");
+-        return -4;
+-    }
+-
+ lookup:
+-    key = get_consistent_key(ctx, go_context.data);
++    key = (void *)GOROUTINE(ctx);
+     struct grpc_request_t *event = bpf_map_lookup_elem(&grpc_events, &key);
+     if (event == NULL) {
+         bpf_printk("grpc:server:uprobe/server_handleStream2Return: event is NULL");
+@@ -320,7 +301,9 @@ int uprobe_server_handleStream2_Returns(struct pt_regs *ctx) {
+ SEC("uprobe/http2Server_operateHeader")
+ int uprobe_http2Server_operateHeader(struct pt_regs *ctx)
+ {
+-    void *frame_ptr = is_new_frame_pos ? get_argument(ctx, 4) : get_argument(ctx, 2);
++    void *arg4 = get_argument(ctx, 4);
++    void *arg2 = get_argument(ctx, 2);
++    void *frame_ptr = is_new_frame_pos ? arg4 : arg2;
+     struct go_slice header_fields = {};
+     bpf_probe_read(&header_fields, sizeof(header_fields), (void *)(frame_ptr + frame_fields_pos));
+     char key[W3C_KEY_LENGTH] = "traceparent";
+@@ -362,10 +345,8 @@ int uprobe_http2Server_operateHeader(struct pt_regs *ctx)
+ // This is only compatible with versions > 1.40 and < 1.69.0 of the Server.
+ SEC("uprobe/http2Server_WriteStatus")
+ int uprobe_http2Server_WriteStatus(struct pt_regs *ctx) {
+-    struct go_iface go_context = {0};
+-    get_Go_context(ctx, 2, stream_ctx_pos, false, &go_context);
+     void *status_ptr = get_argument(ctx, 3);
+-    return writeStatus(ctx, status_ptr, &go_context);
++    return writeStatus(ctx, status_ptr);
+ }
+ 
+ // func (ht *http2Server) writeStatus(s *Stream, st *status.Status)
+@@ -388,19 +369,6 @@ int uprobe_http2Server_WriteStatus2(struct pt_regs *ctx) {
+         return -2;
+     }
+ 
+-    struct go_iface go_context = {0};
+-    rc = bpf_probe_read_user(&go_context.type, sizeof(go_context.type), (void *)(stream_ptr + stream_ctx_pos));
+-    if (rc != 0) {
+-        bpf_printk("grpc:server:uprobe/http2Server_WriteStatus2: failed to read context type");
+-        return -3;
+-    }
+-
+-    rc = bpf_probe_read_user(&go_context.data, sizeof(go_context.data), get_go_interface_instance(stream_ptr + stream_ctx_pos));
+-    if (rc != 0) {
+-        bpf_printk("grpc:server:uprobe/http2Server_WriteStatus2: failed to read context data");
+-        return -4;
+-    }
+-
+     void *status_ptr = get_argument(ctx, 3);
+-    return writeStatus(ctx, status_ptr, &go_context);
++    return writeStatus(ctx, status_ptr);
+ }
+
+--- internal/pkg/instrumentation/bpf/net/http/client/bpf/probe.bpf.c
+@@ -97,7 +97,7 @@ int uprobe_Transport_roundTrip(struct pt_regs *ctx) {
+     struct go_iface go_context = {0};
+     get_Go_context(ctx, 2, ctx_ptr_pos, false, &go_context);
+ 
+-    void *key = get_consistent_key(ctx, go_context.data);
++    void *key = (void *)GOROUTINE(ctx);
+     void *httpReq_ptr = bpf_map_lookup_elem(&http_events, &key);
+     if (httpReq_ptr != NULL)
+     {
+@@ -211,22 +211,18 @@ int uprobe_Transport_roundTrip(struct pt_regs *ctx) {
+ SEC("uprobe/Transport_roundTrip")
+ int uprobe_Transport_roundTrip_Returns(struct pt_regs *ctx) {
+     u64 end_time = bpf_ktime_get_ns();
+-    struct go_iface go_context = {0};
+-    get_Go_context(ctx, 2, ctx_ptr_pos, false, &go_context);
+-    void *key = get_consistent_key(ctx, go_context.data);
++    void *key = (void *)GOROUTINE(ctx);
+ 
+     struct http_request_t *http_req_span = bpf_map_lookup_elem(&http_events, &key);
+     if (http_req_span == NULL) {
+         bpf_printk("probe_Transport_roundTrip_Returns: entry_state is NULL");
+         return 0;
+     }
+ 
+-    if (is_register_abi()) {
+-        // Getting the returned response
+-        void *resp_ptr = get_argument(ctx, 1);
+-        // Get status code from response
+-        bpf_probe_read(&http_req_span->status_code, sizeof(http_req_span->status_code), (void *)(resp_ptr + status_code_pos));
+-    }
++    // Getting the returned response
++    void *resp_ptr = get_argument(ctx, 1);
++    // Get status code from response
++    bpf_probe_read(&http_req_span->status_code, sizeof(http_req_span->status_code), (void *)(resp_ptr + status_code_pos));
+ 
+     http_req_span->end_time = end_time;
+ 
+
+--- internal/pkg/instrumentation/bpf/net/http/server/bpf/probe.bpf.c
+@@ -219,7 +219,7 @@ int uprobe_serverHandler_ServeHTTP(struct pt_regs *ctx)
+ {
+     struct go_iface go_context = {0};
+     get_Go_context(ctx, 4, ctx_ptr_pos, false, &go_context);
+-    void *key = get_consistent_key(ctx, go_context.data);
++    void *key = (void *)GOROUTINE(ctx);
+     void *httpReq_ptr = bpf_map_lookup_elem(&http_server_uprobes, &key);
+     if (httpReq_ptr != NULL)
+     {
+@@ -275,9 +275,7 @@ int uprobe_serverHandler_ServeHTTP(struct pt_regs *ctx)
+ SEC("uprobe/serverHandler_ServeHTTP")
+ int uprobe_serverHandler_ServeHTTP_Returns(struct pt_regs *ctx) {
+     u64 end_time = bpf_ktime_get_ns();
+-    struct go_iface go_context = {0};
+-    get_Go_context(ctx, 4, ctx_ptr_pos, false, &go_context);
+-    void *key = get_consistent_key(ctx, go_context.data);
++    void *key = (void *)GOROUTINE(ctx);
+ 
+     struct uprobe_data_t *uprobe_data = bpf_map_lookup_elem(&http_server_uprobes, &key);
+     if (uprobe_data == NULL) {
+@@ -325,9 +323,7 @@ int uprobe_serverHandler_ServeHTTP_Returns(struct pt_regs *ctx) {
+ // func (r *Reader) readContinuedLineSlice(lim int64, validateFirstLine func([]byte) error) ([]byte, error) {
+ SEC("uprobe/textproto_Reader_readContinuedLineSlice")
+ int uprobe_textproto_Reader_readContinuedLineSlice_Returns(struct pt_regs *ctx) {
+-    struct go_iface go_context = {0};
+-    get_Go_context(ctx, 4, ctx_ptr_pos, false, &go_context);
+-    void *key = get_consistent_key(ctx, go_context.data);
++    void *key = (void *)GOROUTINE(ctx);
+ 
+     u64 len = (u64)GO_PARAM2(ctx);
+     u8 *buf = (u8 *)GO_PARAM1(ctx);
+

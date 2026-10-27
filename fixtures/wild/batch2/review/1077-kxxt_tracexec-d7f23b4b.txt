@@ -1,0 +1,21 @@
+repo: kxxt/tracexec
+commit: d7f23b4b66f9846cb3ae4d73ee60b30741092516
+rank: 1077
+
+fix/bpf: add empty printk to workaround verifier
+
+In release mode, the verifier rejects our program. But it accepts the debug mode prog. The subtle difference that causes this problem is the presence of printk helper call.
+
+Let's add an empty printk as a temporary workaround.
+
+--- src/bpf/tracexec_system.bpf.c
+@@ -129,7 +129,7 @@ static int read_send_path(const struct path *path,
+ #ifdef EBPF_DEBUG
+ #define debug(...) bpf_printk("tracexec_system: " __VA_ARGS__);
+ #else
+-#define debug(...)
++#define debug(...) bpf_printk("");
+ #endif
+ 
+ bool should_trace(pid_t old_tgid) {
+

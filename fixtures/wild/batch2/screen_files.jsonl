@@ -1,0 +1,141 @@
+{"screen_rank": 1000, "repo": "carverauto/serviceradar", "commit": "f0c9bfde33e79c2b7fe2c607c4d6776d6e0d5fe5", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1001, "repo": "ccfos/huatuo", "commit": "03a6263d126f697ff9181649f6d4e022820327a9", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1002, "repo": "projectcalico/calico", "commit": "87a9f6690a4fcb3b3f09d18a2dae666063d972f3", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1003, "repo": "carverauto/serviceradar", "commit": "b98307d96f92de3107d261a485681d4d82003bf3", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1004, "repo": "kmesh-net/kmesh", "commit": "6733c673b9285a7f9c62bf9f162d7b3aeca1a50c", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1005, "repo": "pixie-io/pixie", "commit": "19c6495a66eb3db7f156e954d3c65221dd752a4a", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1006, "repo": "projectcalico/calico", "commit": "897e22f371c41793fcacc67ce976ea56675543d5", "n_files": 27, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1007, "repo": "kmesh-net/kmesh", "commit": "91df91c8132eb667cf8a7da105405fef37c023d2", "n_files": 7, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1008, "repo": "coroot/coroot-node-agent", "commit": "f76895d48f7ee98da2224376140351e057c6c336", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1009, "repo": "carverauto/serviceradar", "commit": "9cb281bee53d04563c2d7f6910ec5051e2af8dd9", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1010, "repo": "gojue/ecapture", "commit": "782e4370a07d549cdd86845fe61f40b922636a77", "n_files": 1, "bpf_c_files": ["kern/openssl.h"], "pass1": "bpf-c"}
+{"screen_rank": 1011, "repo": "aya-rs/aya", "commit": "446cf6f5da56ee836df34dc7397c6c99e85a77ed", "n_files": 8, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1012, "repo": "carverauto/serviceradar", "commit": "95e2aae036147bead77c586c9282c11281ed6613", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1013, "repo": "bpfman/bpfman", "commit": "b9b2ce9e75c261cd7f6883a0fea083027d25b94a", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1014, "repo": "iopsystems/rezolus", "commit": "57c172a4e9f323e93a1f3f3991843d3747b86da9", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1015, "repo": "projectcalico/calico", "commit": "7e796ed4c42fce2cf275dda341ddc5387e9beba4", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1016, "repo": "bpftrace/bpftrace", "commit": "23c67000483c34a42073bae0e1a7933753916321", "n_files": 9, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1017, "repo": "libbpf/bpftool", "commit": "bc707f194154b642861b9a69f1b8583fd47f7856", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1018, "repo": "FootprintAI/Containarium", "commit": "10677f9115aea58c6538df33b4c1bb16d30bccfb", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1019, "repo": "FootprintAI/Containarium", "commit": "0d3ba3129952eeed27a7f49a78dd2084e392b6e0", "n_files": 7, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1020, "repo": "bpftrace/bpftrace", "commit": "66eac00c87f40178bdecf6bcb7a0c9e86eaae181", "n_files": 22, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1021, "repo": "microsoft/retina", "commit": "9c72cb99238fd7428cc4d2eadb85934b651c3dc3", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1022, "repo": "microsoft/retina", "commit": "8cd27e92e79bfaa6618b195a1f21effe05ad2040", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1023, "repo": "microsoft/retina", "commit": "3b50857a24814fc1567f9614daa974428554ad31", "n_files": 12, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1024, "repo": "OpenVisualCloud/Media-Transport-Library", "commit": "c6ebb0a41ce90a1fa58c1bd0fbb6f6e59d6effc5", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1025, "repo": "libbpf/libbpf-rs", "commit": "a28a805b59a1283bd713f198c10de083b4d48670", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1026, "repo": "bpftrace/bpftrace", "commit": "d0b16acb4d07a6f92d0f931947b505b1ef7c7acb", "n_files": 6, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1027, "repo": "gma1k/podtrace", "commit": "14ef4f852d48b5643a3b20063ed101f12835d6b1", "n_files": 2, "bpf_c_files": ["bpf/dns.c", "bpf/http3.c"], "pass1": "bpf-c"}
+{"screen_rank": 1028, "repo": "bpftrace/bpftrace", "commit": "c44c1d94f68725d921ce6328869700857ee8f147", "n_files": 19, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1029, "repo": "iopsystems/rezolus", "commit": "d18caaee9ae73c5eec178808dfecb55f833b3d69", "n_files": 22, "bpf_c_files": ["src/agent/bpf/filesystem.h", "src/agent/samplers/ext4/linux/journal/mod.bpf.c", "src/agent/samplers/ext4/linux/ops/mod.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 1030, "repo": "open-telemetry/opentelemetry-ebpf-instrumentation", "commit": "72abf5c9b5738d3932404b928124e957676ede1e", "n_files": 2, "bpf_c_files": ["bpf/generictracer/protocol_kafka.h", "bpf/tests/bpf_kafka_large_buffer.c"], "pass1": "bpf-c"}
+{"screen_rank": 1031, "repo": "open-telemetry/opentelemetry-ebpf-instrumentation", "commit": "af258a386e4b73c5ad53622e4dea031920dcdc9e", "n_files": 7, "bpf_c_files": ["bpf/gotracer/go_runtime.c"], "pass1": "bpf-c"}
+{"screen_rank": 1032, "repo": "projectcalico/calico", "commit": "7751920908c87fa6cb227a9c6d38b47d236056ed", "n_files": 4, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1033, "repo": "open-telemetry/opentelemetry-go-instrumentation", "commit": "c7a8d5cd0329ce13a473661f63e11f7386967906", "n_files": 52, "bpf_c_files": ["internal/pkg/instrumentation/bpf/database/sql/bpf/probe.bpf.c", "internal/pkg/instrumentation/bpf/github.com/segmentio/kafka-go/producer/bpf/probe.bpf.c", "internal/pkg/instrumentation/bpf/go.opentelemetry.io/otel/traceglobal/bpf/probe.bpf.c", "internal/pkg/instrumentation/bpf/google.golang.org/grpc/client/bpf/probe.bpf.c", "internal/pkg/instrumentation/bpf/google.golang.org/grpc/server/bpf/probe.bpf.c", "internal/pkg/instrumentation/bpf/net/http/client/bpf/probe.bpf.c", "internal/pkg/instrumentation/bpf/net/http/server/bpf/probe.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 1034, "repo": "bpfman/bpfman", "commit": "6ab48741c6968b19de2833803a1e9d1911150ec2", "n_files": 10, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1035, "repo": "exein-io/pulsar", "commit": "0ebf7dd8b34df72af3df82557abed0f3d2cada9c", "n_files": 1, "bpf_c_files": ["crates/modules/file-system-monitor/probes.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 1036, "repo": "bpfman/bpfman", "commit": "49e778f0fb1bec78208b28ccb9928026d2b5e3de", "n_files": 2, "bpf_c_files": ["e2e/testdata/bpf/multi_prog_one_bad.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 1037, "repo": "carverauto/serviceradar", "commit": "1dcb9d4fa2aa7aad1e401e2ba44b6456e693cbc0", "n_files": 8, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1038, "repo": "carverauto/serviceradar", "commit": "e404b97478f6c0c9022f062824958fe0067d680e", "n_files": 11, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1039, "repo": "FootprintAI/Containarium", "commit": "c1211902ed15ff6acef94bf9175b8f24c7dcb2c3", "n_files": 9, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1040, "repo": "projectcalico/calico", "commit": "2907a245966316fa7428048a82713518d1cd83cf", "n_files": 8, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1041, "repo": "carverauto/serviceradar", "commit": "72873705445affb9e18b70ecff35deeb05f9113e", "n_files": 22, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1042, "repo": "domcyrus/rustnet", "commit": "52fb1c2cce4ff40d837765e0f9ebd2f2d5a202d3", "n_files": 8, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1043, "repo": "aya-rs/aya", "commit": "fc69a069727475060ee6d9895ac2745b8965237f", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1044, "repo": "gojue/ecapture", "commit": "4253aeb1e993427330a361051f5d8d58b1e6dff8", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1045, "repo": "bpftrace/bpftrace", "commit": "68b5c5fa5d0673b4f5ec03180d7a5a411cab111d", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1046, "repo": "iopsystems/rezolus", "commit": "57d7396d3b05a093da8054d33367406d54c36f3d", "n_files": 5, "bpf_c_files": ["src/agent/samplers/cpu/linux/bandwidth/mod.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 1047, "repo": "open-telemetry/opentelemetry-ebpf-instrumentation", "commit": "1ea625e4a868d44cb0852e8c4d6407b0778abce7", "n_files": 11, "bpf_c_files": ["bpf/common/h2_defs.h", "bpf/rdns/rdns_xdp.c", "bpf/tpinjector/tpinjector.c"], "pass1": "bpf-c"}
+{"screen_rank": 1048, "repo": "carverauto/serviceradar", "commit": "39592fdd2d3cda0ea4acf4758f42c674428ecce9", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1049, "repo": "eunomia-bpf/agentsight", "commit": "7d9de426d85dc233dc49ce78f30442cfbf176333", "n_files": 1, "bpf_c_files": ["bpf/sslsniff.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 1050, "repo": "jfernandez/bpftop", "commit": "08e5e2a2f35993cfd1a291b68415e820be51bdde", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1051, "repo": "OpenVisualCloud/Media-Transport-Library", "commit": "48e888637bf3f4505f4dfa97b6d85b55d2d375b4", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1052, "repo": "bpftrace/bpftrace", "commit": "294a4d6d28ec131c4432b8ea83c68589e6d4ad35", "n_files": 1, "bpf_c_files": ["src/stdlib/strings.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 1053, "repo": "libbpf/libbpf", "commit": "decfae3a5d6f4a6f54430a7aa6a518496d723eb0", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1054, "repo": "aya-rs/aya", "commit": "80fdd074f68b03240e18d4d025f0bcc7ed3cc370", "n_files": 9, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1055, "repo": "carverauto/serviceradar", "commit": "b2324965b9cc1a8f23f1b3612c4fbb87dc073bed", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1056, "repo": "open-telemetry/opentelemetry-ebpf-instrumentation", "commit": "2c6d4f61a5774a5a7dec8287894b5ec961a2c76a", "n_files": 45, "bpf_c_files": ["bpf/common/egress_key.h", "bpf/common/go_grpc_client_conn.h", "bpf/common/h2_defs.h", "bpf/common/protocol_http2_helpers.h", "bpf/common/trace_helpers.h", "bpf/common/trace_lifecycle.h", "bpf/generictracer/k_tracer.c", "bpf/generictracer/k_tracer_tailcall.h", "bpf/generictracer/maps/http2_info_mem.h", "bpf/generictracer/protocol_http.h", "bpf/generictracer/protocol_http2.h", "bpf/generictracer/protocol_tcp.h", "bpf/gotracer/go_common.h", "bpf/gotracer/go_grpc.c", "bpf/gotracer/maps/grpc.h", "bpf/gotracer/types/grpc.h", "bpf/maps/go_grpc_client_conns.h", "bpf/tpinjector/h2_parse.h", "bpf/tpinjector/maps/sk_h2_conn_flag.h", "bpf/tpinjector/tpinjector.c"], "pass1": "bpf-c"}
+{"screen_rank": 1057, "repo": "carverauto/serviceradar", "commit": "b082446ad9def7bc9f5b4e8f81b24463c0d25bc2", "n_files": 5, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1058, "repo": "microsoft/retina", "commit": "2a55ce008147619e730c453b9115dfd356a8a350", "n_files": 1, "bpf_c_files": ["pkg/plugin/dropreason/_cprog/drop_reason.c"], "pass1": "bpf-c"}
+{"screen_rank": 1059, "repo": "open-telemetry/opentelemetry-ebpf-instrumentation", "commit": "811effd5c506b17466491b26847a34c0e11adaa0", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1060, "repo": "FootprintAI/Containarium", "commit": "4600cb2009249cf44c6571346e4fcb05794235ba", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1061, "repo": "carverauto/serviceradar", "commit": "5e470201979982f44208a1c9f90b0f5ad8d4efeb", "n_files": 9, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1062, "repo": "projectcalico/calico", "commit": "031cd9e796c7a295e9ff4678fb2de9f77bd8078d", "n_files": 1, "bpf_c_files": ["felix/bpf-gpl/icmp6.h"], "pass1": "bpf-c"}
+{"screen_rank": 1063, "repo": "open-telemetry/opentelemetry-ebpf-instrumentation", "commit": "418f103d056c2911321cb4590be743183811a13d", "n_files": 20, "bpf_c_files": ["bpf/common/trace_lifecycle.h", "bpf/generictracer/protocol_http2.h", "bpf/gotracer/go_grpc.c", "bpf/gotracer/go_kafka_go.c", "bpf/gotracer/go_mongo.c", "bpf/gotracer/go_nethttp.c", "bpf/gotracer/go_obi_ctx.h", "bpf/gotracer/go_redis.c", "bpf/gotracer/go_runtime.c", "bpf/gotracer/go_sql.c", "bpf/gotracer/maps/runtime.h", "bpf/shared/obi_ctx.h", "bpf/tests/bpf_go_obi_ctx.c"], "pass1": "bpf-c"}
+{"screen_rank": 1064, "repo": "iopsystems/rezolus", "commit": "c11746ff9b542839197c977a83ce2efe860ae676", "n_files": 9, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1065, "repo": "bpftrace/bpftrace", "commit": "c536ea4e2cfe9a7ba04135b4223f0eaa9d87083f", "n_files": 4, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1066, "repo": "carverauto/serviceradar", "commit": "e753f028e1e408538daec5be6ef257519cfaa23f", "n_files": 5, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1067, "repo": "projectcalico/calico", "commit": "d302923d12e97d635670dffda1ced03e3a9ad96d", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1068, "repo": "bpftrace/bpftrace", "commit": "34b634752bd2d7647b16d7538c7dd33c39409a5f", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1069, "repo": "FootprintAI/Containarium", "commit": "6c50a5d01fcc8e9d4579224fbf41e8036331edc7", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1070, "repo": "boratanrikulu/gobee", "commit": "fa130a199ab19c12e8e7cd9e5ac57392a71e7907", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1071, "repo": "bpftrace/bpftrace", "commit": "67629c1927f411758fe4da546eb57840d972b6e9", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1072, "repo": "projectcalico/calico", "commit": "2c93cde8e25f2020ae48cce19018f946b6e3c3b2", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1073, "repo": "bpftrace/bpftrace", "commit": "d14dd0e36e3cc3f25757462a4fa939f75a303f99", "n_files": 9, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1074, "repo": "iopsystems/rezolus", "commit": "07dd535b5c840546d962ea09c5095a1179d8c8fb", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1075, "repo": "gojue/ebpfmanager", "commit": "6249b83735154e3592f936dd6150086be2d42b56", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1076, "repo": "exein-io/pulsar", "commit": "71d454dbf43dfb4698fdfff06df4c936a227f2a8", "n_files": 1, "bpf_c_files": ["crates/modules/process-monitor/probes.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 1077, "repo": "kxxt/tracexec", "commit": "d7f23b4b66f9846cb3ae4d73ee60b30741092516", "n_files": 1, "bpf_c_files": ["src/bpf/tracexec_system.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 1078, "repo": "libbpf/libbpf", "commit": "429aaef6a3d40d31b038b069218719a02d781759", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1079, "repo": "spinningfactory/kloak", "commit": "e6954e0316eeb17658fa6b8784d07916ce3508f9", "n_files": 20, "bpf_c_files": ["pkg/ebpf/bpf/tls_uprobe.c", "pkg/ebpf/bpf/vmlinux_arm64.h", "pkg/ebpf/bpf/vmlinux_x86.h"], "pass1": "bpf-c"}
+{"screen_rank": 1080, "repo": "projectcalico/calico", "commit": "4276bb1cc0e18d21cef2eba4e2712168fb85e0f3", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1081, "repo": "bpftrace/bpftrace", "commit": "fb1dd3acba2b1f1bb1f33ab375839efde556cdcb", "n_files": 4, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1082, "repo": "eunomia-bpf/bpf-developer-tutorial", "commit": "c054586a39dfb4f9d794f523f4b3ef868d92d724", "n_files": 9, "bpf_c_files": ["src/41-xdp-tcpdump/xdp-tcpdump.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 1083, "repo": "projectcalico/calico", "commit": "69d9c1477e9dc1648bb2d877e94ed6e29f0585eb", "n_files": 1, "bpf_c_files": ["felix/bpf-gpl/icmp6.h"], "pass1": "bpf-c"}
+{"screen_rank": 1084, "repo": "oracle/bpftune", "commit": "e0a3a97f911e3beac194ff0bfba457c0899d6b68", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1085, "repo": "carverauto/serviceradar", "commit": "fb79376b3ec768083ae59082f8ad619e67a13a1b", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1086, "repo": "bpfman/bpfman", "commit": "3115d6a40e37384fcda3a9e338fe883c9475b888", "n_files": 5, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1087, "repo": "bpftrace/bpftrace", "commit": "7956b4a8c4430e1a4325407cd91898ff7da48b8a", "n_files": 5, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1088, "repo": "projectcalico/calico", "commit": "447f11c4cc17711bd27a0ba52fc32abf7146cbfe", "n_files": 1, "bpf_c_files": ["felix/bpf-gpl/ip_v4_fragment.h"], "pass1": "bpf-c"}
+{"screen_rank": 1089, "repo": "libbpf/bpftool", "commit": "8407ffa404447a010def45b18acf1b5cefb29811", "n_files": 1, "bpf_c_files": ["src/kernel/bpf/disasm.c"], "pass1": "bpf-c"}
+{"screen_rank": 1090, "repo": "bpftrace/bpftrace", "commit": "00eb63725096e022e34d5d207362602d00f69c5c", "n_files": 4, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1091, "repo": "gojue/ecapture", "commit": "65d59b8849486b2297d6fc5403b9f7e555dba35e", "n_files": 9, "bpf_c_files": ["kern/boringssl_a_17_kern.c", "kern/boringssl_masterkey.h"], "pass1": "bpf-c"}
+{"screen_rank": 1092, "repo": "ccfos/huatuo", "commit": "4212790885093117fd35a44055d3a6496927dcc9", "n_files": 1, "bpf_c_files": ["bpf/iotracing.c"], "pass1": "bpf-c"}
+{"screen_rank": 1093, "repo": "iopsystems/rezolus", "commit": "016778d3a4e920fdb4f481268fc9ec9baca92759", "n_files": 9, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1094, "repo": "eunomia-bpf/agentsight", "commit": "5c36ea8e2e707bd1890fde916f6398159707cfaa", "n_files": 13, "bpf_c_files": ["bpf/container_info.h", "bpf/container_utils.h", "bpf/process.bpf.c", "bpf/process.c", "bpf/process_ext/bpf_common.h", "bpf/process_new.bpf.c", "bpf/process_new.c", "bpf/process_utils.h", "bpf/sslsniff.c"], "pass1": "bpf-c"}
+{"screen_rank": 1095, "repo": "xdp-project/bpf-examples", "commit": "d1cc8a27e75498b6c06ee67fd66bf37b05900f80", "n_files": 1, "bpf_c_files": ["xdp-synproxy/xdp_synproxy_kern.c"], "pass1": "bpf-c"}
+{"screen_rank": 1096, "repo": "bpftrace/bpftrace", "commit": "5ae258b130e044310744f4c9c97c070a65f7f10e", "n_files": 11, "bpf_c_files": ["src/stdlib/map.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 1097, "repo": "bpftrace/bpftrace", "commit": "1efc548aa8db3acfc20e720c2d440e8f5aa02468", "n_files": 4, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1098, "repo": "iopsystems/rezolus", "commit": "0f97a2c9e0acbb47e501e165d9cf022e12aaec29", "n_files": 18, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1099, "repo": "aya-rs/aya", "commit": "b58fbd7f9578efad1e2d2636e98a9145ad40bf57", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1100, "repo": "FootprintAI/Containarium", "commit": "0fbc24749db6e9206f1000a039ec7ff971b66a89", "n_files": 7, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1101, "repo": "alibaba/kubeskoop", "commit": "a1a00c655f2c3afbd3b82f3e7c72675638f54b6c", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1102, "repo": "bpftrace/bpftrace", "commit": "92c53046c51a0f1dcf7e12ef2690581964ad82cf", "n_files": 6, "bpf_c_files": ["src/stdlib/strings/strings.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 1103, "repo": "carverauto/serviceradar", "commit": "02152dd4aa81fe48a1b48e52f86be4ce5395c5fe", "n_files": 300, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1104, "repo": "spinningfactory/kloak", "commit": "677ec033aa139ccb2fb2040bb6dba2a18969a9eb", "n_files": 3, "bpf_c_files": ["pkg/ebpf/bpf/helpers.h", "pkg/ebpf/bpf/helpers_test.c", "pkg/ebpf/bpf/tls_uprobe.c"], "pass1": "bpf-c"}
+{"screen_rank": 1105, "repo": "aya-rs/aya", "commit": "d5e4e9270ae4214ced858582ecb7ec6fc979d77e", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1106, "repo": "carverauto/serviceradar", "commit": "3c13f8b360d55a62efc5d00699e75cceb5c5e51f", "n_files": 7, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1107, "repo": "bpftrace/bpftrace", "commit": "c27d8dcebd0e9b46ad32dc2bc1d44224d10876d1", "n_files": 9, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1108, "repo": "projectcalico/calico", "commit": "1994d9073d03cfc6f428cf650d3a745fc1b92c8d", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1109, "repo": "carverauto/serviceradar", "commit": "bb45e30c24d4b62b7671ea8f8912a94c360130b4", "n_files": 4, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1110, "repo": "projectcalico/calico", "commit": "99f5545cee4a7ffe6961b6eb6947f582d4871bcf", "n_files": 1, "bpf_c_files": ["felix/bpf-gpl/ip_v4_fragment.h"], "pass1": "bpf-c"}
+{"screen_rank": 1111, "repo": "bpfman/bpfman", "commit": "966690b0f3db373db8414d8c6d6ee94e9fc14d55", "n_files": 3, "bpf_c_files": ["e2e/testdata/bpf/xdp_frags_pass.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 1112, "repo": "projectcalico/calico", "commit": "c817a6fb4f55d6190f994fcb7bb1617e1bcaf5c1", "n_files": 2, "bpf_c_files": ["felix/bpf-gpl/ip_v4_fragment.h"], "pass1": "bpf-c"}
+{"screen_rank": 1113, "repo": "carverauto/serviceradar", "commit": "081f683965a9333f7ec84fc389cc826594670577", "n_files": 21, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1114, "repo": "bpftrace/bpftrace", "commit": "5095b2a12d8f3c18276b98afe68b81d8ea2492fd", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1115, "repo": "bpftrace/bpftrace", "commit": "1517d1cc9b7436069412d764ae32d34c9e58afd7", "n_files": 55, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1116, "repo": "kmesh-net/kmesh", "commit": "304ae91990aed83d078e501b0b45a91c50d8f02c", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1117, "repo": "open-telemetry/opentelemetry-ebpf-instrumentation", "commit": "958f8414427116cf24b6bc5505aa07571537dfc7", "n_files": 2, "bpf_c_files": ["bpf/pid/pid_helpers.h"], "pass1": "bpf-c"}
+{"screen_rank": 1118, "repo": "open-telemetry/opentelemetry-ebpf-instrumentation", "commit": "fa8280b9ecfd2ca41a440dd7f5f5a64c186e4aab", "n_files": 1, "bpf_c_files": ["bpf/pid/pid_helpers.h"], "pass1": "bpf-c"}
+{"screen_rank": 1119, "repo": "libbpf/bpftool", "commit": "3214350ae5620d1692ac6ed7b117f5edf2ff01c6", "n_files": 1, "bpf_c_files": ["src/skeleton/pid_iter.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 1120, "repo": "carverauto/serviceradar", "commit": "d65942ecad9dc00b0c297b0c4424c3d8b62dc09a", "n_files": 4, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1121, "repo": "libbpf/libbpf", "commit": "8a596848c70df744c16b09066a78822415eecf4c", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1122, "repo": "bpftrace/bpftrace", "commit": "27682741e9c2bf16701c5d8eaccaf7e4e9c5622d", "n_files": 43, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1123, "repo": "carverauto/serviceradar", "commit": "7b23dd15b191893f12d8f91c507cd57c8fbd41f1", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1124, "repo": "kxxt/tracexec", "commit": "6e05d1815d7866ea96317774d9233d8a0226c8a8", "n_files": 1, "bpf_c_files": ["crates/tracexec-backend-ebpf/src/tracexec_system.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 1125, "repo": "projectcalico/calico", "commit": "658cc441ad98d4ee703efb540321d21f820c4846", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1126, "repo": "projectcalico/calico", "commit": "06dab97765408018c350a0646974c782c1123144", "n_files": 1, "bpf_c_files": ["felix/bpf-gpl/skb.h"], "pass1": "bpf-c"}
+{"screen_rank": 1127, "repo": "OpenVisualCloud/Media-Transport-Library", "commit": "ea0540cc09c7603b25b2e7db869653169ae025b6", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1128, "repo": "projectcalico/calico", "commit": "76fa18d11a68dac463cbdb28471c0666f50a1de3", "n_files": 18, "bpf_c_files": ["felix/bpf-gpl/conntrack_cleanup.c", "felix/bpf-gpl/conntrack_cleanup.h"], "pass1": "bpf-c"}
+{"screen_rank": 1129, "repo": "microsoft/retina", "commit": "f760861f20986773c1054927546d8cc74d115447", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1130, "repo": "projectcalico/calico", "commit": "4fd18bfb0a35952e688b55c334de5ac7745fc41d", "n_files": 8, "bpf_c_files": ["felix/bpf-gpl/bpf.h", "felix/bpf-gpl/tc.c", "felix/bpf-gpl/tc_preamble.c"], "pass1": "bpf-c"}
+{"screen_rank": 1131, "repo": "Gthulhu/Gthulhu", "commit": "01bcf4ca542f183625737bc678a562f23c6cf01c", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1132, "repo": "FootprintAI/Containarium", "commit": "e094f1cf78b0277401a0c7fb1efb41be71473e41", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1133, "repo": "carverauto/serviceradar", "commit": "a2d14b634261284d96b81ccb13d585e55ca974cc", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1134, "repo": "bpftrace/bpftrace", "commit": "0def28acf030a1df69faa0322f915db275fc6c4c", "n_files": 2, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1135, "repo": "microsoft/retina", "commit": "50d87e2a31cf975ce8f3f0cf61be4583b38698d4", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1136, "repo": "qpoint-io/qtap", "commit": "150586333f1593a3b0e5ddd885c7415b1808fd16", "n_files": 1, "bpf_c_files": ["bpf/tap/protocol.bpf.c"], "pass1": "bpf-c"}
+{"screen_rank": 1137, "repo": "carverauto/serviceradar", "commit": "07d1d0488aecc65031bcc79f4c8b9f0bea3be785", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1138, "repo": "bpftrace/bpftrace", "commit": "59cc61cfab285ebc524cbc6f4018f21e2a86b8c2", "n_files": 3, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1139, "repo": "alibaba/kubeskoop", "commit": "ce64dacd9dc4480b397a4e42feeb946ebaff83b1", "n_files": 1, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}
+{"screen_rank": 1140, "repo": "bpftrace/bpftrace", "commit": "818d28df459fd1082ce509b415e5dd6e48a49288", "n_files": 4, "bpf_c_files": [], "pass1": "E2-no-bpf-c"}

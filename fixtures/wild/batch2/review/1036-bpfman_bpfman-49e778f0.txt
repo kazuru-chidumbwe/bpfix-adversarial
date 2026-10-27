@@ -1,0 +1,50 @@
+repo: bpfman/bpfman
+commit: 49e778f0fb1bec78208b28ccb9928026d2b5e3de
+rank: 1036
+
+Assert the verifier rejection in the broken-sibling load test
+
+The multi_prog_one_bad fixture put its unverifiable "bad" program in an
+xdp.frags section, on the mistaken premise -- stated in a comment --
+that two programs must sit in distinct sections to stay separate. They
+need not: each SEC-annotated function is its own program, keyed by
+function name, so "good" and "bad" are already distinct within a single
+xdp section.
+
+The frags section also meant "bad" failed to load before the verifier
+ran, so the script's negative assertions only checked that the load
+failed, never that the verifier was the cause -- the very thing the
+fixture exists to demonstrate. A load that failed for any other reason
+would have satisfied the test equally.
+
+Move "bad" into the xdp section so it reaches the verifier, and assert
+that the two failing loads name the packet-access rejection. Assert too
+that selecting "good" alone loads exactly one program named "good", so
+the positive case proves the broken sibling was skipped rather than
+only that something loaded.
+
+Signed-off-by: Andrew McDermott <amcdermo@redhat.com>
+
+--- e2e/testdata/bpf/multi_prog_one_bad.bpf.c
+@@ -10,9 +10,8 @@
+ // kernel. A load of only "good" must succeed even though "bad" shares
+ // the object; loading "bad" must fail.
+ //
+-// The two programs sit in distinct sections (xdp, xdp.frags) so they
+-// are separate entry points -- clang merges same-section functions
+-// into a single program. Both sections infer BPF_PROG_TYPE_XDP.
++// Both functions are in the "xdp" section and load as separate
++// programs, keyed by function name.
+ 
+ #include <linux/bpf.h>
+ 
+@@ -21,7 +20,7 @@
+ SEC("xdp")
+ int good(struct xdp_md *ctx) { return XDP_PASS; }
+ 
+-SEC("xdp.frags")
++SEC("xdp")
+ int bad(struct xdp_md *ctx) {
+   char *p = (char *)(unsigned long)ctx->data;
+   return p[100]; // no bounds check against data_end -> verifier reject
+

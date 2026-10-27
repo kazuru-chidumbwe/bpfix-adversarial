@@ -1,0 +1,1722 @@
+{
+ "queried": "2026-10-27T06:38:47+00:00",
+ "query": "topic:{topic} stars:>=200 pushed:>=2026-01-01 archived:false fork:false",
+ "topics": [
+  "ebpf",
+  "bpf",
+  "xdp",
+  "libbpf"
+ ],
+ "n_found": 139,
+ "n_selected": 73,
+ "repos": [
+  {
+   "repo": "0vm/NetDeflect",
+   "stars": 362,
+   "default_branch": "main",
+   "topics_matched": [
+    "xdp"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "aixisstudio/Snitch",
+   "stars": 613,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "alibaba/kubeskoop",
+   "stars": 700,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 30,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "alibaba/loongcollector",
+   "stars": 2209,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 70,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "apache/skywalking",
+   "stars": 24974,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "apache/skywalking-rover",
+   "stars": 238,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 62,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "aquasecurity/btfhub",
+   "stars": 490,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "aquasecurity/libbpfgo",
+   "stars": 851,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 53,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "aquasecurity/tracee",
+   "stars": 4654,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "selected": false,
+   "reason": "in batch 1"
+  },
+  {
+   "repo": "avilum/secimport",
+   "stars": 243,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "aya-rs/awesome-aya",
+   "stars": 201,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "aya-rs/aya",
+   "stars": 4869,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 33,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "boratanrikulu/gecit",
+   "stars": 379,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "boratanrikulu/gobee",
+   "stars": 348,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 2,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "bpfman/bpfman",
+   "stars": 770,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 83,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "stars": 10387,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 10,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "bytedance/vArmor",
+   "stars": 512,
+   "default_branch": "main",
+   "topics_matched": [
+    "bpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "capstone-engine/capstone",
+   "stars": 9137,
+   "default_branch": "next",
+   "topics_matched": [
+    "bpf"
+   ],
+   "bpf_c_files": 9,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "carloslack/KoviD",
+   "stars": 663,
+   "default_branch": "master",
+   "topics_matched": [
+    "bpf"
+   ],
+   "bpf_c_files": 2,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "stars": 924,
+   "default_branch": "staging",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 5,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "ccfos/huatuo",
+   "stars": 1135,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 82,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "chriskaliX/Hades",
+   "stars": 309,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "libbpf"
+   ],
+   "bpf_c_files": 22,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "cicd-sensor/cicd-sensor",
+   "stars": 260,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 25,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "cilium/cilium",
+   "stars": 25716,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf",
+    "xdp"
+   ],
+   "selected": false,
+   "reason": "in batch 1"
+  },
+  {
+   "repo": "cilium/cilium-cli",
+   "stars": 606,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "cilium/ebpf",
+   "stars": 8020,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "selected": false,
+   "reason": "in batch 1"
+  },
+  {
+   "repo": "cilium/hubble",
+   "stars": 4369,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "cilium/hubble-ui",
+   "stars": 544,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "cilium/pwru",
+   "stars": 3844,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "selected": false,
+   "reason": "in batch 1"
+  },
+  {
+   "repo": "cilium/tetragon",
+   "stars": 5110,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "selected": false,
+   "reason": "in batch 1"
+  },
+  {
+   "repo": "CloudDetail/apo",
+   "stars": 374,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "cloudflare/ebpf_exporter",
+   "stars": 2653,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf",
+    "bpf",
+    "libbpf"
+   ],
+   "bpf_c_files": 60,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "cloudflare/rakelimit",
+   "stars": 211,
+   "default_branch": "master",
+   "topics_matched": [
+    "bpf"
+   ],
+   "bpf_c_files": 3,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "cloudflare/tubular",
+   "stars": 338,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 9,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "coroot/coroot",
+   "stars": 7987,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "coroot/coroot-node-agent",
+   "stars": 432,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 31,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "Cybereason-Public/owLSM",
+   "stars": 281,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 64,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "daeuniverse/dae",
+   "stars": 6344,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 7,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "databufflabs/databuff",
+   "stars": 715,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "ddddddO/packemon",
+   "stars": 311,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 1,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "domcyrus/rustnet",
+   "stars": 5178,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 8,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "dropbox/goebpf",
+   "stars": 1171,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf",
+    "bpf",
+    "xdp"
+   ],
+   "bpf_c_files": 1,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "EHfive/einat-ebpf",
+   "stars": 354,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 5,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "elesiuta/picosnitch",
+   "stars": 1020,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 3,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "eunomia-bpf/agentsight",
+   "stars": 755,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 38,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "eunomia-bpf/bpf-developer-tutorial",
+   "stars": 4323,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf",
+    "xdp",
+    "libbpf"
+   ],
+   "bpf_c_files": 102,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "eunomia-bpf/bpftime",
+   "stars": 1591,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 97,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "eunomia-bpf/eunomia-bpf",
+   "stars": 909,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf",
+    "libbpf"
+   ],
+   "bpf_c_files": 36,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "eunomia-bpf/GPTtrace",
+   "stars": 275,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "eunomia-bpf/wasm-bpf",
+   "stars": 450,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "libbpf"
+   ],
+   "bpf_c_files": 30,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "exein-io/pulsar",
+   "stars": 1058,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 28,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "falcosecurity/falco",
+   "stars": 9528,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "falcosecurity/libs",
+   "stars": 320,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "selected": false,
+   "reason": "in batch 1"
+  },
+  {
+   "repo": "feiskyer/ebpf-apps",
+   "stars": 383,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "libbpf"
+   ],
+   "bpf_c_files": 81,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "ffalcinelli/pydivert",
+   "stars": 251,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "libbpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "florianl/go-tc",
+   "stars": 534,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "FootprintAI/Containarium",
+   "stars": 313,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 4,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "gamemann/xdp-firewall",
+   "stars": 959,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf",
+    "bpf",
+    "xdp"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "gamemann/xdp-proxy",
+   "stars": 361,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf",
+    "bpf",
+    "xdp"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "gma1k/podtrace",
+   "stars": 204,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 40,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "gojue/ebpfmanager",
+   "stars": 351,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 71,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "gojue/ecapture",
+   "stars": 15516,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 62,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "gojue/ecaptureQ",
+   "stars": 309,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "grafana/beyla",
+   "stars": 2152,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 1,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "grigio/network-monitor",
+   "stars": 317,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "Gthulhu/Gthulhu",
+   "stars": 407,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 2,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "harmonycloud/kindling",
+   "stars": 1063,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 8,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "hengyoush/kyanos",
+   "stars": 5082,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 20,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "hyperledger-solang/solang",
+   "stars": 1380,
+   "default_branch": "main",
+   "topics_matched": [
+    "bpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "immanuwell/pktz",
+   "stars": 295,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 1,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "stars": 2952,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "selected": false,
+   "reason": "in batch 1"
+  },
+  {
+   "repo": "iopsystems/rezolus",
+   "stars": 278,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 29,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "iovisor/kubectl-trace",
+   "stars": 2188,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "jfernandez/bpftop",
+   "stars": 2710,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 5,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "k8spacket/k8spacket",
+   "stars": 1097,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 3,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "Karib0u/rustinel",
+   "stars": 515,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "kmesh-net/kmesh",
+   "stars": 766,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 65,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "kubearmor/KubeArmor",
+   "stars": 2632,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "selected": false,
+   "reason": "in batch 1"
+  },
+  {
+   "repo": "kubeshark/kubeshark",
+   "stars": 12110,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "kubesphere/kubesphere",
+   "stars": 17068,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "kunai-project/kunai",
+   "stars": 1097,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "kxxt/tracexec",
+   "stars": 447,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 1,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "l3af-project/l3afd",
+   "stars": 209,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "lac-dcc/honey-potion",
+   "stars": 296,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf",
+    "libbpf"
+   ],
+   "bpf_c_files": 42,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "libbpf/bpftool",
+   "stars": 716,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf",
+    "libbpf"
+   ],
+   "bpf_c_files": 4,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "libbpf/libbpf",
+   "stars": 2774,
+   "default_branch": "master",
+   "topics_matched": [
+    "bpf",
+    "libbpf"
+   ],
+   "bpf_c_files": 1,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "libbpf/libbpf-rs",
+   "stars": 1024,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf",
+    "bpf",
+    "libbpf"
+   ],
+   "bpf_c_files": 33,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "libbpf/libbpf-sys",
+   "stars": 287,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf",
+    "bpf",
+    "xdp"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "linnix-os/linnix",
+   "stars": 252,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "linuxkerneltravel/lmp",
+   "stars": 743,
+   "default_branch": "develop",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 425,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "lizrice/learning-ebpf",
+   "stars": 1840,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 9,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "loxilb-io/loxilb",
+   "stars": 1885,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "MatheuZSecurity/Furtex",
+   "stars": 292,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 26,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "mechpen/sockdump",
+   "stars": 439,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "microsoft/retina",
+   "stars": 3179,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 15,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "microsoft/xdp-for-windows",
+   "stars": 493,
+   "default_branch": "main",
+   "topics_matched": [
+    "xdp"
+   ],
+   "bpf_c_files": 14,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "mito753/Kernel-Exploit-Dojo",
+   "stars": 627,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "mozillazg/ptcpdump",
+   "stars": 1294,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 21,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "multikernel/kernelscript",
+   "stars": 509,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "netobserv/netobserv-ebpf-agent",
+   "stars": 211,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "selected": false,
+   "reason": "in batch 1"
+  },
+  {
+   "repo": "netobserv/netobserv-operator",
+   "stars": 270,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "ntop/ntopng",
+   "stars": 8300,
+   "default_branch": "dev",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "odigos-io/odigos",
+   "stars": 3674,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "odigos-io/opentelemetry-go-instrumentation",
+   "stars": 298,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 4,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "open-telemetry/opentelemetry-ebpf-instrumentation",
+   "stars": 598,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 356,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "open-telemetry/opentelemetry-ebpf-profiler",
+   "stars": 3222,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "selected": false,
+   "reason": "in batch 1"
+  },
+  {
+   "repo": "open-telemetry/opentelemetry-go-instrumentation",
+   "stars": 1038,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 10,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "OpenCloudOS/nettrace",
+   "stars": 496,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "OpenGamingCollective/cardwire",
+   "stars": 228,
+   "default_branch": "main",
+   "topics_matched": [
+    "bpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "OpenVisualCloud/Media-Transport-Library",
+   "stars": 250,
+   "default_branch": "main",
+   "topics_matched": [
+    "xdp"
+   ],
+   "bpf_c_files": 12,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "oracle/bpftune",
+   "stars": 1891,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 13,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "Outfluencer/Minecraft-XDP-eBPF",
+   "stars": 222,
+   "default_branch": "main",
+   "topics_matched": [
+    "bpf",
+    "xdp"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "pandaadir05/snoop",
+   "stars": 224,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "parca-dev/parca",
+   "stars": 5000,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "parca-dev/parca-agent",
+   "stars": 749,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "selected": false,
+   "reason": "in batch 1"
+  },
+  {
+   "repo": "ParsaKSH/spoof-tunnel",
+   "stars": 361,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "xdp"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "pixie-io/pixie",
+   "stars": 6551,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 40,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "projectcalico/calico",
+   "stars": 7405,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf",
+    "xdp"
+   ],
+   "bpf_c_files": 86,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "pythops/oryx",
+   "stars": 2602,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "qmonnet/awesome-ebpf",
+   "stars": 5191,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf",
+    "xdp"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "qmonnet/rbpf",
+   "stars": 1135,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "qpoint-io/qtap",
+   "stars": 1465,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "libbpf"
+   ],
+   "bpf_c_files": 35,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "seccomp/libseccomp",
+   "stars": 932,
+   "default_branch": "main",
+   "topics_matched": [
+    "bpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "seccomp/libseccomp-golang",
+   "stars": 315,
+   "default_branch": "main",
+   "topics_matched": [
+    "bpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "seladb/PcapPlusPlus",
+   "stars": 3159,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "ShinoLeah/eDBG",
+   "stars": 854,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 3,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "spinningfactory/kloak",
+   "stars": 296,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 6,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "sshlog/agent",
+   "stars": 540,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 10,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "the-tcpdump-group/libpcap",
+   "stars": 3179,
+   "default_branch": "master",
+   "topics_matched": [
+    "bpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "the-tcpdump-group/tcpdump",
+   "stars": 3254,
+   "default_branch": "master",
+   "topics_matched": [
+    "bpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "ThisSeanZhang/landscape",
+   "stars": 1575,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 126,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "tw4452852/zbpf",
+   "stars": 283,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "undead-undead/xray-lite",
+   "stars": 200,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "xdp"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "vbpf/prevail",
+   "stars": 472,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 0,
+   "tree_truncated": false,
+   "selected": false,
+   "reason": "no BPF C file by the pass-1 rule"
+  },
+  {
+   "repo": "xdp-project/bpf-examples",
+   "stars": 570,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf"
+   ],
+   "bpf_c_files": 20,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "xdp-project/xdp-project",
+   "stars": 314,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf",
+    "bpf",
+    "xdp"
+   ],
+   "bpf_c_files": 4,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "xdp-project/xdp-tutorial",
+   "stars": 2991,
+   "default_branch": "main",
+   "topics_matched": [
+    "bpf",
+    "xdp",
+    "libbpf"
+   ],
+   "bpf_c_files": 16,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "yandex/perforator",
+   "stars": 3436,
+   "default_branch": "main",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 40,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  },
+  {
+   "repo": "yeet-src/httpinspect",
+   "stars": 225,
+   "default_branch": "master",
+   "topics_matched": [
+    "ebpf"
+   ],
+   "bpf_c_files": 1,
+   "tree_truncated": false,
+   "selected": true,
+   "reason": "BPF C in default branch"
+  }
+ ]
+}

@@ -1,0 +1,254 @@
+repo: gojue/ecapture
+commit: 65d59b8849486b2297d6fc5403b9f7e555dba35e
+rank: 1091
+
+Android 17 (API 37) BoringSSL: version offsets + TLS 1.3 keylog client/server + length fixes (#1029)
+
+* feat(android): add BoringSSL a_17 offsets (Android 17 / API 37)
+
+On Android 17, eCapture derives the eBPF bytecode name from
+`ro.build.version.release` (`config_ecandroid.go` -> `boringssl_a_<rel>`), asks
+for a nonexistent `boringssl_a_17_kern.o`, and silently falls back to
+`boringssl_a_13_kern.o` — the wrong struct offsets, so TLS 1.3 keylog/decrypt
+fails. This adds the missing a_17 support.
+
+Offset generator (utils/boringssl-offset.c) — compile against android17-release:
+- `ssl_cipher_st.id` (uint32) was renamed to `protocol_id` (uint16) in Android 17.
+  Detect it with a type trait (same pattern as the existing ssl_st.version /
+  ssl3_state.version probes) and emit SSL_CIPHER_ST_ID from whichever field
+  exists, so the generated macro name stays stable. On a_13..a_16 the trait
+  selects `id` (unchanged behaviour).
+- `bio_st` / `bio_method_st` are opaque in the public headers; include
+  `<crypto/bio/internal.h>` for their definitions. That header is present in
+  android13/15/16-release too (verified), so generation for the older tags is
+  unaffected.
+
+Generated kern/boringssl_a_17_kern.c (offsetof against the android17-release
+tag). The only deltas vs a_16 are the SSL_HANDSHAKE tail (NEW_SESSION
+0x5f0->0x7d0, EARLY_SESSION, HINTS, CLIENT_VERSION); the TLS 1.3 secret path
+(BSSL__SSL_HANDSHAKE_MAX_VERSION 0x1e, SSL3_STATE hs 0x118, client_random 0x30,
+exporter 0x182) is unchanged.
+
+Wiring:
+- variables.mk: build kern/boringssl_a_17.
+- internal/probe/openssl/libs.go: map "boringssl_a_17" -> boringssl_a_17_kern.o.
+- utils/boringssl_android_offset.sh: generate a_17 from the android17-release tag.
+
+* android a_17: restore SSL3_STATE traffic-secret offsets + generate them; add test
+
+Codex P1: the generated a_17 header omitted the four
+BSSL__SSL3_STATE_{SERVER,CLIENT}_TRAFFIC_SECRET_0[_LEN] macros, so
+uretprobe_bssl_do_handshake fell back to boringssl_masterkey.h's older-layout
+defaults (client 0x150, lens 0x1b0/0x1b1) and produced unusable keylog output.
+
+- utils/boringssl-offset.c: emit the four macros from the struct itself, guarded
+  to the Android 16+ InplaceVector layout (SSL3_STATE.version present). SERVER =
+  write_traffic_secret, CLIENT = read_traffic_secret; each _LEN is the size_ byte,
+  computed as (next consecutive vector's offset) - 1, robust to padding. Pre-A16
+  raw-array headers are untouched (masterkey.h owns them there).
+- kern/boringssl_a_17_kern.c: regenerated — now carries
+  SERVER 0x120 / CLIENT 0x151 / SERVER_LEN 0x150 / CLIENT_LEN 0x181 (matches a_16).
+- test/offsets: TestBoringSSLTrafficSecretOffsets parses every boringssl_a_*_kern.c
+  and, for the A16+ layout, asserts the four macros are present and satisfy the
+  InplaceVector invariants (CLIENT=SERVER+0x31, SERVER_LEN=CLIENT-1,
+  CLIENT_LEN=SERVER_LEN+0x31, size_ 32..48 past storage). Fails without this fix.
+
+Verified end-to-end: built eCapture for Android arm64 (nocore) with this a_17,
+ran `-m keylog` on an Android-17 (API 37) image; it loads boringssl_a_17_kern.o,
+attaches, and the SSL3_STATE application-traffic secret it extracts decrypts real
+TLS 1.3 traffic (recovered live HTTP/2 request headers offline).
+
+* fix(boringssl): correct TLS 1.3 keylog client/server labels and secret length
+
+Two pre-existing defects in the BoringSSL TLS 1.3 keylog path, independent of the
+Android version offsets. Both only affect keylog/pcap output (text mode never reads
+traffic secrets), so ordinary use did not surface them.
+
+1) Client/server label swap. bssl::SSL3_STATE stores role-relative secrets
+   (write_traffic_secret, read_traffic_secret); NSS keylog labels are absolute
+   (CLIENT_TRAFFIC_SECRET_0 is the client's secret). uretprobe_bssl_do_handshake
+   filled server_traffic_secret_0_ from write and client_traffic_secret_0_ from
+   read unconditionally, which is correct only for a server endpoint. For a client
+   (the common Android capture) both labels are reversed, and Wireshark cannot
+   decrypt. Fix: read ssl_st.server and map by role. The role byte is added to the
+   offset generator (ssl_st.server is a bool bitfield; its byte is
+   offsetof(renegotiate_mode)+sizeof(enum), = 0xa4 on android17-release). The kern
+   change is gated on #ifdef BSSL__SSL_ST_SERVER, which only a_17 defines, so
+   a_13..a_16 keep their exact prior mapping.
+
+2) Secret length over-read. The BoringSSL event carries the TLS 1.3 hash length in
+   the slot the Go decoder reads as CipherId (mastersecret_bssl_t.hash_len). The
+   length switch matched it against real cipher ids (0x1301/2/3), missed, and fell
+   to default = EvpMaxMdSize (64), emitting 128-hex secrets that Wireshark rejects.
+   Fix: in the default branch only, treat a CipherId in (0, EvpMaxMdSize] as the
+   hash length (32=SHA-256, 48=SHA-384). The explicit OpenSSL cipher cases are
+   untouched.
+
+Tests: TestKeylogHandler_TLS13_BoringSSLHashLen asserts a hash_len of 32 yields
+64-hex (32-byte) CLIENT and SERVER lines, not 128.
+
+Validated on an Android 17 image: the length is now 32 bytes, and the secret the
+role branch selects decrypts real TLS 1.3 traffic. The 0xa4 role offset is
+offsetof-verified against android17-release; a full label check needs a release
+device (the test image is aosp-main, ahead of the tag).
+
+---------
+
+Co-authored-by: ejc3 <ejc3@users.noreply.github.com>
+
+--- kern/boringssl_a_17_kern.c
+@@ -0,0 +1,104 @@
++#ifndef ECAPTURE_BORINGSSL_A_17_KERN_H
++#define ECAPTURE_BORINGSSL_A_17_KERN_H
++
++/* OPENSSL_VERSION_TEXT: OpenSSL 1.1.1 (compatible; BoringSSL) */
++/* OPENSSL_VERSION_NUMBER: 269488255 */
++
++// ssl_st->version removed in this BoringSSL version.
++// SSL_SESSION_ST_SSL_VERSION also acts as the Android 16+ feature flag
++// for boringssl_const.h (InplaceVector offsets) and boringssl_masterkey.h.
++// ssl_session_st->ssl_version
++#define SSL_SESSION_ST_SSL_VERSION 0x4
++
++// ssl_st->session
++#define SSL_ST_SESSION 0x58
++
++// ssl_st->rbio
++#define SSL_ST_RBIO 0x18
++
++// ssl_st->wbio
++#define SSL_ST_WBIO 0x20
++
++// ssl_st->s3
++#define SSL_ST_S3 0x30
++
++// ssl_session_st->secret_length removed in this BoringSSL version.
++// Sentinel 0xFF: boringssl_masterkey.h uses BORINGSSL_SSL_MAX_MASTER_KEY_LENGTH.
++#define SSL_SESSION_ST_SECRET_LENGTH 0xFF
++
++// ssl_session_st->secret
++#define SSL_SESSION_ST_SECRET 0xa
++
++// ssl_session_st->cipher
++#define SSL_SESSION_ST_CIPHER 0xc8
++
++// bio_st->num
++#define BIO_ST_NUM 0x20
++
++// bio_st->method
++#define BIO_ST_METHOD 0x0
++
++// bio_method_st->type
++#define BIO_METHOD_ST_TYPE 0x0
++
++// ssl_cipher_st->id
++#define SSL_CIPHER_ST_ID 0x10
++
++// bssl::SSL3_STATE->hs
++#define BSSL__SSL3_STATE_HS 0x118
++
++// bssl::SSL3_STATE->client_random
++#define BSSL__SSL3_STATE_CLIENT_RANDOM 0x30
++
++// bssl::SSL3_STATE->exporter_secret
++#define BSSL__SSL3_STATE_EXPORTER_SECRET 0x182
++
++// bssl::SSL3_STATE->established_session
++#define BSSL__SSL3_STATE_ESTABLISHED_SESSION 0x1d0
++
++// SSL3_STATE->version added in Android 16 (replaces ssl_st->version).
++// BSSL__SSL3_STATE_VERSION is the Android 16+ feature flag used by
++// boringssl_masterkey.h to read the TLS version before the 1.2/1.3 branch.
++// bssl::SSL3_STATE->version
++#define BSSL__SSL3_STATE_VERSION 0xd0
++
++// bssl::SSL3_STATE->write_traffic_secret (labelled SERVER_TRAFFIC_SECRET_0)
++#define BSSL__SSL3_STATE_SERVER_TRAFFIC_SECRET_0 0x120
++
++// bssl::SSL3_STATE->read_traffic_secret (labelled CLIENT_TRAFFIC_SECRET_0)
++#define BSSL__SSL3_STATE_CLIENT_TRAFFIC_SECRET_0 0x151
++
++// InplaceVector size_ bytes (== next vector offset - 1)
++#define BSSL__SSL3_STATE_SERVER_TRAFFIC_SECRET_0_LEN 0x150
++
++#define BSSL__SSL3_STATE_CLIENT_TRAFFIC_SECRET_0_LEN 0x181
++
++// ssl_st->server (bool:1) byte — mask 0x1; 1=server endpoint, 0=client
++#define BSSL__SSL_ST_SERVER 0xa4
++
++// bssl::SSL_HANDSHAKE->new_session
++#define BSSL__SSL_HANDSHAKE_NEW_SESSION 0x7d0
++
++// bssl::SSL_HANDSHAKE->early_session
++#define BSSL__SSL_HANDSHAKE_EARLY_SESSION 0x7d8
++
++// bssl::SSL_HANDSHAKE->hints
++#define BSSL__SSL_HANDSHAKE_HINTS 0x808
++
++// bssl::SSL_HANDSHAKE->client_version
++#define BSSL__SSL_HANDSHAKE_CLIENT_VERSION 0x814
++
++// bssl::SSL_HANDSHAKE->state
++#define BSSL__SSL_HANDSHAKE_STATE 0x14
++
++// bssl::SSL_HANDSHAKE->tls13_state
++#define BSSL__SSL_HANDSHAKE_TLS13_STATE 0x18
++
++// bssl::SSL_HANDSHAKE->max_version
++#define BSSL__SSL_HANDSHAKE_MAX_VERSION 0x1e
++
++#include "boringssl_const.h"
++#include "boringssl_masterkey.h"
++#include "openssl.h"
++
++#endif
+
+--- kern/boringssl_masterkey.h
+@@ -552,19 +552,36 @@ int uretprobe_bssl_do_handshake(struct pt_regs *ctx) {
+ 
+ tls13_path:
+     {
+-        u8 slen = 0, clen = 0;
+-        bpf_probe_read_user(&slen, 1,
+-            (void *)(s3_addr + BSSL__SSL3_STATE_SERVER_TRAFFIC_SECRET_0_LEN));
++        u8 clen = 0;
+         bpf_probe_read_user(&clen, 1,
+             (void *)(s3_addr + BSSL__SSL3_STATE_CLIENT_TRAFFIC_SECRET_0_LEN));
+-        mastersecret->hash_len = clen ? clen : 32;
+-
+-        bpf_probe_read_user(&mastersecret->server_traffic_secret_0_,
+-            sizeof(mastersecret->server_traffic_secret_0_),
+-            (void *)(s3_addr + BSSL__SSL3_STATE_SERVER_TRAFFIC_SECRET_0));
++        mastersecret->hash_len = clen ? clen : 32;   // both directions share the hash length
++
++        // SSL3_STATE stores RELATIVE secrets: the *_SERVER_* macro is write_traffic_secret,
++        // the *_CLIENT_* macro is read_traffic_secret. NSS keylog labels are ABSOLUTE
++        // (CLIENT_TRAFFIC_SECRET_0 == the client's app secret), so map by endpoint role.
++        u64 write_src = s3_addr + BSSL__SSL3_STATE_SERVER_TRAFFIC_SECRET_0;  // this endpoint writes with it
++        u64 read_src  = s3_addr + BSSL__SSL3_STATE_CLIENT_TRAFFIC_SECRET_0;  // this endpoint reads with it
++        u64 client_src, server_src;
++#ifdef BSSL__SSL_ST_SERVER
++        u8 is_server = 0;
++        bpf_probe_read_user(&is_server, 1, (void *)(ssl_st_ptr + BSSL__SSL_ST_SERVER));
++        if (is_server & 0x1) {
++            server_src = write_src;   // a server writes with the server secret
++            client_src = read_src;
++        } else {
++            client_src = write_src;   // a client (the Android app) writes with the client secret
++            server_src = read_src;
++        }
++#else
++        // Versions without a confirmed ssl->server offset keep the prior mapping (byte-identical).
++        server_src = write_src;
++        client_src = read_src;
++#endif
+         bpf_probe_read_user(&mastersecret->client_traffic_secret_0_,
+-            sizeof(mastersecret->client_traffic_secret_0_),
+-            (void *)(s3_addr + BSSL__SSL3_STATE_CLIENT_TRAFFIC_SECRET_0));
++            sizeof(mastersecret->client_traffic_secret_0_), (void *)client_src);
++        bpf_probe_read_user(&mastersecret->server_traffic_secret_0_,
++            sizeof(mastersecret->server_traffic_secret_0_), (void *)server_src);
+         bpf_probe_read_user(&mastersecret->exporter_secret,
+             sizeof(mastersecret->exporter_secret),
+             (void *)(s3_addr + BSSL__SSL3_STATE_EXPORTER_SECRET));
+

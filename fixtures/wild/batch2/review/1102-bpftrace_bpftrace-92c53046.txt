@@ -1,0 +1,85 @@
+repo: bpftrace/bpftrace
+commit: 92c53046c51a0f1dcf7e12ef2690581964ad82cf
+rank: 1102
+
+stdlib: Fixed strerror() and signal_name() failing BPF verification (#5145)
+
+On fedora 44 amd64 llvm 22.1.4, `strerror()` and `signal_name()` cannot pass the
+verifier's validation, `syscall_name()` works fine, for example strerror:
+
+    tracepoint:syscalls:sys_exit_openat,
+    tracepoint:syscalls:sys_exit_openat2
+    {
+        $errno = args.ret;
+        @[strerror($errno)] = count();
+        exit();
+    }
+
+Error: `errors[var_off=(0x0; 0x3fffffffc0)]` failed:
+
+    ;  @ strings.bpf.c:86
+    30: (bf) r1 = r2                      ; R1=scalar(id=3) R2=scalar(id=3)
+    31: (57) r1 &= 255                    ; R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+    32: (15) if r1 == 0x3a goto pc+1      ; R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+    33: (55) if r1 != 0x29 goto pc+139 173: R0=scalar(smin=smin32=0,smax=umax=smax32=umax32=11,var_off=(0x0; 0xf)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(id=3) R3=scalar(smin=smin32=0,smax=umax=smax32=umax32=133,var_off=(0x0; 0xff)) R6=map_value(map=.data.var_buf,ks=4,vs=2048,smin=smin32=0,smax=umax=smax32=umax32=1408,var_off=(0x0; 0x780)) R7=ctx() R8=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=11,var_off=(0x0; 0xf)) R10=fp0
+    173: (67) r2 <<= 32                   ; R2=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+    174: (77) r2 >>= 32                   ; R2=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+    175: (67) r2 <<= 6                    ; R2=scalar(smin=0,smax=umax=0x3fffffffc0,smax32=0x7fffffc0,umax32=0xffffffc0,var_off=(0x0; 0x3fffffffc0))
+    176: (18) r1 = 0xffffd016cf169010     ; R1=map_value(map=38213820.rodata,ks=4,vs=8656,off=16)
+    178: (0f) r1 += r2                    ; R1=map_value(map=38213820.rodata,ks=4,vs=8656,off=16,smin=0,smax=umax=0x3fffffffc0,smax32=0x7fffffc0,umax32=0xffffffc0,var_off=(0x0; 0x3fffffffc0)) R2=scalar(smin=0,smax=umax=0x3fffffffc0,smax32=0x7fffffc0,umax32=0xffffffc0,var_off=(0x0; 0x3fffffffc0))
+    ;  @ strings.bpf.c:89
+    179: (71) r2 = *(u8 *)(r1 +63)
+    R1 unbounded memory access, make sure to bounds check any such access
+
+Using a mask to control the range of array access can solve this problem.
+
+The max errno is EHWPOISON (1000 0101), then mask will be `0xff`.
+
+I tried several methods, but I could never pass the verifier in both Fedora [1]
+and Ubuntu [2][3] environments at the same time. Only this method using a mask
+can support various kernel and LLVM versions simultaneously.
+
+[1] Fedora 44 kernel 6.19.14-300.fc44.x86_64, llvm 22.1.4
+[2] Ubuntu 24.04.4 kernel 6.17.0-1014-nvidia, llvm 18.1.3
+[3] Ubuntu 26.04 kernel 7.0.0-15-generic, llvm 21.1.8
+
+Signed-off-by: Rong Tao <rongtao@cestc.cn>
+
+--- src/stdlib/strings/strings.bpf.c
+@@ -71,7 +71,9 @@ int __strerror(int errno, err_str *out) {
+   if (errno < 0) {
+     errno = -errno;
+   }
+-  if (errno >= 0 && errno <= EHWPOISON) {
++  if (errno >= 0 && errno < ERROR_INDEX_MASK) {
++    errno &= ERROR_INDEX_MASK;
++
+     // The array 'errors' is not fully populated, skip the empty 'errno'.
+     //
+     // There is another benefit to doing this. BPF 512-byte stack limit.
+@@ -95,7 +97,9 @@ int __strerror(int errno, err_str *out) {
+ }
+ 
+ void __signal_name(int sig, sig_str *out) {
+-  if (sig >= 0 && sig <= 64) {
++  if (sig >= 0 && sig < SIGNAL_INDEX_MASK) {
++    sig &= SIGNAL_INDEX_MASK;
++
+     if (signals[sig][0] == '\0') {
+       __builtin_memcpy(out, &unknown_signal, sizeof(*out));
+     } else {
+@@ -107,11 +111,8 @@ void __signal_name(int sig, sig_str *out) {
+ }
+ 
+ int __syscall_name(int n, syscall_str *out) {
+-  if (n >= 0 && n < NR_SYSCALL_ALIGN_BITS) {
+-    // To resolve the verifier's complaint that the off range is too large,
+-    // resulting in "possible" access beyond the range of syscall_names[],
+-    // we use a constant value to constrain n to help the verifier.
+-    n &= NR_SYSCALL_ALIGN_BITS;
++  if (n >= 0 && n < SYSCALL_INDEX_MASK) {
++    n &= SYSCALL_INDEX_MASK;
+ 
+     // System call numbers are not sequential, so when syscall_names is empty,
+     // we return "unknown system call".
+

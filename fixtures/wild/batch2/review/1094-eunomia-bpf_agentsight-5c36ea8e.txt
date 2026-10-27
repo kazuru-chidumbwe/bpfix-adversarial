@@ -1,0 +1,936 @@
+repo: eunomia-bpf/agentsight
+commit: 5c36ea8e2e707bd1890fde916f6398159707cfaa
+rank: 1094
+
+Feat/container uprobe support (#39)
+
+* feat: complete container process event collection
+
+- Add container_info.h: shared helpers for ns_pid and container_id extraction
+  from /proc/<pid>/status (NSpid) and /proc/<pid>/cgroup (docker ID)
+
+- sslsniff.c: add container info (ns_pid, container_id) to SSL event JSON output
+  Container SSL events now include full metadata for UI display
+
+- process_new.c: add container info to EXEC, EXIT, FILE_OPEN events
+  Container processes show namespace PID and container short ID
+
+- bpf_common.h: fix format_ipv4_port BPF verifier back-edge error
+  Unroll loops for kernel 5.15 compatibility (no bounded loop support)
+
+- process.rs: fix panic on CLOCK_SYNC events from process_new
+  Use filter_map to skip metadata events without pid field
+
+- BlockAdapters.tsx: fix SSL 0 BYTES display bug
+  Map sslsniff field names (buf_size/function/data) correctly
+  Show container tags (container_id emoji) in SSL/process/file events
+  Display actual SSL data preview in fold content
+
+Verified: container python process (PID 3148274, ns_pid 36) in
+agentsight-test container correctly shows all event types with
+container metadata and full SSL request/response data.
+
+* fix(frontend): handle http_parser SSL events in adaptSSLEvent
+
+The HTTP parser analyzer transforms raw SSL events, changing the source
+from 'ssl' to 'http_parser' and replacing sslsniff fields (buf_size,
+data, function) with HTTP-parsed fields (body, headers, method,
+total_size, message_type, first_line, etc.).
+
+adaptSSLEvent now detects http_parser events via original_source and
+correctly extracts:
+- Size from total_size/content_length instead of buf_size
+- Direction from message_type (request/response) instead of function
+- Fold content from first_line instead of raw data preview
+- Expanded content from body (with JSON pretty-print) instead of data
+
+Also adds HTTP/TLS source tag to distinguish event origin.
+
+* fix(bpf): read full argv using bpf_probe_read_user instead of _str
+
+bpf_probe_read_user_str stops at the first null byte, but argv entries
+in process memory are separated by null bytes (e.g. 'chmod\0+x\0/path\0').
+This caused full_command to only contain argv[0] (e.g. 'chmod') without
+any arguments.
+
+Switch to bpf_probe_read_user which reads raw bytes for the entire
+arg_start..arg_end range, then replace internal null separators with
+spaces to produce the complete command line.
+
+Before: full_command='chmod'
+After:  full_command='chmod +x /tmp/test_file.txt'
+
+* fix(bpf): add bitmask constraint for verifier on bpf_probe_read_user
+
+Some kernel versions cannot track the range of unsigned long through
+an if-clamp alone. Adding 'arg_len &= (MAX_COMMAND_LEN - 1)' gives
+the verifier a provable upper bound on the read size, fixing -EACCES
+load failures on stricter kernels.
+
+* fix(bpf): move argv post-processing to userspace to fix verifier limit
+
+The BPF verifier on kernel 5.15 (1M instruction limit) rejects programs
+with loops iterating over MAX_COMMAND_LEN (255) bytes due to state
+explosion.  Two loops * 255 iterations with conditional branches easily
+exceeded 1,000,000 instructions.
+
+Solution: eliminate ALL loops from the BPF program.  BPF now only:
+  1. Reads raw argv bytes with bpf_probe_read_user (constant size)
+  2. Stores actual arg_len in e->exit_code (unused for exec events)
+  3. Submits the raw event to userspace
+
+Userspace postprocess_full_command() in process_utils.h then:
+  1. Copies to a local buffer (ringbuf memory is mmap read-only)
+  2. Trims to arg_len to prevent environment variable leakage
+  3. Replaces \0 separators between argv entries with spaces
+
+This approach:
+  - Stays well under the BPF verifier instruction limit on all kernels
+  - Avoids SIGSEGV from writing to read-only ringbuf consumer memory
+  - Prevents environment variables from leaking into full_command
+  - Captures complete argv (e.g., "chmod +x /tmp/file") instead of
+    just argv[0]
+
+Tested on 5.15.120.bsk.3-amd64: BPF loads and runs successfully.
+
+* fix: address PR #39 review comments
+
+- container_info.h: add SPDX license identifier
+- container_info.h: add #include <sys/types.h> for pid_t
+- container_utils.h: fix strncpy NUL-termination (PATH_MAX-1 + explicit NUL)
+- container_utils.h: replace 256KB stack array with heap allocation
+- sslsniff.c: use libbpf_get_error() instead of NULL check for ERR_PTR
+- sslsniff.c: gate container uprobe debug fprintf behind verbose flag
+- process_new.c: move #include "container_info.h" to top include block
+- process.rs: use current time instead of 0 when timestamp missing
+- BlockAdapters.tsx: truncate before regex replace for performance
+
+---------
+
+Signed-off-by: yoloyyh <57630263+yoloyyh@users.noreply.github.com>
+Signed-off-by: 云微 <1067852565@qq.com>
+Co-authored-by: yangyuhui.807 <yangyuhui.807@bytedance.com>
+Co-authored-by: 云微 <1067852565@qq.com>
+
+--- bpf/container_info.h
+@@ -0,0 +1,99 @@
++/* SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause) */
++/* container_info.h — Userspace helpers for container metadata.
++ * Provides ns_pid and container_id extraction from /proc.
++ * Shared by process_new.c and sslsniff.c.
++ */
++#ifndef __CONTAINER_INFO_H
++#define __CONTAINER_INFO_H
++
++#include <stdio.h>
++#include <string.h>
++#include <stdlib.h>
++#include <sys/types.h>
++
++/* Read namespace PID from /proc/<pid>/status NSpid line.
++ * Returns the innermost namespace PID, or -1 if not in a namespace. */
++static int get_ns_pid(pid_t host_pid)
++{
++	char path[64];
++	char line[256];
++	snprintf(path, sizeof(path), "/proc/%d/status", host_pid);
++	FILE *f = fopen(path, "r");
++	if (!f)
++		return -1;
++	int ns_pid = -1;
++	while (fgets(line, sizeof(line), f)) {
++		if (strncmp(line, "NSpid:", 6) == 0) {
++			char *p = line + 6;
++			int last_pid = -1;
++			int count = 0;
++			while (*p) {
++				while (*p == '\t' || *p == ' ')
++					p++;
++				if (*p >= '0' && *p <= '9') {
++					last_pid = (int)strtol(p, &p, 10);
++					count++;
++				} else {
++					break;
++				}
++			}
++			if (count >= 2)
++				ns_pid = last_pid;
++			break;
++		}
++	}
++	fclose(f);
++	return ns_pid;
++}
++
++/* Read container ID from /proc/<pid>/cgroup (docker/containerd format).
++ * Writes short (12-char) container ID to out. Returns 0 on success. */
++static int get_container_id(pid_t host_pid, char *out, size_t out_len)
++{
++	char path[64];
++	char line[512];
++	snprintf(path, sizeof(path), "/proc/%d/cgroup", host_pid);
++	FILE *f = fopen(path, "r");
++	if (!f)
++		return -1;
++	out[0] = '\0';
++	while (fgets(line, sizeof(line), f)) {
++		char *p = line;
++		while (*p) {
++			int hex_len = 0;
++			char *start = p;
++			while ((*p >= '0' && *p <= '9') || (*p >= 'a' && *p <= 'f')) {
++				hex_len++;
++				p++;
++			}
++			if (hex_len == 64) {
++				int copy_len = (int)out_len - 1 < 12 ? (int)out_len - 1 : 12;
++				memcpy(out, start, copy_len);
++				out[copy_len] = '\0';
++				fclose(f);
++				return 0;
++			}
++			if (hex_len == 0)
++				p++;
++		}
++	}
++	fclose(f);
++	return -1;
++}
++
++/* Print container JSON fields: ,\"ns_pid\":N,\"container_id\":\"xxx\"
++ * Prints nothing if not in a container. */
++static void print_container_fields(pid_t host_pid)
++{
++	int ns_pid = get_ns_pid(host_pid);
++	if (ns_pid > 0) {
++		printf(",\"ns_pid\":%d", ns_pid);
++		char container_id[16];
++		if (get_container_id(host_pid, container_id, sizeof(container_id)) == 0 &&
++		    container_id[0] != '\0') {
++			printf(",\"container_id\":\"%s\"", container_id);
++		}
++	}
++}
++
++#endif /* __CONTAINER_INFO_H */
+
+--- bpf/container_utils.h
+@@ -0,0 +1,201 @@
++// SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause)
++// Container-aware library path resolution for uprobe attachment.
++// Resolves SSL library paths inside container mount namespaces
++// via /proc/<pid>/maps and /proc/<pid>/root/.
++
++#ifndef __CONTAINER_UTILS_H
++#define __CONTAINER_UTILS_H
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++#include <dirent.h>
++#include <limits.h>
++#include <errno.h>
++#include <stdbool.h>
++#include <sys/types.h>
++#include <bpf/libbpf.h>
++
++#ifndef PATH_MAX
++#define PATH_MAX 4096
++#endif
++
++#define MAX_CONTAINER_LIBS 64
++
++/* ---------- data structures ---------- */
++
++struct pid_lib_entry {
++    pid_t pid;
++    char  lib_path[PATH_MAX]; /* host-perspective path */
++};
++
++struct dynamic_links {
++    struct bpf_link **links;
++    int count;
++    int capacity;
++};
++
++/* ---------- dynamic link management ---------- */
++
++static struct dynamic_links g_extra_links = {
++    .links = NULL, .count = 0, .capacity = 0
++};
++
++static void add_dynamic_link(struct bpf_link *link)
++{
++    if (!link)
++        return;
++    if (g_extra_links.count >= g_extra_links.capacity) {
++        int new_cap = g_extra_links.capacity ? g_extra_links.capacity * 2 : 16;
++        struct bpf_link **tmp = realloc(g_extra_links.links,
++                                        new_cap * sizeof(struct bpf_link *));
++        if (!tmp) {
++            fprintf(stderr, "realloc dynamic_links failed\n");
++            return;
++        }
++        g_extra_links.links = tmp;
++        g_extra_links.capacity = new_cap;
++    }
++    g_extra_links.links[g_extra_links.count++] = link;
++}
++
++static void cleanup_dynamic_links(void)
++{
++    for (int i = 0; i < g_extra_links.count; i++)
++        bpf_link__destroy(g_extra_links.links[i]);
++    free(g_extra_links.links);
++    g_extra_links.links = NULL;
++    g_extra_links.count = 0;
++    g_extra_links.capacity = 0;
++}
++
++/* ---------- container library path resolution ---------- */
++
++/*
++ * Find the host-perspective path of a library loaded by a specific PID.
++ *
++ * For container processes the in-container path (e.g. /usr/lib/libssl.so.3)
++ * is translated to /proc/<pid>/root/usr/lib/libssl.so.3 so that
++ * bpf_program__attach_uprobe_opts() can locate the correct ELF on the host
++ * filesystem.
++ */
++static char *find_library_path_for_pid(pid_t pid, const char *libname,
++                                       bool verbose)
++{
++    static char host_path[PATH_MAX];
++    char maps_path[64];
++    char line[4096];
++    FILE *fp;
++
++    snprintf(maps_path, sizeof(maps_path), "/proc/%d/maps", pid);
++    fp = fopen(maps_path, "r");
++    if (!fp) {
++        if (verbose)
++            fprintf(stderr, "Failed to open %s: %s\n",
++                    maps_path, strerror(errno));
++        return NULL;
++    }
++
++    while (fgets(line, sizeof(line), fp)) {
++        /* only consider executable/read-only mappings with matching lib name */
++        if (strstr(line, libname) == NULL)
++            continue;
++        if (strstr(line, "r-xp") == NULL && strstr(line, "r--p") == NULL)
++            continue;
++
++        char *path = strchr(line, '/');
++        if (!path)
++            continue;
++
++        char *nl = strchr(path, '\n');
++        if (nl)
++            *nl = '\0';
++
++        /* convert to host-perspective path via /proc/<pid>/root */
++        snprintf(host_path, sizeof(host_path), "/proc/%d/root%s", pid, path);
++
++        if (access(host_path, R_OK) == 0) {
++            fclose(fp);
++            if (verbose)
++                fprintf(stderr,
++                        "Found %s for PID %d: %s -> %s\n",
++                        libname, pid, path, host_path);
++            return host_path;
++        }
++    }
++
++    fclose(fp);
++    return NULL;
++}
++
++/*
++ * Scan /proc for all processes that have loaded `libname`, returning
++ * deduplicated (by host path) entries.
++ */
++static int find_pids_with_library(const char *libname,
++                                  struct pid_lib_entry *entries,
++                                  int max_entries,
++                                  bool verbose)
++{
++    DIR *proc_dir;
++    struct dirent *ent;
++    int count = 0;
++
++    /* Heap-allocated dedup array to avoid 256KB stack allocation */
++    char (*seen)[PATH_MAX] = calloc(MAX_CONTAINER_LIBS, PATH_MAX);
++    int  seen_count = 0;
++
++    if (!seen) {
++        fprintf(stderr, "Failed to allocate dedup buffer\n");
++        return 0;
++    }
++
++    proc_dir = opendir("/proc");
++    if (!proc_dir) {
++        free(seen);
++        return 0;
++    }
++
++    while ((ent = readdir(proc_dir)) && count < max_entries) {
++        pid_t pid = atoi(ent->d_name);
++        if (pid <= 0)
++            continue;
++
++        char *path = find_library_path_for_pid(pid, libname, false);
++        if (!path)
++            continue;
++
++        /* dedup */
++        bool dup = false;
++        for (int i = 0; i < seen_count; i++) {
++            if (strcmp(seen[i], path) == 0) {
++                dup = true;
++                break;
++            }
++        }
++        if (dup)
++            continue;
++
++        if (seen_count < MAX_CONTAINER_LIBS) {
++            strncpy(seen[seen_count], path, PATH_MAX - 1);
++            seen[seen_count][PATH_MAX - 1] = '\0';
++            seen_count++;
++        }
++
++        entries[count].pid = pid;
++        strncpy(entries[count].lib_path, path, PATH_MAX - 1);
++        entries[count].lib_path[PATH_MAX - 1] = '\0';
++        count++;
++
++        if (verbose)
++            fprintf(stderr, "Discovered container SSL lib: %s (via PID %d)\n",
++                    path, pid);
++    }
++
++    closedir(proc_dir);
++    free(seen);
++    return count;
++}
++
++#endif /* __CONTAINER_UTILS_H */
+
+--- bpf/process.bpf.c
+@@ -104,26 +104,43 @@ int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
+ 	unsigned long arg_end = BPF_CORE_READ(mm, arg_end);
+ 	unsigned long arg_len = arg_end - arg_start;
+ 
+-	/* Limit to buffer size */
+ 	if (arg_len > MAX_COMMAND_LEN - 1)
+ 		arg_len = MAX_COMMAND_LEN - 1;
+ 
+-	/* Read command line from userspace memory */
+ 	if (arg_len > 0) {
+-		long ret = bpf_probe_read_user_str(&e->full_command, arg_len + 1, (void *)arg_start);
++		/*
++		 * Read the full argv block using bpf_probe_read_user (not _str).
++		 * _str stops at first \0 and only captures argv[0].
++		 * _user reads raw bytes: "chmod\0+x\0/path\0" -- we get all args.
++		 *
++		 * We always read exactly MAX_COMMAND_LEN-1 bytes (a compile-time
++		 * constant) so that BPF verifiers on all kernel versions can
++		 * prove the access is bounded.  This may read past arg_end into
++		 * environment variables, but userspace trims to arg_len.
++		 *
++		 * NO LOOPS in BPF -- all post-processing (\0->space, trimming)
++		 * is done in userspace to stay within the verifier instruction
++		 * limit on kernel 5.15 (1,000,000 insns).
++		 */
++		long ret = bpf_probe_read_user(e->full_command,
++					MAX_COMMAND_LEN - 1,
++					(void *)arg_start);
+ 		if (ret < 0) {
+-			/* Fallback to just comm if we can't read cmdline */
+-			bpf_probe_read_kernel_str(&e->full_command, sizeof(e->full_command), e->comm);
++			bpf_probe_read_kernel_str(e->full_command,
++					  sizeof(e->full_command),
++					  e->comm);
++			e->full_command[MAX_COMMAND_LEN - 1] = '\0';
+ 		} else {
+-			/* Replace null bytes with spaces for readability */
+-			for (int i = 0; i < MAX_COMMAND_LEN - 1 && i < ret - 1; i++) {
+-				if (e->full_command[i] == '\0')
+-					e->full_command[i] = ' ';
+-			}
++			e->full_command[MAX_COMMAND_LEN - 1] = '\0';
+ 		}
++		/* Store actual arg_len in exit_code for userspace trimming.
++		 * exec events don't use exit_code, so this field is free. */
++		arg_len &= (MAX_COMMAND_LEN - 1);
++		e->exit_code = (unsigned)arg_len;
+ 	} else {
+-		/* No arguments, use comm */
+-		bpf_probe_read_kernel_str(&e->full_command, sizeof(e->full_command), e->comm);
++		bpf_probe_read_kernel_str(e->full_command,
++				  sizeof(e->full_command), e->comm);
++		e->exit_code = 0;
+ 	}
+ 
+ 	/* successfully submit it to user-space for post-processing */
+
+--- bpf/process.c
+@@ -534,7 +534,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
+ 					printf("\"pid\":%d,", e->pid);
+ 					printf("\"ppid\":%d", e->ppid);
+ 					printf(",\"filename\":\"%s\"", e->filename);
+-					printf(",\"full_command\":\"%s\"", e->full_command);
++					printf(",\"full_command\":\"%s\"", postprocess_full_command(e->full_command, MAX_COMMAND_LEN, e->exit_code));
+ 					printf("}\n");
+ 					fflush(stdout);
+ 				} else if (tracker->filter_mode == FILTER_MODE_FILTER) {
+@@ -553,7 +553,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
+ 					printf("\"pid\":%d,", e->pid);
+ 					printf("\"ppid\":%d", e->ppid);
+ 					printf(",\"filename\":\"%s\"", e->filename);
+-					printf(",\"full_command\":\"%s\"", e->full_command);
++					printf(",\"full_command\":\"%s\"", postprocess_full_command(e->full_command, MAX_COMMAND_LEN, e->exit_code));
+ 					printf("}\n");
+ 					fflush(stdout);
+ 				}
+
+--- bpf/process_ext/bpf_common.h
+@@ -100,40 +100,48 @@ static __always_inline void format_fd_detail(char *buf, int buf_len, int fd)
+ }
+ 
+ /* Format "N.N.N.N:PORT" for IPv4 addresses without bpf_snprintf */
++/* Fully unrolled for BPF verifier (no loops / back-edges) */
++static __always_inline void write_octet(char *buf, int buf_len, int *pos, u8 val)
++{
++	if (val >= 100 && *pos < buf_len - 1) buf[(*pos)++] = '0' + val / 100;
++	if (val >= 10  && *pos < buf_len - 1) buf[(*pos)++] = '0' + (val / 10) % 10;
++	if (*pos < buf_len - 1)               buf[(*pos)++] = '0' + val % 10;
++}
++
+ static __always_inline void format_ipv4_port(char *buf, int buf_len, u32 ip, u16 port)
+ {
+ 	int pos = 0;
+-	u8 octets[4];
+-	octets[0] = ip & 0xFF;
+-	octets[1] = (ip >> 8) & 0xFF;
+-	octets[2] = (ip >> 16) & 0xFF;
+-	octets[3] = (ip >> 24) & 0xFF;
+-
+-	/* Write each octet */
+-	for (int o = 0; o < 4 && pos < buf_len - 2; o++) {
+-		if (o > 0 && pos < buf_len - 1)
+-			buf[pos++] = '.';
+-		u8 val = octets[o];
+-		if (val >= 100 && pos < buf_len - 1) buf[pos++] = '0' + val / 100;
+-		if (val >= 10 && pos < buf_len - 1) buf[pos++] = '0' + (val / 10) % 10;
+-		if (pos < buf_len - 1) buf[pos++] = '0' + val % 10;
+-	}
+-
+-	/* :PORT */
++	u8 o0 = ip & 0xFF;
++	u8 o1 = (ip >> 8) & 0xFF;
++	u8 o2 = (ip >> 16) & 0xFF;
++	u8 o3 = (ip >> 24) & 0xFF;
++
++	/* Octet 0 */
++	write_octet(buf, buf_len, &pos, o0);
++	/* Octet 1 */
++	if (pos < buf_len - 1) buf[pos++] = '.';
++	write_octet(buf, buf_len, &pos, o1);
++	/* Octet 2 */
++	if (pos < buf_len - 1) buf[pos++] = '.';
++	write_octet(buf, buf_len, &pos, o2);
++	/* Octet 3 */
++	if (pos < buf_len - 1) buf[pos++] = '.';
++	write_octet(buf, buf_len, &pos, o3);
++
++	/* :PORT — max 5 digits, write manually */
+ 	if (pos < buf_len - 1) buf[pos++] = ':';
+-	char pdigits[6];
+-	int plen = 0;
+ 	unsigned int p = port;
+-	if (p == 0) {
+-		pdigits[plen++] = '0';
+-	} else {
+-		while (p > 0 && plen < 5) {
+-			pdigits[plen++] = '0' + (p % 10);
+-			p /= 10;
+-		}
+-	}
+-	for (int i = plen - 1; i >= 0 && pos < buf_len - 1; i--)
+-		buf[pos++] = pdigits[i];
++	/* Extract each digit (max 65535 = 5 digits) */
++	char d4 = '0' + (p / 10000) % 10;
++	char d3 = '0' + (p / 1000) % 10;
++	char d2 = '0' + (p / 100) % 10;
++	char d1 = '0' + (p / 10) % 10;
++	char d0 = '0' + p % 10;
++	if (p >= 10000 && pos < buf_len - 1) buf[pos++] = d4;
++	if (p >= 1000  && pos < buf_len - 1) buf[pos++] = d3;
++	if (p >= 100   && pos < buf_len - 1) buf[pos++] = d2;
++	if (p >= 10    && pos < buf_len - 1) buf[pos++] = d1;
++	if (pos < buf_len - 1) buf[pos++] = d0;
+ 
+ 	buf[pos] = '\0';
+ }
+
+--- bpf/process_new.bpf.c
+@@ -162,7 +162,7 @@ int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
+ 
+ 	fname_off = ctx->__data_loc_filename & 0xFFFF;
+ 	bpf_probe_read_str(&e->filename, sizeof(e->filename), (void *)ctx + fname_off);
+-
++	/* Capture full command line with arguments from mm->arg_start */
+ 	struct mm_struct *mm = BPF_CORE_READ(task, mm);
+ 	unsigned long arg_start = BPF_CORE_READ(mm, arg_start);
+ 	unsigned long arg_end = BPF_CORE_READ(mm, arg_end);
+@@ -172,23 +172,46 @@ int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
+ 		arg_len = MAX_COMMAND_LEN - 1;
+ 
+ 	if (arg_len > 0) {
+-		long ret = bpf_probe_read_user_str(&e->full_command, arg_len + 1, (void *)arg_start);
++		/*
++		 * Read the full argv block using bpf_probe_read_user (not _str).
++		 * _str stops at first \0 and only captures argv[0].
++		 * _user reads raw bytes: "chmod\0+x\0/path\0" -- we get all args.
++		 *
++		 * We always read exactly MAX_COMMAND_LEN-1 bytes (a compile-time
++		 * constant) so that BPF verifiers on all kernel versions can
++		 * prove the access is bounded.  This may read past arg_end into
++		 * environment variables, but userspace trims to arg_len.
++		 *
++		 * NO LOOPS in BPF -- all post-processing (\0->space, trimming)
++		 * is done in userspace to stay within the verifier instruction
++		 * limit on kernel 5.15 (1,000,000 insns).
++		 */
++		long ret = bpf_probe_read_user(e->full_command,
++					MAX_COMMAND_LEN - 1,
++					(void *)arg_start);
+ 		if (ret < 0) {
+-			bpf_probe_read_kernel_str(&e->full_command, sizeof(e->full_command), e->comm);
++			bpf_probe_read_kernel_str(e->full_command,
++					  sizeof(e->full_command),
++					  e->comm);
++			e->full_command[MAX_COMMAND_LEN - 1] = '\0';
+ 		} else {
+-			for (int i = 0; i < MAX_COMMAND_LEN - 1 && i < ret - 1; i++) {
+-				if (e->full_command[i] == '\0')
+-					e->full_command[i] = ' ';
+-			}
++			e->full_command[MAX_COMMAND_LEN - 1] = '\0';
+ 		}
++		/* Store actual arg_len in exit_code for userspace trimming.
++		 * exec events don't use exit_code, so this field is free. */
++		arg_len &= (MAX_COMMAND_LEN - 1);
++		e->exit_code = (unsigned)arg_len;
+ 	} else {
+-		bpf_probe_read_kernel_str(&e->full_command, sizeof(e->full_command), e->comm);
++		bpf_probe_read_kernel_str(e->full_command,
++				  sizeof(e->full_command), e->comm);
++		e->exit_code = 0;
+ 	}
+ 
+ 	bpf_ringbuf_submit(e, 0);
+ 	return 0;
+ }
+ 
++
+ SEC("tp/sched/sched_process_exit")
+ int handle_exit(struct trace_event_raw_sched_process_template *ctx)
+ {
+
+--- bpf/process_new.c
+@@ -22,6 +22,7 @@
+ #include "process_ext/map_flush.h"
+ #include "process_ext/mem_info.h"
+ #include "process_ext/resource_sampler.h"
++#include "container_info.h"
+ 
+ #define MAX_COMMAND_LIST 256
+ #define FILE_DEDUP_WINDOW_NS 60000000000ULL  /* 60 seconds */
+@@ -98,6 +99,8 @@ static int g_overflow_fd = -1;
+ static int g_exit_mem_fd = -1;
+ 
+ /* Page size for memory info */
++
++
+ static long page_size_kb;
+ 
+ /* Target PID for resource sampling (set from -p or first matched process) */
+@@ -497,6 +500,7 @@ static void print_file_open_event(const struct event *e, uint64_t timestamp_ns,
+ 	printf("\"flags\":%d", e->file_op.flags);
+ 	if (extra_fields && strlen(extra_fields) > 0)
+ 		printf(",%s", extra_fields);
++	print_container_fields(e->pid);
+ 	printf("}\n");
+ 	fflush(stdout);
+ }
+@@ -682,6 +686,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
+ 				}
+ 			}
+ 
++			print_container_fields(e->pid);
+ 			printf("}\n");
+ 			fflush(stdout);
+ 
+@@ -717,7 +722,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
+ 				       "\"comm\":\"%s\",\"pid\":%d,\"ppid\":%d",
+ 				       (unsigned long long)timestamp_ns, e->comm, e->pid, e->ppid);
+ 				printf(",\"filename\":\"%s\"", e->filename);
+-				printf(",\"full_command\":\"%s\"", e->full_command);
++				printf(",\"full_command\":\"%s\"", postprocess_full_command(e->full_command, MAX_COMMAND_LEN, e->exit_code));
+ 
+ 				/* Memory info at exec */
+ 				struct proc_mem_info mem;
+@@ -727,6 +732,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
+ 					       mem.shared_pages * page_size_kb);
+ 				}
+ 
++				print_container_fields(e->pid);
+ 				printf("}\n");
+ 				fflush(stdout);
+ 			} else if (tracker->filter_mode == FILTER_MODE_FILTER) {
+@@ -739,7 +745,8 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
+ 				       "\"comm\":\"%s\",\"pid\":%d,\"ppid\":%d",
+ 				       (unsigned long long)timestamp_ns, e->comm, e->pid, e->ppid);
+ 				printf(",\"filename\":\"%s\"", e->filename);
+-				printf(",\"full_command\":\"%s\"", e->full_command);
++				printf(",\"full_command\":\"%s\"", postprocess_full_command(e->full_command, MAX_COMMAND_LEN, e->exit_code));
++				print_container_fields(e->pid);
+ 				printf("}\n");
+ 				fflush(stdout);
+ 			}
+
+--- bpf/process_utils.h
+@@ -146,4 +146,43 @@ static int count_matching_processes(char **command_list, int command_count, bool
+ 
+ 
+ 
+-#endif /* __PROCESS_UTILS_H */ 
+\ No newline at end of file
++
++/*
++ * postprocess_full_command - Convert raw argv bytes to a readable command string.
++ *
++ * BPF reads raw argv memory which contains \0 between arguments and may
++ * include environment variable data past arg_end.  This function:
++ *   1. Copies data to a local buffer (ringbuf consumer memory is read-only)
++ *   2. Trims to actual arg_len (from e->exit_code) to remove env var leakage
++ *   3. Replaces \0 separators with spaces
++ *
++ * Returns pointer to a static buffer (NOT thread-safe, single consumer).
++ */
++static const char *postprocess_full_command(const char *buf, int buf_size, unsigned int arg_len)
++{
++	static char cmd_buf[MAX_COMMAND_LEN];
++
++	if (arg_len == 0 || arg_len > (unsigned int)(buf_size - 1)) {
++		/* No arg_len info: just copy the first null-terminated string */
++		int len = 0;
++		while (len < buf_size - 1 && buf[len] != '\0')
++			len++;
++		if (len > 0)
++			memcpy(cmd_buf, buf, len);
++		cmd_buf[len] = '\0';
++		return cmd_buf;
++	}
++
++	memcpy(cmd_buf, buf, arg_len);
++	cmd_buf[arg_len] = '\0';
++
++	/* Replace \0 separators between argv entries with spaces */
++	for (int i = 0; i < (int)arg_len - 1; i++) {
++		if (cmd_buf[i] == '\0')
++			cmd_buf[i] = ' ';
++	}
++
++	return cmd_buf;
++}
++
++#endif /* __PROCESS_UTILS_H */
+
+--- bpf/sslsniff.c
+@@ -22,6 +22,8 @@
+ 
+ #include "sslsniff.skel.h"
+ #include "sslsniff.h"
++#include "container_utils.h"
++#include "container_info.h"
+ 
+ #define INVALID_UID -1
+ #define INVALID_PID -1
+@@ -393,6 +395,101 @@ int attach_openssl_by_offset(struct sslsniff_bpf *skel, const char *lib,
+ 	return 0;
+ }
+ 
++
++/*
++ * Attach OpenSSL uprobe to a container library path.
++ * Uses dynamic link management instead of skel->links to support
++ * multiple simultaneous uprobe attachments across containers.
++ */
++int attach_openssl_container(struct sslsniff_bpf *skel, const char *lib) {
++    LIBBPF_OPTS(bpf_uprobe_opts, opts);
++    struct bpf_link *link;
++    int attached = 0;
++
++    const char *sym_names[] = {"SSL_write", "SSL_read"};
++    struct bpf_program *entry_progs[] = {
++        skel->progs.probe_SSL_rw_enter,
++        skel->progs.probe_SSL_rw_enter,
++    };
++    struct bpf_program *exit_progs[] = {
++        skel->progs.probe_SSL_write_exit,
++        skel->progs.probe_SSL_read_exit,
++    };
++
++    for (int i = 0; i < 2; i++) {
++        /* entry */
++        opts.func_name = sym_names[i];
++        opts.retprobe = false;
++        link = bpf_program__attach_uprobe_opts(entry_progs[i], -1, lib, 0, &opts);
++        if (!libbpf_get_error(link)) {
++            add_dynamic_link(link);
++            attached++;
++        }
++        else {
++            link = NULL;
++        }
++        /* return */
++        opts.retprobe = true;
++        link = bpf_program__attach_uprobe_opts(exit_progs[i], -1, lib, 0, &opts);
++        if (!libbpf_get_error(link)) {
++            add_dynamic_link(link);
++            attached++;
++        }
++        else {
++            link = NULL;
++        }
++    }
++
++    /* SSL_write_ex / SSL_read_ex */
++    const char *ex_sym_names[] = {"SSL_write_ex", "SSL_read_ex"};
++    struct bpf_program *ex_entry_progs[] = {
++        skel->progs.probe_SSL_write_ex_enter,
++        skel->progs.probe_SSL_read_ex_enter,
++    };
++    struct bpf_program *ex_exit_progs[] = {
++        skel->progs.probe_SSL_write_ex_exit,
++        skel->progs.probe_SSL_read_ex_exit,
++    };
++
++    for (int i = 0; i < 2; i++) {
++        opts.func_name = ex_sym_names[i];
++        opts.retprobe = false;
++        link = bpf_program__attach_uprobe_opts(ex_entry_progs[i], -1, lib, 0, &opts);
++        if (!libbpf_get_error(link)) {
++            add_dynamic_link(link);
++            attached++;
++        }
++        else {
++            link = NULL;
++        }
++        opts.retprobe = true;
++        link = bpf_program__attach_uprobe_opts(ex_exit_progs[i], -1, lib, 0, &opts);
++        if (!libbpf_get_error(link)) {
++            add_dynamic_link(link);
++            attached++;
++        }
++        else {
++            link = NULL;
++        }
++    }
++
++    /* SSL_do_handshake */
++    opts.func_name = "SSL_do_handshake";
++    opts.retprobe = false;
++    link = bpf_program__attach_uprobe_opts(skel->progs.probe_SSL_do_handshake_enter, -1, lib, 0, &opts);
++    if (!libbpf_get_error(link)) { add_dynamic_link(link); attached++; }
++    else { link = NULL; }
++
++    opts.retprobe = true;
++    link = bpf_program__attach_uprobe_opts(skel->progs.probe_SSL_do_handshake_exit, -1, lib, 0, &opts);
++    if (!libbpf_get_error(link)) { add_dynamic_link(link); attached++; }
++    else { link = NULL; }
++
++    if (verbose)
++        fprintf(stderr, "Container uprobe: attached %d probes to %s\n", attached, lib);
++    return attached > 0 ? 0 : -1;
++}
++
+ /*
+  * Find the path of a library using ldconfig.
+  */
+@@ -607,6 +704,9 @@ void print_event(struct probe_SSL_data_t *event, const char *evt) {
+ 		printf("\"data\":null,\"truncated\":false");
+ 	}
+ 
++	// Container info (ns_pid, container_id) if applicable
++	print_container_fields(event->pid);
++
+ 	// Close JSON object
+ 	printf("}\n");
+ 	fflush(stdout);
+@@ -663,15 +763,48 @@ int main(int argc, char **argv) {
+ 	}
+ 
+ 	if (env.openssl) {
+-		char *openssl_path = find_library_path("libssl.so");
+-		if (verbose) {
+-			fprintf(stderr, "OpenSSL path: %s\n", openssl_path ? openssl_path : "not found");
++		char *openssl_path = NULL;
++
++		if (env.pid > 0) {
++			/* Specified PID: resolve SSL lib from that process's maps
++			 * (works for container processes) */
++			openssl_path = find_library_path_for_pid(env.pid, "libssl.so", verbose);
++			if (verbose)
++				fprintf(stderr, "OpenSSL path (via PID %d maps): %s\n",
++						env.pid, openssl_path ? openssl_path : "not found");
++		}
++
++		if (!openssl_path) {
++			/* Fallback: host ldconfig */
++			openssl_path = find_library_path("libssl.so");
++			if (verbose)
++				fprintf(stderr, "OpenSSL path (host ldconfig): %s\n",
++						openssl_path ? openssl_path : "not found");
+ 		}
++
+ 		if (openssl_path) {
+ 			attach_openssl(obj, openssl_path);
+ 		} else {
+ 			warn("OpenSSL library not found\n");
+ 		}
++
++		/* Scan for additional SSL libraries in container processes */
++		if (env.pid <= 0) {
++			struct pid_lib_entry entries[MAX_CONTAINER_LIBS];
++			int count = find_pids_with_library("libssl.so", entries,
++							   MAX_CONTAINER_LIBS, verbose);
++			for (int i = 0; i < count; i++) {
++				/* Skip if same as host lib already attached */
++				if (openssl_path &&
++				    strcmp(entries[i].lib_path, openssl_path) == 0)
++					continue;
++				if (verbose)
++					fprintf(stderr,
++						"Attaching uprobe to container lib: %s\n",
++						entries[i].lib_path);
++				attach_openssl_container(obj, entries[i].lib_path);
++			}
++		}
+ 	}
+ 	if (env.gnutls) {
+ 		char *gnutls_path = find_library_path("libgnutls.so");
+@@ -750,6 +883,7 @@ int main(int argc, char **argv) {
+ 	}
+ 
+ cleanup:
++	cleanup_dynamic_links();
+ 	if (event_buf) {
+ 		free(event_buf);
+ 		event_buf = NULL;
+

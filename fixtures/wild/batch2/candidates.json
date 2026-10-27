@@ -1,0 +1,2097 @@
+{
+ "protocol": "docs/WILD-CORPUS-PROTOCOL.md (batch 2)",
+ "window": "2024-01-01..2026-10-25",
+ "seed": 20261027,
+ "rank_base": 1000,
+ "repos": [
+  "alibaba/kubeskoop",
+  "alibaba/loongcollector",
+  "apache/skywalking-rover",
+  "aquasecurity/libbpfgo",
+  "aya-rs/aya",
+  "boratanrikulu/gobee",
+  "bpfman/bpfman",
+  "bpftrace/bpftrace",
+  "capstone-engine/capstone",
+  "carloslack/KoviD",
+  "carverauto/serviceradar",
+  "ccfos/huatuo",
+  "chriskaliX/Hades",
+  "cicd-sensor/cicd-sensor",
+  "cloudflare/ebpf_exporter",
+  "cloudflare/rakelimit",
+  "cloudflare/tubular",
+  "coroot/coroot-node-agent",
+  "Cybereason-Public/owLSM",
+  "daeuniverse/dae",
+  "ddddddO/packemon",
+  "domcyrus/rustnet",
+  "dropbox/goebpf",
+  "EHfive/einat-ebpf",
+  "elesiuta/picosnitch",
+  "eunomia-bpf/agentsight",
+  "eunomia-bpf/bpf-developer-tutorial",
+  "eunomia-bpf/bpftime",
+  "eunomia-bpf/eunomia-bpf",
+  "eunomia-bpf/wasm-bpf",
+  "exein-io/pulsar",
+  "feiskyer/ebpf-apps",
+  "FootprintAI/Containarium",
+  "gma1k/podtrace",
+  "gojue/ebpfmanager",
+  "gojue/ecapture",
+  "grafana/beyla",
+  "Gthulhu/Gthulhu",
+  "harmonycloud/kindling",
+  "hengyoush/kyanos",
+  "immanuwell/pktz",
+  "iopsystems/rezolus",
+  "jfernandez/bpftop",
+  "k8spacket/k8spacket",
+  "kmesh-net/kmesh",
+  "kxxt/tracexec",
+  "lac-dcc/honey-potion",
+  "libbpf/bpftool",
+  "libbpf/libbpf",
+  "libbpf/libbpf-rs",
+  "linuxkerneltravel/lmp",
+  "lizrice/learning-ebpf",
+  "MatheuZSecurity/Furtex",
+  "microsoft/retina",
+  "microsoft/xdp-for-windows",
+  "mozillazg/ptcpdump",
+  "odigos-io/opentelemetry-go-instrumentation",
+  "open-telemetry/opentelemetry-ebpf-instrumentation",
+  "open-telemetry/opentelemetry-go-instrumentation",
+  "OpenVisualCloud/Media-Transport-Library",
+  "oracle/bpftune",
+  "pixie-io/pixie",
+  "projectcalico/calico",
+  "qpoint-io/qtap",
+  "ShinoLeah/eDBG",
+  "spinningfactory/kloak",
+  "sshlog/agent",
+  "ThisSeanZhang/landscape",
+  "xdp-project/bpf-examples",
+  "xdp-project/xdp-project",
+  "xdp-project/xdp-tutorial",
+  "yandex/perforator",
+  "yeet-src/httpinspect"
+ ],
+ "phrases": [
+  "verifier error",
+  "verifier reject",
+  "verifier fail",
+  "fix verifier",
+  "make verifier happy",
+  "please the verifier",
+  "satisfy the verifier",
+  "invalid mem access",
+  "invalid access to packet",
+  "unbounded memory access",
+  "min value is negative",
+  "math between",
+  "!read_ok",
+  "unreleased reference",
+  "R1 type=",
+  "R2 type=",
+  "expected=map_ptr",
+  "fails to load"
+ ],
+ "n": 141,
+ "candidates": [
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "f0c9bfde33e79c2b7fe2c607c4d6776d6e0d5fe5",
+   "parents": [
+    "f93a5e03b90476f13481cb0ae82e5b41eafe26c6"
+   ],
+   "title": "revert(deps): restore web-ng assets lockfiles before the vite 8.3.4 bump",
+   "committer_date": "2026-10-21T01:35:45.000-05:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/f0c9bfde33e79c2b7fe2c607c4d6776d6e0d5fe5",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1000
+  },
+  {
+   "repo": "ccfos/huatuo",
+   "commit": "03a6263d126f697ff9181649f6d4e022820327a9",
+   "parents": [
+    "11c640a217e424f8354fb0d28994425193b56910"
+   ],
+   "title": "feat(ras): probe kernel tracepoint support before BPF load",
+   "committer_date": "2026-06-15T15:53:04.000+08:00",
+   "html_url": "https://github.com/ccfos/huatuo/commit/03a6263d126f697ff9181649f6d4e022820327a9",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1001
+  },
+  {
+   "repo": "projectcalico/calico",
+   "commit": "87a9f6690a4fcb3b3f09d18a2dae666063d972f3",
+   "parents": [
+    "d55901d282da63b2d0bd305539fe4ecc96d2a006"
+   ],
+   "title": "felix/bpf: count parallel program loads atomically in the preamble UTs",
+   "committer_date": "2026-10-08T14:21:53.000-07:00",
+   "html_url": "https://github.com/projectcalico/calico/commit/87a9f6690a4fcb3b3f09d18a2dae666063d972f3",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1002
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "b98307d96f92de3107d261a485681d4d82003bf3",
+   "parents": [
+    "78d7e544040cbdc9aaef4647e614a81f3a66e9cf"
+   ],
+   "title": "fix(advisory-feeds): deschedule nvd-api stub + surface real error in logs",
+   "committer_date": "2026-06-18T02:38:35.000-05:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/b98307d96f92de3107d261a485681d4d82003bf3",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1003
+  },
+  {
+   "repo": "kmesh-net/kmesh",
+   "commit": "6733c673b9285a7f9c62bf9f162d7b3aeca1a50c",
+   "parents": [
+    "835d85e4fcc794bac3c188901f5974b17887a7cd"
+   ],
+   "title": "fix verifier log omitted",
+   "committer_date": "2024-08-31T15:26:33.000+08:00",
+   "html_url": "https://github.com/kmesh-net/kmesh/commit/6733c673b9285a7f9c62bf9f162d7b3aeca1a50c",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 1004
+  },
+  {
+   "repo": "pixie-io/pixie",
+   "commit": "19c6495a66eb3db7f156e954d3c65221dd752a4a",
+   "parents": [
+    "3c9c4bd09285ed39888948aa12f0e2bbdcdaa19f"
+   ],
+   "title": "Fix out-of-bound symlink for gitops tools (#2073)",
+   "committer_date": "2025-01-08T10:39:40.000-08:00",
+   "html_url": "https://github.com/pixie-io/pixie/commit/19c6495a66eb3db7f156e954d3c65221dd752a4a",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1005
+  },
+  {
+   "repo": "projectcalico/calico",
+   "commit": "897e22f371c41793fcacc67ce976ea56675543d5",
+   "parents": [
+    "d1db9a3f2e05dd2c9f8230770165895ca16c764e"
+   ],
+   "title": "[BPF] Add optional BPF program framework with IP fragment reassembly config",
+   "committer_date": "2026-04-10T11:21:19.000-07:00",
+   "html_url": "https://github.com/projectcalico/calico/commit/897e22f371c41793fcacc67ce976ea56675543d5",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1006
+  },
+  {
+   "repo": "kmesh-net/kmesh",
+   "commit": "91df91c8132eb667cf8a7da105405fef37c023d2",
+   "parents": [
+    "7ace3c0e5ab5f9a0313712a4111c57e805d6c28d"
+   ],
+   "title": "ci: pin GitHub Actions runner to ubuntu-22.04",
+   "committer_date": "2026-03-31T23:46:45.000-04:00",
+   "html_url": "https://github.com/kmesh-net/kmesh/commit/91df91c8132eb667cf8a7da105405fef37c023d2",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 1007
+  },
+  {
+   "repo": "coroot/coroot-node-agent",
+   "commit": "f76895d48f7ee98da2224376140351e057c6c336",
+   "parents": [
+    "0fa2ee715b10ac63591499b2e1d37c28b0e00524"
+   ],
+   "title": "ebpftracer: report missing BPF tracing program types clearly",
+   "committer_date": "2026-09-21T09:20:42.000-07:00",
+   "html_url": "https://github.com/coroot/coroot-node-agent/commit/f76895d48f7ee98da2224376140351e057c6c336",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1008
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "9cb281bee53d04563c2d7f6910ec5051e2af8dd9",
+   "parents": [
+    "a222c0f34cc5c72328a7b546ee94a96377cc4f82"
+   ],
+   "title": "fix(ci): repair root swiftlint_lint ref after scripts/ became a bazel package (#3425)",
+   "committer_date": "2026-06-01T08:40:33.000-05:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/9cb281bee53d04563c2d7f6910ec5051e2af8dd9",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1009
+  },
+  {
+   "repo": "gojue/ecapture",
+   "commit": "782e4370a07d549cdd86845fe61f40b922636a77",
+   "parents": [
+    "0a3a7763ee8faf9080fcd065ba278a59753c1a49"
+   ],
+   "title": "fix: invalid indirect read from stack (#694)",
+   "committer_date": "2024-12-18T00:11:09.000+08:00",
+   "html_url": "https://github.com/gojue/ecapture/commit/782e4370a07d549cdd86845fe61f40b922636a77",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1010
+  },
+  {
+   "repo": "aya-rs/aya",
+   "commit": "446cf6f5da56ee836df34dc7397c6c99e85a77ed",
+   "parents": [
+    "a2d06e5f56a7b568a8ba5a282fb94b0b218b4050"
+   ],
+   "title": "aya: use FdLink for socket map programs",
+   "committer_date": "2026-09-15T21:44:23.000-04:00",
+   "html_url": "https://github.com/aya-rs/aya/commit/446cf6f5da56ee836df34dc7397c6c99e85a77ed",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 1011
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "95e2aae036147bead77c586c9282c11281ed6613",
+   "parents": [
+    "21fd58b9ffbf4249b4e575b463fa4f4f5783cec3"
+   ],
+   "title": "fix(web-ng): route GodView stream file to 90/98 green, exclude 8 known-divergent",
+   "committer_date": "2026-10-07T14:58:30.000-05:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/95e2aae036147bead77c586c9282c11281ed6613",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 1012
+  },
+  {
+   "repo": "bpfman/bpfman",
+   "commit": "b9b2ce9e75c261cd7f6883a0fea083027d25b94a",
+   "parents": [
+    "ac55bdf64c3d82c36a8dd868b02e3d1c5b89d830"
+   ],
+   "title": "TC/XDP multiprog: return prog path on attach error",
+   "committer_date": "2025-09-01T16:38:54.000+02:00",
+   "html_url": "https://github.com/bpfman/bpfman/commit/b9b2ce9e75c261cd7f6883a0fea083027d25b94a",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1013
+  },
+  {
+   "repo": "iopsystems/rezolus",
+   "commit": "57c172a4e9f323e93a1f3f3991843d3747b86da9",
+   "parents": [
+    "b6d082b5250ba50b4e9eef7a511ac8451540f8bb"
+   ],
+   "title": "fix(viewer): rebuild WASM + add CI gate against bad externref-table layout (#847)",
+   "committer_date": "2026-04-28T17:50:53.000-07:00",
+   "html_url": "https://github.com/iopsystems/rezolus/commit/57c172a4e9f323e93a1f3f3991843d3747b86da9",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1014
+  },
+  {
+   "repo": "projectcalico/calico",
+   "commit": "7e796ed4c42fce2cf275dda341ddc5387e9beba4",
+   "parents": [
+    "6f40ede7b3b528a4186102c65a0f7f8d12802950"
+   ],
+   "title": "fix(apiserver): wire queryserver to Linseed via tigera-linseed service in MCM (#4786)",
+   "committer_date": "2026-05-12T13:19:56.000-07:00",
+   "html_url": "https://github.com/projectcalico/calico/commit/7e796ed4c42fce2cf275dda341ddc5387e9beba4",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1015
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "23c67000483c34a42073bae0e1a7933753916321",
+   "parents": [
+    "f36f47036a8a23941f8e62204043ae3a2c301631"
+   ],
+   "title": "Ensure that string allocation and usage are consistent in size (#5279)",
+   "committer_date": "2026-08-07T10:00:16.000-04:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/23c67000483c34a42073bae0e1a7933753916321",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1016
+  },
+  {
+   "repo": "libbpf/bpftool",
+   "commit": "bc707f194154b642861b9a69f1b8583fd47f7856",
+   "parents": [
+    "8ed27e2183690148b3efb753066ec979e629e7bf"
+   ],
+   "title": "bpf: Implement signature verification for BPF programs",
+   "committer_date": "2025-10-07T16:25:58.000+01:00",
+   "html_url": "https://github.com/libbpf/bpftool/commit/bc707f194154b642861b9a69f1b8583fd47f7856",
+   "matched": [
+    "verifier fail"
+   ],
+   "screen_rank": 1017
+  },
+  {
+   "repo": "FootprintAI/Containarium",
+   "commit": "10677f9115aea58c6538df33b4c1bb16d30bccfb",
+   "parents": [
+    "b30618fd1a78c102dceeecb5dc944c5efa6696ff"
+   ],
+   "title": "fix(cluster): put the published endpoint on the control plane's certificate (#1465)",
+   "committer_date": "2026-08-20T11:27:32.000+08:00",
+   "html_url": "https://github.com/FootprintAI/Containarium/commit/10677f9115aea58c6538df33b4c1bb16d30bccfb",
+   "matched": [
+    "verifier fail"
+   ],
+   "screen_rank": 1018
+  },
+  {
+   "repo": "FootprintAI/Containarium",
+   "commit": "0d3ba3129952eeed27a7f49a78dd2084e392b6e0",
+   "parents": [
+    "27496ac19aff9037330133fc7e125aa9d1e6c3b7"
+   ],
+   "title": "feat(server): network-policy enforcer wired into the daemon (Phase A piece 6c, #315) (#438)",
+   "committer_date": "2026-06-03T14:47:29.000+08:00",
+   "html_url": "https://github.com/FootprintAI/Containarium/commit/0d3ba3129952eeed27a7f49a78dd2084e392b6e0",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 1019
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "66eac00c87f40178bdecf6bcb7a0c9e86eaae181",
+   "parents": [
+    "ca1b216ba92d007c1aa4aa1e46aa6270c8caadaf"
+   ],
+   "title": "Load BPF programs and maps via libbpf bpf_object",
+   "committer_date": "2024-07-05T15:17:21.000+01:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/66eac00c87f40178bdecf6bcb7a0c9e86eaae181",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1020
+  },
+  {
+   "repo": "microsoft/retina",
+   "commit": "9c72cb99238fd7428cc4d2eadb85934b651c3dc3",
+   "parents": [
+    "6da36c5568299665cf4adefa137392a855d487dd"
+   ],
+   "title": "deps: bump sigs.k8s.io/cloud-provider-azure/pkg/azclient from 0.3.1 to 0.4.1 (#1166)",
+   "committer_date": "2024-12-23T16:45:35.000Z",
+   "html_url": "https://github.com/microsoft/retina/commit/9c72cb99238fd7428cc4d2eadb85934b651c3dc3",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 1021
+  },
+  {
+   "repo": "microsoft/retina",
+   "commit": "8cd27e92e79bfaa6618b195a1f21effe05ad2040",
+   "parents": [
+    "433bdca527a1e53e376a5929c0d9c17b22dd81cd"
+   ],
+   "title": "deps: bump github/codeql-action from 2 to 3 (#220)",
+   "committer_date": "2024-04-04T15:34:22.000Z",
+   "html_url": "https://github.com/microsoft/retina/commit/8cd27e92e79bfaa6618b195a1f21effe05ad2040",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1022
+  },
+  {
+   "repo": "microsoft/retina",
+   "commit": "3b50857a24814fc1567f9614daa974428554ad31",
+   "parents": [
+    "94d341bba56fc08973ee855c8485a76b76fbbb0f"
+   ],
+   "title": "feat(capture): Add --cleanup-after-upload flag for automatic resource cleanup (#2367)",
+   "committer_date": "2026-05-21T16:59:37.000Z",
+   "html_url": "https://github.com/microsoft/retina/commit/3b50857a24814fc1567f9614daa974428554ad31",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 1023
+  },
+  {
+   "repo": "OpenVisualCloud/Media-Transport-Library",
+   "commit": "c6ebb0a41ce90a1fa58c1bd0fbb6f6e59d6effc5",
+   "parents": [
+    "fd5e8e696a77a80150749028db9525569556ec53"
+   ],
+   "title": "Test: Fail ancillary RX on parity or checksum errors",
+   "committer_date": "2026-09-24T17:02:31.000+02:00",
+   "html_url": "https://github.com/OpenVisualCloud/Media-Transport-Library/commit/c6ebb0a41ce90a1fa58c1bd0fbb6f6e59d6effc5",
+   "matched": [
+    "!read_ok"
+   ],
+   "screen_rank": 1024
+  },
+  {
+   "repo": "libbpf/libbpf-rs",
+   "commit": "a28a805b59a1283bd713f198c10de083b4d48670",
+   "parents": [
+    "11c1d0f910dc40450de1b104247e132365b78ad3"
+   ],
+   "title": "libbpf-rs: handle maps that were autocreate(false)",
+   "committer_date": "2024-01-02T11:41:59.000-08:00",
+   "html_url": "https://github.com/libbpf/libbpf-rs/commit/a28a805b59a1283bd713f198c10de083b4d48670",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1025
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "d0b16acb4d07a6f92d0f931947b505b1ef7c7acb",
+   "parents": [
+    "e559ed29a72f08495df7290b5c45745876d3dc62"
+   ],
+   "title": "Do not generate functions for empty attach points",
+   "committer_date": "2025-01-16T17:08:34.000-05:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/d0b16acb4d07a6f92d0f931947b505b1ef7c7acb",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1026
+  },
+  {
+   "repo": "gma1k/podtrace",
+   "commit": "14ef4f852d48b5643a3b20063ed101f12835d6b1",
+   "parents": [
+    "4f48a9b1cf003ce89f821633fbe642ddbd46b6cb"
+   ],
+   "title": "fix: drop bpf_get_current_comm from cgroup_skb programs (#304)",
+   "committer_date": "2026-07-09T20:00:20.000+02:00",
+   "html_url": "https://github.com/gma1k/podtrace/commit/14ef4f852d48b5643a3b20063ed101f12835d6b1",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 1027
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "c44c1d94f68725d921ce6328869700857ee8f147",
+   "parents": [
+    "fcd4d3b0a563b1fb589944394da65b0ff354da0f"
+   ],
+   "title": "Introduce builtin to get percpu kernel data",
+   "committer_date": "2024-11-22T12:37:26.000-07:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/c44c1d94f68725d921ce6328869700857ee8f147",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1028
+  },
+  {
+   "repo": "iopsystems/rezolus",
+   "commit": "d18caaee9ae73c5eec178808dfecb55f833b3d69",
+   "parents": [
+    "5eb2348870d94db2eb5b7ee51cd663f44cc200c7"
+   ],
+   "title": "feat(ext4): ext4_ops sampler: fsync, unlink, write and rename held time (#1349)",
+   "committer_date": "2026-09-29T01:27:37.000-07:00",
+   "html_url": "https://github.com/iopsystems/rezolus/commit/d18caaee9ae73c5eec178808dfecb55f833b3d69",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1029
+  },
+  {
+   "repo": "open-telemetry/opentelemetry-ebpf-instrumentation",
+   "commit": "72abf5c9b5738d3932404b928124e957676ede1e",
+   "parents": [
+    "87c09ffac97a72fe2984d63737f7741ddf6657d3"
+   ],
+   "title": "bpf: fix verifier error in generictracer/kafka (#2738)",
+   "committer_date": "2026-07-21T17:52:06.000+02:00",
+   "html_url": "https://github.com/open-telemetry/opentelemetry-ebpf-instrumentation/commit/72abf5c9b5738d3932404b928124e957676ede1e",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 1030
+  },
+  {
+   "repo": "open-telemetry/opentelemetry-ebpf-instrumentation",
+   "commit": "af258a386e4b73c5ad53622e4dea031920dcdc9e",
+   "parents": [
+    "d6f4f52160176f9709bd6f4bf55ae6ba834a1e54"
+   ],
+   "title": "Fix stale go trace map data (#3027)",
+   "committer_date": "2026-08-14T09:39:52.000-07:00",
+   "html_url": "https://github.com/open-telemetry/opentelemetry-ebpf-instrumentation/commit/af258a386e4b73c5ad53622e4dea031920dcdc9e",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1031
+  },
+  {
+   "repo": "projectcalico/calico",
+   "commit": "7751920908c87fa6cb227a9c6d38b47d236056ed",
+   "parents": [
+    "e0f931d9338f81ffbb62ea0da8cb3ea58004a13d"
+   ],
+   "title": "[BPF] do not emit unreachable code when splitting a policy program",
+   "committer_date": "2026-10-14T15:26:29.000-07:00",
+   "html_url": "https://github.com/projectcalico/calico/commit/7751920908c87fa6cb227a9c6d38b47d236056ed",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 1032
+  },
+  {
+   "repo": "open-telemetry/opentelemetry-go-instrumentation",
+   "commit": "c7a8d5cd0329ce13a473661f63e11f7386967906",
+   "parents": [
+    "334fc3f5ecb1eecf6dead6f41001377b888d895f"
+   ],
+   "title": "Remove support for Go < 1.19 instrumentation (#1815)",
+   "committer_date": "2025-02-16T07:58:48.000-08:00",
+   "html_url": "https://github.com/open-telemetry/opentelemetry-go-instrumentation/commit/c7a8d5cd0329ce13a473661f63e11f7386967906",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 1033
+  },
+  {
+   "repo": "bpfman/bpfman",
+   "commit": "6ab48741c6968b19de2833803a1e9d1911150ec2",
+   "parents": [
+    "8520a4b343eb8ca4a9c54f82fd71efffce5f7e53"
+   ],
+   "title": "Run sample programs on separate go threads.",
+   "committer_date": "2024-06-21T15:33:42.000-04:00",
+   "html_url": "https://github.com/bpfman/bpfman/commit/6ab48741c6968b19de2833803a1e9d1911150ec2",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1034
+  },
+  {
+   "repo": "exein-io/pulsar",
+   "commit": "0ebf7dd8b34df72af3df82557abed0f3d2cada9c",
+   "parents": [
+    "fdf447ee6eb5547c6f3a7f8a23b1d687f127d557"
+   ],
+   "title": "fix: make_path verifier error restructuring bpf program",
+   "committer_date": "2025-06-13T15:35:20.000+02:00",
+   "html_url": "https://github.com/exein-io/pulsar/commit/0ebf7dd8b34df72af3df82557abed0f3d2cada9c",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1035
+  },
+  {
+   "repo": "bpfman/bpfman",
+   "commit": "49e778f0fb1bec78208b28ccb9928026d2b5e3de",
+   "parents": [
+    "ac8feb6d222f1ffc9b66d532e2f4d267944f2c0b"
+   ],
+   "title": "Assert the verifier rejection in the broken-sibling load test",
+   "committer_date": "2026-07-21T15:57:51.000+01:00",
+   "html_url": "https://github.com/bpfman/bpfman/commit/49e778f0fb1bec78208b28ccb9928026d2b5e3de",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1036
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "1dcb9d4fa2aa7aad1e401e2ba44b6456e693cbc0",
+   "parents": [
+    "7b7be4631d72d69be723165e367dc69304a56429"
+   ],
+   "title": "feat(netprobe): move p0f encoding to userspace; fix eBPF verifier (#3425)",
+   "committer_date": "2026-06-02T00:52:56.000-05:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/1dcb9d4fa2aa7aad1e401e2ba44b6456e693cbc0",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 1037
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "e404b97478f6c0c9022f062824958fe0067d680e",
+   "parents": [
+    "1dfcbc4f2d443c3615a2f1dadd4e8469a865c15e"
+   ],
+   "title": "fix(third_party): restore the LF-mangled Satori corpus bytes",
+   "committer_date": "2026-08-11T10:46:59.000-05:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/e404b97478f6c0c9022f062824958fe0067d680e",
+   "matched": [
+    "verifier fail"
+   ],
+   "screen_rank": 1038
+  },
+  {
+   "repo": "FootprintAI/Containarium",
+   "commit": "c1211902ed15ff6acef94bf9175b8f24c7dcb2c3",
+   "parents": [
+    "6314d4f85b9228343a3cda8acca76557a0d4bb96"
+   ],
+   "title": "feat(tokens): delegate roles as well as scopes, intersected (#1708) (#1714)",
+   "committer_date": "2026-09-04T09:34:51.000Z",
+   "html_url": "https://github.com/FootprintAI/Containarium/commit/c1211902ed15ff6acef94bf9175b8f24c7dcb2c3",
+   "matched": [
+    "!read_ok"
+   ],
+   "screen_rank": 1039
+  },
+  {
+   "repo": "projectcalico/calico",
+   "commit": "2907a245966316fa7428048a82713518d1cd83cf",
+   "parents": [
+    "a18fda8bb283d19f4a90b83ceb529902f5e56b48"
+   ],
+   "title": "[windows] ASO win FV improvements",
+   "committer_date": "2025-12-11T11:22:54.000-08:00",
+   "html_url": "https://github.com/projectcalico/calico/commit/2907a245966316fa7428048a82713518d1cd83cf",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1040
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "72873705445affb9e18b70ecff35deeb05f9113e",
+   "parents": [
+    "006c99181e8f7e316f98f8661e244488c441bea1"
+   ],
+   "title": "fix(k8sinventory): clear 28 lint findings, and stop the spool path from diverging",
+   "committer_date": "2026-08-06T10:41:34.000-05:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/72873705445affb9e18b70ecff35deeb05f9113e",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 1041
+  },
+  {
+   "repo": "domcyrus/rustnet",
+   "commit": "52fb1c2cce4ff40d837765e0f9ebd2f2d5a202d3",
+   "parents": [
+    "811c0f8659130c6927edd0f6dca91d137310635b"
+   ],
+   "title": "feat: make eBPF default on Linux (#46)",
+   "committer_date": "2025-10-12T13:53:11.000+02:00",
+   "html_url": "https://github.com/domcyrus/rustnet/commit/52fb1c2cce4ff40d837765e0f9ebd2f2d5a202d3",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1042
+  },
+  {
+   "repo": "aya-rs/aya",
+   "commit": "fc69a069727475060ee6d9895ac2745b8965237f",
+   "parents": [
+    "e229231d885075af44c02ce74776048338c4d600"
+   ],
+   "title": "aya: fix is_probe_read_kernel_supported in aarch64 kernels 5.5 (#1235)",
+   "committer_date": "2025-03-31T06:36:12.000Z",
+   "html_url": "https://github.com/aya-rs/aya/commit/fc69a069727475060ee6d9895ac2745b8965237f",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1043
+  },
+  {
+   "repo": "gojue/ecapture",
+   "commit": "4253aeb1e993427330a361051f5d8d58b1e6dff8",
+   "parents": [
+    "5ccbc239052cd15deda8cf6aa53f0ac0ab2ec938"
+   ],
+   "title": "nspr: fix bytecode loading and complete eBPF probe implementation (#1017)",
+   "committer_date": "2026-07-03T23:02:02.000+08:00",
+   "html_url": "https://github.com/gojue/ecapture/commit/4253aeb1e993427330a361051f5d8d58b1e6dff8",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1044
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "68b5c5fa5d0673b4f5ec03180d7a5a411cab111d",
+   "parents": [
+    "e64cd029ae23bf500b4b3e728c20996366ce9759"
+   ],
+   "title": "Fix verifier error program reporting with -v (#5394)",
+   "committer_date": "2026-10-22T07:47:08.000-04:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/68b5c5fa5d0673b4f5ec03180d7a5a411cab111d",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 1045
+  },
+  {
+   "repo": "iopsystems/rezolus",
+   "commit": "57d7396d3b05a093da8054d33367406d54c36f3d",
+   "parents": [
+    "53a6e17b256710778549571c82d2c72f48dbba90"
+   ],
+   "title": "fix(cpu)!: correct cpu_bandwidth quota/period, add fentry twins (#1168)",
+   "committer_date": "2026-09-09T11:37:03.000-07:00",
+   "html_url": "https://github.com/iopsystems/rezolus/commit/57d7396d3b05a093da8054d33367406d54c36f3d",
+   "matched": [
+    "verifier reject",
+    "fails to load"
+   ],
+   "screen_rank": 1046
+  },
+  {
+   "repo": "open-telemetry/opentelemetry-ebpf-instrumentation",
+   "commit": "1ea625e4a868d44cb0852e8c4d6407b0778abce7",
+   "parents": [
+    "0863cc928f38f8fa23a2dd6e8c030eee858d4c41"
+   ],
+   "title": "ci: enable all VM verifier tests, fix verifier errors on RHEL kernels (#2171)",
+   "committer_date": "2026-05-28T09:43:01.000-06:00",
+   "html_url": "https://github.com/open-telemetry/opentelemetry-ebpf-instrumentation/commit/1ea625e4a868d44cb0852e8c4d6407b0778abce7",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 1047
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "39592fdd2d3cda0ea4acf4758f42c674428ecce9",
+   "parents": [
+    "2ce2422b8f0649fe84939ed6ee4d311dd5a3dce5"
+   ],
+   "title": "fix(plugins): awx-inventory-sync first-party import invalid_signature",
+   "committer_date": "2026-07-07T00:30:04.000-05:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/39592fdd2d3cda0ea4acf4758f42c674428ecce9",
+   "matched": [
+    "verifier fail"
+   ],
+   "screen_rank": 1048
+  },
+  {
+   "repo": "eunomia-bpf/agentsight",
+   "commit": "7d9de426d85dc233dc49ce78f30442cfbf176333",
+   "parents": [
+    "fe422e9062309789c6ea02bc65c9bba6be74270a"
+   ],
+   "title": "ix the issue where the eBPF verifier rejects the probe_SSL_write_ex_exit (#21)",
+   "committer_date": "2025-11-20T21:42:59.000-08:00",
+   "html_url": "https://github.com/eunomia-bpf/agentsight/commit/7d9de426d85dc233dc49ce78f30442cfbf176333",
+   "matched": [
+    "verifier reject",
+    "min value is negative"
+   ],
+   "screen_rank": 1049
+  },
+  {
+   "repo": "jfernandez/bpftop",
+   "commit": "08e5e2a2f35993cfd1a291b68415e820be51bdde",
+   "parents": [
+    "625a8c47cfef68bfaab01fce523be3370910a10d"
+   ],
+   "title": "Make pid_iter BPF program loading non-fatal (#166)",
+   "committer_date": "2025-08-31T06:06:46.000-06:00",
+   "html_url": "https://github.com/jfernandez/bpftop/commit/08e5e2a2f35993cfd1a291b68415e820be51bdde",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1050
+  },
+  {
+   "repo": "OpenVisualCloud/Media-Transport-Library",
+   "commit": "48e888637bf3f4505f4dfa97b6d85b55d2d375b4",
+   "parents": [
+    "8d604a192bb9c22a248aa77fb0aedff0c94e9975"
+   ],
+   "title": "Ci: include GStreamer MTL plugins in build artifacts",
+   "committer_date": "2026-04-23T15:56:53.000+02:00",
+   "html_url": "https://github.com/OpenVisualCloud/Media-Transport-Library/commit/48e888637bf3f4505f4dfa97b6d85b55d2d375b4",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1051
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "294a4d6d28ec131c4432b8ea83c68589e6d4ad35",
+   "parents": [
+    "1600952b829a5c81969ba6cb55bc558130f47a7b"
+   ],
+   "title": "strerror: Fix: unbounded memory access (#4792)",
+   "committer_date": "2025-10-31T22:07:43.000+08:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/294a4d6d28ec131c4432b8ea83c68589e6d4ad35",
+   "matched": [
+    "verifier error",
+    "unbounded memory access"
+   ],
+   "screen_rank": 1052
+  },
+  {
+   "repo": "libbpf/libbpf",
+   "commit": "decfae3a5d6f4a6f54430a7aa6a518496d723eb0",
+   "parents": [
+    "a6bb0743599ea5726d59f87e558ab61b796142ba"
+   ],
+   "title": "bpf: Implement signature verification for BPF programs",
+   "committer_date": "2025-10-06T15:59:27.000-07:00",
+   "html_url": "https://github.com/libbpf/libbpf/commit/decfae3a5d6f4a6f54430a7aa6a518496d723eb0",
+   "matched": [
+    "verifier fail"
+   ],
+   "screen_rank": 1053
+  },
+  {
+   "repo": "aya-rs/aya",
+   "commit": "80fdd074f68b03240e18d4d025f0bcc7ed3cc370",
+   "parents": [
+    "13ad5a0c1be4dd4998db3651c2cea17eec0ced52"
+   ],
+   "title": "aya-ebpf: TcContext: add set_tc_classid",
+   "committer_date": "2026-09-15T14:02:23.000-04:00",
+   "html_url": "https://github.com/aya-rs/aya/commit/80fdd074f68b03240e18d4d025f0bcc7ed3cc370",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 1054
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "b2324965b9cc1a8f23f1b3612c4fbb87dc073bed",
+   "parents": [
+    "c4caa817cef520bb3a5ce8f8b1ee9abf55b9c53a"
+   ],
+   "title": "Defer the topology fit until the surface has been measured",
+   "committer_date": "2026-08-26T13:40:59.000-05:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/b2324965b9cc1a8f23f1b3612c4fbb87dc073bed",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1055
+  },
+  {
+   "repo": "open-telemetry/opentelemetry-ebpf-instrumentation",
+   "commit": "2c6d4f61a5774a5a7dec8287894b5ec961a2c76a",
+   "parents": [
+    "a10c0d328f3255715b51cd07bf22770a9f6d135e"
+   ],
+   "title": "bpf: add gRPC/HTTP2 context propagation via sk_msg HPACK injection (#1832)",
+   "committer_date": "2026-05-13T08:46:40.000-07:00",
+   "html_url": "https://github.com/open-telemetry/opentelemetry-ebpf-instrumentation/commit/2c6d4f61a5774a5a7dec8287894b5ec961a2c76a",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 1056
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "b082446ad9def7bc9f5b4e8f81b24463c0d25bc2",
+   "parents": [
+    "2116cd1b62b05ae636efcf4c4d385be141a34f68"
+   ],
+   "title": "fix(netprobe): keep the tracepoint attribution chain inside the BPF stack (#422)",
+   "committer_date": "2026-09-12T17:45:29.000-05:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/b082446ad9def7bc9f5b4e8f81b24463c0d25bc2",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1057
+  },
+  {
+   "repo": "microsoft/retina",
+   "commit": "2a55ce008147619e730c453b9115dfd356a8a350",
+   "parents": [
+    "f3de68f8786583ef73b618b06b1538ff90ba1bc2"
+   ],
+   "title": "fix(dropreason): handle inet_csk_accept signature change on Linux 6.10+ (#2206)",
+   "committer_date": "2026-04-17T18:04:50.000Z",
+   "html_url": "https://github.com/microsoft/retina/commit/2a55ce008147619e730c453b9115dfd356a8a350",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1058
+  },
+  {
+   "repo": "open-telemetry/opentelemetry-ebpf-instrumentation",
+   "commit": "811effd5c506b17466491b26847a34c0e11adaa0",
+   "parents": [
+    "ea18c4ad7d5ecb8b36d165f9536bddd7b14bef5d"
+   ],
+   "title": "Sign release artifacts with cosign bundles (#2480)",
+   "committer_date": "2026-06-25T10:45:17.000-07:00",
+   "html_url": "https://github.com/open-telemetry/opentelemetry-ebpf-instrumentation/commit/811effd5c506b17466491b26847a34c0e11adaa0",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 1059
+  },
+  {
+   "repo": "FootprintAI/Containarium",
+   "commit": "4600cb2009249cf44c6571346e4fcb05794235ba",
+   "parents": [
+    "4d73f4cdc63c22d60ed35bc01209770b54e85b0c"
+   ],
+   "title": "fix(benchmark): use 'get' for readiness polling; force zfs explicitly (#1544)",
+   "committer_date": "2026-08-25T06:32:27.000Z",
+   "html_url": "https://github.com/FootprintAI/Containarium/commit/4600cb2009249cf44c6571346e4fcb05794235ba",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 1060
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "5e470201979982f44208a1c9f90b0f5ad8d4efeb",
+   "parents": [
+    "df8e0b8662dd79df5ba749fb9deb1355e3ca404b"
+   ],
+   "title": "docs(openspec): plan remote packet capture for stock Wireshark",
+   "committer_date": "2026-09-02T18:59:41.000-05:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/5e470201979982f44208a1c9f90b0f5ad8d4efeb",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 1061
+  },
+  {
+   "repo": "projectcalico/calico",
+   "commit": "031cd9e796c7a295e9ff4678fb2de9f77bd8078d",
+   "parents": [
+    "5ced3e73d604ee16d25e5a3f59952e48cf1c3e23"
+   ],
+   "title": "[BPF] fix icmp6.h to make verifier happy",
+   "committer_date": "2024-11-14T19:45:11.000-08:00",
+   "html_url": "https://github.com/projectcalico/calico/commit/031cd9e796c7a295e9ff4678fb2de9f77bd8078d",
+   "matched": [
+    "make verifier happy"
+   ],
+   "screen_rank": 1062
+  },
+  {
+   "repo": "open-telemetry/opentelemetry-ebpf-instrumentation",
+   "commit": "418f103d056c2911321cb4590be743183811a13d",
+   "parents": [
+    "808507ea499c65baf53d2ef103991511305d91c3"
+   ],
+   "title": "gotracer: support nested spans in shared ctx (#3199)",
+   "committer_date": "2026-09-11T07:45:01.000-07:00",
+   "html_url": "https://github.com/open-telemetry/opentelemetry-ebpf-instrumentation/commit/418f103d056c2911321cb4590be743183811a13d",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 1063
+  },
+  {
+   "repo": "iopsystems/rezolus",
+   "commit": "c11746ff9b542839197c977a83ce2efe860ae676",
+   "parents": [
+    "f5ee26ca947ebd91958664bdddcf77f3a4b51f00"
+   ],
+   "title": "feat(viewer): --proxy-allow flag exposes /api/v1/load_url for URL fetches (#888)",
+   "committer_date": "2026-05-10T11:36:38.000-07:00",
+   "html_url": "https://github.com/iopsystems/rezolus/commit/c11746ff9b542839197c977a83ce2efe860ae676",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1064
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "c536ea4e2cfe9a7ba04135b4223f0eaa9d87083f",
+   "parents": [
+    "fd6bea770f17146b94070874720199a53793625e"
+   ],
+   "title": "Don't use BTF checking for indexed pointers",
+   "committer_date": "2024-09-25T13:16:36.000+02:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/c536ea4e2cfe9a7ba04135b4223f0eaa9d87083f",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1065
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "e753f028e1e408538daec5be6ef257519cfaa23f",
+   "parents": [
+    "d5689ba3f54d3a73c835667102a6e23a3a5475c6"
+   ],
+   "title": "fix(ansible): treat missing target holds as not held",
+   "committer_date": "2026-07-18T03:08:14.000-05:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/e753f028e1e408538daec5be6ef257519cfaa23f",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1066
+  },
+  {
+   "repo": "projectcalico/calico",
+   "commit": "d302923d12e97d635670dffda1ced03e3a9ad96d",
+   "parents": [
+    "d04dbe275548211af2ee8c4cc2a6a81566250697"
+   ],
+   "title": "felix/bpf: re-attach a workload's preamble when its globals change",
+   "committer_date": "2026-10-01T21:10:33.000-07:00",
+   "html_url": "https://github.com/projectcalico/calico/commit/d302923d12e97d635670dffda1ced03e3a9ad96d",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1067
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "34b634752bd2d7647b16d7538c7dd33c39409a5f",
+   "parents": [
+    "859158713ef2c0eced658b860eca1bba4f0a89d5"
+   ],
+   "title": "helpers: handle unsupported helpers from interop files",
+   "committer_date": "2025-07-27T13:40:24.000-07:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/34b634752bd2d7647b16d7538c7dd33c39409a5f",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 1068
+  },
+  {
+   "repo": "FootprintAI/Containarium",
+   "commit": "6c50a5d01fcc8e9d4579224fbf41e8036331edc7",
+   "parents": [
+    "0e97d915bfb525bea5bc6d0b0d3fae16b362c692"
+   ],
+   "title": "fix(audit): the tamper-evident chain never verified, and forked under load (#1326)",
+   "committer_date": "2026-08-12T06:11:36.000Z",
+   "html_url": "https://github.com/FootprintAI/Containarium/commit/6c50a5d01fcc8e9d4579224fbf41e8036331edc7",
+   "matched": [
+    "verifier fail"
+   ],
+   "screen_rank": 1069
+  },
+  {
+   "repo": "boratanrikulu/gobee",
+   "commit": "fa130a199ab19c12e8e7cd9e5ac57392a71e7907",
+   "parents": [
+    "9ade64887a5f598c1e3178b4ec7c46f08432cb2e"
+   ],
+   "title": "feat(transpile): typed Go bindings (Load*, AttachAll, kernel-version gate, verifier-error annotation)",
+   "committer_date": "2026-05-01T14:01:14.000+03:00",
+   "html_url": "https://github.com/boratanrikulu/gobee/commit/fa130a199ab19c12e8e7cd9e5ac57392a71e7907",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1070
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "67629c1927f411758fe4da546eb57840d972b6e9",
+   "parents": [
+    "771f30244645cd9a9cc682289dda8c4e8aa9745a"
+   ],
+   "title": "Fix error in dereferencing kernel double pointers",
+   "committer_date": "2024-05-20T13:16:09.000+02:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/67629c1927f411758fe4da546eb57840d972b6e9",
+   "matched": [
+    "invalid mem access",
+    "fails to load"
+   ],
+   "screen_rank": 1071
+  },
+  {
+   "repo": "projectcalico/calico",
+   "commit": "2c93cde8e25f2020ae48cce19018f946b6e3c3b2",
+   "parents": [
+    "47dbbb85a1755611b6159ca12b08d29017f69f5e"
+   ],
+   "title": "[BPF] support ip6 protochain in pcap log filters",
+   "committer_date": "2026-06-26T14:56:51.000-07:00",
+   "html_url": "https://github.com/projectcalico/calico/commit/2c93cde8e25f2020ae48cce19018f946b6e3c3b2",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 1072
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "d14dd0e36e3cc3f25757462a4fa939f75a303f99",
+   "parents": [
+    "605217eaf8fb7c805dc4d2054eb86a8d095d6260"
+   ],
+   "title": "Fix size mismatch for `stack_key`s",
+   "committer_date": "2025-03-07T10:02:27.000-05:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/d14dd0e36e3cc3f25757462a4fa939f75a303f99",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1073
+  },
+  {
+   "repo": "iopsystems/rezolus",
+   "commit": "07dd535b5c840546d962ea09c5095a1179d8c8fb",
+   "parents": [
+    "b05c1d9dd63f9072312c42df6f2720178041af4c"
+   ],
+   "title": "fix(agent): groups with no live sampler declare no members (#1086)",
+   "committer_date": "2026-08-23T20:35:22.000-07:00",
+   "html_url": "https://github.com/iopsystems/rezolus/commit/07dd535b5c840546d962ea09c5095a1179d8c8fb",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1074
+  },
+  {
+   "repo": "gojue/ebpfmanager",
+   "commit": "6249b83735154e3592f936dd6150086be2d42b56",
+   "parents": [
+    "2822b00a18dffb4fc2285067c7e0a6b43d5f8bc6"
+   ],
+   "title": "feat: Expose internal verifier error",
+   "committer_date": "2024-02-03T12:29:41.000+08:00",
+   "html_url": "https://github.com/gojue/ebpfmanager/commit/6249b83735154e3592f936dd6150086be2d42b56",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1075
+  },
+  {
+   "repo": "exein-io/pulsar",
+   "commit": "71d454dbf43dfb4698fdfff06df4c936a227f2a8",
+   "parents": [
+    "587cedbc8ed053d0117d448a10e7517d56f9f896"
+   ],
+   "title": "fix: Use `container_id_buffer` also for `parent_buf`",
+   "committer_date": "2024-07-01T11:54:54.000+02:00",
+   "html_url": "https://github.com/exein-io/pulsar/commit/71d454dbf43dfb4698fdfff06df4c936a227f2a8",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1076
+  },
+  {
+   "repo": "kxxt/tracexec",
+   "commit": "d7f23b4b66f9846cb3ae4d73ee60b30741092516",
+   "parents": [
+    "102d35365ac95e8954bbf4203f1c3520f3a31fa4"
+   ],
+   "title": "fix/bpf: add empty printk to workaround verifier",
+   "committer_date": "2024-09-27T22:39:13.000+08:00",
+   "html_url": "https://github.com/kxxt/tracexec/commit/d7f23b4b66f9846cb3ae4d73ee60b30741092516",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 1077
+  },
+  {
+   "repo": "libbpf/libbpf",
+   "commit": "429aaef6a3d40d31b038b069218719a02d781759",
+   "parents": [
+    "ad0d0e5112488cf6900df1a84c01f5e797c38079"
+   ],
+   "title": "libbpf: Add gating for arena globals relocation feature",
+   "committer_date": "2026-02-11T12:04:56.000-08:00",
+   "html_url": "https://github.com/libbpf/libbpf/commit/429aaef6a3d40d31b038b069218719a02d781759",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1078
+  },
+  {
+   "repo": "spinningfactory/kloak",
+   "commit": "e6954e0316eeb17658fa6b8784d07916ce3508f9",
+   "parents": [
+    "d50586a5983253b1ca6b9c02babf44f3303f0230"
+   ],
+   "title": "feat: DNS-verified host filtering with kprobe-based DNS interception (#42)",
+   "committer_date": "2026-03-25T22:05:06.000-04:00",
+   "html_url": "https://github.com/spinningfactory/kloak/commit/e6954e0316eeb17658fa6b8784d07916ce3508f9",
+   "matched": [
+    "verifier error",
+    "!read_ok"
+   ],
+   "screen_rank": 1079
+  },
+  {
+   "repo": "projectcalico/calico",
+   "commit": "4276bb1cc0e18d21cef2eba4e2712168fb85e0f3",
+   "parents": [
+    "3b4004134a30a8661b84a3c22f001a4115d927ff"
+   ],
+   "title": "felix: create the conntrack cleaner_seconds series only once the cleaner loads",
+   "committer_date": "2026-10-21T14:08:38.000-07:00",
+   "html_url": "https://github.com/projectcalico/calico/commit/4276bb1cc0e18d21cef2eba4e2712168fb85e0f3",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1080
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "fb1dd3acba2b1f1bb1f33ab375839efde556cdcb",
+   "parents": [
+    "7a9884b96d49b3cb9af28803bc534f21547b4f1f"
+   ],
+   "title": "Report correct helper for error messages",
+   "committer_date": "2024-04-08T13:23:31.000+01:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/fb1dd3acba2b1f1bb1f33ab375839efde556cdcb",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1081
+  },
+  {
+   "repo": "eunomia-bpf/bpf-developer-tutorial",
+   "commit": "c054586a39dfb4f9d794f523f4b3ef868d92d724",
+   "parents": [
+    "929aec44411fd6c79b71b9390661e2d1ddd67c1a"
+   ],
+   "title": "Fix verified eBPF tutorial examples and instructions (#211)",
+   "committer_date": "2026-07-14T14:14:09.000-07:00",
+   "html_url": "https://github.com/eunomia-bpf/bpf-developer-tutorial/commit/c054586a39dfb4f9d794f523f4b3ef868d92d724",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 1082
+  },
+  {
+   "repo": "projectcalico/calico",
+   "commit": "69d9c1477e9dc1648bb2d877e94ed6e29f0585eb",
+   "parents": [
+    "5ced3e73d604ee16d25e5a3f59952e48cf1c3e23",
+    "031cd9e796c7a295e9ff4678fb2de9f77bd8078d"
+   ],
+   "title": "Merge pull request #9480 from tomastigera/tomas-fix-verifier-icmp6",
+   "committer_date": "2024-11-15T09:26:26.000-08:00",
+   "html_url": "https://github.com/projectcalico/calico/commit/69d9c1477e9dc1648bb2d877e94ed6e29f0585eb",
+   "matched": [
+    "fix verifier",
+    "make verifier happy"
+   ],
+   "screen_rank": 1083
+  },
+  {
+   "repo": "oracle/bpftune",
+   "commit": "e0a3a97f911e3beac194ff0bfba457c0899d6b68",
+   "parents": [
+    "e89daf0a4c7981957b1e7d2480a4a7a014ec106e"
+   ],
+   "title": "libbpftune: only show errors on optional prog reload",
+   "committer_date": "2025-03-20T11:21:40.000Z",
+   "html_url": "https://github.com/oracle/bpftune/commit/e0a3a97f911e3beac194ff0bfba457c0899d6b68",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1084
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "fb79376b3ec768083ae59082f8ad619e67a13a1b",
+   "parents": [
+    "6512c6211591452d96960aec12179e1aa857962e"
+   ],
+   "title": "fix(geoip): stop concurrent MMDB downloads from clobbering each other",
+   "committer_date": "2026-10-21T18:16:56.000-05:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/fb79376b3ec768083ae59082f8ad619e67a13a1b",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1085
+  },
+  {
+   "repo": "bpfman/bpfman",
+   "commit": "3115d6a40e37384fcda3a9e338fe883c9475b888",
+   "parents": [
+    "f3791969927861256750ffef77a3a52dcb851f56"
+   ],
+   "title": "bpfman: Failed dispatcher load corrupts DB",
+   "committer_date": "2024-08-12T21:56:18.000-04:00",
+   "html_url": "https://github.com/bpfman/bpfman/commit/3115d6a40e37384fcda3a9e338fe883c9475b888",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1086
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "7956b4a8c4430e1a4325407cd91898ff7da48b8a",
+   "parents": [
+    "5d63494fb4d38d1390a131d1c53565823bd9dd66"
+   ],
+   "title": "fix verifier Error / Incorrect comparisons against result of len() function (#3533)",
+   "committer_date": "2024-10-22T10:21:24.000-07:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/7956b4a8c4430e1a4325407cd91898ff7da48b8a",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 1087
+  },
+  {
+   "repo": "projectcalico/calico",
+   "commit": "447f11c4cc17711bd27a0ba52fc32abf7146cbfe",
+   "parents": [
+    "75a30e75594c465496a7d023b8aa0b72737423aa"
+   ],
+   "title": "[BPF] 6.1 verifier struggles with zero store",
+   "committer_date": "2025-09-09T15:15:04.000-07:00",
+   "html_url": "https://github.com/projectcalico/calico/commit/447f11c4cc17711bd27a0ba52fc32abf7146cbfe",
+   "matched": [
+    "make verifier happy"
+   ],
+   "screen_rank": 1088
+  },
+  {
+   "repo": "libbpf/bpftool",
+   "commit": "8407ffa404447a010def45b18acf1b5cefb29811",
+   "parents": [
+    "ede87bab94f200069b3ad2df06ee0d5d81e8c565"
+   ],
+   "title": "bpf: Add callx instruction to call bpf subprogs indirectly",
+   "committer_date": "2026-10-02T15:33:36.000+01:00",
+   "html_url": "https://github.com/libbpf/bpftool/commit/8407ffa404447a010def45b18acf1b5cefb29811",
+   "matched": [
+    "!read_ok"
+   ],
+   "screen_rank": 1089
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "00eb63725096e022e34d5d207362602d00f69c5c",
+   "parents": [
+    "3049bbf4170f3babc82135056456f0e72eef4069"
+   ],
+   "title": "Add location expansion for RuntimeErrorInfo (#4413)",
+   "committer_date": "2025-07-30T21:33:27.000-04:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/00eb63725096e022e34d5d207362602d00f69c5c",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1090
+  },
+  {
+   "repo": "gojue/ecapture",
+   "commit": "65d59b8849486b2297d6fc5403b9f7e555dba35e",
+   "parents": [
+    "1bdc3e43f60ef988a54532c2501e2ed91de4c690"
+   ],
+   "title": "Android 17 (API 37) BoringSSL: version offsets + TLS 1.3 keylog client/server + length fixes (#1029)",
+   "committer_date": "2026-09-09T21:46:07.000+08:00",
+   "html_url": "https://github.com/gojue/ecapture/commit/65d59b8849486b2297d6fc5403b9f7e555dba35e",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 1091
+  },
+  {
+   "repo": "ccfos/huatuo",
+   "commit": "4212790885093117fd35a44055d3a6496927dcc9",
+   "parents": [
+    "69da12e71e46fd4e48f2fe2e07267c3f9ef0ad71"
+   ],
+   "title": "iotracing: fix BPF verifier error: Arg#0 type PTR not supported (#67)",
+   "committer_date": "2025-11-17T17:25:58.000+08:00",
+   "html_url": "https://github.com/ccfos/huatuo/commit/4212790885093117fd35a44055d3a6496927dcc9",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1092
+  },
+  {
+   "repo": "iopsystems/rezolus",
+   "commit": "016778d3a4e920fdb4f481268fc9ec9baca92759",
+   "parents": [
+    "1e00fec0a34325babe5dd738692acfcf036793c5"
+   ],
+   "title": "fix(ext4): start the ext4 samplers when the ext4 module loads (#1441)",
+   "committer_date": "2026-10-12T12:11:39.000-07:00",
+   "html_url": "https://github.com/iopsystems/rezolus/commit/016778d3a4e920fdb4f481268fc9ec9baca92759",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1093
+  },
+  {
+   "repo": "eunomia-bpf/agentsight",
+   "commit": "5c36ea8e2e707bd1890fde916f6398159707cfaa",
+   "parents": [
+    "59cb3e2e2e2b61d4a3dc49031ac26688575deaf7"
+   ],
+   "title": "Feat/container uprobe support (#39)",
+   "committer_date": "2026-05-21T23:58:35.000-07:00",
+   "html_url": "https://github.com/eunomia-bpf/agentsight/commit/5c36ea8e2e707bd1890fde916f6398159707cfaa",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 1094
+  },
+  {
+   "repo": "xdp-project/bpf-examples",
+   "commit": "d1cc8a27e75498b6c06ee67fd66bf37b05900f80",
+   "parents": [
+    "86ec1b7f159da9d51d7a20b9eb5a23475466adc0"
+   ],
+   "title": "port track tcp payload offset as scalar in xdp_synproxy",
+   "committer_date": "2024-01-17T13:41:13.000+01:00",
+   "html_url": "https://github.com/xdp-project/bpf-examples/commit/d1cc8a27e75498b6c06ee67fd66bf37b05900f80",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1095
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "5ae258b130e044310744f4c9c97c070a65f7f10e",
+   "parents": [
+    "188bb94da3f2f54849176be393b863f6d699cc0f"
+   ],
+   "title": "Migrate `len` for maps to stdlib",
+   "committer_date": "2025-10-01T11:12:35.000-04:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/5ae258b130e044310744f4c9c97c070a65f7f10e",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1096
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "1efc548aa8db3acfc20e720c2d440e8f5aa02468",
+   "parents": [
+    "f026198df5d9023225e4a7a15840010e4a2af46a"
+   ],
+   "title": "Add root check to AOT binaries",
+   "committer_date": "2024-08-05T10:41:05.000-04:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/1efc548aa8db3acfc20e720c2d440e8f5aa02468",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1097
+  },
+  {
+   "repo": "iopsystems/rezolus",
+   "commit": "0f97a2c9e0acbb47e501e165d9cf022e12aaec29",
+   "parents": [
+    "e70c2e5baf9ff116c3a97f43a64eaa085331df82"
+   ],
+   "title": "fix(viewer): escape recording text in chart HTML; refuse unknown unit_system (#1498)",
+   "committer_date": "2026-10-18T07:40:06.000-07:00",
+   "html_url": "https://github.com/iopsystems/rezolus/commit/0f97a2c9e0acbb47e501e165d9cf022e12aaec29",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1098
+  },
+  {
+   "repo": "aya-rs/aya",
+   "commit": "b58fbd7f9578efad1e2d2636e98a9145ad40bf57",
+   "parents": [
+    "231e54f29f5de163924671029e72da4672eba274"
+   ],
+   "title": "aya-ebpf: keep verifier-safe intrinsics",
+   "committer_date": "2026-06-28T13:04:41.000-04:00",
+   "html_url": "https://github.com/aya-rs/aya/commit/b58fbd7f9578efad1e2d2636e98a9145ad40bf57",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 1099
+  },
+  {
+   "repo": "FootprintAI/Containarium",
+   "commit": "0fbc24749db6e9206f1000a039ec7ff971b66a89",
+   "parents": [
+    "b36603e51c0029826bae82a00509ef3de3954538"
+   ],
+   "title": "feat(release,hosting): ship a pre-built Caddy instead of compiling on every host (#1916)",
+   "committer_date": "2026-09-20T07:45:14.000+08:00",
+   "html_url": "https://github.com/FootprintAI/Containarium/commit/0fbc24749db6e9206f1000a039ec7ff971b66a89",
+   "matched": [
+    "verifier fail"
+   ],
+   "screen_rank": 1100
+  },
+  {
+   "repo": "alibaba/kubeskoop",
+   "commit": "a1a00c655f2c3afbd3b82f3e7c72675638f54b6c",
+   "parents": [
+    "ee4e742876b9da621a42135d38cbf907ee1efd8c",
+    "ce64dacd9dc4480b397a4e42feeb946ebaff83b1"
+   ],
+   "title": "Merge pull request #189 from dzy176/main",
+   "committer_date": "2024-02-18T12:23:58.000+08:00",
+   "html_url": "https://github.com/alibaba/kubeskoop/commit/a1a00c655f2c3afbd3b82f3e7c72675638f54b6c",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1101
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "92c53046c51a0f1dcf7e12ef2690581964ad82cf",
+   "parents": [
+    "66184ef749a3b5efc276e3bc72036ed6438406a2"
+   ],
+   "title": "stdlib: Fixed strerror() and signal_name() failing BPF verification (#5145)",
+   "committer_date": "2026-05-03T06:26:20.000-04:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/92c53046c51a0f1dcf7e12ef2690581964ad82cf",
+   "matched": [
+    "unbounded memory access"
+   ],
+   "screen_rank": 1102
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "02152dd4aa81fe48a1b48e52f86be4ce5395c5fe",
+   "parents": [
+    "4bd18ecc34c9bdc1e736459994ab3184b28dfe03"
+   ],
+   "title": "refactor(third_party): consolidate vendored dependencies under //third_party",
+   "committer_date": "2026-08-05T12:39:14.000+08:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/02152dd4aa81fe48a1b48e52f86be4ce5395c5fe",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1103
+  },
+  {
+   "repo": "spinningfactory/kloak",
+   "commit": "677ec033aa139ccb2fb2040bb6dba2a18969a9eb",
+   "parents": [
+    "5b1b16831e77b16b3f4179ae9feb4af364ed7652"
+   ],
+   "title": "fix(ebpf): load tc_ghash_update on Linux 7.2 (#354)",
+   "committer_date": "2026-10-24T19:22:36.000-04:00",
+   "html_url": "https://github.com/spinningfactory/kloak/commit/677ec033aa139ccb2fb2040bb6dba2a18969a9eb",
+   "matched": [
+    "verifier reject",
+    "unbounded memory access"
+   ],
+   "screen_rank": 1104
+  },
+  {
+   "repo": "aya-rs/aya",
+   "commit": "d5e4e9270ae4214ced858582ecb7ec6fc979d77e",
+   "parents": [
+    "3569c9afc3dc7babb6b44aa071828df7c8864834"
+   ],
+   "title": "aya-ebpf: Remove irrelevant `FIXME` comment",
+   "committer_date": "2025-09-18T10:49:59.000Z",
+   "html_url": "https://github.com/aya-rs/aya/commit/d5e4e9270ae4214ced858582ecb7ec6fc979d77e",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1105
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "3c13f8b360d55a62efc5d00699e75cceb5c5e51f",
+   "parents": [
+    "6240097e477f2b9a38f2180cfac654952682b7c0"
+   ],
+   "title": "ci(buildbuddy): route cache traffic through the in-cluster cache proxy",
+   "committer_date": "2026-08-09T15:19:40.000+08:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/3c13f8b360d55a62efc5d00699e75cceb5c5e51f",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1106
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "c27d8dcebd0e9b46ad32dc2bc1d44224d10876d1",
+   "parents": [
+    "2f1bc5c8443b1258613e0c4906a51249b470ff48"
+   ],
+   "title": "Fix field access on structs (#5367)",
+   "committer_date": "2026-10-12T09:14:07.000-04:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/c27d8dcebd0e9b46ad32dc2bc1d44224d10876d1",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 1107
+  },
+  {
+   "repo": "projectcalico/calico",
+   "commit": "1994d9073d03cfc6f428cf650d3a745fc1b92c8d",
+   "parents": [
+    "4f7c417143dd3c2c38fad8d38b3c163c804bdb84"
+   ],
+   "title": "feat(release): cut a release branch from a tag (#14262)",
+   "committer_date": "2026-10-16T12:06:39.000-07:00",
+   "html_url": "https://github.com/projectcalico/calico/commit/1994d9073d03cfc6f428cf650d3a745fc1b92c8d",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 1108
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "bb45e30c24d4b62b7671ea8f8912a94c360130b4",
+   "parents": [
+    "48b303cb95e97f8ba8722e7e08791f670cc4d028"
+   ],
+   "title": "fix(ansible): accept unobserved markers and blank scm in lifecycle bind",
+   "committer_date": "2026-07-18T03:04:00.000-05:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/bb45e30c24d4b62b7671ea8f8912a94c360130b4",
+   "matched": [
+    "verifier fail"
+   ],
+   "screen_rank": 1109
+  },
+  {
+   "repo": "projectcalico/calico",
+   "commit": "99f5545cee4a7ffe6961b6eb6947f582d4871bcf",
+   "parents": [
+    "1302c4c821a2b98c56372aad7951241e1f5949b0",
+    "d7acb687b9a27a7b1c61939907bc30a950349812"
+   ],
+   "title": "Merge pull request #10971 from tomastigera/tomas-bpf-defrag-verifier-fix",
+   "committer_date": "2025-09-11T08:39:53.000-07:00",
+   "html_url": "https://github.com/projectcalico/calico/commit/99f5545cee4a7ffe6961b6eb6947f582d4871bcf",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 1110
+  },
+  {
+   "repo": "bpfman/bpfman",
+   "commit": "966690b0f3db373db8414d8c6d6ee94e9fc14d55",
+   "parents": [
+    "ac8feb6d222f1ffc9b66d532e2f4d267944f2c0b"
+   ],
+   "title": "Reset the attach type when loading programs as extensions",
+   "committer_date": "2026-07-21T16:56:01.000+01:00",
+   "html_url": "https://github.com/bpfman/bpfman/commit/966690b0f3db373db8414d8c6d6ee94e9fc14d55",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1111
+  },
+  {
+   "repo": "projectcalico/calico",
+   "commit": "c817a6fb4f55d6190f994fcb7bb1617e1bcaf5c1",
+   "parents": [
+    "032016d63745364dbb87a4649fefe0070cb277fe"
+   ],
+   "title": "[BPF] Bump cali_v4_frags map version after in-place layout change",
+   "committer_date": "2026-05-29T14:50:31.000-07:00",
+   "html_url": "https://github.com/projectcalico/calico/commit/c817a6fb4f55d6190f994fcb7bb1617e1bcaf5c1",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1112
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "081f683965a9333f7ec84fc389cc826594670577",
+   "parents": [
+    "19cf9ac663f285446a93608cee968ca9cbfaffe3"
+   ],
+   "title": "fix(build): commit vendored files the repo .gitignore stripped (#3425)",
+   "committer_date": "2026-06-01T20:28:51.000-05:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/081f683965a9333f7ec84fc389cc826594670577",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1113
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "5095b2a12d8f3c18276b98afe68b81d8ea2492fd",
+   "parents": [
+    "ae045a368741e51b40969ef23d37878fdfd6c289"
+   ],
+   "title": "tests: Remove test on handling percpu_kaddr verifier errors",
+   "committer_date": "2026-05-19T07:46:34.000+02:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/5095b2a12d8f3c18276b98afe68b81d8ea2492fd",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1114
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "1517d1cc9b7436069412d764ae32d34c9e58afd7",
+   "parents": [
+    "f6d6345934d92be18de3fc79a16d5163f9d93f6a"
+   ],
+   "title": "Migrate fmt string scratch map to global variable",
+   "committer_date": "2024-09-26T19:01:24.000-04:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/1517d1cc9b7436069412d764ae32d34c9e58afd7",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1115
+  },
+  {
+   "repo": "kmesh-net/kmesh",
+   "commit": "304ae91990aed83d078e501b0b45a91c50d8f02c",
+   "parents": [
+    "3bb72e21e9ff6613c4cd3403652ea5cdf78a7b4d",
+    "1375e390099e2e08efc39bd104991ee04390c9ab"
+   ],
+   "title": "Merge pull request #800 from weli-l/dev/log",
+   "committer_date": "2024-09-02T17:19:10.000+08:00",
+   "html_url": "https://github.com/kmesh-net/kmesh/commit/304ae91990aed83d078e501b0b45a91c50d8f02c",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 1116
+  },
+  {
+   "repo": "open-telemetry/opentelemetry-ebpf-instrumentation",
+   "commit": "958f8414427116cf24b6bc5505aa07571537dfc7",
+   "parents": [
+    "7d26fefc39c25bd6e9006b4556d460e37ae8e94f"
+   ],
+   "title": "Fix eBPF preverification error in Kernel 6.18 (#1004)",
+   "committer_date": "2025-12-12T17:01:53.000+01:00",
+   "html_url": "https://github.com/open-telemetry/opentelemetry-ebpf-instrumentation/commit/958f8414427116cf24b6bc5505aa07571537dfc7",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1117
+  },
+  {
+   "repo": "open-telemetry/opentelemetry-ebpf-instrumentation",
+   "commit": "fa8280b9ecfd2ca41a440dd7f5f5a64c186e4aab",
+   "parents": [
+    "c34a7e9ea2af2f680c7a7c466ebf00fb201b4f60"
+   ],
+   "title": "fix verifier error on 6.18 (#1071)",
+   "committer_date": "2026-01-09T16:01:40.000-05:00",
+   "html_url": "https://github.com/open-telemetry/opentelemetry-ebpf-instrumentation/commit/fa8280b9ecfd2ca41a440dd7f5f5a64c186e4aab",
+   "matched": [
+    "verifier error",
+    "fix verifier"
+   ],
+   "screen_rank": 1118
+  },
+  {
+   "repo": "libbpf/bpftool",
+   "commit": "3214350ae5620d1692ac6ed7b117f5edf2ff01c6",
+   "parents": [
+    "89d84b32b6b4a79f5e5df4b1beac812bd2578a72"
+   ],
+   "title": "bpftool: Fix missing pids during link show",
+   "committer_date": "2024-03-26T13:10:42.000Z",
+   "html_url": "https://github.com/libbpf/bpftool/commit/3214350ae5620d1692ac6ed7b117f5edf2ff01c6",
+   "matched": [
+    "invalid mem access",
+    "fails to load"
+   ],
+   "screen_rank": 1119
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "d65942ecad9dc00b0c297b0c4424c3d8b62dc09a",
+   "parents": [
+    "351654484b0af8a8d22bb722cca6d56a88da0671"
+   ],
+   "title": "fix(proxmox): IP-gate device emission, backfill node IPs, dedupe same-cluster targets",
+   "committer_date": "2026-07-06T01:23:27.000-05:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/d65942ecad9dc00b0c297b0c4424c3d8b62dc09a",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 1120
+  },
+  {
+   "repo": "libbpf/libbpf",
+   "commit": "8a596848c70df744c16b09066a78822415eecf4c",
+   "parents": [
+    "a61d01870258d51baeb69436e829b04a54a0a7d1"
+   ],
+   "title": "libbpf: Do not use PROG_TYPE_TRACEPOINT program for feature gating",
+   "committer_date": "2026-02-17T20:15:42.000-08:00",
+   "html_url": "https://github.com/libbpf/libbpf/commit/8a596848c70df744c16b09066a78822415eecf4c",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1121
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "27682741e9c2bf16701c5d8eaccaf7e4e9c5622d",
+   "parents": [
+    "069d281ad90e438b976caab010929d9c2942e548"
+   ],
+   "title": "Invert the `Driver`/`ASTContext` relationship",
+   "committer_date": "2025-03-11T08:41:30.000-04:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/27682741e9c2bf16701c5d8eaccaf7e4e9c5622d",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1122
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "7b23dd15b191893f12d8f91c507cd57c8fbd41f1",
+   "parents": [
+    "6afad5fe2fb3a6659e5acd74979772b8586c3351"
+   ],
+   "title": "fix(ci): unbreak the Elixir unit and integration workflows",
+   "committer_date": "2026-07-31T14:52:07.000+08:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/7b23dd15b191893f12d8f91c507cd57c8fbd41f1",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1123
+  },
+  {
+   "repo": "kxxt/tracexec",
+   "commit": "6e05d1815d7866ea96317774d9233d8a0226c8a8",
+   "parents": [
+    "01c45f8c23e03fb9213653c06c41d37b306790eb"
+   ],
+   "title": "bpf: make verifier happy",
+   "committer_date": "2026-06-28T10:10:28.000+08:00",
+   "html_url": "https://github.com/kxxt/tracexec/commit/6e05d1815d7866ea96317774d9233d8a0226c8a8",
+   "matched": [
+    "make verifier happy"
+   ],
+   "screen_rank": 1124
+  },
+  {
+   "repo": "projectcalico/calico",
+   "commit": "658cc441ad98d4ee703efb540321d21f820c4846",
+   "parents": [
+    "7e2bc601a2811a22156b864889247c41039da0ad"
+   ],
+   "title": "Fix calico/test image build failure due to libexpat ABI mismatch",
+   "committer_date": "2026-04-10T14:40:24.000-07:00",
+   "html_url": "https://github.com/projectcalico/calico/commit/658cc441ad98d4ee703efb540321d21f820c4846",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1125
+  },
+  {
+   "repo": "projectcalico/calico",
+   "commit": "06dab97765408018c350a0646974c782c1123144",
+   "parents": [
+    "35af3637b6d55e3ee04a9dadf57697ccf47542a1"
+   ],
+   "title": "Skip UDP GSO linearization in BPF unit test builds",
+   "committer_date": "2026-03-04T21:24:47.000-08:00",
+   "html_url": "https://github.com/projectcalico/calico/commit/06dab97765408018c350a0646974c782c1123144",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 1126
+  },
+  {
+   "repo": "OpenVisualCloud/Media-Transport-Library",
+   "commit": "ea0540cc09c7603b25b2e7db869653169ae025b6",
+   "parents": [
+    "d190e6fa8f0ec92cc3ec5b53ff5c5398b00b6f97"
+   ],
+   "title": "Fix: flow rules failing after verification on PF (#1021)",
+   "committer_date": "2024-12-17T10:59:54.000+01:00",
+   "html_url": "https://github.com/OpenVisualCloud/Media-Transport-Library/commit/ea0540cc09c7603b25b2e7db869653169ae025b6",
+   "matched": [
+    "verifier fail"
+   ],
+   "screen_rank": 1127
+  },
+  {
+   "repo": "projectcalico/calico",
+   "commit": "76fa18d11a68dac463cbdb28471c0666f50a1de3",
+   "parents": [
+    "edbde4b2c0f9ffb232402fede6130a7c237fd7e8"
+   ],
+   "title": "eBPF: Hybrid conntrack cleaner (#10736)",
+   "committer_date": "2025-08-07T11:02:24.000-07:00",
+   "html_url": "https://github.com/projectcalico/calico/commit/76fa18d11a68dac463cbdb28471c0666f50a1de3",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1128
+  },
+  {
+   "repo": "microsoft/retina",
+   "commit": "f760861f20986773c1054927546d8cc74d115447",
+   "parents": [
+    "4895b43b4252e059b8d29b4a1f217c8d7d1123db"
+   ],
+   "title": "fix: pktmon etw silent failure (#1983)",
+   "committer_date": "2026-01-16T12:06:34.000Z",
+   "html_url": "https://github.com/microsoft/retina/commit/f760861f20986773c1054927546d8cc74d115447",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1129
+  },
+  {
+   "repo": "projectcalico/calico",
+   "commit": "4fd18bfb0a35952e688b55c334de5ac7745fc41d",
+   "parents": [
+    "1215a7b9061968891cd51251426e503b8cb1dc7f"
+   ],
+   "title": "[CORE-11858] fix (bpf): enforce QoS packet rate in main codepath of calico_tc_main() (#11056)",
+   "committer_date": "2025-09-26T15:38:37.000-07:00",
+   "html_url": "https://github.com/projectcalico/calico/commit/4fd18bfb0a35952e688b55c334de5ac7745fc41d",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1130
+  },
+  {
+   "repo": "Gthulhu/Gthulhu",
+   "commit": "01bcf4ca542f183625737bc678a562f23c6cf01c",
+   "parents": [
+    "e43b738de866457586219f6b7adf9a0ac7d827d9"
+   ],
+   "title": "fix(grafana): enable skipTlsVerify for sidecar to fix SSL verification error",
+   "committer_date": "2026-01-28T04:13:40.000Z",
+   "html_url": "https://github.com/Gthulhu/Gthulhu/commit/01bcf4ca542f183625737bc678a562f23c6cf01c",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1131
+  },
+  {
+   "repo": "FootprintAI/Containarium",
+   "commit": "e094f1cf78b0277401a0c7fb1efb41be71473e41",
+   "parents": [
+    "9b8d7fc21ab4b3b71a9666acf30fa99441fef048"
+   ],
+   "title": "feat(auth): ed25519 sentinel signing + dual-accept verifier (#688, PR 1/2) (#801)",
+   "committer_date": "2026-06-23T16:29:32.000+08:00",
+   "html_url": "https://github.com/FootprintAI/Containarium/commit/e094f1cf78b0277401a0c7fb1efb41be71473e41",
+   "matched": [
+    "verifier reject"
+   ],
+   "screen_rank": 1132
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "a2d14b634261284d96b81ccb13d585e55ca974cc",
+   "parents": [
+    "ab0d7e6db0fb4167a3a50f2a787fcbe35b73d1a0"
+   ],
+   "title": "no-mistakes(ci): Fixed both failing checks (BazelCI, WebNgDbDiagnostic) — both run the web-ng DB lanes and both failures trace to unrouted staging tests pulled in by the post-678e43e rebase plus a stale lane pin. (1) Invariant: every web-ng ExUnit test carries exactly one lane tag (LaneCoverageGuard halts the db-free lane otherwise). Staging added 3 tests with no lane tag — 1 device alerts-tab test and 2 alert-detail-resolution tests — tripping the guard (fast BazelCI failure). Tagged all 3 @tag :web_ng_shared_fixture_db; both files were already in the DB lane srcs and contract, so no BUILD/contract change. Tree-wide scan now reports 0 unrouted tests in lane-loaded dirs. (2) Invariant: the shared-fixture pin must equal selected tests (total-excluded-skipped). 678e43e observed 2449, but the rebase added +4 lane-selected /metrics auth tests (module-tagged) and +2 tagged log-clamp tests, and this fix routes +3 more: pin 2449→2458 with per-source attribution, no lowering/removal/bypass. Retained d247b3e's Proxmox persisted-profile and Ash Invalid/NotFound fixes (verified against the sibling stream test and SweepGroup precedent). Verified: git diff --check clean, all 3 files parse, contract/BUILD already list both files. Fresh in-cluster PR4995 CI must confirm runtime counts",
+   "committer_date": "2026-10-07T14:58:52.000-05:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/a2d14b634261284d96b81ccb13d585e55ca974cc",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 1133
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "0def28acf030a1df69faa0322f915db275fc6c4c",
+   "parents": [
+    "c94b0f2a775180bc5c2b817fe3ee58529aad96e0"
+   ],
+   "title": "Fix llvm verification for external func calls (#4848)",
+   "committer_date": "2025-11-14T09:32:01.000-05:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/0def28acf030a1df69faa0322f915db275fc6c4c",
+   "matched": [
+    "verifier fail"
+   ],
+   "screen_rank": 1134
+  },
+  {
+   "repo": "microsoft/retina",
+   "commit": "50d87e2a31cf975ce8f3f0cf61be4583b38698d4",
+   "parents": [
+    "1c352613fa3cda067bbe8bbe626cca6dd951cfd9"
+   ],
+   "title": "fix: the ebpf program in the tcpretrans plugin failed to load (#322)",
+   "committer_date": "2024-05-15T22:24:57.000Z",
+   "html_url": "https://github.com/microsoft/retina/commit/50d87e2a31cf975ce8f3f0cf61be4583b38698d4",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1135
+  },
+  {
+   "repo": "qpoint-io/qtap",
+   "commit": "150586333f1593a3b0e5ddd885c7415b1808fd16",
+   "parents": [
+    "1723c24b0b6d8ede3c1e5e646c0fc5bd5f7cc615"
+   ],
+   "title": "Fixes unbounded eBPF verifier check (#258)",
+   "committer_date": "2026-02-09T17:47:12.000-07:00",
+   "html_url": "https://github.com/qpoint-io/qtap/commit/150586333f1593a3b0e5ddd885c7415b1808fd16",
+   "matched": [
+    "unbounded memory access"
+   ],
+   "screen_rank": 1136
+  },
+  {
+   "repo": "carverauto/serviceradar",
+   "commit": "07d1d0488aecc65031bcc79f4c8b9f0bea3be785",
+   "parents": [
+    "865c9a2b6b9a78cb67e55d99872beb1319b375e7"
+   ],
+   "title": "fix: verify cosign signatures with pinned public key",
+   "committer_date": "2026-04-05T10:57:35.000-05:00",
+   "html_url": "https://github.com/carverauto/serviceradar/commit/07d1d0488aecc65031bcc79f4c8b9f0bea3be785",
+   "matched": [
+    "fix verifier"
+   ],
+   "screen_rank": 1137
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "59cc61cfab285ebc524cbc6f4018f21e2a86b8c2",
+   "parents": [
+    "04504d123b877fbbde4986dc7184bef73428dc14"
+   ],
+   "title": "Fix: un-aligned key access for hist/lhist/tseries (#5181)",
+   "committer_date": "2026-05-22T13:08:28.000-04:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/59cc61cfab285ebc524cbc6f4018f21e2a86b8c2",
+   "matched": [
+    "verifier error"
+   ],
+   "screen_rank": 1138
+  },
+  {
+   "repo": "alibaba/kubeskoop",
+   "commit": "ce64dacd9dc4480b397a4e42feeb946ebaff83b1",
+   "parents": [
+    "ee4e742876b9da621a42135d38cbf907ee1efd8c"
+   ],
+   "title": "fix: fail to load probe netiftxlat",
+   "committer_date": "2024-02-14T20:24:13.000+08:00",
+   "html_url": "https://github.com/alibaba/kubeskoop/commit/ce64dacd9dc4480b397a4e42feeb946ebaff83b1",
+   "matched": [
+    "fails to load"
+   ],
+   "screen_rank": 1139
+  },
+  {
+   "repo": "bpftrace/bpftrace",
+   "commit": "818d28df459fd1082ce509b415e5dd6e48a49288",
+   "parents": [
+    "6ba65eab54758ab6811dac1f1abca22b727b9fea"
+   ],
+   "title": "Make llvm verification a debug CLI option (#4440)",
+   "committer_date": "2025-08-08T09:48:51.000-04:00",
+   "html_url": "https://github.com/bpftrace/bpftrace/commit/818d28df459fd1082ce509b415e5dd6e48a49288",
+   "matched": [
+    "verifier fail"
+   ],
+   "screen_rank": 1140
+  }
+ ]
+}

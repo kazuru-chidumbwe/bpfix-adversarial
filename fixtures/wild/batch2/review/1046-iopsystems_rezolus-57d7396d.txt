@@ -1,0 +1,207 @@
+repo: iopsystems/rezolus
+commit: 57d7396d3b05a093da8054d33367406d54c36f3d
+rank: 1046
+
+fix(cpu)!: correct cpu_bandwidth quota/period, add fentry twins (#1168)
+
+* fix(cpu)!: correct cpu_bandwidth quota/period, add fentry twins
+
+Fixes #1166 and migrates cpu_bandwidth to fentry in one change, because the two
+are entangled: the correctness bug is only visible once you read the typed args.
+
+The tg_set_cfs_bandwidth kprobe read PARM2 as `struct cfs_bandwidth*` and
+dereferenced it, but the kernel signature is
+`tg_set_cfs_bandwidth(struct task_group *tg, u64 period, u64 quota, u64 burst)`
+-- PARM2 is `period` (a u64), not a pointer. On modern kernels that dereferences
+the period value as an address, faults, and reads 0, so
+cgroup_cpu_bandwidth_quota/period were wrong. Verified on delta (6.12): setting
+cpu.max="50000 100000", the kprobe's arg1 was 0x5f5e100 (=100000000, the period
+value) while the real period/quota sat in arg1/arg2 as plain u64s.
+
+Read period/quota directly from the args in both paths -- the fentry twin gets
+them typed, the kprobe reads PARM2/PARM3 -- and extract shared handlers for all
+three functions (tg_set_cfs_bandwidth, throttle_cfs_rq, unthrottle_cfs_rq).
+throttle/unthrottle were already correct (single cfs_rq* arg); they gain fentry
+twins too. fentry needs BTF, so the kprobe twins stay as the CO-RE-only fallback
+and disabled_programs picks one set on kernel_has_btf().
+
+The `!` marks the metric-value change: cgroup_cpu_bandwidth_quota/period go from
+0 to their real values on kernels where the old read faulted.
+
+Both BPF targets compile; macOS build + tests + clippy clean.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016x17dLjVUrB6fpksxQ533r
+
+* fix(cpu_bandwidth): report unlimited quota, and pick fentry on the target not the kernel
+
+Three follow-ups from review of the quota/period fix.
+
+**`cpu.max = max` published a garbage quota.** Reading the args means
+RUNTIME_INF now reaches userspace, where `quota as i64` turned it into -1
+by two's-complement accident on a gauge documented as nanoseconds. Every
+cgroup with no CPU limit hits this -- it is what a Kubernetes pod without
+a limit writes -- so name the sentinel, test it, and say so on the metric.
+It stays -1: negative cannot be read as a nanosecond count, and 0 is what
+an unwritten gauge slot already reads as.
+
+**`kernel_has_btf()` is the wrong question for choosing fentry.** It asks
+whether the kernel has BTF at all; an fentry program needs ITS OWN target
+in that BTF, and libbpf resolves attach_btf_id at LOAD time -- which
+BpfBuilder treats as fatal for the whole skeleton. All three hooks here
+live behind CONFIG_CFS_BANDWIDTH, so on a kernel built without it the
+fentry twins would fail to load and take the sampler with them, where the
+kprobe twins merely miss at attach (ENOENT, tolerated, reported as
+unsupported). Adds `kernel_btf_has_funcs()` and selects on that instead.
+
+**A typo in `disabled_programs` is invisible and doubles counters.** The
+existing debug guard covers declared intents and labels but not this
+list, and a name matching no program leaves both twins of that hook
+autoloaded -- each running the shared handler, so every `array_add` in it
+applies twice. Extend the guard.
+
+Also logs both twins' instruction counts rather than only fentry's, which
+on a kprobe kernel named three programs that were not loaded.
+
+fexit was considered for `tg_set_cfs_bandwidth` and rejected: it would
+record only what the kernel accepted, but an fexit program's return value
+sits at arg slot `nr_args`, and `burst` was only added to that function in
+5.14 (f4183717b370). On a 3-arg kernel -- 5.10 LTS among them -- slot 4 is
+past the end and the verifier rejects the program at load, costing the
+throttling counters too. The reasoning is recorded in the C file so the
+next reader does not retry it. The unused `burst` in the fentry prototype
+is safe for the opposite reason: nothing reads it, so clang emits no load
+for the slot and the verifier never checks it against the target's arity
+(confirmed in the disassembly).
+
+Both BPF targets compile, 6 programs each. cargo check/test (687)/clippy/
+fmt clean on macOS -- which does not compile the Linux-only Rust here.
+
+Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01KheDzaD5bnVWcmdocmk2eW
+
+---------
+
+Co-authored-by: Claude Opus 4.8 <noreply@anthropic.com>
+
+--- src/agent/samplers/cpu/linux/bandwidth/mod.bpf.c
+@@ -103,12 +103,16 @@ struct {
+     __uint(max_entries, MAX_CGROUPS);
+ } bandwidth_throttled_time SEC(".maps");
+ 
+-SEC("kprobe/tg_set_cfs_bandwidth")
+-int tg_set_cfs_bandwidth(struct pt_regs* ctx) {
+-    struct task_group* tg = (struct task_group*)PT_REGS_PARM1(ctx);
+-    struct cfs_bandwidth* cfs_b = (struct cfs_bandwidth*)PT_REGS_PARM2(ctx);
+-
+-    if (!tg || !cfs_b)
++// fentry/kprobe twins share these handlers; only the attach mechanism differs.
++// fentry is the cheaper dispatch (see
++// docs/journal/2026-09-04-fentry-vs-kprobe-dispatch.md) but needs the target in
++// the kernel's own BTF -- not merely a kernel that has BTF -- so the kprobe
++// twins are the CO-RE-only fallback and one set is disabled at load time (see
++// disabled_programs in mod.rs).
++
++static __always_inline int handle_tg_set_cfs_bandwidth(struct task_group* tg, u64 period,
++                                                       u64 quota) {
++    if (!tg)
+         return 0;
+ 
+     // get the cgroup id and serial number
+@@ -137,17 +141,24 @@ int tg_set_cfs_bandwidth(struct pt_regs* ctx) {
+         bpf_ringbuf_reserve(&bandwidth_info, sizeof(struct bandwidth_info), 0);
+     if (bw_info) {
+         bw_info->id = cgroup_id;
+-        bw_info->quota = BPF_CORE_READ(cfs_b, quota);
+-        bw_info->period = BPF_CORE_READ(cfs_b, period);
++        // period/quota come straight from the args. The kernel signature is
++        // tg_set_cfs_bandwidth(tg, period, quota, burst); the old code cast
++        // arg1 (the period) to a pointer and dereferenced it, reading 0
++        // (issue #1166). fentry receives these typed; the kprobe reads
++        // PARM2/PARM3.
++        //
++        // quota is passed through as-is, RUNTIME_INF (u64 ~0) included -- that
++        // is how the kernel spells "no limit", and userspace maps it to a
++        // sentinel rather than to a nanosecond count. See handle_bandwidth_info.
++        bw_info->quota = quota;
++        bw_info->period = period;
+         bpf_ringbuf_submit(bw_info, 0);
+     }
+ 
+     return 0;
+ }
+ 
+-SEC("kprobe/throttle_cfs_rq")
+-int throttle_cfs_rq(struct pt_regs* ctx) {
+-    struct cfs_rq* cfs_rq = (struct cfs_rq*)PT_REGS_PARM1(ctx);
++static __always_inline int handle_throttle_cfs_rq(struct cfs_rq* cfs_rq) {
+     int cpu = BPF_CORE_READ(cfs_rq, rq, cpu);
+ 
+     // get the cgroup id and serial number
+@@ -191,9 +202,7 @@ int throttle_cfs_rq(struct pt_regs* ctx) {
+     return 0;
+ }
+ 
+-SEC("kprobe/unthrottle_cfs_rq")
+-int unthrottle_cfs_rq(struct pt_regs* ctx) {
+-    struct cfs_rq* cfs_rq = (struct cfs_rq*)PT_REGS_PARM1(ctx);
++static __always_inline int handle_unthrottle_cfs_rq(struct cfs_rq* cfs_rq) {
+     int cpu = BPF_CORE_READ(cfs_rq, rq, cpu);
+ 
+     // get the cgroup id
+@@ -242,4 +251,54 @@ int unthrottle_cfs_rq(struct pt_regs* ctx) {
+     return 0;
+ }
+ 
++// Entry, not exit, and deliberately so.
++//
++// tg_set_cfs_bandwidth VALIDATES what it is handed -- it returns -EINVAL for the
++// root task group, for an out-of-range period or quota, and when the
++// __cfs_schedulable hierarchy check rejects the request. Reading the args at
++// entry therefore records what userspace ASKED for, where an fexit twin could
++// check the return value and record only what was applied.
++//
++// fexit is not usable here. Its return value sits at arg slot `nr_args`, so a
++// program declaring the modern 4-arg signature reads slot 4 -- and `burst` was
++// only added to this function in 5.14 (f4183717b370). On a 3-arg kernel, which
++// includes 5.10 LTS and so a large part of any real fleet, slot 4 is past the
++// end and the verifier rejects the program at LOAD. That is fatal for the whole
++// skeleton, costing the throttling counters too, to avoid recording the rare
++// rejected cpu.max write. Not a trade worth making.
++//
++// The unused `burst` below is safe for the opposite reason: nothing reads it, so
++// clang emits no load for that slot and the verifier never checks it against the
++// target's arity. Naming it keeps the prototype honest against the kernel
++// signature without depending on it.
++SEC("fentry/tg_set_cfs_bandwidth")
++int BPF_PROG(tg_set_cfs_bandwidth_fentry, struct task_group* tg, u64 period, u64 quota, u64 burst) {
++    return handle_tg_set_cfs_bandwidth(tg, period, quota);
++}
++
++SEC("kprobe/tg_set_cfs_bandwidth")
++int BPF_KPROBE(tg_set_cfs_bandwidth_kprobe, struct task_group* tg, u64 period, u64 quota) {
++    return handle_tg_set_cfs_bandwidth(tg, period, quota);
++}
++
++SEC("fentry/throttle_cfs_rq")
++int BPF_PROG(throttle_cfs_rq_fentry, struct cfs_rq* cfs_rq) {
++    return handle_throttle_cfs_rq(cfs_rq);
++}
++
++SEC("kprobe/throttle_cfs_rq")
++int BPF_KPROBE(throttle_cfs_rq_kprobe, struct cfs_rq* cfs_rq) {
++    return handle_throttle_cfs_rq(cfs_rq);
++}
++
++SEC("fentry/unthrottle_cfs_rq")
++int BPF_PROG(unthrottle_cfs_rq_fentry, struct cfs_rq* cfs_rq) {
++    return handle_unthrottle_cfs_rq(cfs_rq);
++}
++
++SEC("kprobe/unthrottle_cfs_rq")
++int BPF_KPROBE(unthrottle_cfs_rq_kprobe, struct cfs_rq* cfs_rq) {
++    return handle_unthrottle_cfs_rq(cfs_rq);
++}
++
+ char LICENSE[] SEC("license") = "GPL";
+
