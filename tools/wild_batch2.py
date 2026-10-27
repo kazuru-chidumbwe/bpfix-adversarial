@@ -194,22 +194,28 @@ def files_of(repo: str, sha: str) -> list[dict]:
     raise RuntimeError(f"{repo}@{sha}: network not back")
 
 
+FILE_WORKERS = 2  # parallel file-list requests, under the 5000/hour API limit
+
+
 def files() -> int:
     cands = json.loads(CANDS.read_text(encoding="utf-8"))["candidates"]
     done = set()
     if FILES.is_file():
         done = {json.loads(ln)["commit"] for ln in FILES.read_text(encoding="utf-8").splitlines() if ln.strip()}
-    with FILES.open("a", encoding="utf-8", newline="\n") as f:
-        for c in cands:
-            if c["commit"] in done:
-                continue
-            fl = files_of(c["repo"], c["commit"])
-            bpf = [x["filename"] for x in fl if is_bpf_c(x["filename"])]
-            f.write(json.dumps({"screen_rank": c["screen_rank"], "repo": c["repo"], "commit": c["commit"],
-                                "n_files": len(fl), "bpf_c_files": bpf,
-                                "pass1": "bpf-c" if bpf else "E2-no-bpf-c"}) + "\n")
+    from concurrent.futures import ThreadPoolExecutor
+
+    def one(c: dict) -> dict:
+        fl = files_of(c["repo"], c["commit"])
+        time.sleep(0.3)
+        bpf = [x["filename"] for x in fl if is_bpf_c(x["filename"])]
+        return {"screen_rank": c["screen_rank"], "repo": c["repo"], "commit": c["commit"],
+                "n_files": len(fl), "bpf_c_files": bpf, "pass1": "bpf-c" if bpf else "E2-no-bpf-c"}
+
+    todo = [c for c in cands if c["commit"] not in done]
+    with FILES.open("a", encoding="utf-8", newline="\n") as f, ThreadPoolExecutor(FILE_WORKERS) as pool:
+        for row in pool.map(one, todo):  # rows written in screening order, as before
+            f.write(json.dumps(row) + "\n")
             f.flush()
-            time.sleep(0.3)
     rows = [json.loads(ln) for ln in FILES.read_text(encoding="utf-8").splitlines() if ln.strip()]
     print(f"screened {len(rows)}; bpf-c {sum(r['pass1'] == 'bpf-c' for r in rows)}")
     return 0
