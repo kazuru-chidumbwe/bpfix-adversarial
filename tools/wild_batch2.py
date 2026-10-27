@@ -111,7 +111,24 @@ def repos() -> list[str]:
     return [r["repo"] for r in json.loads(REPOS_FILE.read_text(encoding="utf-8"))["repos"] if r["selected"]]
 
 
+SEARCH_CACHE = ROOT / ".cache" / "batch2-search"
+
+
 def search(repo: str, phrase: str) -> list[dict]:
+    """search_live, kept per query under .cache so an interrupted collect resumes where it stopped."""
+    import hashlib
+
+    key = hashlib.sha256(f"{repo}\0{phrase}\0{WINDOW}".encode()).hexdigest()[:20]
+    p = SEARCH_CACHE / f"{key}.json"
+    if p.is_file():
+        return json.loads(p.read_text(encoding="utf-8"))
+    items = search_live(repo, phrase)
+    SEARCH_CACHE.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(items), encoding="utf-8")
+    return items
+
+
+def search_live(repo: str, phrase: str) -> list[dict]:
     q = f'"{phrase}" repo:{repo} committer-date:{WINDOW}'
     items: list[dict] = []
     for page in range(1, 11):
