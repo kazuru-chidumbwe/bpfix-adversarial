@@ -245,6 +245,7 @@ def build(argv: list[str]) -> int:
     p3 = p4.p3
     ap = argparse.ArgumentParser()
     ap.add_argument("--max-candidates", type=int, default=0)
+    ap.add_argument("--ranks", default="", help="comma-separated subset (smoke tests)")
     args = ap.parse_args(argv)
     for d in (p4.KARCH, p4.KCOMMON):
         if not d.is_dir():
@@ -254,6 +255,17 @@ def build(argv: list[str]) -> int:
     p4.install_clang_wrapper(p3.WORK)
     p3.build_direct, p3.build_make, p3.load, p3.run = p4.build_direct, p4.build_make, p4.load, p4.run
     p3.reject_kind = p4.reject_kind
+    from tools.btf_pinning import clear_unknown_pinning
+    pin_cleared: list[str] = []
+
+    def load(obj: Path, outdir: Path, tag: str, deadline: float) -> dict[str, dict]:
+        """p4.load on the stashed copy, after clearing pinning values libbpf does not know (item 9)."""
+        cleared = clear_unknown_pinning(obj, obj)
+        if cleared:
+            pin_cleared.append(f"{tag}:{obj.name}:{','.join(map(str, cleared))}")
+        return p4.load(obj, outdir, tag, deadline)
+
+    p3.load = load
     p4.LEGACY_WRAPPERS.update(p4.install_legacy_wrappers(p3.WORK))
     p3.MAKE_BPF = set()  # batch 2: every candidate is a direct compile (item 6)
     p4.HEADER_MARK_COUNTS = True  # item 8
@@ -262,6 +274,8 @@ def build(argv: list[str]) -> int:
     fl = {json.loads(ln)["screen_rank"]: json.loads(ln)["bpf_c_files"]
           for ln in FILES.read_text(encoding="utf-8").splitlines() if ln.strip()}
     todo = sorted(r for r in fl if r in pass1_survivors())  # item 5: pass 2 comes after the build
+    if args.ranks:
+        todo = [r for r in todo if r in {int(x) for x in args.ranks.split(",")}]
     done = {}
     if OUT.is_file():
         done = {json.loads(ln)["screen_rank"]: json.loads(ln) for ln in OUT.read_text(encoding="utf-8").splitlines() if ln.strip()}
@@ -287,6 +301,7 @@ def build(argv: list[str]) -> int:
         t0 = time.time()
         p4.OPEN_ERRORS.clear()
         p4.LEGACY_LOADED.clear()
+        pin_cleared.clear()
         try:
             row = p3.screen(cands[rank], fl[rank], vmlinux_dir)
         except Exception as e:  # noqa: BLE001 - recorded, screening continues
@@ -294,6 +309,8 @@ def build(argv: list[str]) -> int:
                    "outcome": "E5", "note": f"driver error: {e}"[:800]}
         if p4.OPEN_ERRORS:
             row["open_errors"] = sorted(set(p4.OPEN_ERRORS))
+        if pin_cleared:
+            row["pinning_cleared"] = sorted(set(pin_cleared))
         if p4.LEGACY_LOADED:
             row["legacy_loaded"] = sorted(set(p4.LEGACY_LOADED))
         if row.get("outcome") == "E4" and not any((row.get("n_objects") or {}).values()):
