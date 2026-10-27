@@ -43,6 +43,9 @@ WINDOW = "2024-01-01..2026-10-25"
 SEED = 20261027
 RANK_BASE = 1000
 BATCH = 2
+MAKE_BPF: set[str] = set()  # project-build recipes in use (batch 1 rebuild: cilium, tetragon)
+STOP_RULE = True  # the batch-1 rebuild re-decides screened candidates and is not stopped
+TODO = None  # candidate set; pass1_survivors unless a module sets another
 PRIOR_BUILDS: list[Path] = []  # build rows of earlier batches, for the stop rule
 
 REPOS_FILE = B2 / "repos.json"
@@ -241,8 +244,12 @@ def review() -> int:
 
 
 def pass1_survivors() -> set[int]:
+    """Batch 2 and 3 build every pass-1 survivor (item 5)."""
     return {json.loads(ln)["screen_rank"] for ln in FILES.read_text(encoding="utf-8").splitlines()
             if ln.strip() and json.loads(ln)["pass1"] == "bpf-c"}
+
+
+TODO = pass1_survivors
 
 
 def build(argv: list[str]) -> int:
@@ -273,14 +280,14 @@ def build(argv: list[str]) -> int:
 
     p3.load = load
     p4.LEGACY_WRAPPERS.update(p4.install_legacy_wrappers(p3.WORK))
-    p3.MAKE_BPF = set()  # batch 2: every candidate is a direct compile (item 6)
+    p3.MAKE_BPF = set(MAKE_BPF)  # batch 2: every candidate is a direct compile (item 6)
     p4.HEADER_MARK_COUNTS = True  # item 8
     p4.INCLUDE_DEPTH = 4  # item 10
 
     cands = {c["screen_rank"]: c for c in json.loads(CANDS.read_text(encoding="utf-8"))["candidates"]}
     fl = {json.loads(ln)["screen_rank"]: json.loads(ln)["bpf_c_files"]
           for ln in FILES.read_text(encoding="utf-8").splitlines() if ln.strip()}
-    todo = sorted(r for r in fl if r in pass1_survivors())  # item 5: pass 2 comes after the build
+    todo = sorted(r for r in fl if r in TODO())  # item 5: pass 2 comes after the build
     if args.ranks:
         todo = [r for r in todo if r in {int(x) for x in args.ranks.split(",")}]
     done = {}
@@ -293,11 +300,15 @@ def build(argv: list[str]) -> int:
     def included() -> int:
         prior = sum(1 for f in PRIOR_BUILDS if f.is_file() for ln in f.read_text(encoding="utf-8").splitlines()
                     if ln.strip() and json.loads(ln).get("outcome") == "included")
-        return p4.included_so_far() + prior + sum(1 for r in done.values() if r.get("outcome") == "included")
+        pass5 = ROOT / "fixtures" / "wild" / "pass5.jsonl"  # batch 1 as rebuilt, once it exists (pass 5)
+        b1 = (sum(1 for ln in pass5.read_text(encoding="utf-8").splitlines()
+                  if ln.strip() and json.loads(ln).get("outcome") == "included")
+              if pass5.is_file() and OUT != pass5 else p4.included_so_far())
+        return b1 + prior + sum(1 for r in done.values() if r.get("outcome") == "included")
 
     n = 0
     for rank in todo:
-        if included() >= p3.MAX_INCLUDED or dt.date.today() > p3.STOP_DATE:
+        if STOP_RULE and (included() >= p3.MAX_INCLUDED or dt.date.today() > p3.STOP_DATE):
             print(f"stop: included={included()}, date={dt.date.today()}")
             break
         if rank in done:
