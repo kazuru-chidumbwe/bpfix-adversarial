@@ -190,7 +190,10 @@ LEGACY_LOADED: list[str] = []
 LEGACY = Path(os.environ.get("WILDLOAD_LEGACY", str(p3.WORK / "wildload-legacy")))
 # Old cilium patches per-endpoint constants into the object at load time (its own ELF loader);
 # loaded raw, the placeholder address of a .data value is shifted and the verifier refuses it.
-TEMPLATED = re.compile(r"pointer arithmetic with \S+ operator prohibited")
+TEMPLATED = re.compile(r"pointer arithmetic with \S+ operator prohibited|invalid size of register spill|leaks addr|"
+                       r"partial copy of pointer|pointer comparison prohibited|bitwise operator \S+ on pointer prohibited")
+PLACEHOLDER = re.compile(r"\(18\) r\d+ = 0x[0-9a-f]+\s+; R\d+_w=map_value\(map=\S*\.data,")
+PLACEHOLDER_WINDOW = 6  # instructions before the failing one
 
 
 def install_legacy_wrappers(work: Path) -> dict[str, str]:
@@ -233,11 +236,14 @@ P3_REJECT_KIND = p3.reject_kind
 def reject_kind(log_path: str) -> str:
     kind = P3_REJECT_KIND(log_path)
     if kind == "safety":
-        text = Path(log_path).read_text(errors="replace") if Path(log_path).is_file() else ""
-        block = p3.verifier_error_block(text.splitlines())
+        lines = Path(log_path).read_text(errors="replace").splitlines() if Path(log_path).is_file() else []
+        block = p3.verifier_error_block(lines)
         msg = " ".join(block[1]) if block else ""
-        if TEMPLATED.search(msg) and re.search(r"map_value\(map=\S*\.data", text):
-            return "environment"
+        at = next((i for i, ln in enumerate(lines) if TEMPLATED.search(ln)), None)
+        if TEMPLATED.search(msg) and at is not None:
+            insns = [ln for ln in lines[:at] if re.match(r"\d+: \(", ln)][-PLACEHOLDER_WINDOW:]
+            if any(PLACEHOLDER.search(ln) for ln in insns):
+                return "environment"
     return kind
 
 

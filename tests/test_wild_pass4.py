@@ -63,6 +63,23 @@ class TemplatedConstant(unittest.TestCase):
         self.assertEqual(p4.P3_REJECT_KIND(f.name), "safety")
         self.assertEqual(p4.reject_kind(f.name), "environment")
 
+    def test_spill_of_placeholder_is_environment_but_far_placeholder_is_not(self):
+        import tempfile
+        near = ("-- BEGIN PROG LOAD LOG --\n"
+                "0: (18) r2 = 0xffffd1bb001a0004       ; R2_w=map_value(map=bpf_lxc.data,ks=4,vs=88,off=4)\n"
+                "2: (6b) *(u16 *)(r10 -44) = r2\n"
+                "invalid size of register spill\n"
+                "processed 2 insns (limit 1000000) max_states_per_insn 0 total_states 0 peak_states 0 mark_read 0\n"
+                "-- END PROG LOAD LOG --\n")
+        filler = "".join(f"{i}: (b7) r3 = 0                        ; R3_w=0\n" for i in range(3, 13))
+        far = near.replace("2: (6b)", filler + "13: (6b)")
+        out = []
+        for log in (near, far):
+            with tempfile.NamedTemporaryFile("w", suffix=".log", delete=False, encoding="utf-8") as f:
+                f.write(log)
+            out.append(p4.reject_kind(f.name))
+        self.assertEqual(out, ["environment", "safety"])
+
 
 if __name__ == "__main__":
     unittest.main()
