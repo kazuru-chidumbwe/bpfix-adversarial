@@ -36,6 +36,7 @@ KREL = "6.12.86+deb13"
 KARCH = Path(f"/usr/src/linux-headers-{KREL}-amd64")
 KCOMMON = Path(f"/usr/src/linux-headers-{KREL}-common")
 MAX_ROUNDS = 8
+LIBBPF_INC = Path("/usr/include/bpf")
 UNIT_MARK = re.compile(r"\bSEC\(|\b__(?:bpf_)?section\(|__attribute__\s*\(\(\s*section")
 MISSING = re.compile(r"fatal error: '([^']+)' file not found")
 KBUILD_WARN = ["-Wno-unused-value", "-Wno-pointer-sign", "-Wno-compare-distinct-pointer-types",
@@ -99,13 +100,15 @@ def compile_unit(wt: Path, u: Path, obj: Path, vmlinux_dir: str, index: list[str
         p = p3.run(line, cwd=u.parent, timeout=min(600, p3.left(deadline)))
         if p.returncode == 0 and obj.is_file() and obj.stat().st_size:
             return {"cwd": str(u.parent), "clang": clang, "src": str(u), "obj": str(obj), "line": line,
-                    "compile_mode": mode, "extra_includes": [str(Path(x).relative_to(wt)) for x in extra]}, ""
+                    "compile_mode": mode, "extra_includes": [str(Path(x).relative_to(wt)) if Path(x).is_relative_to(wt) else x for x in extra]}, ""
         err = p.stderr.strip()[-200:]
         m = MISSING.search(p.stderr)
         if not m:
             break
         name = m.group(1)
         d = repo_dir_for(wt, name, index)
+        if d is None and (LIBBPF_INC / name).is_file():
+            d = str(LIBBPF_INC)  # libbpf's own headers, included without the bpf/ prefix
         if d and d not in extra:
             extra.append(d)
             continue
