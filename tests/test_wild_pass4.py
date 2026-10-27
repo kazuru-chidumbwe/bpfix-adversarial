@@ -49,6 +49,27 @@ class HeaderResolution(unittest.TestCase):
         self.assertIsNone(p4.UNIT_MARK.search("static int helper(void)"))
 
 
+class FinalOutcome(unittest.TestCase):
+    def row(self, errs, n=20, decided="I3", by="default"):
+        return {"outcome": "E5", "decided_outcome": decided, "decided_by": by, "open_errors": errs,
+                "n_objects": {"parent": n, "fix": n}}
+
+    def test_layout_checker_without_programs_does_not_block(self):
+        errs = ["30-fix-keep:bpf_alignchecker.o:no program", "30-parent-keep:bpf_alignchecker.o:no program"]
+        self.assertEqual(p4.final_outcome(self.row(errs)), "I3")
+
+    def test_open_failure_blocks(self):
+        errs = ["28-parent-keep:bpf_lxc.o:OPEN_ERROR 95", "28-parent-keep:bpf_alignchecker.o:no program"]
+        self.assertEqual(p4.final_outcome(self.row(errs, decided="E4")), "E5")
+
+    def test_nothing_loaded_at_parent_blocks(self):
+        errs = ["40-parent-keep:a.o:no program", "40-parent-keep:b.o:no program", "40-fix-keep:a.o:no program"]
+        self.assertEqual(p4.final_outcome(self.row(errs, n=2, decided="E4")), "E5")
+
+    def test_rows_without_a_decision_keep_their_outcome(self):
+        self.assertEqual(p4.final_outcome({"outcome": "E5", "note": "make failed"}), "E5")
+
+
 class TemplatedConstant(unittest.TestCase):
     def test_unsubstituted_load_time_constant_is_environment(self):
         import tempfile

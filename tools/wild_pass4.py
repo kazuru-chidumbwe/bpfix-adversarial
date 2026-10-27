@@ -265,6 +265,22 @@ def run(cmd, cwd=None, timeout=None, env=None):
 P3_LOAD = p3.load
 
 
+def final_outcome(row: dict) -> str:
+    """Outcome from the recorded fields (protocol, correction to item 6). Only an object that failed to
+    open blocks the decision; objects that open with no program do not, unless the deciding build's parent
+    side loaded no program at all."""
+    if row.get("decided_outcome") is None:
+        return row["outcome"]
+    errs = row.get("open_errors") or []
+    if any(not e.endswith(":no program") for e in errs):
+        return "E5"
+    tag = "feat" if row.get("decided_by") == "features" else "keep"
+    empty = {e.split(":")[1] for e in errs if e.split(":")[0].endswith(f"parent-{tag}")}
+    if len(empty) >= (row.get("n_objects") or {}).get("parent", 0):
+        return "E5"
+    return row["decided_outcome"]
+
+
 def retry_set() -> list[int]:
     """Every pass-3 E5 and every pass-3 E4: pass 3 could not tell an object it failed to open from one that loaded."""
     rows = [json.loads(ln) for ln in (p3.WILD / "pass3.jsonl").read_text(encoding="utf-8").splitlines() if ln.strip()]
@@ -333,8 +349,10 @@ def main(argv: list[str] | None = None) -> int:
         if row.get("outcome") == "E4" and not any((row.get("n_objects") or {}).values()):
             row.update(outcome="E5", note="no built object depends on a changed file")
         elif row.get("outcome") in ("E4", "I3", "I4", "C") and OPEN_ERRORS:
-            row.update(outcome="E5", decided_outcome=row["outcome"],
-                       note="no program loaded from: " + ", ".join(sorted(set(OPEN_ERRORS)))[:700])
+            row["decided_outcome"] = row["outcome"]
+            row["outcome"] = final_outcome(row)
+            if row["outcome"] == "E5":
+                row["note"] = "no program loaded from: " + ", ".join(sorted(set(OPEN_ERRORS)))[:700]
         row["pass"] = 4
         row["seconds"] = round(time.time() - t0)
         with OUT.open("a", encoding="utf-8", newline="\n") as f:
