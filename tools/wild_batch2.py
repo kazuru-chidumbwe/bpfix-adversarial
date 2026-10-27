@@ -116,12 +116,12 @@ def search(repo: str, phrase: str) -> list[dict]:
     items: list[dict] = []
     for page in range(1, 11):
         cmd = ["gh", "api", "-X", "GET", "search/commits", "-f", f"q={q}", "-f", "per_page=100", "-f", f"page={page}"]
-        for _ in range(5):
+        for _ in range(30):
             res = wc.subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8")
             if res.returncode == 0:
                 break
-            if "rate limit" in (res.stdout + res.stderr).lower():
-                time.sleep(65)
+            if "rate limit" in (res.stdout + res.stderr).lower() or "error connecting" in res.stderr.lower():
+                time.sleep(65)  # rate limit, or the network dropped: wait and retry the same request
                 continue
             raise RuntimeError(f"gh failed for {q!r}: {res.stderr.strip()}")
         else:
@@ -163,6 +163,18 @@ def collect() -> int:
     return 0
 
 
+def files_of(repo: str, sha: str) -> list[dict]:
+    """wf.files_of, retried when the network drops."""
+    for _ in range(30):
+        try:
+            return wf.files_of(repo, sha)
+        except RuntimeError as e:
+            if "error connecting" not in str(e).lower():
+                raise
+            time.sleep(65)
+    raise RuntimeError(f"{repo}@{sha}: network not back")
+
+
 def files() -> int:
     cands = json.loads(CANDS.read_text(encoding="utf-8"))["candidates"]
     done = set()
@@ -172,7 +184,7 @@ def files() -> int:
         for c in cands:
             if c["commit"] in done:
                 continue
-            fl = wf.files_of(c["repo"], c["commit"])
+            fl = files_of(c["repo"], c["commit"])
             bpf = [x["filename"] for x in fl if is_bpf_c(x["filename"])]
             f.write(json.dumps({"screen_rank": c["screen_rank"], "repo": c["repo"], "commit": c["commit"],
                                 "n_files": len(fl), "bpf_c_files": bpf,
