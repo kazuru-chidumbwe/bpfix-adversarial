@@ -1,0 +1,2 @@
+rank	verdict	note
+111	ok	pin log rejects line 182 (rq->__sector) with invalid mem access scalar, the message and statement the commit quotes; the fix replaces the direct reads with BPF_CORE_READ (probe reads), not only a relocation
