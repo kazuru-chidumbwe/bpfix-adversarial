@@ -5,12 +5,13 @@
 Implements the 27 Oct 2026 "Batch 2" entry of "Changes after the freeze" in
 docs/WILD-CORPUS-PROTOCOL.md. Files live under fixtures/wild/batch2/.
 
+  select    sources by rule          -> repos.json              (home)
   collect   GitHub commit search (gh CLI) -> candidates.json        (home)
   files     pass 1, changed-file lists     -> screen_files.jsonl     (home)
   review    pass 2 input, message + BPF C diff -> review/*.txt       (home)
   build     pass 4 build, load and decide  -> build.jsonl            (lab host)
 
-Usage: python3 tools/wild_batch2.py {collect,files,review,build} [--max-candidates N]
+Usage: python3 tools/wild_batch2.py {select,collect,files,review,build} [--max-candidates N]
 """
 
 from __future__ import annotations
@@ -42,14 +43,9 @@ WINDOW = "2024-01-01..2026-10-25"
 SEED = 20261027
 RANK_BASE = 1000
 
-REPOS = (
-    "sched-ext/scx", "grafana/beyla", "open-telemetry/opentelemetry-go-instrumentation",
-    "projectcalico/calico", "mozillazg/ptcpdump", "hengyoush/kyanos", "kubescape/node-agent",
-    "exein-io/pulsar", "microsoft/retina", "coroot/coroot-node-agent", "deepflowio/deepflow",
-    "gojue/ecapture", "xdp-project/xdp-tools", "xdp-project/bpf-examples", "oracle/bpftune",
-    "netdata/kernel-collector", "cloudflare/ebpf_exporter", "grafana/pyroscope", "bpfman/bpfman",
-    "eunomia-bpf/bpf-developer-tutorial", "loxilb-io/loxilb-ebpf",
-)
+REPOS_FILE = B2 / "repos.json"
+TOPICS = ("ebpf", "bpf", "xdp", "libbpf")
+REPO_QUERY = "topic:{topic} stars:>=200 pushed:>=2026-01-01 archived:false fork:false"
 
 BPF_DIR2 = re.compile(r"(^|/)(kernel|bpf[-_][^/]*|[^/]*cprog)(/|$)", re.I)
 
@@ -60,6 +56,59 @@ def is_bpf_c(path: str) -> bool:
         return True
     p = path.lower()
     return p.endswith((".c", ".h")) and "/" in p and bool(BPF_DIR2.search(p.rsplit("/", 1)[0]))
+
+
+def gh_json(args: list[str]):
+    for _ in range(5):
+        res = wc.subprocess.run(["gh", "api", *args], capture_output=True, text=True, encoding="utf-8")
+        if res.returncode == 0:
+            return json.loads(res.stdout)
+        if "rate limit" in (res.stdout + res.stderr).lower():
+            time.sleep(65)
+            continue
+        return None
+    raise RuntimeError(f"rate limit not cleared for {args!r}")
+
+
+def select() -> int:
+    """Sources by rule (protocol, batch 2 item 1): topic search, then BPF C in the default branch."""
+    found: dict[str, dict] = {}
+    for topic in TOPICS:
+        q = REPO_QUERY.format(topic=topic)
+        for page in range(1, 11):
+            d = gh_json(["-X", "GET", "search/repositories", "-f", f"q={q}", "-f", "per_page=100", "-f", f"page={page}"])
+            items = d["items"]
+            for it in items:
+                r = found.setdefault(it["full_name"], {"repo": it["full_name"], "stars": it["stargazers_count"],
+                                                       "default_branch": it["default_branch"], "topics_matched": []})
+                r["topics_matched"].append(topic)
+            time.sleep(2.1)
+            if len(items) < 100:
+                break
+    batch1 = {r.lower() for r in wc.REPOS}
+    rows = []
+    for name in sorted(found, key=str.lower):
+        r = found[name]
+        if name.lower() in batch1:
+            r["selected"], r["reason"] = False, "in batch 1"
+        else:
+            t = gh_json([f"repos/{name}/git/trees/{r['default_branch']}?recursive=1"]) or {}
+            r["bpf_c_files"] = sum(1 for x in t.get("tree", []) if x["type"] == "blob" and is_bpf_c(x["path"]))
+            r["tree_truncated"] = bool(t.get("truncated"))
+            r["selected"] = r["bpf_c_files"] > 0
+            r["reason"] = "BPF C in default branch" if r["selected"] else "no BPF C file by the pass-1 rule"
+        rows.append(r)
+    B2.mkdir(parents=True, exist_ok=True)
+    REPOS_FILE.write_text(json.dumps({"queried": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+                                      "query": REPO_QUERY, "topics": list(TOPICS), "n_found": len(rows),
+                                      "n_selected": sum(r["selected"] for r in rows), "repos": rows},
+                                     indent=1) + "\n", encoding="utf-8", newline="\n")
+    print(f"wrote {REPOS_FILE} found={len(rows)} selected={sum(r['selected'] for r in rows)}")
+    return 0
+
+
+def repos() -> list[str]:
+    return [r["repo"] for r in json.loads(REPOS_FILE.read_text(encoding="utf-8"))["repos"] if r["selected"]]
 
 
 def search(repo: str, phrase: str) -> list[dict]:
@@ -87,7 +136,8 @@ def search(repo: str, phrase: str) -> list[dict]:
 
 def collect() -> int:
     by_commit: dict[str, dict] = {}
-    for repo in REPOS:
+    sources = repos()
+    for repo in sources:
         for phrase in wc.PHRASES:
             for it in search(repo, phrase):
                 row = by_commit.setdefault(it["sha"], {
@@ -106,7 +156,7 @@ def collect() -> int:
     rows.sort(key=lambda r: r["screen_rank"])
     B2.mkdir(parents=True, exist_ok=True)
     CANDS.write_text(json.dumps({"protocol": "docs/WILD-CORPUS-PROTOCOL.md (batch 2)", "window": WINDOW, "seed": SEED,
-                                 "rank_base": RANK_BASE, "repos": list(REPOS), "phrases": list(wc.PHRASES),
+                                 "rank_base": RANK_BASE, "repos": sources, "phrases": list(wc.PHRASES),
                                  "n": len(rows), "candidates": rows}, indent=1, ensure_ascii=False) + "\n",
                      encoding="utf-8", newline="\n")
     print(f"wrote {CANDS} n={len(rows)}")
@@ -218,11 +268,11 @@ def build(argv: list[str]) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
-    if not argv or argv[0] not in ("collect", "files", "review", "build"):
+    if not argv or argv[0] not in ("select", "collect", "files", "review", "build"):
         print(__doc__)
         return 2
     cmd, rest = argv[0], argv[1:]
-    return {"collect": collect, "files": files, "review": review}.get(cmd, lambda: build(rest))()
+    return {"select": select, "collect": collect, "files": files, "review": review}.get(cmd, lambda: build(rest))()
 
 
 if __name__ == "__main__":

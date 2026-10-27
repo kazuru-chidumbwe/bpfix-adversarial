@@ -83,6 +83,11 @@ def lab_rejected(text: str) -> bool:
 
 
 def vs_stop_line(text: str) -> tuple[int | None, str | None, str]:
+    line, txt, note, _file = vs_stop_loc(text)
+    return line, txt, note
+
+
+def vs_stop_loc(text: str) -> tuple[int | None, str | None, str, str | None]:
     """Last source-mapped line before the verifier's error message; else last mapped line.
 
     The error message is found from log structure (the lines between the last
@@ -90,7 +95,7 @@ def vs_stop_line(text: str) -> tuple[int | None, str | None, str]:
     with unfamiliar wording is still found. Keyword matching is a fallback for
     logs without that trailer.
     """
-    locs: list[tuple[int, str]] = []
+    locs: list[tuple[int, str, str]] = []
     reject_idx: int | None = None
     raw_lines = text.splitlines()
     block = verifier_error_block(raw_lines)
@@ -99,7 +104,7 @@ def vs_stop_line(text: str) -> tuple[int | None, str | None, str]:
     for idx, line in enumerate(raw_lines):
         m = SOURCE_AT_RE.search(line)
         if m:
-            locs.append((int(m.group(3)), m.group(1).strip()))
+            locs.append((int(m.group(3)), m.group(1).strip(), m.group(2).strip()))
         if reject_idx is not None:
             continue
         low = line.lower()
@@ -107,19 +112,19 @@ def vs_stop_line(text: str) -> tuple[int | None, str | None, str]:
             reject_idx = idx
             break
     if not locs:
-        return None, None, "VS: no source mappings in log"
+        return None, None, "VS: no source mappings in log", None
     if reject_idx is not None:
         # last mapping appearing before reject line
-        before: list[tuple[int, str]] = []
+        before: list[tuple[int, str, str]] = []
         for idx, line in enumerate(raw_lines[:reject_idx]):
             m = SOURCE_AT_RE.search(line)
             if m:
-                before.append((int(m.group(3)), m.group(1).strip()))
+                before.append((int(m.group(3)), m.group(1).strip(), m.group(2).strip()))
         if before:
-            ln, txt = before[-1]
-            return ln, txt, "VS: stop-site source map before reject"
-    ln, txt = locs[-1]
-    return ln, txt, "VS: last source map in log"
+            ln, txt, f = before[-1]
+            return ln, txt, "VS: stop-site source map before reject", f
+    ln, txt, f = locs[-1]
+    return ln, txt, "VS: last source map in log", f
 
 
 def sc_report(src: Path, obligation: str, case_id: str) -> tuple[int | None, str]:

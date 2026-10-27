@@ -46,6 +46,7 @@ class Prediction:
     primary: Optional[int]
     labels: list[int] = field(default_factory=list)
     note: str = ""
+    file: Optional[str] = None  # file the reporter names for primary, when it names one; else ctx.source
 
 
 class Reporter(Protocol):
@@ -66,7 +67,7 @@ class _Bpfix:
         if p is None:
             return Prediction(None, [], "bpfix output missing")
         d = parse_bpfix(p.read_text(encoding="utf-8", errors="replace"))
-        return Prediction(d.primary, d.label_lines, d.error_id or "")
+        return Prediction(d.primary, d.label_lines, d.error_id or "", d.path)
 
 
 class _VerifierState:
@@ -74,10 +75,10 @@ class _VerifierState:
     needs_artifact = None
 
     def predict(self, ctx: CaseContext) -> Prediction:
-        from tools.score_sc_vs_honesty import vs_stop_line
+        from tools.score_sc_vs_honesty import vs_stop_loc
 
-        line, _txt, note = vs_stop_line(ctx.log_text())
-        return Prediction(line, [], note)
+        line, _txt, note, file = vs_stop_loc(ctx.log_text())
+        return Prediction(line, [], note, file)
 
 
 class _SourceComment:
