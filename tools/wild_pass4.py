@@ -186,15 +186,59 @@ def build_make(wt: Path, deadline: float) -> tuple[list[dict], str]:
 
 
 OPEN_ERRORS: list[str] = []
+LEGACY_LOADED: list[str] = []
+LEGACY = Path(os.environ.get("WILDLOAD_LEGACY", str(p3.WORK / "wildload-legacy")))
+# Old cilium patches per-endpoint constants into the object at load time (its own ELF loader);
+# loaded raw, the placeholder address of a .data value is shifted and the verifier refuses it.
+TEMPLATED = re.compile(r"pointer arithmetic with \S+ operator prohibited")
+
+
+def install_legacy_wrappers(work: Path) -> dict[str, str]:
+    """One wrapper per default program type, since sudo passes only the pin-root variable through."""
+    out = {}
+    for t in ("sched_cls", "xdp"):
+        w = work / "p4bin" / f"wildload-legacy-{t}"
+        w.parent.mkdir(parents=True, exist_ok=True)
+        w.write_text(f'#!/bin/sh\nWILDLOAD_DEFAULT_TYPE={t} exec {LEGACY} "$@"\n', encoding="utf-8")
+        w.chmod(w.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+        out[t] = str(w)
+    return out
+
+
+LEGACY_WRAPPERS: dict[str, str] = {}
 
 
 def load(obj: Path, outdir: Path, tag: str, deadline: float) -> dict[str, dict]:
-    """Pass-3 load, but an object that yields no program (open failure or none found) is recorded."""
+    """Pass-3 load; an object libbpf 1.5 refuses for its legacy `maps` section (OPEN_ERROR 95) is loaded
+    with the libbpf 0.8.3 build instead. An object that still yields no program is recorded."""
     res = P3_LOAD(obj, outdir, tag, deadline)
+    if not res and OPEN_CODE.get(str(obj)) == "OPEN_ERROR 95" and LEGACY_WRAPPERS:
+        kind = "xdp" if "xdp" in Path(obj).name else "sched_cls"
+        saved, p3.WILDLOAD = p3.WILDLOAD, LEGACY_WRAPPERS[kind]
+        try:
+            res = P3_LOAD(obj, outdir, tag, deadline)
+        finally:
+            p3.WILDLOAD = saved
+        if res:
+            LEGACY_LOADED.append(f"{tag}:{Path(obj).name}:{kind}")
     if not res:
         code = OPEN_CODE.get(str(obj), "no program")
         OPEN_ERRORS.append(f"{tag}:{Path(obj).name}:{code}")
     return res
+
+
+P3_REJECT_KIND = p3.reject_kind
+
+
+def reject_kind(log_path: str) -> str:
+    kind = P3_REJECT_KIND(log_path)
+    if kind == "safety":
+        text = Path(log_path).read_text(errors="replace") if Path(log_path).is_file() else ""
+        block = p3.verifier_error_block(text.splitlines())
+        msg = " ".join(block[1]) if block else ""
+        if TEMPLATED.search(msg) and re.search(r"map_value\(map=\S*\.data", text):
+            return "environment"
+    return kind
 
 
 OPEN_CODE: dict[str, str] = {}
@@ -240,6 +284,11 @@ def main(argv: list[str] | None = None) -> int:
             raise SystemExit(f"missing pin kernel headers: {d}")
     install_clang_wrapper(p3.WORK)
     p3.build_direct, p3.build_make, p3.load, p3.run = build_direct, build_make, load, run
+    p3.reject_kind = reject_kind
+    if LEGACY.is_file():
+        LEGACY_WRAPPERS.update(install_legacy_wrappers(p3.WORK))
+    else:
+        raise SystemExit(f"missing legacy loader {LEGACY}")
     cands = {c["screen_rank"]: c for c in json.loads((p3.WILD / "candidates.json").read_text(encoding="utf-8"))["candidates"]}
     files = {json.loads(ln)["screen_rank"]: json.loads(ln)["bpf_c_files"]
              for ln in (p3.WILD / "screen_files.jsonl").read_text(encoding="utf-8").splitlines() if ln.strip()}
@@ -265,6 +314,7 @@ def main(argv: list[str] | None = None) -> int:
         p3.shutil.rmtree(p3.WORK / "tmp" / f"{rank:03d}", ignore_errors=True)
         t0 = time.time()
         OPEN_ERRORS.clear()
+        LEGACY_LOADED.clear()
         try:
             row = p3.screen(cands[rank], files[rank], vmlinux_dir)
         except Exception as e:  # noqa: BLE001 - recorded, screening continues
@@ -272,6 +322,8 @@ def main(argv: list[str] | None = None) -> int:
                    "outcome": "E5", "note": f"driver error: {e}"[:800]}
         if OPEN_ERRORS:
             row["open_errors"] = sorted(set(OPEN_ERRORS))
+        if LEGACY_LOADED:
+            row["legacy_loaded"] = sorted(set(LEGACY_LOADED))
         if row.get("outcome") == "E4" and not any((row.get("n_objects") or {}).values()):
             row.update(outcome="E5", note="no built object depends on a changed file")
         elif row.get("outcome") in ("E4", "I3", "I4", "C") and OPEN_ERRORS:

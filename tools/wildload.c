@@ -17,6 +17,11 @@
  * /sys/fs/bpf/wildload), which the caller removes afterwards.
  *
  * Build: cc -O2 -o wildload tools/wildload.c -lbpf -lelf -lz
+ * Legacy-maps build (objects with a `maps` section, which libbpf >= 1.0 refuses):
+ *   cc -O2 -DWILDLOAD_LEGACY -I<libbpf-0.8.3>/include -o wildload-legacy tools/wildload.c \
+ *      <libbpf-0.8.3>/libbpf.a -lelf -lz
+ * It sets relaxed_maps, so iproute2-style definitions longer than bpf_map_def
+ * (pinning, inner map ids) open with their first five fields; pins are not used.
  * Usage: sudo ./wildload <object.o> <outdir>
  */
 #include <errno.h>
@@ -44,6 +49,9 @@ static int load_one(const char *path, const char *want, const char *outdir, char
 		.sz = sizeof(opts),
 		.kernel_log_level = 1 | 2 | 4,
 		.pin_root_path = pin_root ? pin_root : "/sys/fs/bpf/wildload",
+#ifdef WILDLOAD_LEGACY
+		.relaxed_maps = true,
+#endif
 	};
 	struct bpf_object *obj = bpf_object__open_file(path, &opts);
 	struct bpf_program *p;
@@ -57,6 +65,13 @@ static int load_one(const char *path, const char *want, const char *outdir, char
 	}
 	bpf_object__for_each_program(p, obj) {
 		int me = strcmp(bpf_program__name(p), want) == 0;
+#ifdef WILDLOAD_LEGACY
+		/* iproute2-style sections ("from-container", "2/1") carry no type: load them the way
+		 * the project's loader does (tc: SCHED_CLS; ip link: XDP), named by WILDLOAD_DEFAULT_TYPE. */
+		const char *dt = getenv("WILDLOAD_DEFAULT_TYPE");
+		if (dt && bpf_program__type(p) == BPF_PROG_TYPE_UNSPEC)
+			bpf_program__set_type(p, strcmp(dt, "xdp") == 0 ? BPF_PROG_TYPE_XDP : BPF_PROG_TYPE_SCHED_CLS);
+#endif
 		bpf_program__set_autoload(p, me);
 		if (me)
 			snprintf(section, seclen, "%s", bpf_program__section_name(p));
@@ -90,7 +105,15 @@ int main(int argc, char **argv)
 		return 2;
 	}
 	libbpf_set_print(print_all);
+#ifdef WILDLOAD_LEGACY
+	libbpf_set_strict_mode(LIBBPF_STRICT_CLEAN_PTRS | LIBBPF_STRICT_DIRECT_ERRS); /* NULL on failure, as in 1.x */
+	{
+		struct bpf_object_open_opts o = { .sz = sizeof(o), .relaxed_maps = true };
+		obj = bpf_object__open_file(argv[1], &o);
+	}
+#else
 	obj = bpf_object__open_file(argv[1], NULL);
+#endif
 	if (!obj) {
 		printf("OPEN_ERROR %d\n", errno);
 		return 1;

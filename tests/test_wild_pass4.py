@@ -49,5 +49,20 @@ class HeaderResolution(unittest.TestCase):
         self.assertIsNone(p4.UNIT_MARK.search("static int helper(void)"))
 
 
+class TemplatedConstant(unittest.TestCase):
+    def test_unsubstituted_load_time_constant_is_environment(self):
+        import tempfile
+        log = ("libbpf: prog 'x': -- BEGIN PROG LOAD LOG --\n"
+               "21: (18) r4 = 0xffffd1bb0017c048      ; R4_w=map_value(map=bpf_lxc.data,ks=4,vs=88,off=72)\n"
+               "25: (67) r4 <<= 32\n"
+               "R4 pointer arithmetic with <<= operator prohibited\n"
+               "processed 22 insns (limit 1000000) max_states_per_insn 0 total_states 0 peak_states 0 mark_read 0\n"
+               "-- END PROG LOAD LOG --\n")
+        with tempfile.NamedTemporaryFile("w", suffix=".log", delete=False, encoding="utf-8") as f:
+            f.write(log)
+        self.assertEqual(p4.P3_REJECT_KIND(f.name), "safety")
+        self.assertEqual(p4.reject_kind(f.name), "environment")
+
+
 if __name__ == "__main__":
     unittest.main()
