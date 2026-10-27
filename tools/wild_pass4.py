@@ -83,9 +83,9 @@ def compile_cmd(mode: str, u: Path, obj: Path, inc: list[str], vmlinux_dir: str)
                  "-I", "/usr/include", "-c", str(u), "-o", str(obj)]
         return clang, shlex.join(clang)
     clang = ["clang", "-g", "-O2", "-D__KERNEL__", "-D__BPF_TRACING__", "-D__TARGET_ARCH_x86", "-fno-stack-protector",
-             *KBUILD_WARN, *inc, *kernel_includes(), "-emit-llvm", "-c", str(u), "-o", "-"]
-    llc = ["llc", "-march=bpf", "-filetype=obj", "-o", str(obj)]
-    return clang, shlex.join(clang) + " | " + shlex.join(llc)
+             *KBUILD_WARN, *inc, *kernel_includes(), "-emit-llvm", "-c", str(u), "-o", str(obj) + ".bc"]
+    llc = ["llc", "-march=bpf", "-filetype=obj", str(obj) + ".bc", "-o", str(obj)]
+    return clang, shlex.join(clang) + " && " + shlex.join(llc)  # not a pipe: a clang failure must fail the step
 
 
 def compile_unit(wt: Path, u: Path, obj: Path, vmlinux_dir: str, index: list[str], deadline: float):
@@ -95,6 +95,7 @@ def compile_unit(wt: Path, u: Path, obj: Path, vmlinux_dir: str, index: list[str
     for _ in range(MAX_ROUNDS + 1):
         inc = sum((["-I", d] for d in extra + p3.include_dirs(wt, u)), [])
         clang, line = compile_cmd(mode, u, obj, inc, vmlinux_dir)
+        obj.unlink(missing_ok=True)
         p = p3.run(line, cwd=u.parent, timeout=min(600, p3.left(deadline)))
         if p.returncode == 0 and obj.is_file() and obj.stat().st_size:
             return {"cwd": str(u.parent), "clang": clang, "src": str(u), "obj": str(obj), "line": line,
