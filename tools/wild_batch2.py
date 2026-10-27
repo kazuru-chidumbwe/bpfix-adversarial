@@ -8,7 +8,7 @@ docs/WILD-CORPUS-PROTOCOL.md. Files live under fixtures/wild/batch2/.
   select    sources by rule          -> repos.json              (home)
   collect   GitHub commit search (gh CLI) -> candidates.json        (home)
   files     pass 1, changed-file lists     -> screen_files.jsonl     (home)
-  review    pass 2 input, message + BPF C diff -> review/*.txt       (home)
+  review    pass 2 input, message + BPF C diff -> review/*.txt (home; used after the build)
   build     pass 4 build, load and decide  -> build.jsonl            (lab host)
 
 Usage: python3 tools/wild_batch2.py {select,collect,files,review,build} [--max-candidates N]
@@ -191,6 +191,11 @@ def review() -> int:
     return wd.main([])
 
 
+def pass1_survivors() -> set[int]:
+    return {json.loads(ln)["screen_rank"] for ln in FILES.read_text(encoding="utf-8").splitlines()
+            if ln.strip() and json.loads(ln)["pass1"] == "bpf-c"}
+
+
 def build(argv: list[str]) -> int:
     from tools import wild_pass4 as p4
 
@@ -212,8 +217,7 @@ def build(argv: list[str]) -> int:
     cands = {c["screen_rank"]: c for c in json.loads(CANDS.read_text(encoding="utf-8"))["candidates"]}
     fl = {json.loads(ln)["screen_rank"]: json.loads(ln)["bpf_c_files"]
           for ln in FILES.read_text(encoding="utf-8").splitlines() if ln.strip()}
-    todo = sorted(int(r["rank"]) for r in csv.DictReader(DECISIONS.open(encoding="utf-8"), delimiter="\t")
-                  if r["decision"] == "pass")
+    todo = sorted(r for r in fl if r in pass1_survivors())  # item 5: pass 2 comes after the build
     done = {}
     if OUT.is_file():
         done = {json.loads(ln)["screen_rank"]: json.loads(ln) for ln in OUT.read_text(encoding="utf-8").splitlines() if ln.strip()}

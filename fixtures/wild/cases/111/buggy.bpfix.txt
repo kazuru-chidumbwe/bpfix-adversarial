@@ -1,0 +1,18 @@
+error[BPFIX-E011]: scalar or pkt_end value is used where the verifier requires a real pointer
+  = class: source_bug
+  = confidence: medium
+  = diagnostic: supported, help: repair_hint, span: exact_pc
+  = next action: provenance
+  --> biosnoop.bpf.c:182
+   |
+175 | if (targ_queued && BPF_CORE_READ(rq, q, elevator)) {
+    | ---------------------------------------------------- nearby source context for pointer provenance
+182 | event.sector = rq->__sector;
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this access consumes scalar or pkt_end state where a pointer is required
+   |
+   = verifier[106]: R2 invalid mem access 'scalar'
+   = note: nearest BPF instruction pc 90
+   = note: parsed 42 verifier state snapshots
+   = note[verifier-state]: verifier state at the rejected instruction shows the consumed register is scalar or pkt_end state, but the instruction uses it as a memory pointer or pointer-like value
+   = required proof: prove the value consumed by this memory access or pointer operation is a verifier-recognized pointer, not scalar or pkt_end state
+help: Use a verifier-recognized pointer at the access site; keep end sentinels, scalar offsets, and pointer bases separate, and reload or rederive the pointer from a supported context/helper before dereferencing it.
