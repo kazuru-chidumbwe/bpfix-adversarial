@@ -38,6 +38,8 @@ KCOMMON = Path(f"/usr/src/linux-headers-{KREL}-common")
 MAX_ROUNDS = 8
 LIBBPF_INC = Path("/usr/include/bpf")
 UNIT_MARK = re.compile(r"\bSEC\(|\b__(?:bpf_)?section\(|__attribute__\s*\(\(\s*section")
+# Batch 2 (protocol, batch 2 item 8): a .c file that includes a changed header holding the programs is a unit.
+HEADER_MARK_COUNTS = False
 MISSING = re.compile(r"fatal error: '([^']+)' file not found")
 KBUILD_WARN = ["-Wno-unused-value", "-Wno-pointer-sign", "-Wno-compare-distinct-pointer-types",
                "-Wno-gnu-variable-sized-type-not-at-end", "-Wno-address-of-packed-member",
@@ -132,9 +134,10 @@ def build_direct(wt: Path, changed: list[str], vmlinux_dir: str, objdir: Path, d
             name = re.escape(Path(rel).name)
             g = p3.run(f"grep -rlE '#include.*[\"</]{name}[\">]' --include='*.c' .", cwd=wt,
                        timeout=min(300, p3.left(deadline)))
+            header_marked = HEADER_MARK_COUNTS and bool(UNIT_MARK.search(f.read_text(errors="replace")))
             for hit in g.stdout.split():
                 h = (wt / hit).resolve()
-                if UNIT_MARK.search(h.read_text(errors="replace")):
+                if header_marked or UNIT_MARK.search(h.read_text(errors="replace")):
                     units.add(h)
     cmds, errors = [], []
     objdir.mkdir(parents=True, exist_ok=True)

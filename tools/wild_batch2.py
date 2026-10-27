@@ -254,6 +254,7 @@ def build(argv: list[str]) -> int:
     p3.reject_kind = p4.reject_kind
     p4.LEGACY_WRAPPERS.update(p4.install_legacy_wrappers(p3.WORK))
     p3.MAKE_BPF = set()  # batch 2: every candidate is a direct compile (item 6)
+    p4.HEADER_MARK_COUNTS = True  # item 8
 
     cands = {c["screen_rank"]: c for c in json.loads(CANDS.read_text(encoding="utf-8"))["candidates"]}
     fl = {json.loads(ln)["screen_rank"]: json.loads(ln)["bpf_c_files"]
