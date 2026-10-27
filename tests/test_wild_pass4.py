@@ -13,14 +13,19 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class RetrySet(unittest.TestCase):
-    def test_every_e5_and_objectless_e4(self):
+    def test_every_e5_and_e4(self):
         rows = [json.loads(ln) for ln in (ROOT / "fixtures/wild/pass3.jsonl").read_text(encoding="utf-8").splitlines()
                 if ln.strip()]
-        e5 = {r["screen_rank"] for r in rows if r["outcome"] == "E5"}
-        todo = set(p4.retry_set())
-        self.assertTrue(e5 <= todo)
-        self.assertEqual(todo - e5, {243, 245})
-        self.assertEqual(len(todo), 43)
+        want = {r["screen_rank"] for r in rows if r["outcome"] in ("E5", "E4")}
+        self.assertEqual(set(p4.retry_set()), want)
+        self.assertEqual(len(want), 71)
+
+
+class LlcSteps(unittest.TestCase):
+    def test_ir_followed_to_object(self):
+        log = ("clang -O2 -target bpf -emit-llvm -c bpf_lxc.c -o bpf_lxc.ll\n"
+               "llc -march=bpf -mcpu=v2 -filetype=obj -o bpf_lxc.o bpf_lxc.ll\n")
+        self.assertEqual(p4.llc_steps(log)["bpf_lxc.ll"][1], "bpf_lxc.o")
 
 
 class HeaderResolution(unittest.TestCase):
@@ -39,7 +44,7 @@ class HeaderResolution(unittest.TestCase):
         self.assertIsNone(p4.repo_dir_for(Path("/w"), "linux/nsproxy.h", self.index))
 
     def test_unit_markers(self):
-        for text in ('SEC("kprobe/x")', "__section(\"kprobe/x\")", "__attribute__((section(\"x\")))"):
+        for text in ('SEC("kprobe/x")', "__section(\"kprobe/x\")", "__bpf_section(\"x\")", "__attribute__((section(\"x\")))"):
             self.assertTrue(p4.UNIT_MARK.search(text), text)
         self.assertIsNone(p4.UNIT_MARK.search("static int helper(void)"))
 

@@ -5,7 +5,7 @@
 Implements the 27 Oct 2026 entry of "Changes after the freeze" in
 docs/WILD-CORPUS-PROTOCOL.md. Runs ON the lab host, like pass 3, and reuses its
 worktrees, loading, decision rule, feature build and case store. The retry set
-is every pass-3 E5 and every pass-3 E4 that loaded no object. Rows go to
+is every pass-3 E5 and every pass-3 E4. Rows go to
 fixtures/wild/pass4.jsonl; status to $WILD_WORK/pass4.status.
 
 Usage: python3 tools/wild_pass4.py [--max-candidates N] [--ranks 11,14]
@@ -36,7 +36,7 @@ KREL = "6.12.86+deb13"
 KARCH = Path(f"/usr/src/linux-headers-{KREL}-amd64")
 KCOMMON = Path(f"/usr/src/linux-headers-{KREL}-common")
 MAX_ROUNDS = 8
-UNIT_MARK = re.compile(r"\bSEC\(|\b__section\(|__attribute__\s*\(\(\s*section")
+UNIT_MARK = re.compile(r"\bSEC\(|\b__(?:bpf_)?section\(|__attribute__\s*\(\(\s*section")
 MISSING = re.compile(r"fatal error: '([^']+)' file not found")
 KBUILD_WARN = ["-Wno-unused-value", "-Wno-pointer-sign", "-Wno-compare-distinct-pointer-types",
                "-Wno-gnu-variable-sized-type-not-at-end", "-Wno-address-of-packed-member",
@@ -146,10 +146,59 @@ def build_direct(wt: Path, changed: list[str], vmlinux_dir: str, objdir: Path, d
     return cmds, "direct compile"
 
 
+def llc_steps(log: str) -> dict[str, tuple[str, str]]:
+    """IR file -> (llc command line, object it writes), from a verbose make log."""
+    out: dict[str, tuple[str, str]] = {}
+    for line in log.splitlines():
+        try:
+            toks = shlex.split(line.strip())
+        except ValueError:
+            continue
+        if not toks or not Path(toks[0]).name.startswith("llc") or "-o" not in toks:
+            continue
+        obj = toks[toks.index("-o") + 1]
+        for t in toks[1:]:
+            if t.endswith(".ll") and t != obj:
+                out[Path(t).name] = (line.strip(), obj)
+    return out
+
+
+def build_make(wt: Path, deadline: float) -> tuple[list[dict], str]:
+    """Pass-3 project build, but an IR output (`-o x.ll`) is followed to the object llc makes from it."""
+    p = p3.run(["make", "-C", "bpf", "-j4", "V=1"], cwd=wt, timeout=p3.left(deadline))
+    if p.returncode:
+        raise RuntimeError("make failed: " + (p.stdout + p.stderr).strip()[-600:])
+    log = p.stdout + p.stderr
+    steps = llc_steps(log)
+    cmds = []
+    for cmd in p3.parse_compile_cmds(log, wt / "bpf"):
+        if cmd["obj"].endswith(".ll") and "|" not in cmd["line"]:
+            step = steps.get(Path(cmd["obj"]).name)
+            if step is None:
+                continue
+            cmd = {**cmd, "obj": step[1], "line": cmd["line"] + " && " + step[0]}
+        cmds.append(cmd)
+    return cmds, "project build"
+
+
+OPEN_ERRORS: list[str] = []
+
+
+def load(obj: Path, outdir: Path, tag: str, deadline: float) -> dict[str, dict]:
+    """Pass-3 load, but an object that yields no program (open failure or none found) is recorded."""
+    res = P3_LOAD(obj, outdir, tag, deadline)
+    if not res:
+        OPEN_ERRORS.append(f"{tag}:{Path(obj).name}")
+    return res
+
+
+P3_LOAD = p3.load
+
+
 def retry_set() -> list[int]:
+    """Every pass-3 E5 and every pass-3 E4: pass 3 could not tell an object it failed to open from one that loaded."""
     rows = [json.loads(ln) for ln in (p3.WILD / "pass3.jsonl").read_text(encoding="utf-8").splitlines() if ln.strip()]
-    return sorted(r["screen_rank"] for r in rows if r["outcome"] == "E5" or
-                  (r["outcome"] == "E4" and not any((r.get("n_objects") or {}).values())))
+    return sorted(r["screen_rank"] for r in rows if r["outcome"] in ("E5", "E4"))
 
 
 def included_so_far() -> int:
@@ -170,7 +219,7 @@ def main(argv: list[str] | None = None) -> int:
         if not d.is_dir():
             raise SystemExit(f"missing pin kernel headers: {d}")
     install_clang_wrapper(p3.WORK)
-    p3.build_direct = build_direct  # the only build step that changes; make builds get the wrapper via PATH
+    p3.build_direct, p3.build_make, p3.load = build_direct, build_make, load
     cands = {c["screen_rank"]: c for c in json.loads((p3.WILD / "candidates.json").read_text(encoding="utf-8"))["candidates"]}
     files = {json.loads(ln)["screen_rank"]: json.loads(ln)["bpf_c_files"]
              for ln in (p3.WILD / "screen_files.jsonl").read_text(encoding="utf-8").splitlines() if ln.strip()}
@@ -195,20 +244,26 @@ def main(argv: list[str] | None = None) -> int:
             break
         p3.shutil.rmtree(p3.WORK / "tmp" / f"{rank:03d}", ignore_errors=True)
         t0 = time.time()
+        OPEN_ERRORS.clear()
         try:
             row = p3.screen(cands[rank], files[rank], vmlinux_dir)
         except Exception as e:  # noqa: BLE001 - recorded, screening continues
             row = {"screen_rank": rank, "repo": cands[rank]["repo"], "commit": cands[rank]["commit"],
                    "outcome": "E5", "note": f"driver error: {e}"[:800]}
+        if OPEN_ERRORS:
+            row["open_errors"] = sorted(set(OPEN_ERRORS))
         if row.get("outcome") == "E4" and not any((row.get("n_objects") or {}).values()):
             row.update(outcome="E5", note="no built object depends on a changed file")
+        elif row.get("outcome") in ("E4", "I3", "I4", "C") and OPEN_ERRORS:
+            row.update(outcome="E5", decided_outcome=row["outcome"],
+                       note="no program loaded from: " + ", ".join(sorted(set(OPEN_ERRORS)))[:700])
         row["pass"] = 4
         row["seconds"] = round(time.time() - t0)
         with OUT.open("a", encoding="utf-8", newline="\n") as f:
             f.write(json.dumps(row) + "\n")
         done[rank] = row
         n += 1
-        status = (f"{dt.datetime.utcnow():%Y-%m-%d %H:%M}Z rank {rank} {row['outcome']} "
+        status = (f"{dt.datetime.now(dt.timezone.utc):%Y-%m-%d %H:%M}Z rank {rank} {row['outcome']} "
                   f"({row['seconds']}s); retried {len(done)}/{len(todo)}; included (passes 3+4) {included_so_far()}")
         (p3.WORK / "pass4.status").write_text(status + "\n")
         print(status, flush=True)
