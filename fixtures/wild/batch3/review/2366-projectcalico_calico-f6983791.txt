@@ -1,0 +1,108 @@
+repo: projectcalico/calico
+commit: f698379130ba6afb4b2e474c64c225516ee93f98
+rank: 2366
+
+[BPF] Fix TCP RST checksum for workload removal (#12430) (#12436)
+
+* [BPF] Fix TCP RST checksum for workload removal
+
+The BPF-generated TCP RST packets had incorrect checksums because
+bpf_l4_csum_replace with BPF_F_PSEUDO_HDR performs an incremental
+pseudo-header update based on stale skb checksum state from the
+original incoming packet. Since the RST is built from scratch, this
+produced wrong checksums that were silently dropped by cloud SDN
+layers (e.g., GCP), preventing the RST from ever reaching the client.
+
+Fix by computing the TCP pseudo-header manually and folding it into
+the checksum before calling skb helpers, matching the pattern used
+by ICMP reply generation. This avoids BPF_F_PSEUDO_HDR entirely.
+
+
+
+* [BPF] Add TCP checksum validation to RST unit tests
+
+Add assertions that verify the TCP checksum (including pseudo-header)
+is correct in the BPF-generated RST packets for both IPv4 and IPv6.
+This prevents regressions in the checksum computation.
+
+
+
+---------
+
+Co-authored-by: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+--- felix/bpf-gpl/tcp4.h
+@@ -64,16 +64,31 @@ static CALI_BPF_INLINE int tcp_v4_rst(struct cali_tc_ctx *ctx) {
+ 	}
+ 	th->check = 0;
+ 
++	/* Compute checksums before calling helpers (which invalidate skb pointers).
++	 *
++	 * TCP checksum is computed from scratch including pseudo-header.
++	 * We cannot use BPF_F_PSEUDO_HDR because that does an incremental
++	 * update based on stale skb checksum state from the original
++	 * incoming packet, which produces a wrong result for a packet
++	 * built from scratch.
++	 */
+ 	__wsum ip_csum = bpf_csum_diff(0, 0, ctx->ip_header, sizeof(struct iphdr), 0);
+-	__wsum tcp_csum = bpf_csum_diff(0, 0, (__u32 *)th, len - sizeof(struct iphdr) - skb_iphdr_offset(ctx), 0);
++	__wsum tcp_csum = bpf_csum_diff(0, 0, (__u32 *)th, TCP_SIZE, 0);
++
++	__u32 pseudo[3];
++	pseudo[0] = ip_orig.daddr; /* new saddr (IPs were swapped) */
++	pseudo[1] = ip_orig.saddr; /* new daddr */
++	pseudo[2] = bpf_htonl((__u32)IPPROTO_TCP << 16 | TCP_SIZE);
++	tcp_csum = bpf_csum_diff(0, 0, pseudo, sizeof(pseudo), tcp_csum);
++
+ 	if (bpf_l3_csum_replace(ctx->skb,
+ 			skb_iphdr_offset(ctx) + offsetof(struct iphdr, check), 0, ip_csum, 0)) {
+ 		CALI_DEBUG("TCP reset v4 reply: set ip csum failed");
+ 		return -1;
+ 	}
+ 
+ 	err = bpf_l4_csum_replace(ctx->skb, skb_l4hdr_offset(ctx) +
+-			offsetof(struct tcphdr, check), 0, tcp_csum, BPF_F_PSEUDO_HDR);
++			offsetof(struct tcphdr, check), 0, tcp_csum, 0);
+ 	if (err) {
+ 		CALI_DEBUG("TCP reset v4 reply: set tcp csum failed %d", err);
+ 		return -1;
+
+--- felix/bpf-gpl/tcp6.h
+@@ -64,9 +64,34 @@ static CALI_BPF_INLINE int tcp_v6_rst(struct cali_tc_ctx *ctx) {
+ 	}
+ 	th->check = 0;
+ 
+-	__wsum tcp_csum = bpf_csum_diff(0, 0, (__u32 *)th, len - sizeof(struct ipv6hdr) - skb_iphdr_offset(ctx), 0);
++	/* Compute TCP checksum before calling helpers (which invalidate skb pointers).
++	 *
++	 * We cannot use BPF_F_PSEUDO_HDR because that does an incremental
++	 * update based on stale skb checksum state from the original
++	 * incoming packet, which produces a wrong result for a packet
++	 * built from scratch.
++	 */
++	__wsum tcp_csum = bpf_csum_diff(0, 0, (__u32 *)th, TCP_SIZE, 0);
++
++	struct {
++		ipv6_addr_t saddr;
++		ipv6_addr_t daddr;
++		__u32 len;
++		__u8 zero[3];
++		__u8 nexthdr;
++	} pseudo6;
++
++	pseudo6.saddr = orig_dst; /* new saddr (IPs were swapped) */
++	pseudo6.daddr = orig_src; /* new daddr */
++	pseudo6.len = bpf_htonl(TCP_SIZE);
++	pseudo6.zero[0] = 0;
++	pseudo6.zero[1] = 0;
++	pseudo6.zero[2] = 0;
++	pseudo6.nexthdr = IPPROTO_TCP;
++	tcp_csum = bpf_csum_diff(0, 0, (__u32 *)&pseudo6, sizeof(pseudo6), tcp_csum);
++
+ 	if (bpf_l4_csum_replace(ctx->skb, skb_l4hdr_offset(ctx) +
+-			offsetof(struct tcphdr, check), 0, tcp_csum, BPF_F_PSEUDO_HDR)) {
++			offsetof(struct tcphdr, check), 0, tcp_csum, 0)) {
+ 		CALI_DEBUG("TCP reset v6 reply: set tcp csum failed");
+ 		return -1;
+ 	}
+

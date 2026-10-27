@@ -1,0 +1,55 @@
+repo: cilium/tetragon
+commit: 8d98fed5765cc904efa947fe1336ae475860d717
+rank: 4105
+
+tetragon: Mark some execve functions with __arg_ctx
+
+When calling this functions from other projects, they stay
+global and it's important the verifier knows which argment
+is context.
+
+Adding also other argument related declaration tags.
+
+Signed-off-by: Jiri Olsa <jolsa@kernel.org>
+
+--- bpf/lib/common.h
+@@ -62,4 +62,18 @@ struct bpf_map_def {
+ #define DEBUG(__fmt, ...)
+ #endif
+ 
++#ifdef __V611_BPF_PROG
++#define __arg_ctx      __attribute__((btf_decl_tag("arg:ctx")))
++#define __arg_nonnull  __attribute((btf_decl_tag("arg:nonnull")))
++#define __arg_nullable __attribute((btf_decl_tag("arg:nullable")))
++#define __arg_trusted  __attribute((btf_decl_tag("arg:trusted")))
++#define __arg_arena    __attribute((btf_decl_tag("arg:arena")))
++#else
++#define __arg_ctx
++#define __arg_nonnull
++#define __arg_nullable
++#define __arg_trusted
++#define __arg_arena
++#endif // __V611_BPF_PROG
++
+ #endif // _MSG_COMMON__
+
+--- bpf/process/bpf_execve_event.c
+@@ -282,7 +282,7 @@ event_execve(struct trace_event_raw_sched_process_exec *ctx)
+ }
+ 
+ __attribute__((section("tracepoint"), used)) int
+-execve_rate(void *ctx)
++execve_rate(void *ctx __arg_ctx)
+ {
+ 	struct msg_execve_event *msg;
+ 	__u32 zero = 0;
+@@ -327,7 +327,7 @@ void update_mb_bitset(struct binary *bin)
+  * has already been collected, then send it to the perf buffer.
+  */
+ __attribute__((section("tracepoint"), used)) int
+-execve_send(void *ctx)
++execve_send(void *ctx __arg_ctx)
+ {
+ 	struct msg_execve_event *event;
+ 	struct execve_map_value *curr;
+

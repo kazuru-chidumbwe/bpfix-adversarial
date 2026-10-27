@@ -1,0 +1,105 @@
+repo: microsoft/retina
+commit: 4865de8e4a43d4fc4ce68c50cea51bdfae307873
+rank: 5269
+
+feat(packetparser): report dropped events on buffer write failure (#2503)
+
+# Description
+
+For ring buffers, we can't get dropped events from user space. Instead,
+track drop metrics in eBPF that user space then reports.
+
+Re-use this logic for perf buffers as well.
+
+## Related Issue
+
+https://github.com/microsoft/retina/issues/2235
+
+## Checklist
+
+- [X] I have read the [contributing
+documentation](https://retina.sh/docs/Contributing/overview).
+- [X] I signed and signed-off the commits (`git commit -S -s ...`). See
+[this
+documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification)
+on signing commits.
+- [X] I have correctly attributed the author(s) of the code.
+- [X] I have tested the changes locally.
+- [X] I have followed the project's style guidelines.
+- [X] I have updated the documentation, if necessary.
+- [X] I have added tests, if applicable.
+
+## Screenshots (if applicable) or Testing Completed
+
+Deployed into a test cluster with perf and ring buffers, drop metrics
+show up for ring buffers and perf metrics are the same.
+
+---
+
+Please refer to the [CONTRIBUTING.md](../CONTRIBUTING.md) file for more
+information on how to contribute to this project.
+
+Signed-off-by: Matthew McKeen <matthew.mckeen@fastly.com>
+
+--- pkg/plugin/packetparser/_cprog/packetparser.c
+@@ -28,6 +28,33 @@ struct
+ #endif
+ } retina_packetparser_events SEC(".maps");
+ 
++// Counts events dropped in the kernel when the event buffer write fails.
++struct
++{
++	__uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
++	__uint(max_entries, 1);
++	__type(key, __u32);
++	__type(value, __u64);
++} retina_packetparser_metrics SEC(".maps");
++
++static __always_inline void submit_packetparser_event(struct __sk_buff *skb, struct packet *p)
++{
++	long ret;
++#ifdef USE_RING_BUFFER
++	ret = bpf_ringbuf_output(&retina_packetparser_events, p, sizeof(*p), 0);
++#else
++	ret = bpf_perf_event_output(skb, &retina_packetparser_events, BPF_F_CURRENT_CPU, p, sizeof(*p));
++#endif
++	if (ret < 0) {
++		__u32 zero = 0;
++		__u64 *dropped = bpf_map_lookup_elem(&retina_packetparser_metrics, &zero);
++		// Atomic because a non-atomic read-modify-write can lose counts if this hook is
++		// preempted mid-update on the same CPU.
++		if (dropped)
++			__sync_fetch_and_add(dropped, 1);
++	}
++}
++
+ // Define const variables to avoid warnings.
+ const struct packet *unused __attribute__((unused));
+ 
+@@ -239,23 +266,15 @@ static void parse(struct __sk_buff *skb, __u8 obs)
+ 		p.previously_observed_packets = 0;
+ 		p.previously_observed_bytes = 0;
+ 		__builtin_memset(&p.previously_observed_flags, 0, sizeof(struct tcpflagscount));
+-#ifdef USE_RING_BUFFER
+-		bpf_ringbuf_output(&retina_packetparser_events, &p, sizeof(p), 0);
+-#else
+-		bpf_perf_event_output(skb, &retina_packetparser_events, BPF_F_CURRENT_CPU, &p, sizeof(p));
+-#endif
++		submit_packetparser_event(skb, &p);
+ 		return;
+ 	// If the data aggregation level is high, only send the packet to the perf buffer if it needs to be reported.
+ 	#elif DATA_AGGREGATION_LEVEL == DATA_AGGREGATION_LEVEL_HIGH
+ 		if (report.report) {
+ 			p.previously_observed_packets = report.previously_observed_packets;
+ 			p.previously_observed_bytes = report.previously_observed_bytes;
+ 			p.previously_observed_flags = report.previously_observed_flags;
+-#ifdef USE_RING_BUFFER
+-			bpf_ringbuf_output(&retina_packetparser_events, &p, sizeof(p), 0);
+-#else
+-			bpf_perf_event_output(skb, &retina_packetparser_events, BPF_F_CURRENT_CPU, &p, sizeof(p));
+-#endif
++			submit_packetparser_event(skb, &p);
+ 		}
+ 	#endif
+ 	#endif
+

@@ -1,0 +1,23 @@
+repo: cilium/cilium
+commit: 8d19819f3bfa895ad9a781505b62c418386b6a80
+rank: 5410
+
+bpf: nat: document verifier workaround
+
+Annotate the change from https://github.com/cilium/cilium/pull/40991, so
+that casual readers understand why IPv4 and IPv6 are not symmetric. This
+also makes it easier to remove the workaround once we bumped to a newer
+minimum kernel version.
+
+Signed-off-by: Julian Wiedmann <jwi@isovalent.com>
+
+--- bpf/lib/nat.h
+@@ -1878,6 +1878,7 @@ __snat_v6_nat(struct __ctx_buff *ctx, struct ipv6_ct_tuple *tuple, fraginfo_t fr
+ 					 l4_off, target, trace, ext_err);
+ 	if (ret < 0)
+ 		return ret;
++	/* GH-40991: Verifier workaround for RHEL8.6 kernel: */
+ 	if (!state)
+ 		return DROP_NAT_NO_MAPPING;
+ 
+

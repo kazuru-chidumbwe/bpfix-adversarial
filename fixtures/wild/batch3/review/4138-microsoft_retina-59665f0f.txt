@@ -1,0 +1,45 @@
+repo: microsoft/retina
+commit: 59665f0f6d730fee36d5e6d08a0b73fbbe0954a1
+rank: 4138
+
+fix(dns,tcpretrans): Add nolint to fix vendoring bug (#2529)
+
+# Description
+
+Add nolint to make sure _cprog files are included for functional
+vendoring.
+
+
+
+## Checklist
+
+- [x] I have read the [contributing
+documentation](https://retina.sh/docs/Contributing/overview).
+- [x] I signed and signed-off the commits (`git commit -S -s ...`). See
+[this
+documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification)
+on signing commits.
+- [x] I have correctly attributed the author(s) of the code.
+- [x] I have tested the changes locally.
+- [x] I have followed the project's style guidelines.
+- [x] I have updated the documentation, if necessary.
+- [x] I have added tests, if applicable.
+
+
+---
+
+Please refer to the [CONTRIBUTING.md](../CONTRIBUTING.md) file for more
+information on how to contribute to this project.
+
+---------
+
+Signed-off-by: mereta <mereta.degutyte@hotmail.co.uk>
+
+--- pkg/plugin/dns/_cprog/dns.c
+@@ -1,4 +1,4 @@
+-// go:build ignore
++//go:build ignore
+ 
+ // Copyright (c) Microsoft Corporation.
+ // Licensed under the MIT license.
+

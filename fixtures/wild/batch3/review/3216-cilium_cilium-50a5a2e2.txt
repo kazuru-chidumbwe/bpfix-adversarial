@@ -1,0 +1,1408 @@
+repo: cilium/cilium
+commit: 50a5a2e21f8dcce67f241203a99c6aba9dab4b2c
+rank: 3216
+
+bpf: Refactor usage of has_l4_header (IPv4)
+
+We have quite a few places where this pattern is used:
+
+    bool has_l4_header = true;
+    if (TCP or UDP or SCTP)
+        ipv4_load_l4_ports(..., &has_l4_header);
+    use has_l4_header
+
+ipv4_load_l4_ports is implemented like this (simplified):
+
+    #ifdef ENABLE_IPV4_FRAGMENTS
+        bool is_fragment = ipv4_is_fragment(ip4);
+        if (is_fragment) {
+            *has_l4_header = ipv4_has_l4_header(ip4);
+            if (!*has_l4_header)
+                return ipv4_frag_get_l4ports(&frag_id, ports);
+        }
+        ret = l4_load_ports(ctx, l4_off, ports);
+        if (ret < 0)
+            return DROP_CT_INVALID_HDR;
+        if (is_fragment)
+            map_update_elem(..., &frag_id, ports, ...);
+        return 0;
+    #else
+        return l4_load_ports(ctx, l4_off, ports);
+    #endif
+
+This structure has been confusing to contributors, and is misused in the
+current code: for example, nodeport_snat_fwd_ipv4 passes the real value
+of has_l4_header to snat_v4_nat [1], and the latter overwrites it if
+it's a service protocol [2], and ignores it if it's ICMP, reading its
+header regardless of has_l4_header [3] (this was refactored by an
+earlier commit in this series).
+
+It's also error-prone and can produce wrong results for ICMP or when
+ENABLE_IPV4_FRAGMENTS is disabled. In these cases, has_l4_header is
+always set, which isn't useful when we want to verify that parsing the
+L4 header is correct (i.e. that we won't be reading garbage).
+
+At the same time, there is no clear advantage to this construction,
+compared to testing ipv4_has_l4_header(ip4) on the caller's site and
+passing the value down the call stack (which is a more straightforward
+approach). Note that both is_fragment and has_l4_header originate from
+the frag_off field in the IP header. Accessing this field is a cheap
+operation in IPv4, but it's rather expensive in IPv6, because it
+requires traversing the extension headers. At the same time, checking
+is_fragment is unavoidable: if ENABLE_IPV4_FRAGMENTS is enabled, it's
+needed to store and load ports, but if it's disabled, it's needed to
+drop fragmented packets. Therefore, it's best to access frag_off once,
+derive is_fragment and has_l4_header from it, and pass them down the
+call stack to the functions that need them.
+
+Furthermore, the actual fragment tracking requires fragment ID and L4
+protocol, which are also stored in the fragment extension header in
+IPv6. Therefore, it makes sense to introduce a generic format to store
+all fragment info in a single 64-bit value, which is implemented in a
+new file bpf/lib/ipfrag.h. Passing one value is less cumbersome than
+passing two flags and two numbers.
+
+This commit implements what was described in the previous 2 paragraphs:
+
+1. Query the fragment info once (per tailcall). The main benefit will be
+having parallel code structure with IPv6, where it will save CPU cycles
+and verifier complexity by traversing the extension headers only once.
+Store the result into the new 64-bit format.
+
+2. Rewrite ipv4_is_fragment and ipv4_has_l4_header accessors into using
+the fraginfo format instead of accessing the IPv4 header directly. When
+IPv6 support is added, the same code patterns will be used.
+
+3. Simplify ipv4_handle_fragmentation: !has_l4_header implies
+is_fragment, no need to check is_fragment separately.
+
+4. Robustness: drop fragmented ICMP, drop TCP, UDP and SCTP packets
+without the L4 header (non-first fragments) when we need to read their
+ports, but ENABLE_IPV4_FRAGMENTS is disabled.
+
+Moving the query from ipv4_load_l4_ports to the caller allows us to
+reduce the overall number of queries. Taking nodeport_snat_fwd_ipv4 as
+an example, now it queries frag_off once and passes the flags to:
+
+* ct_extract_ports4 -> ipv4_load_l4_ports
+* snat_v4_needs_masquerade -> ct_extract_ports4 -> ipv4_load_l4_ports
+* snat_v4_nat -> ipv4_load_l4_ports
+* snat_v4_nat -> __snat_v4_nat -> snat_v4_nat_handle_mapping ->
+  ipv4_is_fragment (for ct_lazy_lookup4)
+
+Before this refactoring, each of these 4 chains queried frag_off
+separately, which would be too suboptimal for IPv6.
+
+[1]: https://github.com/cilium/cilium/blob/207abad0f06afcbf18f2b4051422eeed3a337d19/bpf/lib/nodeport_egress.h#L378
+[2]: https://github.com/cilium/cilium/blob/207abad0f06afcbf18f2b4051422eeed3a337d19/bpf/lib/nat.h#L866
+[3]: https://github.com/cilium/cilium/blob/207abad0f06afcbf18f2b4051422eeed3a337d19/bpf/lib/nat.h#L875
+
+Signed-off-by: Maxim Mikityanskiy <maxim@isovalent.com>
+
+--- bpf/bpf_host.c
+@@ -602,6 +602,7 @@ handle_ipv4(struct __ctx_buff *ctx, __u32 secctx __maybe_unused,
+ #endif /* ENABLE_HOST_FIREWALL */
+ 	void *data, *data_end;
+ 	struct iphdr *ip4;
++	fraginfo_t fraginfo __maybe_unused;
+ 
+ 	if (!revalidate_data(ctx, &data, &data_end, &ip4))
+ 		return DROP_INVALID;
+@@ -611,7 +612,8 @@ handle_ipv4(struct __ctx_buff *ctx, __u32 secctx __maybe_unused,
+  * then drop the packet.
+  */
+ #ifndef ENABLE_IPV4_FRAGMENTS
+-	if (ipv4_is_fragment(ip4))
++	fraginfo = ipfrag_encode_ipv4(ip4);
++	if (ipfrag_is_fragment(fraginfo))
+ 		return DROP_FRAG_NOSUPPORT;
+ #endif
+ 
+@@ -1488,6 +1490,7 @@ int cil_to_netdev(struct __ctx_buff *ctx)
+ 		struct remote_endpoint_info *info;
+ 		struct endpoint_info *src_ep;
+ 		bool is_reply;
++		fraginfo_t fraginfo;
+ 
+ 		if (src_sec_identity == HOST_ID)
+ 			goto skip_egress_gateway;
+@@ -1502,13 +1505,15 @@ int cil_to_netdev(struct __ctx_buff *ctx)
+ 				goto drop_err;
+ 			}
+ 
++			fraginfo = ipfrag_encode_ipv4(ip4);
++
+ 			tuple4.nexthdr = ip4->protocol;
+ 			tuple4.daddr = ip4->daddr;
+ 			tuple4.saddr = ip4->saddr;
+ 
+ 			l4_off = ETH_HLEN + ipv4_hdrlen(ip4);
+-			ret = ct_extract_ports4(ctx, ip4, l4_off, CT_EGRESS, &tuple4,
+-						NULL);
++			ret = ct_extract_ports4(ctx, ip4, fraginfo, l4_off,
++						CT_EGRESS, &tuple4);
+ 			if (IS_ERR(ret)) {
+ 				if (ret == DROP_CT_UNKNOWN_PROTO)
+ 					goto skip_egress_gateway;
+
+--- bpf/bpf_lxc.c
+@@ -76,15 +76,15 @@ static __always_inline int __per_packet_lb_svc_xlate_4(void *ctx, struct iphdr *
+ {
+ 	struct ipv4_ct_tuple tuple = {};
+ 	struct ct_state ct_state_new = {};
+-	bool has_l4_header;
++	fraginfo_t fraginfo;
+ 	struct lb4_service *svc;
+ 	struct lb4_key key = {};
+ 	__u16 proxy_port = 0;
+ 	__u32 cluster_id = 0;
+ 	int l4_off;
+ 	int ret = 0;
+ 
+-	has_l4_header = ipv4_has_l4_header(ip4);
++	fraginfo = ipfrag_encode_ipv4(ip4);
+ 
+ 	ret = lb4_extract_tuple(ctx, ip4, ETH_HLEN, &l4_off, &tuple);
+ 	if (IS_ERR(ret)) {
+@@ -113,9 +113,9 @@ static __always_inline int __per_packet_lb_svc_xlate_4(void *ctx, struct iphdr *
+ 		if (unlikely(lb4_svc_is_localredirect(svc)))
+ 			goto skip_service_lookup;
+ #endif /* ENABLE_LOCAL_REDIRECT_POLICY && ENABLE_SOCKET_LB_FULL */
+-		ret = lb4_local(get_ct_map4(&tuple), ctx, ipv4_is_fragment(ip4),
+-				ETH_HLEN, l4_off, &key, &tuple, svc, &ct_state_new,
+-				has_l4_header, false, &cluster_id, ext_err, ENDPOINT_NETNS_COOKIE);
++		ret = lb4_local(get_ct_map4(&tuple), ctx, ETH_HLEN, fraginfo,
++				l4_off, &key, &tuple, svc, &ct_state_new,
++				false, &cluster_id, ext_err, ENDPOINT_NETNS_COOKIE);
+ 
+ #ifdef SERVICE_NO_BACKEND_RESPONSE
+ 		if (ret == DROP_NO_SERVICE)
+@@ -1396,6 +1396,7 @@ static __always_inline int __tail_handle_ipv4(struct __ctx_buff *ctx,
+ {
+ 	void *data, *data_end;
+ 	struct iphdr *ip4;
++	fraginfo_t fraginfo __maybe_unused;
+ 
+ 	if (!revalidate_data_pull(ctx, &data, &data_end, &ip4))
+ 		return DROP_INVALID;
+@@ -1405,7 +1406,8 @@ static __always_inline int __tail_handle_ipv4(struct __ctx_buff *ctx,
+  * then drop the packet.
+  */
+ #ifndef ENABLE_IPV4_FRAGMENTS
+-	if (ipv4_is_fragment(ip4))
++	fraginfo = ipfrag_encode_ipv4(ip4);
++	if (ipfrag_is_fragment(fraginfo))
+ 		return DROP_FRAG_NOSUPPORT;
+ #endif
+ 
+@@ -1873,6 +1875,7 @@ ipv4_policy(struct __ctx_buff *ctx, struct iphdr *ip4, __u32 src_label,
+ 	struct ct_state *ct_state, ct_state_new = {};
+ 	int ifindex = THIS_INTERFACE_IFINDEX;
+ 	struct ipv4_ct_tuple *tuple;
++	fraginfo_t fraginfo;
+ 	bool is_untracked_fragment = false;
+ 	struct ct_buffer4 *ct_buffer;
+ 	struct trace_ctx trace;
+@@ -1883,13 +1886,15 @@ ipv4_policy(struct __ctx_buff *ctx, struct iphdr *ip4, __u32 src_label,
+ 	__u8 auth_type = 0;
+ 	__u32 zero = 0;
+ 
++	fraginfo = ipfrag_encode_ipv4(ip4);
++
+ 	orig_sip = ip4->saddr;
+ 
+ #ifndef ENABLE_IPV4_FRAGMENTS
+ 	/* Indicate that this is a datagram fragment for which we cannot
+ 	 * retrieve L4 ports. Do not set flag if we support fragmentation.
+ 	 */
+-	is_untracked_fragment = ipv4_is_fragment(ip4);
++	is_untracked_fragment = ipfrag_is_fragment(fraginfo);
+ #endif
+ 
+ 	ct_buffer = map_lookup_elem(&cilium_tail_call_buffer4, &zero);
+@@ -1926,15 +1931,12 @@ ipv4_policy(struct __ctx_buff *ctx, struct iphdr *ip4, __u32 src_label,
+ 
+ 		/* Reverse NAT applies to return traffic only. */
+ 		if (unlikely(ct_state->rev_nat_index)) {
+-			bool has_l4_header = false;
+ 			int ret2;
+ 
+-			has_l4_header = ipv4_has_l4_header(ip4);
+-
+ 			ret2 = lb4_rev_nat(ctx, ETH_HLEN, l4_off,
+ 					   ct_state->rev_nat_index,
+ 					   ct_state->loopback,
+-					   tuple, has_l4_header);
++					   tuple, ipfrag_has_l4_header(fraginfo));
+ 			if (IS_ERR(ret2))
+ 				return ret2;
+ 		}
+
+--- bpf/bpf_overlay.c
+@@ -320,6 +320,7 @@ static __always_inline int handle_ipv4(struct __ctx_buff *ctx,
+ 	struct endpoint_info *ep;
+ 	bool decrypted;
+ 	bool __maybe_unused is_dsr = false;
++	fraginfo_t fraginfo __maybe_unused;
+ 	int ret;
+ 
+ 	/* verifier workaround (dereference of modified ctx ptr) */
+@@ -331,7 +332,8 @@ static __always_inline int handle_ipv4(struct __ctx_buff *ctx,
+  * then drop the packet.
+  */
+ #ifndef ENABLE_IPV4_FRAGMENTS
+-	if (ipv4_is_fragment(ip4))
++	fraginfo = ipfrag_encode_ipv4(ip4);
++	if (ipfrag_is_fragment(fraginfo))
+ 		return DROP_FRAG_NOSUPPORT;
+ #endif
+ 
+
+--- bpf/lib/conntrack.h
+@@ -13,6 +13,7 @@
+ #include "dbg.h"
+ #include "l4.h"
+ #include "signal.h"
++#include "ipfrag.h"
+ 
+ enum ct_action {
+ 	ACTION_UNSPEC,
+@@ -672,10 +673,13 @@ ipv4_extract_tuple(struct __ctx_buff *ctx, struct ipv4_ct_tuple *tuple)
+ {
+ 	void *data, *data_end;
+ 	struct iphdr *ip4;
++	fraginfo_t fraginfo;
+ 
+ 	if (!revalidate_data(ctx, &data, &data_end, &ip4))
+ 		return DROP_INVALID;
+ 
++	fraginfo = ipfrag_encode_ipv4(ip4);
++
+ 	tuple->nexthdr = ip4->protocol;
+ 
+ 	if (unlikely(tuple->nexthdr != IPPROTO_TCP &&
+@@ -688,8 +692,8 @@ ipv4_extract_tuple(struct __ctx_buff *ctx, struct ipv4_ct_tuple *tuple)
+ 	tuple->daddr = ip4->daddr;
+ 	tuple->saddr = ip4->saddr;
+ 
+-	return ipv4_load_l4_ports(ctx, ip4, ETH_HLEN + ipv4_hdrlen(ip4),
+-				  CT_EGRESS, &tuple->dport, NULL);
++	return ipv4_load_l4_ports(ctx, ip4, fraginfo, ETH_HLEN + ipv4_hdrlen(ip4),
++				  CT_EGRESS, &tuple->dport);
+ }
+ 
+ static __always_inline void ct_flip_tuple_dir4(struct ipv4_ct_tuple *tuple)
+@@ -751,52 +755,59 @@ ipv4_ct_reverse_tuple_daddr(const struct ipv4_ct_tuple *rtuple)
+ }
+ 
+ static __always_inline int
+-ct_extract_ports4(struct __ctx_buff *ctx, struct iphdr *ip4, int off,
+-		  enum ct_dir dir, struct ipv4_ct_tuple *tuple, bool *has_l4_header)
++ct_extract_ports4(struct __ctx_buff *ctx, struct iphdr *ip4, fraginfo_t fraginfo,
++		  int off, enum ct_dir dir, struct ipv4_ct_tuple *tuple)
+ {
+ 	switch (tuple->nexthdr) {
+-	case IPPROTO_ICMP:
+-		if (1) {
+-			__be16 identifier = 0;
+-			__u8 type;
++	case IPPROTO_ICMP: {
++		__be16 identifier = 0;
++		__u8 type;
++
++		/* Fragmented ECHO packets are not supported currently. Drop all
++		 * fragments, because letting the first fragment pass would be
++		 * useless anyway.
++		 * ICMP error packets are not supposed to be fragmented.
++		 */
++		if (unlikely(ipfrag_is_fragment(fraginfo)))
++			return DROP_INVALID;
+ 
+-			if (ctx_load_bytes(ctx, off, &type, 1) < 0)
+-				return DROP_CT_INVALID_HDR;
+-			if ((type == ICMP_ECHO || type == ICMP_ECHOREPLY) &&
+-			     ctx_load_bytes(ctx, off + offsetof(struct icmphdr, un.echo.id),
+-					    &identifier, 2) < 0)
+-				return DROP_CT_INVALID_HDR;
++		if (ctx_load_bytes(ctx, off, &type, 1) < 0)
++			return DROP_CT_INVALID_HDR;
++		if ((type == ICMP_ECHO || type == ICMP_ECHOREPLY) &&
++		    ctx_load_bytes(ctx, off + offsetof(struct icmphdr, un.echo.id),
++				   &identifier, 2) < 0)
++			return DROP_CT_INVALID_HDR;
+ 
+-			tuple->sport = 0;
+-			tuple->dport = 0;
++		tuple->sport = 0;
++		tuple->dport = 0;
+ 
+-			switch (type) {
+-			case ICMP_DEST_UNREACH:
+-			case ICMP_TIME_EXCEEDED:
+-			case ICMP_PARAMETERPROB:
+-				tuple->flags |= TUPLE_F_RELATED;
+-				break;
++		switch (type) {
++		case ICMP_DEST_UNREACH:
++		case ICMP_TIME_EXCEEDED:
++		case ICMP_PARAMETERPROB:
++			tuple->flags |= TUPLE_F_RELATED;
++			break;
+ 
+-			case ICMP_ECHOREPLY:
+-				tuple->sport = identifier;
+-				break;
+-			case ICMP_ECHO:
+-				tuple->dport = identifier;
+-				fallthrough;
+-			default:
+-				break;
+-			}
++		case ICMP_ECHOREPLY:
++			tuple->sport = identifier;
++			break;
++		case ICMP_ECHO:
++			tuple->dport = identifier;
++			fallthrough;
++		default:
++			break;
+ 		}
+ 		break;
++	}
+ 
+ 	/* TCP, UDP, and SCTP all have the ports at the same location */
+ 	case IPPROTO_TCP:
+ 	case IPPROTO_UDP:
+ #ifdef ENABLE_SCTP
+ 	case IPPROTO_SCTP:
+ #endif  /* ENABLE_SCTP */
+-		return ipv4_load_l4_ports(ctx, ip4, off, dir, &tuple->dport,
+-					  has_l4_header);
++		return ipv4_load_l4_ports(ctx, ip4, fraginfo, off,
++					  dir, &tuple->dport);
+ 	default:
+ 		/* Can't handle extension headers yet */
+ 		return DROP_CT_UNKNOWN_PROTO;
+@@ -810,21 +821,20 @@ DEFINE_FUNC_CT_IS_REPLY(4)
+ 
+ static __always_inline int
+ __ct_lookup4(const void *map, struct ipv4_ct_tuple *tuple, struct __ctx_buff *ctx,
+-	     int l4_off, bool has_l4_header, bool is_fragment __maybe_unused,
+-	     enum ct_dir dir, enum ct_scope scope, __u32 ct_entry_types,
+-	     struct ct_state *ct_state, __u32 *monitor)
++	     fraginfo_t fraginfo, int l4_off, enum ct_dir dir, enum ct_scope scope,
++	     __u32 ct_entry_types, struct ct_state *ct_state, __u32 *monitor)
+ {
+ 	bool is_tcp = tuple->nexthdr == IPPROTO_TCP;
+ 	union tcp_flags tcp_flags = { .value = 0 };
+ 	enum ct_action action;
+ 	enum ct_status ret;
+ 
+ #ifdef ENABLE_IPV4_FRAGMENTS
+-	if (unlikely(is_fragment))
++	if (unlikely(ipfrag_is_fragment(fraginfo)))
+ 		update_metrics(ctx_full_len(ctx), ct_to_metrics_dir(dir), REASON_FRAG_PACKET);
+ #endif
+ 
+-	if (is_tcp && has_l4_header) {
++	if (is_tcp && ipfrag_has_l4_header(fraginfo)) {
+ 		if (l4_load_tcp_flags(ctx, l4_off, &tcp_flags) < 0)
+ 			return DROP_CT_INVALID_HDR;
+ 
+@@ -875,9 +885,8 @@ __ct_lookup4(const void *map, struct ipv4_ct_tuple *tuple, struct __ctx_buff *ct
+  * @arg map		CT map
+  * @arg tuple		CT tuple (with populated L4 ports)
+  * @arg ctx		packet
+- * @arg is_fragment	the result of ipv4_is_fragment(ip4)
++ * @arg fraginfo	fragment info encoded by ipfrag_encode_ipv4()
+  * @arg l4_off		offset to L4 header
+- * @arg has_l4_header	packet has L4 header
+  * @arg dir		lookup direction
+  * @arg scope		CT scope. For SCOPE_FORWARD, the tuple also needs to
+  *			be in forward layout.
+@@ -896,14 +905,13 @@ __ct_lookup4(const void *map, struct ipv4_ct_tuple *tuple, struct __ctx_buff *ct
+  */
+ static __always_inline int
+ ct_lazy_lookup4(const void *map, struct ipv4_ct_tuple *tuple, struct __ctx_buff *ctx,
+-		bool is_fragment, int l4_off, bool has_l4_header,
+-		enum ct_dir dir, enum ct_scope scope, __u32 ct_entry_types,
+-		struct ct_state *ct_state, __u32 *monitor)
++		fraginfo_t fraginfo, int l4_off, enum ct_dir dir, enum ct_scope scope,
++		__u32 ct_entry_types, struct ct_state *ct_state, __u32 *monitor)
+ {
+ 	tuple->flags = ct_lookup_select_tuple_type(dir, scope);
+ 
+-	return __ct_lookup4(map, tuple, ctx, l4_off, has_l4_header, is_fragment,
+-			    dir, scope, ct_entry_types, ct_state, monitor);
++	return __ct_lookup4(map, tuple, ctx, fraginfo, l4_off, dir,
++			    scope, ct_entry_types, ct_state, monitor);
+ }
+ 
+ /* Offset must point to IPv4 header */
+@@ -913,21 +921,22 @@ static __always_inline int ct_lookup4(const void *map,
+ 				      int off, enum ct_dir dir, enum ct_scope scope,
+ 				      struct ct_state *ct_state, __u32 *monitor)
+ {
+-	bool is_fragment = ipv4_is_fragment(ip4);
+-	bool has_l4_header = true;
++	fraginfo_t fraginfo;
+ 	int ret;
+ 
++	fraginfo = ipfrag_encode_ipv4(ip4);
++
+ 	tuple->flags = ct_lookup_select_tuple_type(dir, scope);
+ 
+-	ret = ct_extract_ports4(ctx, ip4, off, dir, tuple, &has_l4_header);
++	ret = ct_extract_ports4(ctx, ip4, fraginfo, off, dir, tuple);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	if (scope == SCOPE_FORWARD)
+ 		__ipv4_ct_tuple_reverse(tuple);
+ 
+-	return __ct_lookup4(map, tuple, ctx, off, has_l4_header, is_fragment,
+-			    dir, scope, CT_ENTRY_ANY, ct_state, monitor);
++	return __ct_lookup4(map, tuple, ctx, fraginfo, off, dir,
++			    scope, CT_ENTRY_ANY, ct_state, monitor);
+ }
+ 
+ static __always_inline void
+
+--- bpf/lib/host_firewall.h
+@@ -506,6 +506,7 @@ __ipv4_host_policy_ingress(struct __ctx_buff *ctx, struct iphdr *ip4,
+ 	__u8 audited = 0;
+ 	__u8 auth_type = 0;
+ 	struct remote_endpoint_info *info;
++	fraginfo_t fraginfo __maybe_unused;
+ 	bool is_untracked_fragment = false;
+ 	__u16 proxy_port = 0;
+ 
+@@ -529,7 +530,8 @@ __ipv4_host_policy_ingress(struct __ctx_buff *ctx, struct iphdr *ip4,
+ 	/* Indicate that this is a datagram fragment for which we cannot
+ 	 * retrieve L4 ports. Do not set flag if we support fragmentation.
+ 	 */
+-	is_untracked_fragment = ipv4_is_fragment(ip4);
++	fraginfo = ipfrag_encode_ipv4(ip4);
++	is_untracked_fragment = ipfrag_is_fragment(fraginfo);
+ #  endif
+ 
+ 	/* Perform policy lookup */
+
+--- bpf/lib/ipfrag.h
+@@ -0,0 +1,110 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++/* Copyright Authors of Cilium */
++
++#pragma once
++
++#include <linux/ip.h>
++#include "common.h"
++
++/* IP fragment information is packed in a single __s64:
++ *
++ *  63    62...42 41     40     39...32 31...    ...0
++ * +-----+-------+------+------+-------+-------------+
++ * | err |  ...  | nol4 | frag | proto | fragment id |
++ * +-----+-------+------+------+-------+-------------+
++ *
++ * err: Sign bit, negative values encode error codes.
++ * nol4: The packet doesn't have an L4 header (i.e. not the first fragment).
++ * frag: The packet is fragmented.
++ * proto: L4 protocol (the last nexthdr for IPv6).
++ * fragment id: 32-bit for IPv6, 16-bit for IPv4 (lower 16 bits).
++ *
++ * This information is extracted from the IPv4 header or from the IPv6
++ * NEXTHDR_FRAGMENT extension header. The latter is an expensive operation (in
++ * terms of verifier complexity and CPU cycles), so we aim to extract it once
++ * and pass the __s64 bitmask around (aliased as fraginfo_t).
++ *
++ * proto should only be used by the fragment tracker, making 0 a valid default
++ * value for a non-fragmented packet.
++ *
++ * This file contains an abstraction level over IPv4 and IPv6 fragments.
++ */
++
++typedef __s64 fraginfo_t;
++
++#define IPFRAG_BIT_FRAGMENTED (1LL << 40)
++#define IPFRAG_BIT_NO_L4_HEADER (1LL << 41)
++
++struct ipv6_frag_hdr {
++	__u8 nexthdr;
++	__u8 reserved;
++	__be16 frag_off;
++	__be32 id;
++} __packed;
++
++/* This function doesn't return errors. */
++static __always_inline fraginfo_t ipfrag_encode_ipv4(const struct iphdr *ip4)
++{
++	fraginfo_t fraginfo = (__u16)ip4->id; /* Store in network byte order. */
++
++	fraginfo |= (__u64)ip4->protocol << 32;
++
++	/* The frag_off portion of the IPv4 header consists of:
++	 *
++	 * +---+----+----+----------------------------------+
++	 * | 0 | DF | MF | ...13 bits of fragment offset... |
++	 * +---+----+----+----------------------------------+
++	 *
++	 * If "More fragments" or the offset is nonzero, then this is an IP
++	 * fragment (RFC791). If the offset is nonzero, it's not the first
++	 * fragment, therefore it doesn't have an L4 header.
++	 */
++	if (ip4->frag_off & bpf_htons(0x3fff))
++		fraginfo |= IPFRAG_BIT_FRAGMENTED;
++	if (ip4->frag_off & bpf_htons(0x1fff))
++		fraginfo |= IPFRAG_BIT_NO_L4_HEADER;
++
++	return fraginfo;
++}
++
++/* This function doesn't return errors. */
++static __always_inline fraginfo_t ipfrag_encode_ipv6(const struct ipv6_frag_hdr *exthdr)
++{
++	fraginfo_t fraginfo = (__u32)exthdr->id; /* Store in network byte order. */
++
++	fraginfo |= (__u64)exthdr->nexthdr << 32;
++
++	/* frag_off of the IPv6 fragment extension header:
++	 *
++	 * +----------------------------------+---+---+----+
++	 * | ...13 bits of fragment offset... | 0 | 0 | MF |
++	 * +----------------------------------+---+---+----+
++	 */
++	if (exthdr->frag_off & bpf_htons(0xfff9))
++		fraginfo |= IPFRAG_BIT_FRAGMENTED;
++	if (exthdr->frag_off & bpf_htons(0xfff8))
++		fraginfo |= IPFRAG_BIT_NO_L4_HEADER;
++
++	return fraginfo;
++}
++
++static __always_inline bool ipfrag_is_fragment(fraginfo_t fraginfo)
++{
++	return fraginfo & IPFRAG_BIT_FRAGMENTED;
++}
++
++static __always_inline bool ipfrag_has_l4_header(fraginfo_t fraginfo)
++{
++	return !(fraginfo & IPFRAG_BIT_NO_L4_HEADER);
++}
++
++static __always_inline __u8 ipfrag_get_protocol(fraginfo_t fraginfo)
++{
++	return (fraginfo >> 32) & 0xff;
++}
++
++/* Downcast to __be16 for IPv4. */
++static __always_inline __be32 ipfrag_get_id(fraginfo_t fraginfo)
++{
++	return (__be32)(fraginfo & 0xffffffff);
++}
+
+--- bpf/lib/ipv4.h
+@@ -8,6 +8,7 @@
+ #include "dbg.h"
+ #include "l4.h"
+ #include "metrics.h"
++#include "ipfrag.h"
+ 
+ #define IPV4_SADDR_OFF		offsetof(struct iphdr, saddr)
+ #define IPV4_DADDR_OFF		offsetof(struct iphdr, daddr)
+@@ -79,32 +80,6 @@ static __always_inline int ipv4_hdrlen(const struct iphdr *ip4)
+ 	return ip4->ihl * 4;
+ }
+ 
+-static __always_inline bool ipv4_is_fragment(const struct iphdr *ip4)
+-{
+-	/* The frag_off portion of the header consists of:
+-	 *
+-	 * +----+----+----+----------------------------------+
+-	 * | RS | DF | MF | ...13 bits of fragment offset... |
+-	 * +----+----+----+----------------------------------+
+-	 *
+-	 * If "More fragments" or the offset is nonzero, then this is an IP
+-	 * fragment (RFC791).
+-	 */
+-	return ip4->frag_off & bpf_htons(0x3FFF);
+-}
+-
+-static __always_inline bool ipv4_is_not_first_fragment(const struct iphdr *ip4)
+-{
+-	/* Ignore "More fragments" bit to catch all fragments but the first */
+-	return ip4->frag_off & bpf_htons(0x1FFF);
+-}
+-
+-/* Simply a reverse of ipv4_is_not_first_fragment to avoid double negative. */
+-static __always_inline bool ipv4_has_l4_header(const struct iphdr *ip4)
+-{
+-	return !ipv4_is_not_first_fragment(ip4);
+-}
+-
+ static __always_inline bool ipv4_is_in_subnet(__be32 addr,
+ 					      __be32 subnet, int prefixlen)
+ {
+@@ -129,39 +104,27 @@ ipv4_frag_get_l4ports(const struct ipv4_frag_id *frag_id,
+ 
+ static __always_inline int
+ ipv4_handle_fragmentation(struct __ctx_buff *ctx,
+-			  const struct iphdr *ip4, int l4_off,
++			  const struct iphdr *ip4,
++			  fraginfo_t fraginfo,
++			  int l4_off,
+ 			  enum ct_dir ct_dir,
+-			  struct ipv4_frag_l4ports *ports,
+-			  bool *has_l4_header)
++			  struct ipv4_frag_l4ports *ports)
+ {
+-	bool is_fragment, not_first_fragment;
+-	int ret;
+-
+ 	struct ipv4_frag_id frag_id = {
+ 		.daddr = ip4->daddr,
+ 		.saddr = ip4->saddr,
+-		.id = ip4->id,
+-		.proto = ip4->protocol,
+-		.pad = 0,
++		.id = (__be16)ipfrag_get_id(fraginfo),
++		.proto = ipfrag_get_protocol(fraginfo),
+ 	};
+ 
+-	is_fragment = ipv4_is_fragment(ip4);
+-
+-	if (unlikely(is_fragment)) {
+-		not_first_fragment = ipv4_is_not_first_fragment(ip4);
+-		if (has_l4_header)
+-			*has_l4_header = !not_first_fragment;
+-
+-		if (likely(not_first_fragment))
+-			return ipv4_frag_get_l4ports(&frag_id, ports);
+-	}
++	if (unlikely(!ipfrag_has_l4_header(fraginfo)))
++		return ipv4_frag_get_l4ports(&frag_id, ports);
+ 
+ 	/* load sport + dport into tuple */
+-	ret = l4_load_ports(ctx, l4_off, (__be16 *)ports);
+-	if (ret < 0)
++	if (l4_load_ports(ctx, l4_off, (__be16 *)ports) < 0)
+ 		return DROP_CT_INVALID_HDR;
+ 
+-	if (unlikely(is_fragment)) {
++	if (unlikely(ipfrag_is_fragment(fraginfo))) {
+ 		/* First logical fragment for this datagram (not necessarily the first
+ 		 * we receive). Fragment has L4 header, create an entry in datagrams map.
+ 		 */
+@@ -180,14 +143,15 @@ ipv4_handle_fragmentation(struct __ctx_buff *ctx,
+ 
+ static __always_inline int
+ ipv4_load_l4_ports(struct __ctx_buff *ctx, struct iphdr *ip4 __maybe_unused,
+-		   int l4_off, enum ct_dir dir __maybe_unused,
+-		   __be16 *ports, bool *has_l4_header __maybe_unused)
++		   fraginfo_t fraginfo, int l4_off, enum ct_dir dir __maybe_unused,
++		   __be16 *ports)
+ {
+ #ifdef ENABLE_IPV4_FRAGMENTS
+-	return ipv4_handle_fragmentation(ctx, ip4, l4_off, dir,
+-					 (struct ipv4_frag_l4ports *)ports,
+-					 has_l4_header);
++	return ipv4_handle_fragmentation(ctx, ip4, fraginfo, l4_off, dir,
++					 (struct ipv4_frag_l4ports *)ports);
+ #else
++	if (unlikely(!ipfrag_has_l4_header(fraginfo)))
++		return DROP_FRAG_NOSUPPORT;
+ 	if (l4_load_ports(ctx, l4_off, ports) < 0)
+ 		return DROP_CT_INVALID_HDR;
+ #endif
+
+--- bpf/lib/lb.h
+@@ -1321,6 +1321,10 @@ static __always_inline int
+ lb4_extract_tuple(struct __ctx_buff *ctx, struct iphdr *ip4, int l3_off, int *l4_off,
+ 		  struct ipv4_ct_tuple *tuple)
+ {
++	fraginfo_t fraginfo;
++
++	fraginfo = ipfrag_encode_ipv4(ip4);
++
+ 	tuple->nexthdr = ip4->protocol;
+ 	tuple->daddr = ip4->daddr;
+ 	tuple->saddr = ip4->saddr;
+@@ -1333,8 +1337,8 @@ lb4_extract_tuple(struct __ctx_buff *ctx, struct iphdr *ip4, int l3_off, int *l4
+ #ifdef ENABLE_SCTP
+ 	case IPPROTO_SCTP:
+ #endif  /* ENABLE_SCTP */
+-		return ipv4_load_l4_ports(ctx, ip4, *l4_off, CT_EGRESS,
+-					  &tuple->dport, NULL);
++		return ipv4_load_l4_ports(ctx, ip4, fraginfo, *l4_off,
++					  CT_EGRESS, &tuple->dport);
+ 	case IPPROTO_ICMP:
+ 		return DROP_UNSUPP_SERVICE_PROTO;
+ 	default:
+@@ -1735,12 +1739,11 @@ lb4_skip_xlate_from_ctx_to_svc(__net_cookie cookie,
+ #endif /* ENABLE_LOCAL_REDIRECT_POLICY */
+ 
+ static __always_inline int lb4_local(const void *map, struct __ctx_buff *ctx,
+-				     bool is_fragment, int l3_off, int l4_off,
++				     int l3_off, fraginfo_t fraginfo, int l4_off,
+ 				     struct lb4_key *key,
+ 				     struct ipv4_ct_tuple *tuple,
+ 				     const struct lb4_service *svc,
+ 				     struct ct_state *state,
+-				     bool has_l4_header,
+ 				     const bool skip_xlate,
+ 				     __u32 *cluster_id __maybe_unused,
+ 				     __s8 *ext_err,
+@@ -1761,8 +1764,8 @@ static __always_inline int lb4_local(const void *map, struct __ctx_buff *ctx,
+ 
+ 	state->rev_nat_index = svc->rev_nat_index;
+ 
+-	ret = ct_lazy_lookup4(map, tuple, ctx, is_fragment, l4_off, has_l4_header,
+-			      CT_SERVICE, SCOPE_REVERSE, CT_ENTRY_SVC, state, &monitor);
++	ret = ct_lazy_lookup4(map, tuple, ctx, fraginfo, l4_off, CT_SERVICE,
++			      SCOPE_REVERSE, CT_ENTRY_SVC, state, &monitor);
+ 	if (ret < 0)
+ 		goto drop_err;
+ 
+@@ -1901,7 +1904,7 @@ static __always_inline int lb4_local(const void *map, struct __ctx_buff *ctx,
+ 
+ 	return lb4_xlate(ctx, &new_saddr, &saddr,
+ 			 tuple->nexthdr, l3_off, l4_off, key,
+-			 backend, has_l4_header);
++			 backend, ipfrag_has_l4_header(fraginfo));
+ no_service:
+ 	ret = DROP_NO_SERVICE;
+ drop_err:
+
+--- bpf/lib/nat.h
+@@ -293,10 +293,10 @@ static __always_inline int snat_v4_new_mapping(struct __ctx_buff *ctx, void *map
+ static __always_inline int
+ snat_v4_nat_handle_mapping(struct __ctx_buff *ctx,
+ 			   struct ipv4_ct_tuple *tuple,
+-			   bool has_l4_header,
++			   fraginfo_t fraginfo,
+ 			   struct ipv4_nat_entry **state,
+ 			   struct ipv4_nat_entry *tmp,
+-			   struct iphdr *ip4, __u32 off,
++			   __u32 off,
+ 			   const struct ipv4_nat_target *target,
+ 			   struct trace_ctx *trace,
+ 			   __s8 *ext_err)
+@@ -318,10 +318,9 @@ snat_v4_nat_handle_mapping(struct __ctx_buff *ctx,
+ 		/* Lookup with SCOPE_FORWARD. Ports are already in correct layout: */
+ 		ipv4_ct_tuple_swap_addrs(&tuple_snat);
+ 
+-		ret = ct_lazy_lookup4(get_ct_map4(&tuple_snat), &tuple_snat,
+-				      ctx, ipv4_is_fragment(ip4), off, has_l4_header,
+-				      CT_EGRESS, SCOPE_FORWARD, CT_ENTRY_ANY,
+-				      NULL, &trace->monitor);
++		ret = ct_lazy_lookup4(get_ct_map4(&tuple_snat), &tuple_snat, ctx,
++				      fraginfo, off, CT_EGRESS, SCOPE_FORWARD,
++				      CT_ENTRY_ANY, NULL, &trace->monitor);
+ 		if (ret < 0)
+ 			return ret;
+ 
+@@ -389,9 +388,9 @@ snat_v4_nat_handle_mapping(struct __ctx_buff *ctx,
+ static __always_inline int
+ snat_v4_rev_nat_handle_mapping(struct __ctx_buff *ctx,
+ 			       struct ipv4_ct_tuple *tuple,
+-			       bool has_l4_header,
++			       fraginfo_t fraginfo,
+ 			       struct ipv4_nat_entry **state,
+-			       struct iphdr *ip4, __u32 off,
++			       __u32 off,
+ 			       const struct ipv4_nat_target *target,
+ 			       struct trace_ctx *trace)
+ {
+@@ -446,10 +445,9 @@ snat_v4_rev_nat_handle_mapping(struct __ctx_buff *ctx,
+ 		 */
+ 		ipv4_ct_tuple_swap_ports(&tuple_revsnat);
+ 
+-		ret = ct_lazy_lookup4(get_ct_map4(&tuple_revsnat), &tuple_revsnat,
+-				      ctx, ipv4_is_fragment(ip4), off, has_l4_header,
+-				      CT_INGRESS, SCOPE_REVERSE, CT_ENTRY_ANY,
+-				      NULL, &trace->monitor);
++		ret = ct_lazy_lookup4(get_ct_map4(&tuple_revsnat), &tuple_revsnat, ctx,
++				      fraginfo, off, CT_INGRESS, SCOPE_REVERSE,
++				      CT_ENTRY_ANY, NULL, &trace->monitor);
+ 		if (ret < 0)
+ 			return ret;
+ 
+@@ -610,6 +608,7 @@ static __always_inline int
+ snat_v4_needs_masquerade(struct __ctx_buff *ctx __maybe_unused,
+ 			 struct ipv4_ct_tuple *tuple __maybe_unused,
+ 			 struct iphdr *ip4 __maybe_unused,
++			 fraginfo_t fraginfo __maybe_unused,
+ 			 int l4_off __maybe_unused,
+ 			 struct ipv4_nat_target *target __maybe_unused)
+ {
+@@ -664,7 +663,8 @@ snat_v4_needs_masquerade(struct __ctx_buff *ctx __maybe_unused,
+ 
+ 		target->from_local_endpoint = true;
+ 
+-		err = ct_extract_ports4(ctx, ip4, l4_off, CT_EGRESS, tuple, NULL);
++		err = ct_extract_ports4(ctx, ip4, fraginfo, l4_off,
++					CT_EGRESS, tuple);
+ 		switch (err) {
+ 		case 0:
+ 			/* If the packet is a reply it means that outside has
+@@ -850,20 +850,20 @@ snat_v4_nat_handle_icmp_error(struct __ctx_buff *ctx, __u64 off)
+ }
+ 
+ static __always_inline int
+-__snat_v4_nat(struct __ctx_buff *ctx, struct ipv4_ct_tuple *tuple,
+-	      struct iphdr *ip4, bool has_l4_header, int l4_off,
+-	      bool update_tuple, const struct ipv4_nat_target *target,
++__snat_v4_nat(struct __ctx_buff *ctx, struct ipv4_ct_tuple *tuple, fraginfo_t fraginfo,
++	      int l4_off, bool update_tuple, const struct ipv4_nat_target *target,
+ 	      __u16 port_off, struct trace_ctx *trace, __s8 *ext_err)
+ {
+ 	struct ipv4_nat_entry *state, tmp;
+ 	int ret;
+ 
+-	ret = snat_v4_nat_handle_mapping(ctx, tuple, has_l4_header, &state,
+-					 &tmp, ip4, l4_off, target, trace, ext_err);
++	ret = snat_v4_nat_handle_mapping(ctx, tuple, fraginfo, &state, &tmp,
++					 l4_off, target, trace, ext_err);
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	ret = snat_v4_rewrite_headers(ctx, tuple->nexthdr, ETH_HLEN, has_l4_header, l4_off,
++	ret = snat_v4_rewrite_headers(ctx, tuple->nexthdr, ETH_HLEN,
++				      ipfrag_has_l4_header(fraginfo), l4_off,
+ 				      tuple->saddr, state->to_saddr, IPV4_SADDR_OFF,
+ 				      tuple->sport, state->to_sport, port_off);
+ 
+@@ -877,12 +877,11 @@ __snat_v4_nat(struct __ctx_buff *ctx, struct ipv4_ct_tuple *tuple,
+ 
+ static __always_inline __maybe_unused int
+ snat_v4_nat(struct __ctx_buff *ctx, struct ipv4_ct_tuple *tuple,
+-	    struct iphdr *ip4, int off,
+-	    const struct ipv4_nat_target *target,
++	    struct iphdr *ip4, fraginfo_t fraginfo,
++	    int off, const struct ipv4_nat_target *target,
+ 	    struct trace_ctx *trace, __s8 *ext_err)
+ {
+ 	struct icmphdr icmphdr __align_stack_8;
+-	bool has_l4_header = true;
+ 	__u16 port_off;
+ 	int ret;
+ 
+@@ -899,11 +898,11 @@ snat_v4_nat(struct __ctx_buff *ctx, struct ipv4_ct_tuple *tuple,
+ 		 * L4 header, NATing it in this situation is useless, because
+ 		 * the following fragments won't be able to pass the NAT.
+ 		 */
+-		if (!is_defined(ENABLE_IPV4_FRAGMENTS) && ipv4_is_fragment(ip4))
++		if (!is_defined(ENABLE_IPV4_FRAGMENTS) && ipfrag_is_fragment(fraginfo))
+ 			return DROP_FRAG_NOSUPPORT;
+ 
+-		ret = ipv4_load_l4_ports(ctx, ip4, off, CT_EGRESS,
+-					 &tuple->dport, &has_l4_header);
++		ret = ipv4_load_l4_ports(ctx, ip4, fraginfo, off,
++					 CT_EGRESS, &tuple->dport);
+ 		if (ret < 0)
+ 			return ret;
+ 
+@@ -916,7 +915,7 @@ snat_v4_nat(struct __ctx_buff *ctx, struct ipv4_ct_tuple *tuple,
+ 		 * useless anyway.
+ 		 * ICMP error packets are not supposed to be fragmented.
+ 		 */
+-		if (ipv4_is_fragment(ip4))
++		if (unlikely(ipfrag_is_fragment(fraginfo)))
+ 			return DROP_INVALID;
+ 		if (ctx_load_bytes(ctx, off, &icmphdr, sizeof(icmphdr)) < 0)
+ 			return DROP_INVALID;
+@@ -956,8 +955,7 @@ snat_v4_nat(struct __ctx_buff *ctx, struct ipv4_ct_tuple *tuple,
+ 	if (snat_v4_nat_can_skip(target, tuple))
+ 		return NAT_PUNT_TO_STACK;
+ 
+-	return __snat_v4_nat(ctx, tuple, ip4, has_l4_header, off, false, target,
+-			     port_off, trace, ext_err);
++	return __snat_v4_nat(ctx, tuple, fraginfo, off, false, target, port_off, trace, ext_err);
+ }
+ 
+ static __always_inline __maybe_unused int
+@@ -1044,7 +1042,7 @@ snat_v4_rev_nat(struct __ctx_buff *ctx, const struct ipv4_nat_target *target,
+ 	struct ipv4_ct_tuple tuple = {};
+ 	void *data, *data_end;
+ 	struct iphdr *ip4;
+-	bool has_l4_header = true;
++	fraginfo_t fraginfo;
+ 	__u64 off, inner_l3_off;
+ 	__be16 to_dport = 0;
+ 	__u16 port_off = 0;
+@@ -1055,6 +1053,8 @@ snat_v4_rev_nat(struct __ctx_buff *ctx, const struct ipv4_nat_target *target,
+ 	if (!revalidate_data(ctx, &data, &data_end, &ip4))
+ 		return DROP_INVALID;
+ 
++	fraginfo = ipfrag_encode_ipv4(ip4);
++
+ 	snat_v4_init_tuple(ip4, NAT_DIR_INGRESS, &tuple);
+ 
+ 	off = ((void *)ip4 - data) + ipv4_hdrlen(ip4);
+@@ -1064,8 +1064,8 @@ snat_v4_rev_nat(struct __ctx_buff *ctx, const struct ipv4_nat_target *target,
+ #ifdef ENABLE_SCTP
+ 	case IPPROTO_SCTP:
+ #endif  /* ENABLE_SCTP */
+-		ret = ipv4_load_l4_ports(ctx, ip4, (int)off, CT_INGRESS,
+-					 &tuple.dport, &has_l4_header);
++		ret = ipv4_load_l4_ports(ctx, ip4, fraginfo, (int)off,
++					 CT_INGRESS, &tuple.dport);
+ 		if (ret < 0)
+ 			return ret;
+ 
+@@ -1078,7 +1078,7 @@ snat_v4_rev_nat(struct __ctx_buff *ctx, const struct ipv4_nat_target *target,
+ 		 * would be useless anyway.
+ 		 * ICMP error packets are not supposed to be fragmented.
+ 		 */
+-		if (ipv4_is_fragment(ip4))
++		if (unlikely(ipfrag_is_fragment(fraginfo)))
+ 			return DROP_INVALID;
+ 		if (ctx_load_bytes(ctx, (__u32)off, &icmphdr, sizeof(icmphdr)) < 0)
+ 			return DROP_INVALID;
+@@ -1110,7 +1110,6 @@ snat_v4_rev_nat(struct __ctx_buff *ctx, const struct ipv4_nat_target *target,
+ 			if (IS_ERR(ret))
+ 				return ret;
+ 
+-			has_l4_header = true;
+ 			goto rewrite;
+ 		default:
+ 			return NAT_PUNT_TO_STACK;
+@@ -1122,16 +1121,17 @@ snat_v4_rev_nat(struct __ctx_buff *ctx, const struct ipv4_nat_target *target,
+ 
+ 	if (snat_v4_rev_nat_can_skip(target, &tuple))
+ 		return NAT_PUNT_TO_STACK;
+-	ret = snat_v4_rev_nat_handle_mapping(ctx, &tuple, has_l4_header, &state,
+-					     ip4, (__u32)off, target, trace);
++	ret = snat_v4_rev_nat_handle_mapping(ctx, &tuple, fraginfo, &state,
++					     (__u32)off, target, trace);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	/* Skip port rewrite for ICMP_DEST_UNREACH by passing old_port == new_port == 0. */
+ 	to_dport = state->to_dport;
+ 
+ rewrite:
+-	return snat_v4_rewrite_headers(ctx, tuple.nexthdr, ETH_HLEN, has_l4_header, (int)off,
++	return snat_v4_rewrite_headers(ctx, tuple.nexthdr, ETH_HLEN,
++				       ipfrag_has_l4_header(fraginfo), (int)off,
+ 				       tuple.daddr, state->to_daddr, IPV4_DADDR_OFF,
+ 				       tuple.dport, to_dport, port_off);
+ }
+
+--- bpf/lib/nodeport.h
+@@ -2014,9 +2014,8 @@ int tail_nodeport_ipv4_dsr(struct __ctx_buff *ctx)
+ }
+ 
+ static __always_inline int
+-nodeport_dsr_ingress_ipv4(struct __ctx_buff *ctx, struct ipv4_ct_tuple *tuple,
+-			  struct iphdr *ip4, bool has_l4_header, int l4_off,
+-			  __be32 addr, __be16 port, __s8 *ext_err)
++nodeport_dsr_ingress_ipv4(struct __ctx_buff *ctx, struct ipv4_ct_tuple *tuple, fraginfo_t fraginfo,
++			  int l4_off, __be32 addr, __be16 port, __s8 *ext_err)
+ {
+ 	struct ct_state ct_state_new = {};
+ 	__u32 monitor = 0;
+@@ -2025,8 +2024,8 @@ nodeport_dsr_ingress_ipv4(struct __ctx_buff *ctx, struct ipv4_ct_tuple *tuple,
+ 	/* lookup with SCOPE_FORWARD: */
+ 	__ipv4_ct_tuple_reverse(tuple);
+ 
+-	ret = ct_lazy_lookup4(get_ct_map4(tuple), tuple, ctx, ipv4_is_fragment(ip4),
+-			      l4_off, has_l4_header, CT_EGRESS, SCOPE_FORWARD,
++	ret = ct_lazy_lookup4(get_ct_map4(tuple), tuple, ctx, fraginfo,
++			      l4_off, CT_EGRESS, SCOPE_FORWARD,
+ 			      CT_ENTRY_DSR, NULL, &monitor);
+ 	if (ret < 0)
+ 		return ret;
+@@ -2129,14 +2128,14 @@ nodeport_rev_dnat_ingress_ipv4(struct __ctx_buff *ctx, struct trace_ctx *trace,
+ 	__u32 dst_sec_identity __maybe_unused = 0;
+ 	__u32 src_sec_identity __maybe_unused = SECLABEL;
+ 	bool allow_neigh_map = true;
+-	bool has_l4_header;
++	fraginfo_t fraginfo;
+ 	__u32 *vrf_id __maybe_unused = NULL;
+ 	__u32 monitor = 0;
+ 
+ 	if (!revalidate_data(ctx, &data, &data_end, &ip4))
+ 		return DROP_INVALID;
+ 
+-	has_l4_header = ipv4_has_l4_header(ip4);
++	fraginfo = ipfrag_encode_ipv4(ip4);
+ 
+ 	ret = lb4_extract_tuple(ctx, ip4, ETH_HLEN, &l4_off, &tuple);
+ 	if (ret < 0) {
+@@ -2165,14 +2164,14 @@ nodeport_rev_dnat_ingress_ipv4(struct __ctx_buff *ctx, struct trace_ctx *trace,
+ 	else if (ret == CTX_ACT_REDIRECT)
+ 		goto redirect;
+ 
+-	ret = ct_lazy_lookup4(get_ct_map4(&tuple), &tuple, ctx, ipv4_is_fragment(ip4),
+-			      l4_off, has_l4_header, CT_INGRESS, SCOPE_REVERSE,
++	ret = ct_lazy_lookup4(get_ct_map4(&tuple), &tuple, ctx, fraginfo,
++			      l4_off, CT_INGRESS, SCOPE_REVERSE,
+ 			      CT_ENTRY_NODEPORT, &ct_state, &monitor);
+ 	if (ret == CT_REPLY) {
+ 		trace->reason = TRACE_REASON_CT_REPLY;
+ 		trace->monitor = monitor;
+ 		ret = lb4_rev_nat(ctx, l3_off, l4_off, ct_state.rev_nat_index, false,
+-				  &tuple, has_l4_header);
++				  &tuple, ipfrag_has_l4_header(fraginfo));
+ 		if (IS_ERR(ret))
+ 			return ret;
+ 		if (!revalidate_data(ctx, &data, &data_end, &ip4))
+@@ -2416,8 +2415,8 @@ int tail_nodeport_nat_egress_ipv4(struct __ctx_buff *ctx)
+ 	};
+ 	int ret, l4_off, oif = 0;
+ 	void *data, *data_end;
+-	bool has_l4_header;
+ 	struct iphdr *ip4;
++	fraginfo_t fraginfo;
+ 	__s8 ext_err = 0;
+ 	__u32 dst_sec_identity __maybe_unused = 0;
+ #ifdef TUNNEL_MODE
+@@ -2432,7 +2431,7 @@ int tail_nodeport_nat_egress_ipv4(struct __ctx_buff *ctx)
+ 		goto drop_err;
+ 	}
+ 
+-	has_l4_header = ipv4_has_l4_header(ip4);
++	fraginfo = ipfrag_encode_ipv4(ip4);
+ 
+ #ifdef TUNNEL_MODE
+ 	info = lookup_ip4_remote_endpoint(ip4->daddr, cluster_id);
+@@ -2466,8 +2465,8 @@ int tail_nodeport_nat_egress_ipv4(struct __ctx_buff *ctx)
+ 	if (unlikely(ret != CTX_ACT_OK))
+ 		goto drop_err;
+ 
+-	ret = __snat_v4_nat(ctx, &tuple, ip4, has_l4_header, l4_off,
+-			    true, &target, TCP_SPORT_OFF, &trace, &ext_err);
++	ret = __snat_v4_nat(ctx, &tuple, fraginfo, l4_off, true,
++			    &target, TCP_SPORT_OFF, &trace, &ext_err);
+ 	if (IS_ERR(ret))
+ 		goto drop_err;
+ 
+@@ -2531,13 +2530,12 @@ static __always_inline int nodeport_svc_lb4(struct __ctx_buff *ctx,
+ 					    struct lb4_key *key,
+ 					    struct iphdr *ip4,
+ 					    int l3_off,
+-					    bool has_l4_header,
++					    fraginfo_t fraginfo,
+ 					    int l4_off,
+ 					    __u32 src_sec_identity,
+ 					    bool *punt_to_stack __maybe_unused,
+ 					    __s8 *ext_err)
+ {
+-	bool is_fragment = ipv4_is_fragment(ip4);
+ 	struct ct_state ct_state_svc = {};
+ 	__u32 cluster_id = 0;
+ 	bool backend_local;
+@@ -2584,8 +2582,8 @@ static __always_inline int nodeport_svc_lb4(struct __ctx_buff *ctx,
+ 		if (!ret)
+ 			return NAT_46X64_RECIRC;
+ 	} else {
+-		ret = lb4_local(get_ct_map4(tuple), ctx, is_fragment, l3_off, l4_off,
+-				key, tuple, svc, &ct_state_svc, has_l4_header,
++		ret = lb4_local(get_ct_map4(tuple), ctx, l3_off, fraginfo, l4_off,
++				key, tuple, svc, &ct_state_svc,
+ 				nodeport_xlate4(svc, tuple), &cluster_id, ext_err, 0);
+ 	}
+ 	if (IS_ERR(ret)) {
+@@ -2636,8 +2634,8 @@ static __always_inline int nodeport_svc_lb4(struct __ctx_buff *ctx,
+ 		ct_state.rev_nat_index = ct_state_svc.rev_nat_index;
+ 
+ 		/* Cache is_fragment in advance, lb4_local may invalidate ip4. */
+-		ret = ct_lazy_lookup4(get_ct_map4(tuple), tuple, ctx, is_fragment,
+-				      l4_off, has_l4_header, CT_EGRESS, SCOPE_FORWARD,
++		ret = ct_lazy_lookup4(get_ct_map4(tuple), tuple, ctx, fraginfo,
++				      l4_off, CT_EGRESS, SCOPE_FORWARD,
+ 				      CT_ENTRY_NODEPORT, &ct_state, &monitor);
+ 		if (ret < 0)
+ 			return ret;
+@@ -2709,7 +2707,7 @@ static __always_inline int nodeport_lb4(struct __ctx_buff *ctx,
+ 					__s8 *ext_err,
+ 					bool __maybe_unused *dsr)
+ {
+-	bool has_l4_header = ipv4_has_l4_header(ip4);
++	fraginfo_t fraginfo;
+ 	struct ipv4_ct_tuple tuple = {};
+ 	bool is_svc_proto = true;
+ 	struct lb4_service *svc;
+@@ -2718,6 +2716,8 @@ static __always_inline int nodeport_lb4(struct __ctx_buff *ctx,
+ 
+ 	cilium_capture_in(ctx);
+ 
++	fraginfo = ipfrag_encode_ipv4(ip4);
++
+ 	ret = lb4_extract_tuple(ctx, ip4, l3_off, &l4_off, &tuple);
+ 	if (IS_ERR(ret)) {
+ 		if (ret == DROP_UNSUPP_SERVICE_PROTO) {
+@@ -2736,8 +2736,8 @@ static __always_inline int nodeport_lb4(struct __ctx_buff *ctx,
+ 	svc = lb4_lookup_service(&key, false);
+ 	if (svc) {
+ 		return nodeport_svc_lb4(ctx, &tuple, svc, &key, ip4, l3_off,
+-					has_l4_header, l4_off,
+-					src_sec_identity, punt_to_stack, ext_err);
++					fraginfo, l4_off, src_sec_identity,
++					punt_to_stack, ext_err);
+ 	} else {
+ skip_service_lookup:
+ #ifdef ENABLE_NAT_46X64_GATEWAY
+@@ -2764,8 +2764,7 @@ static __always_inline int nodeport_lb4(struct __ctx_buff *ctx,
+ 				return ret;
+ 			if (*dsr)
+ 				/* Packet continues on its way to local backend: */
+-				return nodeport_dsr_ingress_ipv4(ctx, &tuple, ip4,
+-								 has_l4_header, l4_off,
++				return nodeport_dsr_ingress_ipv4(ctx, &tuple, fraginfo, l4_off,
+ 								 key.address, key.dport,
+ 								 ext_err);
+ 		}
+
+--- bpf/lib/nodeport_egress.h
+@@ -323,11 +323,14 @@ static __always_inline int nodeport_snat_fwd_ipv4(struct __ctx_buff *ctx,
+ 	struct ipv4_ct_tuple tuple = {};
+ 	void *data, *data_end;
+ 	struct iphdr *ip4;
++	fraginfo_t fraginfo;
+ 	int l4_off, ret;
+ 
+ 	if (!revalidate_data(ctx, &data, &data_end, &ip4))
+ 		return DROP_INVALID;
+ 
++	fraginfo = ipfrag_encode_ipv4(ip4);
++
+ 	snat_v4_init_tuple(ip4, NAT_DIR_EGRESS, &tuple);
+ 	l4_off = ETH_HLEN + ipv4_hdrlen(ip4);
+ 
+@@ -341,7 +344,8 @@ static __always_inline int nodeport_snat_fwd_ipv4(struct __ctx_buff *ctx,
+ 			 * Check if its a reply packet, if it is, redirect it to the
+ 			 * parent interface.
+ 			 */
+-			ret = ct_extract_ports4(ctx, ip4, l4_off, CT_EGRESS, &tuple, NULL);
++			ret = ct_extract_ports4(ctx, ip4, fraginfo, l4_off,
++						CT_EGRESS, &tuple);
+ 			if (ret < 0 && ret != DROP_CT_UNKNOWN_PROTO)
+ 				return ret;
+ 
+@@ -370,7 +374,7 @@ static __always_inline int nodeport_snat_fwd_ipv4(struct __ctx_buff *ctx,
+ 	    nodeport_has_nat_conflict_ipv4(ip4, &target))
+ 		goto apply_snat;
+ 
+-	ret = snat_v4_needs_masquerade(ctx, &tuple, ip4, l4_off, &target);
++	ret = snat_v4_needs_masquerade(ctx, &tuple, ip4, fraginfo, l4_off, &target);
+ 	if (IS_ERR(ret))
+ 		goto out;
+ 
+@@ -394,7 +398,8 @@ static __always_inline int nodeport_snat_fwd_ipv4(struct __ctx_buff *ctx,
+ 
+ apply_snat:
+ 	*saddr = tuple.saddr;
+-	ret = snat_v4_nat(ctx, &tuple, ip4, l4_off, &target, trace, ext_err);
++	ret = snat_v4_nat(ctx, &tuple, ip4, fraginfo, l4_off,
++			  &target, trace, ext_err);
+ 	if (IS_ERR(ret))
+ 		goto out;
+ 
+@@ -457,15 +462,14 @@ nodeport_rev_dnat_fwd_ipv4(struct __ctx_buff *ctx, bool *snat_done,
+ 	struct ipv4_ct_tuple tuple = {};
+ 	struct ct_state ct_state = {};
+ 	void *data, *data_end;
+-	bool has_l4_header, is_fragment;
+ 	struct iphdr *ip4;
++	fraginfo_t fraginfo;
+ 	__u32 monitor = 0;
+ 
+ 	if (!revalidate_data(ctx, &data, &data_end, &ip4))
+ 		return DROP_INVALID;
+ 
+-	has_l4_header = ipv4_has_l4_header(ip4);
+-	is_fragment = ipv4_is_fragment(ip4);
++	fraginfo = ipfrag_encode_ipv4(ip4);
+ 
+ 	ret = lb4_extract_tuple(ctx, ip4, ETH_HLEN, &l4_off, &tuple);
+ 	if (ret < 0) {
+@@ -499,8 +503,8 @@ nodeport_rev_dnat_fwd_ipv4(struct __ctx_buff *ctx, bool *snat_done,
+ #endif
+ 
+ 	/* Cache is_fragment in advance, nodeport_fib_lookup_and_redirect may invalidate ip4. */
+-	ret = ct_lazy_lookup4(get_ct_map4(&tuple), &tuple, ctx, is_fragment,
+-			      l4_off, has_l4_header, CT_INGRESS, SCOPE_REVERSE,
++	ret = ct_lazy_lookup4(get_ct_map4(&tuple), &tuple, ctx, fraginfo,
++			      l4_off, CT_INGRESS, SCOPE_REVERSE,
+ 			      CT_ENTRY_NODEPORT | CT_ENTRY_DSR,
+ 			      &ct_state, &monitor);
+ 
+@@ -512,7 +516,7 @@ nodeport_rev_dnat_fwd_ipv4(struct __ctx_buff *ctx, bool *snat_done,
+ 		trace->monitor = monitor;
+ 
+ 		ret = __lb4_rev_nat(ctx, l3_off, l4_off, &tuple,
+-				    nat_info, false, has_l4_header);
++				    nat_info, false, ipfrag_has_l4_header(fraginfo));
+ 		if (IS_ERR(ret))
+ 			return ret;
+ 
+
+--- bpf/tests/bpf_nat_tests.c
+@@ -605,7 +605,8 @@ int test_nat4_icmp_error_tcp_egress(__maybe_unused struct __ctx_buff *ctx)
+ 	/* This is the entry-point of the test, calling
+ 	 * snat_v4_nat().
+ 	 */
+-	ret = snat_v4_nat(ctx, &icmp_tuple, ip4, l4_off, &target, &trace, NULL);
++	ret = snat_v4_nat(ctx, &icmp_tuple, ip4, ipfrag_encode_ipv4(ip4),
++			  l4_off, &target, &trace, NULL);
+ 	assert(ret == 0);
+ 
+ 	__u16 proto;
+@@ -723,7 +724,8 @@ int test_nat4_icmp_error_udp_egress(__maybe_unused struct __ctx_buff *ctx)
+ 	/* This is the entry-point of the test, calling
+ 	 * snat_v4_nat().
+ 	 */
+-	ret = snat_v4_nat(ctx, &icmp_tuple, ip4, l4_off, &target, &trace, NULL);
++	ret = snat_v4_nat(ctx, &icmp_tuple, ip4, ipfrag_encode_ipv4(ip4),
++			  l4_off, &target, &trace, NULL);
+ 	assert(ret == 0);
+ 
+ 	__u16 proto;
+@@ -840,7 +842,8 @@ int test_nat4_icmp_error_icmp_egress(__maybe_unused struct __ctx_buff *ctx)
+ 	/* This is the entry-point of the test, calling
+ 	 * snat_v4_nat().
+ 	 */
+-	ret = snat_v4_nat(ctx, &icmp_tuple, ip4, l4_off, &target, &trace, NULL);
++	ret = snat_v4_nat(ctx, &icmp_tuple, ip4, ipfrag_encode_ipv4(ip4),
++			  l4_off, &target, &trace, NULL);
+ 	assert(ret == 0);
+ 
+ 	__u16 proto;
+@@ -946,7 +949,8 @@ int test_nat4_icmp_error_sctp_egress(__maybe_unused struct __ctx_buff *ctx)
+ 	/* This is the entry-point of the test, calling
+ 	 * snat_v4_nat().
+ 	 */
+-	ret = snat_v4_nat(ctx, &icmp_tuple, ip4, l4_off, &target, &trace, NULL);
++	ret = snat_v4_nat(ctx, &icmp_tuple, ip4, ipfrag_encode_ipv4(ip4),
++			  l4_off, &target, &trace, NULL);
+ 	assert(ret == 0);
+ 
+ 	__u16 proto;
+
+--- bpf/tests/ipfrag.c
+@@ -0,0 +1,122 @@
++// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++/* Copyright Authors of Cilium */
++
++#include "common.h"
++#include <bpf/ctx/skb.h>
++#include "pktgen.h"
++#include <node_config.h>
++
++#include <lib/ipfrag.h>
++
++PKTGEN("tc", "ipfrag_helpers_ipv4")
++int test_ipfrag_helpers_ipv4_pktgen(struct __ctx_buff *ctx)
++{
++	struct pktgen builder;
++	struct udphdr *l4;
++	void *data;
++
++	pktgen__init(&builder, ctx);
++
++	l4 = pktgen__push_ipv4_udp_packet(&builder,
++					  (__u8 *)mac_one, (__u8 *)mac_two,
++					  v4_node_one, v4_node_two,
++					  tcp_src_one, tcp_svc_one);
++	if (!l4)
++		return TEST_ERROR;
++
++	data = pktgen__push_data(&builder, default_data, sizeof(default_data));
++
++	if (!data)
++		return TEST_ERROR;
++
++	pktgen__finish(&builder);
++
++	return 0;
++}
++
++CHECK("tc", "ipfrag_helpers_ipv4")
++int test_ipfrag_helpers_ipv4_check(struct __ctx_buff *ctx)
++{
++	void *data, *data_end;
++	struct ethhdr *l2;
++	struct iphdr *l3;
++	fraginfo_t fraginfo;
++
++	test_init();
++
++	data = (void *)(long)ctx_data(ctx);
++	data_end = (void *)(long)ctx->data_end;
++
++	l2 = data;
++	if ((void *)l2 + sizeof(struct ethhdr) > data_end)
++		test_fatal("l2 out of bounds");
++
++	l3 = (void *)l2 + sizeof(struct ethhdr);
++	if ((void *)l3 + sizeof(struct iphdr) > data_end)
++		test_fatal("l3 out of bounds");
++
++	assert(l3->frag_off == 0);
++
++	/* Non-fragmented packet */
++	fraginfo = ipfrag_encode_ipv4(l3);
++	assert(!ipfrag_is_fragment(fraginfo));
++	assert(ipfrag_has_l4_header(fraginfo));
++
++	/* First fragment */
++	l3->id = bpf_htons(0x1234);
++	l3->frag_off = bpf_htons(1 << 13); /* MF flag */
++	fraginfo = ipfrag_encode_ipv4(l3);
++	assert(ipfrag_is_fragment(fraginfo));
++	assert(ipfrag_has_l4_header(fraginfo));
++	assert(ipfrag_get_protocol(fraginfo) == IPPROTO_UDP);
++	assert((__be16)ipfrag_get_id(fraginfo) == bpf_htons(0x1234));
++
++	/* Non-first fragment */
++	l3->frag_off = bpf_htons((1 << 13) | 0x100);
++	fraginfo = ipfrag_encode_ipv4(l3);
++	assert(ipfrag_is_fragment(fraginfo));
++	assert(!ipfrag_has_l4_header(fraginfo));
++	assert(ipfrag_get_protocol(fraginfo) == IPPROTO_UDP);
++	assert((__be16)ipfrag_get_id(fraginfo) == bpf_htons(0x1234));
++
++	/* Last fragment */
++	l3->frag_off = bpf_htons(0x200);
++	fraginfo = ipfrag_encode_ipv4(l3);
++	assert(ipfrag_is_fragment(fraginfo));
++	assert(!ipfrag_has_l4_header(fraginfo));
++	assert(ipfrag_get_protocol(fraginfo) == IPPROTO_UDP);
++	assert((__be16)ipfrag_get_id(fraginfo) == bpf_htons(0x1234));
++
++	test_finish();
++}
++
++CHECK("tc", "ipfrag_helpers_ipv6")
++int test_ipfrag_helpers_ipv6_check(struct __ctx_buff *ctx __maybe_unused)
++{
++	fraginfo_t fraginfo;
++
++	test_init();
++
++	/* Stub fraginfo until parsing IPv6 extension headers is implemented. */
++
++	/* Non-fragmented packet */
++	fraginfo = 0x0000001100000000;
++	assert(!ipfrag_is_fragment(fraginfo));
++	assert(ipfrag_has_l4_header(fraginfo));
++
++	/* First fragment */
++	fraginfo = 0x0000011112345678;
++	assert(ipfrag_is_fragment(fraginfo));
++	assert(ipfrag_has_l4_header(fraginfo));
++	assert(ipfrag_get_protocol(fraginfo) == IPPROTO_UDP);
++	assert(ipfrag_get_id(fraginfo) == (__be32)(0x12345678));
++
++	/* Non-first fragment */
++	fraginfo = 0x0000031112345678;
++	assert(ipfrag_is_fragment(fraginfo));
++	assert(!ipfrag_has_l4_header(fraginfo));
++	assert(ipfrag_get_protocol(fraginfo) == IPPROTO_UDP);
++	assert(ipfrag_get_id(fraginfo) == (__be32)(0x12345678));
++
++	test_finish();
++}
+

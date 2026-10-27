@@ -1,0 +1,489 @@
+repo: cicd-sensor/cicd-sensor
+commit: e60c65fdbcd290a26ea9082cec65947a73b9f86e
+rank: 4603
+
+feat(agent): capture nghttp2 HTTP/2 requests (#169)
+
+* feat(agent): capture nghttp2 HTTP/2 requests
+
+* fix(agent): split nghttp2 parser for verifier
+
+* docs(agent): clarify nghttp2 capture behavior
+
+* docs(agent): explain nghttp2 request ABI
+
+* refactor(bpf): simplify nghttp2 tail-call parsing
+
+* docs(bpf): clarify nghttp2 field parsing
+
+* fix(agent): keep unsupported uprobe attaches retryable
+
+--- internal/agent/bpf/http_helpers.bpf.h
+@@ -16,6 +16,7 @@
+ // HTTP_SOURCE_* values are ringbuf ABI and mirror kerneltracker.HTTPSource*.
+ #define HTTP_SOURCE_CLEARTEXT 0
+ #define HTTP_SOURCE_OPENSSL   1
++#define HTTP_SOURCE_NGHTTP2   2
+ 
+ // Shortest acceptable request line: "GET / HTTP/1.0" (14 bytes).
+ #define HTTP_MIN_REQUEST_LINE 14
+
+--- internal/agent/bpf/http_uprobe_hooks.bpf.h
+@@ -0,0 +1,396 @@
++// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++#pragma once
++
++// Our vendored vmlinux.h is x86-derived, so `struct user_pt_regs` (what
++// bpf_tracing.h casts to for arm64 PT_REGS_PARM access) is only forward-
++// declared. Complete it here for the arm64 build with the ABI-stable layout
++// (this is exactly the aarch64 uapi user_pt_regs). The x86 build uses the
++// vmlinux `struct pt_regs` and skips this. Uprobe args are read by direct
++// register offset, not CO-RE, so this fixed layout is correct.
++#if defined(__TARGET_ARCH_arm64)
++struct user_pt_regs {
++    __u64 regs[31];
++    __u64 sp;
++    __u64 pc;
++    __u64 pstate;
++};
++#endif
++
++// http_uprobe_hooks.bpf.h — HTTP capture at userspace library boundaries.
++//
++// HTTPS is TLS ciphertext by the time it reaches tcp_sendmsg. SSL_write uprobes
++// observe HTTP/1.x before encryption; nghttp2 submission uprobes observe HTTP/2
++// pseudo-headers before HPACK. Userspace discovers selected symbols in mapped
++// files, and the cgroup gate scopes emission to tracked jobs.
++//
++// The parse is identical to the cleartext tap and reuses the same in-eBPF
++// steps, the same per-CPU http_scratch, and the same http_request_sample; only
++// the buffer source (a user pointer instead of a msghdr segment) and the
++// emitted `source` tag differ. Because a uprobe program is kprobe-type, its
++// tail-call targets cannot be the fentry-type http_stages target — they use a
++// separate http_uprobe_stages jump table with kprobe-type programs.
++//
++//   SSL_write(ssl, buf, num)  /  SSL_write_ex(ssl, buf, num, *written)
++//      |  (one entry program attached to both symbols)
++//      v
++//   entry ─── cgroup gate → capture ≤256B of buf → parse request line
++//      |  bpf_tail_call(http_uprobe_stages[0])
++//      v
++//   [0] parse   path scan → Host scan → reserve/copy/submit (source=openssl)
++//
++//   nghttp2_submit_request(2)(..., nva, nvlen, ...)
++//      |  scan at most 32 leading pseudo-headers; retain only pointers to
++//      |  :method, :path, and :authority in the per-CPU scratch entry
++//      v
++//   [1] validate required method/path ─→ [2] validate optional host and emit
++//
++// The tail call resets verifier state after the bounded pseudo-header scan; a
++// no-tail-call version exceeded Linux 6.17's one-million-instruction budget.
++// Linux 6.17 also needs the three value scans split across two targets. The
++// split follows event semantics instead of forming a per-field pipeline.
++// Raw header values remain in userspace and only the three selected, validated
++// fields are copied to the ring buffer by the tail target.
++
++// Stage indices in the http_uprobe_stages jump table.
++#define HTTP_UPROBE_STAGE_OPENSSL_PARSE     0
++#define HTTP_UPROBE_STAGE_NGHTTP2_REQUIRED  1
++#define HTTP_UPROBE_STAGE_NGHTTP2_EMIT      2
++
++// Entry: PARM2 is the plaintext buffer, PARM3 its length, for both
++// SSL_write(SSL*, const void*, int) and
++// SSL_write_ex(SSL*, const void*, size_t, size_t*). One program is attached to
++// both symbols by userspace. Capture is bounded, but a negative SSL_write int
++// is indistinguishable here from a large SSL_write_ex length after zero-extension.
++SEC("uprobe/SSL_write")
++int BPF_UPROBE(handle_ssl_write, void *ssl, const void *buf, long num)
++{
++    if (!cgroup_is_tracked(current_cgroup_id()))
++        return 0;
++    if (num < HTTP_MIN_REQUEST_LINE)
++        return 0;
++    if (http_capture_user_buffer(buf, (__u64)num) < 0)
++        return 0;
++    struct http_scratch *s = http_scratch_get();
++    if (!s)
++        return 0;
++    if (http_step_reqline(s) < 0)
++        return 0;
++    bpf_tail_call(ctx, &http_uprobe_stages, HTTP_UPROBE_STAGE_OPENSSL_PARSE);
++    return 0;
++}
++
++// Parse target: reached only via bpf_tail_call, never attached, so its SEC only
++// serves to make it kprobe-type (matching the entry). Same steps as the
++// cleartext parse target; emits with source = openssl.
++SEC("uprobe/SSL_write")
++int BPF_UPROBE(handle_ssl_write_parse)
++{
++    struct http_scratch *s = http_scratch_get();
++    if (!s)
++        return 0;
++    if (http_step_path(s) < 0)
++        return 0;
++    if (http_step_hostfind(s) < 0)
++        return 0;
++    if (http_step_hostlen(s) < 0)
++        return 0;
++    http_step_emit(s, current_cgroup_id(), HTTP_SOURCE_OPENSSL);
++    return 0;
++}
++
++// nghttp2_submit_request(2) submits one HTTP/2 request as HEADERS plus optional
++// DATA. Both APIs have the same first four arguments; request2 only changes the
++// later data-provider type:
++//
++//   (session, pri_spec, nva, nvlen, data_prd, stream_user_data)
++//
++// nva means "name/value array": it points to nvlen nghttp2_nv entries. A normal
++// request starts with pseudo-headers similar to the array below, followed by
++// ordinary headers:
++//
++//   {":method", "GET"}, {":scheme", "https"},
++//   {":authority", "example.com"}, {":path", "/build?id=secret"},
++//   {"authorization", "..."}, ...
++//
++// The entry reads argument 3 (nva) and argument 4 (nvlen) before HPACK. It scans
++// only the leading pseudo-headers, retains pointers to method/path/authority,
++// and stops at the first ordinary header. The fixed entry limit bounds verifier
++// work; ordinary header names and values are never copied to the ring buffer.
++#define NGHTTP2_MAX_HEADERS 32
++
++// Public nghttp2_nv ABI copied from userspace. The flags byte is not used by
++// the parser, but it must remain here so array indexing matches libnghttp2's
++// 64-bit layout exactly.
++struct nghttp2_nv_abi {
++    const __u8 *name;
++    const __u8 *value;
++    __u64 namelen;
++    __u64 valuelen;
++    __u8 flags;
++};
++
++_Static_assert(sizeof(struct nghttp2_nv_abi) == 40,
++               "nghttp2_nv ABI must remain 40 bytes on 64-bit Linux");
++_Static_assert((HTTP_METHOD_LEN & (HTTP_METHOD_LEN - 1)) == 0,
++               "HTTP_METHOD_LEN must be a power of two");
++_Static_assert(HTTP_HOST_LEN == HTTP_PATH_LEN,
++               "nghttp2 path and authority copies share one bounded helper");
++
++enum nghttp2_pseudo_header {
++    NGHTTP2_PSEUDO_OTHER = 0,
++    NGHTTP2_PSEUDO_METHOD = 1,
++    NGHTTP2_PSEUDO_PATH = 2,
++    NGHTTP2_PSEUDO_AUTHORITY = 3,
++};
++
++static __always_inline __u8 http_ascii_lower(__u8 c)
++{
++    // Convert ASCII A-Z to a-z; leave every other byte unchanged.
++    if (c >= 'A' && c <= 'Z')
++        return c + ('a' - 'A');
++    return c;
++}
++
++// Classify only the three pseudo-headers exposed in http_request. Checking the
++// exact public name length before reading bounds the userspace read and avoids
++// treating an ordinary or similarly prefixed header as a selected field.
++static __always_inline int nghttp2_pseudo_header_kind(const struct nghttp2_nv_abi *nv)
++{
++    char name[10] = {};
++    __u32 n;
++
++    // Skip lengths that cannot be :path, :method, or :authority.
++    switch (nv->namelen) {
++    case 5:
++        n = 5;
++        break;
++    case 7:
++        n = 7;
++        break;
++    case 10:
++        n = 10;
++        break;
++    default:
++        return NGHTTP2_PSEUDO_OTHER;
++    }
++    if (bpf_probe_read_user(name, n, nv->name) < 0)
++        return -1;
++
++    if (n == 5 && name[0] == ':' && http_ascii_lower(name[1]) == 'p' &&
++        http_ascii_lower(name[2]) == 'a' && http_ascii_lower(name[3]) == 't' &&
++        http_ascii_lower(name[4]) == 'h')
++        return NGHTTP2_PSEUDO_PATH;
++    if (n == 7 && name[0] == ':' && http_ascii_lower(name[1]) == 'm' &&
++        http_ascii_lower(name[2]) == 'e' && http_ascii_lower(name[3]) == 't' &&
++        http_ascii_lower(name[4]) == 'h' && http_ascii_lower(name[5]) == 'o' &&
++        http_ascii_lower(name[6]) == 'd')
++        return NGHTTP2_PSEUDO_METHOD;
++    if (n == 10 && name[0] == ':' && http_ascii_lower(name[1]) == 'a' &&
++        http_ascii_lower(name[2]) == 'u' && http_ascii_lower(name[3]) == 't' &&
++        http_ascii_lower(name[4]) == 'h' && http_ascii_lower(name[5]) == 'o' &&
++        http_ascii_lower(name[6]) == 'r' && http_ascii_lower(name[7]) == 'i' &&
++        http_ascii_lower(name[8]) == 't' && http_ascii_lower(name[9]) == 'y')
++        return NGHTTP2_PSEUDO_AUTHORITY;
++    return NGHTTP2_PSEUDO_OTHER;
++}
++
++// Validate one selected value without copying it. The returned length excludes
++// controls, DEL, and field overflow; path stops at '?', so query data never
++// crosses the kernel boundary. A value that does not fit completely within the
++// field cap is rejected rather than exposed as a silently truncated value.
++static __always_inline int nghttp2_field_length(const __u8 *value, __u64 value_len,
++                                                 __u32 field_len, int strip_query,
++                                                 __u32 *result)
++{
++    if (!value || value_len == 0)
++        return -1;
++
++    for (int i = 0; i < HTTP_PATH_LEN; i++) {
++        if ((__u64)i >= value_len) {
++            *result = i;
++            return 0;
++        }
++        __u8 c;
++        if (bpf_probe_read_user(&c, sizeof(c), value + i) < 0)
++            return -1;
++        if (strip_query && c == '?') {
++            *result = i;
++            return i > 0 ? 0 : -1;
++        }
++        // Reject ASCII control bytes and DEL from the rule-facing field.
++        if (c < 0x20 || c == 0x7f)
++            return -1;
++        if ((__u32)i + 1 >= field_len)
++            return -1;
++    }
++    return -1;
++}
++
++// The comparison enforces the field contract; the opaque mask separately gives
++// older verifiers a durable variable-length userspace-read bound.
++static __always_inline int nghttp2_copy_method(char *dst, const __u8 *src, __u32 n)
++{
++    if (!src || n == 0 || n >= HTTP_METHOD_LEN)
++        return -1;
++    asm volatile("" : "+r"(n));
++    n &= HTTP_METHOD_LEN - 1;
++    return bpf_probe_read_user(dst, n, src);
++}
++
++// Path and authority share the same fixed field size and verifier proof.
++static __always_inline int nghttp2_copy_value(char *dst, const __u8 *src, __u32 n)
++{
++    if (!src || n == 0 || n >= HTTP_PATH_LEN)
++        return -1;
++    asm volatile("" : "+r"(n));
++    n &= HTTP_PATH_LEN - 1;
++    return bpf_probe_read_user(dst, n, src);
++}
++
++SEC("uprobe/nghttp2_submit_request")
++int BPF_UPROBE(handle_nghttp2_submit_request, void *session, void *pri_spec,
++               const struct nghttp2_nv_abi *nva, __u64 nvlen)
++{
++    __u64 cgroup_id = current_cgroup_id();
++    if (!cgroup_is_tracked(cgroup_id) || !nva || nvlen == 0)
++        return 0;
++
++    const __u8 *method = NULL;
++    const __u8 *path = NULL;
++    const __u8 *authority = NULL;
++    __u64 method_len = 0;
++    __u64 path_len = 0;
++    __u64 authority_len = 0;
++
++    // HTTP/2 requires pseudo-headers before regular headers. Stop at the first
++    // regular header so credentials and other ordinary headers are never
++    // examined. First occurrence wins if a malformed array repeats a field.
++    for (int i = 0; i < NGHTTP2_MAX_HEADERS; i++) {
++        if ((__u64)i >= nvlen)
++            break;
++        struct nghttp2_nv_abi nv = {};
++        if (bpf_probe_read_user(&nv, sizeof(nv), nva + i) < 0)
++            return 0;
++        if (!nv.name || nv.namelen == 0)
++            return 0;
++
++        __u8 first;
++        if (bpf_probe_read_user(&first, sizeof(first), nv.name) < 0)
++            return 0;
++        if (first != ':')
++            break;
++
++        int kind = nghttp2_pseudo_header_kind(&nv);
++        if (kind < 0)
++            return 0;
++        if (kind == NGHTTP2_PSEUDO_METHOD && !method) {
++            method = nv.value;
++            method_len = nv.valuelen;
++        } else if (kind == NGHTTP2_PSEUDO_PATH && !path) {
++            path = nv.value;
++            path_len = nv.valuelen;
++        } else if (kind == NGHTTP2_PSEUDO_AUTHORITY && !authority) {
++            authority = nv.value;
++            authority_len = nv.valuelen;
++        }
++        if (method && path && authority)
++            break;
++    }
++
++    // Carry only userspace pointers and lengths into the verifier-split target;
++    // no raw header byte is copied 
+[truncated]
+
+--- internal/agent/bpf/kernel_samples.h
+@@ -278,8 +278,8 @@ struct dns_sample {
+ 
+ // HTTP request-line sample. method/path/host are the parsed fields only;
+ // path is already query-stripped (terminated at '?') by the in-eBPF parse.
+-// Shared by the cleartext tcp_sendmsg tap today and the SSL_write uprobe
+-// tap later; source discriminates the channel.
++// Shared by the cleartext, OpenSSL, and nghttp2 taps; source discriminates the
++// capture channel.
+ struct http_request_sample {
+     __u32 kind;
+     __u8 source;          // HTTP_SOURCE_*, mirrors kerneltracker.HTTPSource*.
+
+--- internal/agent/bpf/maps.bpf.h
+@@ -43,6 +43,17 @@ struct http_scratch {
+     __u32 host_val;                  // host value start
+     __u32 host_n;                    // host byte count
+     __u32 have_host;                 // 1 = a host value was captured
++
++    // nghttp2 pointers and lengths carried across the two semantic tail targets:
++    // required fields, then optional authority plus emit. Raw bytes stay in userspace.
++    __u64 nghttp2_method;
++    __u64 nghttp2_path;
++    __u64 nghttp2_authority;
++    __u64 nghttp2_method_len;
++    __u64 nghttp2_path_len;
++    __u64 nghttp2_authority_len;
++    __u32 nghttp2_method_n;
++    __u32 nghttp2_path_n;
+ };
+ 
+ // Tail-call jump table for the HTTP parser. Userspace installs the parse target
+@@ -54,17 +65,16 @@ struct {
+     __type(value, __u32);
+ } http_stages SEC(".maps");
+ 
+-// Separate jump table for the OpenSSL uprobe HTTP parser (tls_hooks.bpf.h). It
++// Separate jump table for HTTP uprobe parsers (http_uprobe_hooks.bpf.h). It
+ // needs its own PROG_ARRAY because a uprobe program is kprobe-type and a tail
+ // call cannot cross program types, so the fentry-type http_stages target above
+-// is not reusable. The parse target shares the same http_scratch and the same
+-// http_step_* helpers; only the entry program type and the source tag differ.
++// is not reusable.
+ struct {
+     __uint(type, BPF_MAP_TYPE_PROG_ARRAY);
+-    __uint(max_entries, 1);
++    __uint(max_entries, 3);
+     __type(key, __u32);
+     __type(value, __u32);
+-} http_tls_stages SEC(".maps");
++} http_uprobe_stages SEC(".maps");
+ 
+ // The hook only checks staging_map lookup hits; this value is reserved for a
+ // future kernel path that may surface JobIdentity without userspace lookup.
+
+--- internal/agent/bpf/program.bpf.c
+@@ -22,6 +22,6 @@
+ #include "network_hooks.bpf.h"
+ #include "dns_hooks.bpf.h"
+ #include "http_hooks.bpf.h"
+-#include "tls_hooks.bpf.h"
++#include "http_uprobe_hooks.bpf.h"
+ 
+ char LICENSE[] SEC("license") = "Dual BSD/GPL";
+
+--- internal/agent/bpf/tls_hooks.bpf.h
+@@ -1,86 +0,0 @@
+-// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+-#pragma once
+-
+-// Our vendored vmlinux.h is x86-derived, so `struct user_pt_regs` (what
+-// bpf_tracing.h casts to for arm64 PT_REGS_PARM access) is only forward-
+-// declared. Complete it here for the arm64 build with the ABI-stable layout
+-// (this is exactly the aarch64 uapi user_pt_regs). The x86 build uses the
+-// vmlinux `struct pt_regs` and skips this. Uprobe args are read by direct
+-// register offset, not CO-RE, so this fixed layout is correct.
+-#if defined(__TARGET_ARCH_arm64)
+-struct user_pt_regs {
+-    __u64 regs[31];
+-    __u64 sp;
+-    __u64 pc;
+-    __u64 pstate;
+-};
+-#endif
+-
+-// tls_hooks.bpf.h — HTTPS request-line capture at the OpenSSL boundary.
+-//
+-// HTTPS is TLS ciphertext by the time it reaches tcp_sendmsg, so the cleartext
+-// tap cannot read it. This taps the plaintext one layer earlier: a uprobe on
+-// SSL_write / SSL_write_ex reads the request buffer the application hands to
+-// OpenSSL, before encryption. Userspace discovers and attaches these to the
+-// libssl inode (or a statically-linked binary); the cgroup gate scopes emission
+-// to tracked jobs, exactly like the cleartext tap.
+-//
+-// The parse is identical to the cleartext tap and reuses the same in-eBPF
+-// steps, the same per-CPU http_scratch, and the same http_request_sample; only
+-// the buffer source (a user pointer instead of a msghdr segment) and the
+-// emitted `source` tag differ. Because a uprobe program is kprobe-type, its
+-// tail-call target cannot be the fentry-type http_stages target — it uses its
+-// own http_tls_stages jump table with a kprobe-type parse program.
+-//
+-//   SSL_write(ssl, buf, num)  /  SSL_write_ex(ssl, buf, num, *written)
+-//      |  (one entry program attached to both symbols)
+-//      v
+-//   entry ─── cgroup gate → capture ≤256B of buf → parse request line
+-//      |  bpf_tail_call(http_tls_stages[0])
+-//      v
+-//   [0] parse   path scan → Host scan → reserve/copy/submit (source=openssl)
+-
+-// Stage index in the http_tls_stages jump table.
+-#define HTTP_TLS_STAGE_PARSE 0
+-
+-// Entry: PARM2 is the plaintext buffer, PARM3 its length, for both
+-// SSL_write(SSL*, const void*, int) and
+-// SSL_write_ex(SSL*, const void*, size_t, size_t*). One program is attached to
+-// both symbols by userspace. Capture is bounded, but a negative SSL_write int
+-// is indistinguishable here from a large SSL_write_ex length after zero-extension.
+-SEC("uprobe/SSL_write")
+-int BPF_UPROBE(handle_ssl_write, void *ssl, const void *buf, long num)
+-{
+-    if (!cgroup_is_tracked(current_cgroup_id()))
+-        return 0;
+-    if (num < HTTP_MIN_REQUEST_LINE)
+-        return 0;
+-    if (http_capture_user_buffer(buf, (__u64)num) < 0)
+-        return 0;
+-    struct http_scratch *s = http_scratch_get();
+-    if (!s)
+-        return 0;
+-    if (http_step_reqline(s) < 0)
+-        return 0;
+-    bpf_tail_call(ctx, &http_tls_stages, HTTP_TLS_STAGE_PARSE);
+-    return 0;
+-}
+-
+-// Parse target: reached only via bpf_tail_call, never attached, so its SEC only
+-// serves to make it kprobe-type (matching the entry). Same steps as the
+-// cleartext parse target; emits with source = openssl.
+-SEC("uprobe/SSL_write")
+-int BPF_UPROBE(handle_ssl_write_parse)
+-{
+-    struct http_scratch *s = http_scratch_get();
+-    if (!s)
+-        return 0;
+-    if (http_step_path(s) < 0)
+-        return 0;
+-    if (http_step_hostfind(s) < 0)
+-        return 0;
+-    if (http_step_hostlen(s) < 0)
+-        return 0;
+-    http_step_emit(s, current_cgroup_id(), HTTP_SOURCE_OPENSSL);
+-    return 0;
+-}
+

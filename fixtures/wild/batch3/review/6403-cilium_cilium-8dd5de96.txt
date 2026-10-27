@@ -1,0 +1,47 @@
+repo: cilium/cilium
+commit: 8dd5de960167292b92212214d4c6465178213083
+rank: 6403
+
+bpf/tests: fix complexity issue in __corrupt_mem
+
+Running the memcmp() built-in test with > 120 byte len - even a
+single of those tests - was hitting a complexity issue in the
+built-in test.
+
+Alasdair rightfully pointed out that the problem seemed to be in
+__corrupt_mem(), as commenting that from test___builtin_memcmp_single()
+made the verifier accept the program.
+
+Maxim quickly suggested:
+
+> On the other hand, this branching will happen at every array element:
+> ```
+>	if (corrupted)
+>		++*d8;
+> ```
+> So this is probably what causes exponential increase in complexity.
+> Maybe it's worth trying rewriting it in asm too (add corrupted to *d8 without
+> branching).
+
+This commit rewrites it by simply unconditionally adding corrupted to
+d8 (in C).
+
+Thank you and kudos to both!
+
+Signed-off-by: Maxim Mikityanskiy <maxim@isovalent.com>
+Signed-off-by: Alasdair McWilliam <alasdair.mcwilliam@isovalent.com>
+Signed-off-by: Marc Suñé <marc.sune@isovalent.com>
+
+--- bpf/tests/builtin_test.h
+@@ -58,8 +58,8 @@ static __always_inline bool __corrupt_mem(void *d, __u32 len)
+ 	 */
+ 	asm volatile("%0 += %1" : "+r"(d8) : "r"(pos));
+ 
+-	if (corrupted)
+-		++*d8;
++	*d8 += corrupted;
++
+ 	return corrupted;
+ }
+ 
+

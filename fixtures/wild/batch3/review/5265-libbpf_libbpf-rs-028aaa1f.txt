@@ -1,0 +1,86 @@
+repo: libbpf/libbpf-rs
+commit: 028aaa1f55f99e762203cd8a2cea99f4f2001bd7
+rank: 5265
+
+Add user ring buffer support to libbpf-rs
+
+This change adds support for user ring buffers to libbpf-rs. The user
+ring buffer is a type of BPF map that allows user space to write data
+to a ring buffer that can be read by a BPF program.
+
+The motivation for this change is to improve the performance of the
+`scx_rustland` scheduler in the sched_ext project. We have verified the
+change by running scx_rustland with the new user ring buffer support.
+
+The `UserRingBuffer` struct is a wrapper around the `Map` type and
+provides a new set of functions for interacting with the ring buffer.
+The API closely resembles the libbpf API for user ring buffers. The
+struct was intentionally made !Send to avoid introducing locking
+overhead unless necessary. It is expected that the user will handle
+synchronization if needed.
+
+The `UserRingBufferSample` struct contains a mutable reference to the
+sample in the ring buffer memory. It is the interface for writing data
+to the ring buffer. To write to the sample, dereference with `as_mut()`
+to get a mutable reference to the raw byte slice.
+
+The `user_ring_buffer__discard` function was not exposed because the
+implementation handles this internally to simplify the API.
+
+The `user_ring_buffer__reserve_blocking` function is not yet implemented
+and will be added in the future.
+
+Link: https://lore.kernel.org/bpf/20220902234317.2518808-1-void@manifault.com/
+Link: https://github.com/sched-ext/scx/tree/main/scheds/rust/scx_rustland
+Signed-off-by: Jose Fernandez <josef@netflix.com>
+Reviewed-by: Andrea Righi <andrea.righi@canonical.com>
+
+--- libbpf-rs/tests/bin/src/user_ringbuf.bpf.c
+@@ -0,0 +1,46 @@
++// SPDX-License-Identifier: GPL-2.0
++// Copyright (c) 2024 Jose Fernandez
++
++#include "vmlinux.h"
++#include <bpf/bpf_helpers.h>
++#include <bpf/bpf_tracing.h>
++
++struct {
++	__uint(type, BPF_MAP_TYPE_USER_RINGBUF);
++	__uint(max_entries, 4096 /* one page */);
++} user_ringbuf SEC(".maps");
++
++struct {
++	__uint(type, BPF_MAP_TYPE_HASH);
++	__type(key, u32);
++	__type(value, u32);
++	__uint(max_entries, 100);
++} samples SEC(".maps");
++
++struct my_struct_t {
++	u32 key;
++	u32 value;
++};
++
++static long user_ringbuf_callback(struct bpf_dynptr *dynptr, void *context)
++{
++	const struct my_struct_t *data;
++
++	data = bpf_dynptr_data(dynptr, 0, sizeof(*data));
++	if (!data)
++		return 0;
++
++	bpf_map_update_elem(&samples, &data->key, &data->value, BPF_ANY);
++
++	return 0;
++}
++
++SEC("tp/syscalls/sys_enter_getpid")
++int handle__sys_enter_getpid(void *ctx)
++{
++	bpf_user_ringbuf_drain(&user_ringbuf, user_ringbuf_callback, NULL, 0);
++
++	return 0;
++}
++
++char LICENSE[] SEC("license") = "GPL";
+

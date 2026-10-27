@@ -1,0 +1,53 @@
+repo: cilium/tetragon
+commit: f661b00be62813bae93b48e160aebb9a874fb72e
+rank: 4241
+
+Add `config_btf_arg_depth` to extend `struct event_config` context.
+
+This commit introduces the `struct config_btf_arg_depth`. It appends
+`btf_argN` to `struct event_config` as an array. This array stores the
+path to the searched data.
+
+Any `btf_argN` can have a list of elements as follow :
+file->f_path is 152 bytes, so the array will look like
+[{ offset: 152, is_pointer: 0, is_initialized: 1 }, ...].
+
+The max value `MAX_BTF_ARG_DEPTH` as been set arbitrary as the verifier
+need a fixed size.
+
+In config_btf_arg, is_pointer and is_initialized are u16 because it must
+match padding of 64 bits long structure
+
+Signed-off-by: Tristan d'Audibert <tristan.daudibert@orange.com>
+
+--- bpf/process/types/basic.h
+@@ -148,6 +148,20 @@ struct selector_arg_filters {
+ 	__u32 argoff[5];
+ } __attribute__((packed));
+ 
++struct config_btf_arg {
++	__u32 offset;
++	__u16 is_pointer;
++	__u16 is_initialized;
++} __attribute__((packed));
++
++struct extract_arg_data {
++	struct config_btf_arg *btf_config;
++	unsigned long *arg;
++};
++
++#define MAX_BTF_ARG_DEPTH    10
++#define EVENT_CONFIG_MAX_ARG 5
++
+ struct event_config {
+ 	__u32 func_id;
+ 	__s32 arg0;
+@@ -178,6 +192,7 @@ struct event_config {
+ 	 */
+ 	__u32 policy_id;
+ 	__u32 flags;
++	struct config_btf_arg btf_arg[EVENT_CONFIG_MAX_ARG][MAX_BTF_ARG_DEPTH];
+ } __attribute__((packed));
+ 
+ #define MAX_ARGS_SIZE	 80
+

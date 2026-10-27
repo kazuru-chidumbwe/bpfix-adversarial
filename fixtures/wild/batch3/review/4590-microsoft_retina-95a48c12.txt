@@ -1,0 +1,428 @@
+repo: microsoft/retina
+commit: 95a48c1280a0db96deb47a086847dce82ebec790
+rank: 4590
+
+fix(packetparser): Fix under reporting of TCP flags and packet metrics, improve scalability (#1665)
+
+# Description
+
+Previously `packetparser` in `high` `dataAggregationLevel` would report
+(mostly) every single packet since important flags were observed over
+the lifetime of the connection.
+
+This changes that behavior to only observe the important flags on
+individual packets and report when necessary.
+
+This will mean less packets are reported. However, it also adds back
+weighting for bytes, packets, and TCP flags so that metrics remain
+accurate versus before.
+
+I also noticed the current docs for the TCP flags metrics are
+inaccurate, we only report a subset of the supported flags. Not sure if
+this is intentional, however supporting more flags will put more memory
+pressure on both conntrack as well as performance pressure on packet
+reporting. With sampling in place, this should be more than worth it but
+there may be repercussions for the performance of `low`
+`dataAggregationLevel`.
+
+## Checklist
+
+- [X] I have read the [contributing
+documentation](https://retina.sh/docs/Contributing/overview).
+- [X] I signed and signed-off the commits (`git commit -S -s ...`). See
+[this
+documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification)
+on signing commits.
+- [X] I have correctly attributed the author(s) of the code.
+- [X] I have tested the changes locally.
+- [X] I have followed the project's style guidelines.
+- [X] I have updated the documentation, if necessary.
+- [X] I have added tests, if applicable.
+
+## Screenshots (if applicable) or Testing Completed
+
+eBPF objects compile and load as expected.
+
+# `main` Branch
+
+<img width="1463" alt="tcpflags main"
+src="https://github.com/user-attachments/assets/167908f0-7c37-4498-a7f6-20a41110d925"
+/>
+<img width="1463" alt="prometheus packets retina main"
+src="https://github.com/user-attachments/assets/de8ad834-ed91-4673-8643-aa9cc51b3451"
+/>
+<img width="1463" alt="prometheus bytes retina main"
+src="https://github.com/user-attachments/assets/420f54dc-fbbe-4a7b-a290-24c5d6666518"
+/>
+
+# This Branch
+
+<img width="1463" alt="tcpflags patched"
+src="https://github.com/user-attachments/assets/88460ee0-f769-4992-b9be-392b38a64b19"
+/>
+<img width="1463" alt="prometheus packets retina patched"
+src="https://github.com/user-attachments/assets/304bbb97-8c57-477f-9c19-91bb1510b9c7"
+/>
+<img width="1463" alt="prometheus bytes retina patched"
+src="https://github.com/user-attachments/assets/ef917562-487e-45be-8fbb-c9573fa708c1"
+/>
+
+## Additional Notes
+
+https://github.com/microsoft/retina/pull/1628 will be a follow-up to
+this to add additional sampling functionality.
+
+---
+
+Please refer to the [CONTRIBUTING.md](../CONTRIBUTING.md) file for more
+information on how to contribute to this project.
+
+Signed-off-by: Matthew McKeen <matthew.mckeen@fastly.com>
+
+--- pkg/plugin/conntrack/_cprog/conntrack.c
+@@ -31,23 +31,53 @@ struct conntrackmetadata {
+     __u32 packets_rx_count;
+ };
+ 
++/**
++ *  The structure representing the count of observed TCP flags.
++ *  To observe new flags, they should be added to this structure and _ct_record_tcp_flags updated.
++ */
++struct tcpflagscount
++{
++    __u32 syn;
++    __u32 ack;
++    __u32 fin;
++    __u32 rst;
++    __u32 psh;
++    __u32 urg;
++    __u32 ece;
++    __u32 cwr;
++    __u32 ns;
++};
++
+ struct packet
+ {
+-	__u64 t_nsec; // timestamp in nanoseconds
+-	__u32 bytes; // packet size in bytes
+-	__u32 src_ip;
+-	__u32 dst_ip;
+-	__u16 src_port;
+-	__u16 dst_port;
+-	struct tcpmetadata tcp_metadata; // TCP metadata
+-	__u8 observation_point;
+-	__u8 traffic_direction;
+-	__u8 proto;
+-	__u8 flags; // For TCP packets, this is the TCP flags. For UDP packets, this is will always be 1 for conntrack purposes.
+-	bool is_reply;
++    __u64 t_nsec; // timestamp in nanoseconds
++    __u32 bytes; // packet size in bytes
++    __u32 src_ip;
++    __u32 dst_ip;
++    __u16 src_port;
++    __u16 dst_port;
++    struct tcpmetadata tcp_metadata; // TCP metadata
++    __u8 observation_point;
++    __u8 traffic_direction;
++    __u8 proto;
++    __u16 flags; // For TCP packets, this is the TCP flags. For UDP packets, this is will always be 1 for conntrack purposes.
++    bool is_reply;
++    __u32 previously_observed_packets; // When sampling, this is the number of observed packets since the last report.
++    __u32 previously_observed_bytes; // When sampling, this is the number of observed bytes since the last report.
++    struct tcpflagscount previously_observed_flags; // When sampling, this is the previously observed TCP flags since the last report.
+     struct conntrackmetadata conntrack_metadata;
+ };
+ 
++/**
++ * The structure representing whether or not to report a packet and associated metadata.
++ */
++struct packetreport
++{
++    __u32 previously_observed_packets;
++    __u32 previously_observed_bytes;
++    struct tcpflagscount previously_observed_flags;
++    bool report;
++};
+ 
+ /**
+  * The structure representing an ipv4 5-tuple key in the connection tracking map.
+@@ -59,6 +89,7 @@ struct ct_v4_key {
+     __u16 dst_port;
+     __u8 proto;
+ };
++
+ /**
+  * The structure representing a connection in the connection tracking map.
+  */
+@@ -69,6 +100,21 @@ struct ct_entry {
+      */
+     __u32 last_report_tx_dir;
+     __u32 last_report_rx_dir;
++    /**
++     * bytes_seen_since_last_report_*_dir stores the number of bytes observed since the last packet event was reported.
++     */
++    __u32 bytes_seen_since_last_report_tx_dir;
++    __u32 bytes_seen_since_last_report_rx_dir;
++    /**
++     * packets_seen_since_last_report_*_dir stores the number of packets observed since the last packet event was reported.
++     */
++    __u32 packets_seen_since_last_report_tx_dir;
++    __u32 packets_seen_since_last_report_rx_dir;
++    /**
++     * flags_seen_since_last_report_*_dir stores the number of TCP flags observed since the last packet event was reported.
++     */
++    struct tcpflagscount flags_seen_since_last_report_tx_dir;
++    struct tcpflagscount flags_seen_since_last_report_rx_dir;
+     /**
+      * traffic_direction indicates the direction of the connection in relation to the host. 
+      * If the connection is initiated from within the host, the traffic_direction is egress. Otherwise, the traffic_direction is ingress.
+@@ -95,6 +141,62 @@ struct {
+     __uint(pinning, LIBBPF_PIN_BY_NAME); // needs pinning so this can be access from other processes .i.e debug cli
+ } retina_conntrack SEC(".maps");
+ 
++/**
++ * Helper function to update the count of observed TCP flags.
++ * @arg flags The observed flags.
++ * @arg count The TCP flag count to update.
++ */
++static inline void _ct_record_tcp_flags(__u8 flags, struct tcpflagscount *count) {
++    if (!count) {
++        return;
++    }
++    if (flags & TCP_SYN) {
++        if (count->syn < UINT32_MAX) {
++           count->syn += 1;
++        }
++    }
++    if (flags & TCP_ACK) {
++        if (count->ack < UINT32_MAX) {
++            count->ack += 1;
++        }
++    }
++    if (flags & TCP_FIN) {
++        if (count->fin < UINT32_MAX) {
++            count->fin += 1;
++        }
++    }
++    if (flags & TCP_RST) {
++        if (count->rst < UINT32_MAX) {
++            count->rst += 1;
++        }
++    }
++    if (flags & TCP_PSH) {
++        if (count->psh < UINT32_MAX) {
++            count->psh += 1;
++        }
++    }
++    if (flags & TCP_URG) {
++        if (count->urg < UINT32_MAX) {
++            count->urg += 1;
++        }
++    }
++    if (flags & TCP_ECE) {
++        if (count->ece < UINT32_MAX) {
++            count->ece += 1;
++        }
++    }
++    if (flags & TCP_CWR) {
++        if (count->cwr < UINT32_MAX) {
++            count->cwr += 1;
++        }
++    }
++    if (flags & TCP_NS) {
++        if (count->ns < UINT32_MAX) {
++            count->ns += 1;
++        }
++    }
++}
++
+ /**
+  * Helper function to reverse a key.
+  * @arg reverse_key The key to store the reversed key.
+@@ -144,9 +246,13 @@ static __always_inline bool _ct_create_new_tcp_connection(struct packet *p, stru
+     if(is_reply) {
+         new_value.flags_seen_rx_dir = p->flags;
+         new_value.last_report_rx_dir = now;
++        new_value.bytes_seen_since_last_report_rx_dir = 0;
++        new_value.packets_seen_since_last_report_rx_dir = 0;
+     } else {
+         new_value.flags_seen_tx_dir = p->flags;
+         new_value.last_report_tx_dir = now;
++        new_value.bytes_seen_since_last_report_tx_dir = 0;
++        new_value.packets_seen_since_last_report_tx_dir = 0;
+     }
+     new_value.is_direction_unknown = false;
+     new_value.traffic_direction = _ct_get_traffic_direction(observation_point);
+@@ -187,6 +293,8 @@ static __always_inline bool _ct_handle_udp_connection(struct packet *p, struct c
+     new_value.eviction_time = now + CT_CONNECTION_LIFETIME_NONTCP;
+     new_value.flags_seen_tx_dir = p->flags;
+     new_value.last_report_tx_dir = now;
++    new_value.bytes_seen_since_last_report_tx_dir = 0;
++    new_value.packets_seen_since_last_report_tx_dir = 0;
+     new_value.traffic_direction = _ct_get_traffic_direction(observation_point);
+     #ifdef ENABLE_CONNTRACK_METRICS
+         new_value.conntrack_metadata.packets_tx_count = 1;
+@@ -240,6 +348,8 @@ static __always_inline bool _ct_handle_tcp_connection(struct packet *p, struct c
+         p->is_reply = true;
+         new_value.flags_seen_rx_dir = p->flags;
+         new_value.last_report_rx_dir = now;
++        new_value.bytes_seen_since_last_report_rx_dir = 0;
++        new_value.packets_seen_since_last_report_rx_dir = 0;
+         #ifdef ENABLE_CONNTRACK_METRICS
+             new_value.conntrack_metadata.bytes_rx_count = p->bytes;
+             new_value.conntrack_metadata.packets_rx_count = 1;
+@@ -249,6 +359,8 @@ static __always_inline bool _ct_handle_tcp_connection(struct packet *p, struct c
+         p->is_reply = false;
+         new_value.flags_seen_tx_dir = p->flags;
+         new_value.last_report_tx_dir = now;
++        new_value.bytes_seen_since_last_report_tx_dir = 0;
++        new_value.packets_seen_since_last_report_tx_dir = 0;
+         #ifdef ENABLE_CONNTRACK_METRICS
+             new_value.conntrack_metadata.bytes_tx_count = p->bytes;
+             new_value.conntrack_metadata.packets_tx_count = 1;
+@@ -269,14 +381,17 @@ static __always_inline bool _ct_handle_tcp_connection(struct packet *p, struct c
+  * @arg reverse_key The reverse key to be used to handle the connection.
+  * @arg observation_point The point in the network stack where the packet is observed.
+  */
+-static __always_inline bool _ct_handle_new_connection(struct packet *p, struct ct_v4_key key, struct ct_v4_key reverse_key, __u8 observation_point) {
++static __always_inline struct packetreport _ct_handle_new_connection(struct packet *p, struct ct_v4_key key, struct ct_v4_key reverse_key, __u8 observation_point) {
++    struct packetreport report;
++    __builtin_memset(&report, 0, sizeof(struct packetreport));
+     if (key.proto & IPPROTO_TCP) {
+-        return _ct_handle_tcp_connection(p, key, reverse_key, observation_point);
++        report.report = _ct_handle_tcp_connection(p, key, reverse_key, observation_point);
+     } else if (key.proto & IPPROTO_UDP) {
+-        return _ct_handle_udp_connection(p, key, observation_point);
++        report.report = _ct_handle_udp_connection(p, key, observation_point);
+     } else {
+-        return false; // We are not interested in other protocols.
++        report.report = false; // We are not interested in other protocols.
+     }
++    return report;
+ }
+ 
+ /**
+@@ -285,40 +400,69 @@ static __always_inline bool _ct_handle_new_connection(struct packet *p, struct c
+  * @arg entry The entry of the connection in Retina's conntrack map.
+  * @arg flags The flags of the packet.
+  * @arg direction The direction of the packet in relation to the connection.
+- * Returns true if the packet should be reported to userspace. False otherwise.
++ * @arg bytes The size of the packet in bytes.
++ * Returns a packetreport struct representing if the packet should be reported to userspace.
+  */
+-static __always_inline bool _ct_should_report_packet(struct ct_v4_key *key, struct ct_entry *entry, __u8 flags, __u8 direction) {
++static __always_inline struct packetreport _ct_should_report_packet(struct ct_v4_key *key, struct ct_entry *entry, __u8 flags, __u8 direction, __u32 bytes) {
++    struct packetreport report;
++    __builtin_memset(&report, 0, sizeof(struct packetreport));
++    report.report = false;
++
+     // Check for null parameters.
+     if (!entry || !key) {
+-        return false;
+-    }
+-
+-    __u64 now = bpf_mono_now();
+-    __u32 eviction_time = READ_ONCE(entry->eviction_time);
+-    // Check if the connection timed out
+-    if (now >= eviction_time) {
+-        bpf_map_delete_elem(&retina_conntrack, key);
+-        return true; // Report the last packet received before deletion
++        return report;
+     }
+     
+     // Get direction-specific data
+     __u8 seen_flags;
+     __u32 last_report;
++    __u32 packets_seen;
++    __u32 bytes_seen;
+     if (direction == CT_PACKET_DIR_TX) {
+         seen_flags = READ_ONCE(entry->flags_seen_tx_dir);
+         last_report = READ_ONCE(entry->last_report_tx_dir);
++        bytes_seen = READ_ONCE(entry->bytes_seen_since_last_report_tx_dir);
++        packets_seen = READ_ONCE(entry->packets_seen_since_last_report_tx_dir);
++        __builtin_memcpy(&report.previously_observed_flags, &entry->flags_seen_since_last_report_tx_dir, sizeof(struct tcpflagscount));
+     } else {
+         seen_flags = READ_ONCE(entry->flags_seen_rx_dir);
+         last_report = READ_ONCE(entry->last_report_rx_dir);
++        bytes_seen = READ_ONCE(entry->bytes_seen_since_last_report_rx_dir);
++        packets_seen = READ_ONCE(entry->packets_seen_since_last_report_rx_dir);
++        __builtin_memcpy(&report.previously_observed_flags, &entry->flags_seen_since_last_report_rx_dir, sizeof(struct tcpflagscount));
++    }
++
++    report.previously_observed_bytes = bytes_seen;
++    report.previously_observed_packets = packets_seen;
++
++    // Check for overflow
++    if (bytes_seen <= UINT32_MAX-bytes) {
++        bytes_seen += bytes;
++    }
++
++    if (packets_seen <= UINT32_MAX-1) {
++        packets_seen += 1;
++    }
++
++    __u64 now = bpf_mono_now();
++    __u32 eviction_time = READ_ONCE(entry->eviction_time);
++
++    // Check if the connection timed out
++    if (now >= eviction_time) {
++        bpf_map_delete_elem(&retina_conntrack, key);
++        report.report = true;
++        return report; // Report the last packet received before deletion
+     }
+ 
++    __u8 packet_flags = flags;
++
+     // OR the seen flags with the new flags
+     flags |= seen_flags;
+     __u8 protocol = key->proto;
+-    
++
+     // Handle connection state updates and reporting conditions
+     bool should_report = false;
+-    
++
+     // TCP-specific state management
+     if (protocol == IPPROTO_TCP) {
+         // Handle TCP connection termination states
+@@ -330,38 +474,40 @@ static __always_inline bool _ct_shou
+[truncated]
+
+--- pkg/plugin/conntrack/_cprog/conntrack.h
+@@ -38,6 +38,7 @@
+ #define TCP_URG 0x20
+ #define TCP_ECE 0x40
+ #define TCP_CWR 0x80
++#define TCP_NS 0x100
+ 
+ #define CT_PACKET_DIR_TX 0x00
+ #define CT_PACKET_DIR_RX 0x01
+
+--- pkg/plugin/packetparser/_cprog/packetparser.c
+@@ -209,16 +209,23 @@ static void parse(struct __sk_buff *skb, __u8 obs)
+ 	#endif // ENABLE_CONNTRACK_METRICS
+ 
+ 	// Process the packet in ct
+-	bool report __attribute__((unused));
++	struct packetreport report __attribute__((unused));
+ 	report = ct_process_packet(&p, obs);
++
+ 	#ifdef DATA_AGGREGATION_LEVEL
+ 	// If the data aggregation level is low, always send the packet to the perf buffer.
+ 	#if DATA_AGGREGATION_LEVEL == DATA_AGGREGATION_LEVEL_LOW
++		p.previously_observed_packets = 0;
++		p.previously_observed_bytes = 0;
++		__builtin_memset(&p.previously_observed_flags, 0, sizeof(struct tcpflagscount));
+ 		bpf_perf_event_output(skb, &retina_packetparser_events, BPF_F_CURRENT_CPU, &p, sizeof(p));
+ 		return;
+ 	// If the data aggregation level is high, only send the packet to the perf buffer if it needs to be reported.
+ 	#elif DATA_AGGREGATION_LEVEL == DATA_AGGREGATION_LEVEL_HIGH
+-		if (report) {
++		if (report.report) {
++			p.previously_observed_packets = report.previously_observed_packets;
++			p.previously_observed_bytes = report.previously_observed_bytes;
++			p.previously_observed_flags = report.previously_observed_flags;
+ 			bpf_perf_event_output(skb, &retina_packetparser_events, BPF_F_CURRENT_CPU, &p, sizeof(p));
+ 		}
+ 	#endif
+

@@ -1,0 +1,21 @@
+repo: kxxt/tracexec
+commit: fe6dba9609d9d463034271cccb119639e2c4dd7c
+rank: 6246
+
+Revert "fix/bpf: add empty printk to workaround verifier"
+
+I don't know why but this seems no longer relevant.
+
+This reverts commit d7f23b4b66f9846cb3ae4d73ee60b30741092516.
+
+--- src/bpf/tracexec_system.bpf.c
+@@ -123,7 +123,7 @@ static int read_send_path(const struct path *path,
+ #ifdef EBPF_DEBUG
+ #define debug(...) bpf_printk("tracexec_system: " __VA_ARGS__);
+ #else
+-#define debug(...) bpf_printk("");
++#define debug(...)
+ #endif
+ 
+ bool should_trace(pid_t old_tgid) {
+

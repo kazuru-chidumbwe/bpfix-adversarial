@@ -1,0 +1,140 @@
+repo: cilium/cilium
+commit: e9438c20e7d1000e5c9f4bf0641bf3b07f13b1ac
+rank: 2700
+
+bpf,loader: explicitly manage policy programs for bpf_lxc and bpf_host
+
+Remove the hack from loadDatapath that pulled out policy maps and programs
+before loading a Collection. Explicitly commit them to the global policy maps
+as part of loading the endpoint after getting all internal state in order first.
+
+Also removes the POLICY_CALL_MAP macro to ensure stable map name in
+CollectionSpec. POLICY_CALL_MAP would evaluate to test_cilium_policy_calls in tests,
+while the agent would build the datapath with the macro set to cilium_policy_calls.
+This is not compatible with the new way of loading ELFs, so the macro was removed.
+
+The reason for the test_ map prefixes is not documented. With verifier
+tests now unflagging maps for pinning, and the loader test suite taking
+ownership of /sys/fs/bpf/{cilium,tc}, it doesn't look like there's a strong
+reason for keeping the prefixes around. Removing all map name macros is a lot
+of churn, so this will follow as its own change set at a later time.
+
+Signed-off-by: Timo Beckers <timo@isovalent.com>
+
+--- bpf/bpf_host.c
+@@ -1878,7 +1878,7 @@ from_host_to_lxc(struct __ctx_buff *ctx, __s8 *ext_err)
+  * Packets to the local endpoints will then tail call back to the original
+  * bpf_lxc program.
+  */
+-__section_tail(CILIUM_MAP_POLICY, TEMPLATE_HOST_EP_ID)
++__section_entry
+ int handle_lxc_traffic(struct __ctx_buff *ctx __maybe_unused)
+ {
+ #ifdef ENABLE_HOST_FIREWALL
+
+--- bpf/bpf_lxc.c
+@@ -2210,7 +2210,7 @@ TAIL_CT_LOOKUP4(CILIUM_CALL_IPV4_CT_INGRESS, tail_ipv4_ct_ingress, CT_INGRESS,
+  * bpf_host, bpf_overlay (if coming from the tunnel), or bpf_lxc (if coming
+  * from another local pod).
+  */
+-__section_tail(CILIUM_MAP_POLICY, TEMPLATE_LXC_ID)
++__section_entry
+ int handle_policy(struct __ctx_buff *ctx)
+ {
+ 	__u32 src_label = ctx_load_meta(ctx, CB_SRC_LABEL);
+@@ -2261,7 +2261,7 @@ int handle_policy(struct __ctx_buff *ctx)
+  * This program will be tail called from bpf_host for packets sent by
+  * a L7 LB.
+  */
+-__section_tail(CILIUM_MAP_EGRESSPOLICY, TEMPLATE_LXC_ID)
++__section_entry
+ int handle_policy_egress(struct __ctx_buff *ctx __maybe_unused)
+ {
+ #if defined(ENABLE_L7_LB)
+
+--- bpf/lib/ids.h
+@@ -4,6 +4,4 @@
+ #pragma once
+ 
+ /* WARNING: Do not change these ids without updating pkg/bpf/collection.go */
+-#define CILIUM_MAP_POLICY	1
+ #define CILIUM_MAP_CALLS	2
+-#define CILIUM_MAP_EGRESSPOLICY	4
+
+--- bpf/lib/maps.h
+@@ -27,25 +27,23 @@ struct {
+ 	__uint(map_flags, CONDITIONAL_PREALLOC);
+ } METRICS_MAP __section_maps_btf;
+ 
+-
+ #ifndef SKIP_POLICY_MAP
+ /* Global map to jump into policy enforcement of receiving endpoint */
+-struct bpf_elf_map __section_maps POLICY_CALL_MAP = {
+-	.type		= BPF_MAP_TYPE_PROG_ARRAY,
+-	.id		= CILIUM_MAP_POLICY,
+-	.size_key	= sizeof(__u32),
+-	.size_value	= sizeof(__u32),
+-	.pinning	= LIBBPF_PIN_BY_NAME,
+-	.max_elem	= POLICY_PROG_MAP_SIZE,
+-};
++struct {
++	__uint(type, BPF_MAP_TYPE_PROG_ARRAY);
++	__type(key, __u32);
++	__type(value, __u32);
++	__uint(pinning, LIBBPF_PIN_BY_NAME);
++	__uint(max_entries, POLICY_PROG_MAP_SIZE);
++} cilium_call_policy __section_maps_btf;
+ 
+ static __always_inline __must_check int
+ tail_call_policy(struct __ctx_buff *ctx, __u16 endpoint_id)
+ {
+ 	if (__builtin_constant_p(endpoint_id)) {
+-		tail_call_static(ctx, POLICY_CALL_MAP, endpoint_id);
++		tail_call_static(ctx, cilium_call_policy, endpoint_id);
+ 	} else {
+-		tail_call_dynamic(ctx, &POLICY_CALL_MAP, endpoint_id);
++		tail_call_dynamic(ctx, &cilium_call_policy, endpoint_id);
+ 	}
+ 
+ 	/* When forwarding from a BPF program to some endpoint,
+@@ -58,20 +56,19 @@ tail_call_policy(struct __ctx_buff *ctx, __u16 endpoint_id)
+ #endif /* SKIP_POLICY_MAP */
+ 
+ /* Global map to jump into policy enforcement of sending endpoint */
+-struct bpf_elf_map __section_maps POLICY_EGRESSCALL_MAP = {
+-	.type		= BPF_MAP_TYPE_PROG_ARRAY,
+-	.id		= CILIUM_MAP_EGRESSPOLICY,
+-	.size_key	= sizeof(__u32),
+-	.size_value	= sizeof(__u32),
+-	.pinning	= LIBBPF_PIN_BY_NAME,
+-	.max_elem	= POLICY_PROG_MAP_SIZE,
+-};
++struct {
++	__uint(type, BPF_MAP_TYPE_PROG_ARRAY);
++	__type(key, __u32);
++	__type(value, __u32);
++	__uint(pinning, LIBBPF_PIN_BY_NAME);
++	__uint(max_entries, POLICY_PROG_MAP_SIZE);
++} cilium_egresscall_policy __section_maps_btf;
+ 
+ static __always_inline __must_check int
+ tail_call_egress_policy(struct __ctx_buff *ctx, __u16 endpoint_id)
+ {
+-	tail_call_dynamic(ctx, &POLICY_EGRESSCALL_MAP, endpoint_id);
+-	/* same issue as for the POLICY_CALL_MAP calls */
++	tail_call_dynamic(ctx, &cilium_egresscall_policy, endpoint_id);
++	/* same issue as for the cilium_call_policy calls */
+ 	return DROP_EP_NOT_READY;
+ }
+ 
+
+--- bpf/node_config.h
+@@ -150,7 +150,6 @@ DEFINE_IPV6(HOST_IP, 0xbe, 0xef, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0xa, 0x
+ #define EVENTS_MAP_BURST_LIMIT 0
+ #define SIGNAL_MAP test_cilium_signals
+ #define METRICS_MAP test_cilium_metrics
+-#define POLICY_CALL_MAP test_cilium_policy
+ #define AUTH_MAP test_cilium_auth
+ #define CONFIG_MAP test_cilium_runtime_config
+ #define IPCACHE_MAP test_cilium_ipcache
+

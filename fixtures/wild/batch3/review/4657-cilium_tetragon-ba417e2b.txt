@@ -1,0 +1,73 @@
+repo: cilium/tetragon
+commit: ba417e2b5decefd5a33b390d319839eb6a41402e
+rank: 4657
+
+bpf: appease 5.4 verifier
+
+The 4.19 tests passed without this change. This change is only necessary
+for 5.4
+
+Signed-off-by: Andy Strohman <astrohma@isovalent.com>
+
+--- bpf/process/generic_arg.h
+@@ -33,13 +33,13 @@ FUNC_INLINE void extract_arg(struct event_config *config, int index, unsigned lo
+ {
+ 	struct config_btf_arg *btf_config;
+ 
+-	if (index >= EVENT_CONFIG_MAX_ARG)
+-		return;
+-
+ 	asm volatile("%[index] &= %1 ;\n"
+ 		     : [index] "+r"(index)
+ 		     : "i"(MAX_SELECTORS_MASK));
+ 
++	if (index >= EVENT_CONFIG_MAX_ARG)
++		return;
++
+ 	btf_config = config->btf_arg[index];
+ 	if (btf_config->is_initialized) {
+ 		struct extract_arg_data extract_data = {
+
+--- bpf/process/generic_calls.h
+@@ -596,7 +596,7 @@ FUNC_INLINE long generic_read_arg(void *ctx, int index, long off, struct bpf_map
+ 	if (am & ARGM_PRELOAD)
+ 		a = get_preload_arg(ctx, ty, &e->arg_status[index]);
+ 	else
+-		extract_arg(config, index, &a, false, &e->arg_status[index]);
++		extract_arg(config, index, &a, false, &e->arg_status[index & MAX_SELECTORS_MASK]);
+ #else
+ 
+ 	/* Getting argument data based on the source attribute, which is encoded
+@@ -613,14 +613,15 @@ FUNC_INLINE long generic_read_arg(void *ctx, int index, long off, struct bpf_map
+ 		asm volatile("%[index] &= %1 ;\n"
+ 			     : [index] "+r"(index)
+ 			     : "i"(MAX_SELECTORS_MASK));
+-		arg_index = config->idx[index];
+-		if (am & ARGM_PT_REGS)
++		if (am & ARGM_PT_REGS) {
+ 			a = get_pt_regs_arg(ctx, config, index);
+-		else if (am & ARGM_CURRENT_TASK)
++		} else if (am & ARGM_CURRENT_TASK) {
+ 			a = get_current_task();
+-		else
++		} else {
++			arg_index = config->idx[index & MAX_SELECTORS_MASK];
+ 			a = (&e->a0)[arg_index & MAX_SELECTORS_MASK];
+-		extract_arg(config, index, &a, false, &e->arg_status[index]);
++		}
++		extract_arg(config, index, &a, false, &e->arg_status[index & MAX_SELECTORS_MASK]);
+ 	}
+ 
+ 	if (should_offload_path(ty))
+
+--- bpf/process/types/basic.h
+@@ -225,7 +225,7 @@ args_off(struct msg_generic_kprobe *e, unsigned long off)
+ {
+ 	asm volatile("%[off] &= 0x3fff;\n"
+ 		     : [off] "+r"(off));
+-	return e->args + off;
++	return e->args + (off & 0x3fff);
+ }
+ 
+ /* Error writer for use when pointer *s is lost to stack and can not
+

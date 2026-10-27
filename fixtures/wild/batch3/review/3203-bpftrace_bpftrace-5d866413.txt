@@ -1,0 +1,89 @@
+repo: bpftrace/bpftrace
+commit: 5d8664131e1d8800fb44431b712e00f3206f301c
+rank: 3203
+
+ap_probe_expansion: Add runtime detection for bpf_session_is_return
+
+The bpf_session_is_return() kfunc signature changed in kernel v7.0 to
+require a void *ctx parameter [1]. This caused bpftrace to only execute
+kprobes and not trigger kretprobes on newer kernels. This is because:
+
+extern _Bool bpf_session_is_return() __ksym __weak;
+_Bool __session_is_return() {
+    if (bpf_session_is_return) {  <always false on new kernel>
+        return bpf_session_is_return();
+    }
+    return 0;
+}
+
+The commit implements runtime detection of the function signature for
+bpf_session_is_return() using btf. This ensures kprobe session feature
+can be used on older kernel and latest kernel when
+bpf_session_is_return() function exists.
+
+The commit uses libbpf triple underscore suffix convention to support
+both kernel versions. The convention allows declaring multiple function
+prototype for the same kernel symbol:
+
+extern _Bool bpf_session_is_return___with_ctx(void *ctx) __ksym __weak;
+extern _Bool bpf_session_is_return___no_ctx(void) __ksym __weak;
+
+libbpf strips the suffix "___with_ctx" or "___no_ctx" in
+bpf_session_is_return___with_ctx() or bpf_session_is_return___no_ctx()
+during symbol resolution (bpf_core_essential_name_len()) mapping both
+declarations to the kernel bpf_session_is_return(). libbpf is able to
+load the ksession probes program after the resolution.
+
+example:
+LIBBPF_LOG_LEVEL=1 sudo ./bpftrace -d libbpf -e
+'kprobe:ksys_read { @x = 1; } kretprobe:ksys_read { @y = 1; }'
+
+Also, modify and add testcases to verify correct ast generation for both
+old and new kernel signatures of bpf_session_is_return().
+Mock tested with:
+bpftrace_test --gtest_filter=
+'ap_probe_expansion.session_ast*:ap_probe_expansion.kprobe_multi_exact*'
+
+runtime tests:
+runtime-tests.sh --filter="kprobe_session*"
+
+[1]: kernel commit 8fe4dc4f6456 ("bpf: change prototype of
+bpf_session_{cookie,is_return}")
+
+Also, perform git clang-format adjustments on these modified files
+
+Reviewed-by: Ilya Leoshkevich <iii@linux.ibm.com>
+Signed-off-by: Sumanth Korikkar <sumanthk@linux.ibm.com>
+
+--- src/stdlib/base.bpf.c
+@@ -4,15 +4,24 @@
+ 
+ #include <bpf/bpf_helpers.h>
+ 
+-extern _Bool bpf_session_is_return(void) __ksym __weak;
++// Kernel v7.0+ signature with ctx parameter.
++// The ___with_ctx suffix is stripped by libbpf, mapping to kernel symbol "bpf_session_is_return"
++extern _Bool bpf_session_is_return___with_ctx(void *ctx) __ksym __weak;
++
++// Kernel < v7.0 signature without ctx parameter.
++// The ___no_ctx suffix is stripped by libbpf, mapping to kernel symbol "bpf_session_is_return"
++extern _Bool bpf_session_is_return___no_ctx(void) __ksym __weak;
+ 
+ // Try to limit the functions that get added in this file
+ // as these will always be imported/compiled by every script
+ 
+-_Bool __session_is_return() {
+-    if (bpf_session_is_return) {
+-        return bpf_session_is_return();
+-    }
++// Always called with ctx. If the kernel exposes the newer ctx aware kfunc,
++// use it. otherwise fall back to the no arg variant.
++_Bool __session_is_return(void *ctx) {
++    if (bpf_session_is_return___with_ctx)
++        return bpf_session_is_return___with_ctx(ctx);
++    if (bpf_session_is_return___no_ctx)
++        return bpf_session_is_return___no_ctx();
+     return 0;
+ }
+ 
+

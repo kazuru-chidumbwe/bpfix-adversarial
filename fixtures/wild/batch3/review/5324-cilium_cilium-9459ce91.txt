@@ -1,0 +1,53 @@
+repo: cilium/cilium
+commit: 9459ce9177a8441192f808ff98e47bdcc198fd66
+rank: 5324
+
+bpf: zero-initialize trace_sock_notify msg in send_trace_sock_notify4
+
+After the switch to union v4addr in the destination IP field,
+only the IPv4 member was explicitly set before passing the full
+trace_sock_notify struct to ctx_event_output().
+
+Because of this, the verifier was rejecting the helper call
+as an indirect read from uninitialized stack memory when
+TRACE_SOCK_NOTIFY was enabled.
+
+Fixes: 16e8e564d8 ("bpf: use union v4addr for all ipv4 addresses, make addr[] first member")
+
+Signed-off-by: Rastislav Szabo <rastislav.szabo@isovalent.com>
+
+--- bpf/lib/trace_sock.h
+@@ -127,7 +127,7 @@ send_trace_sock_notify4(struct __ctx_sock *ctx,
+ 			__u32 dst_ip, __u16 dst_port,
+ 			bool is_connect)
+ {
+-	struct trace_sock_notify msg __align_stack_8;
++	struct trace_sock_notify msg __align_stack_8 = {};
+ 	struct ratelimit_key rkey = {
+ 		.usage = RATELIMIT_USAGE_SOCKET_EVENTS_MAP,
+ 	};
+@@ -152,16 +152,13 @@ send_trace_sock_notify4(struct __ctx_sock *ctx,
+ 			return;
+ 	}
+ 
+-	msg = (typeof(msg)){
+-		.type		 = CILIUM_NOTIFY_TRACE_SOCK,
+-		.xlate_point	 = xlate_point,
+-		.dst_ip.ip4.be32 = dst_ip,
+-		.dst_port	 = dst_port,
+-		.sock_cookie	 = sock_local_cookie(ctx),
+-		.cgroup_id	 = get_current_cgroup_id(),
+-		.l4_proto	 = parse_protocol(ctx->protocol),
+-		.ipv6		 = 0,
+-	};
++	msg.type = CILIUM_NOTIFY_TRACE_SOCK;
++	msg.xlate_point = xlate_point;
++	msg.dst_ip.ip4.be32 = dst_ip;
++	msg.dst_port = dst_port;
++	msg.sock_cookie = sock_local_cookie(ctx);
++	msg.cgroup_id = get_current_cgroup_id();
++	msg.l4_proto = parse_protocol(ctx->protocol);
+ 
+ 	trace_sock_extension_hook(ctx, msg);
+ 	ctx_event_output(ctx, &cilium_events, BPF_F_CURRENT_CPU, &msg, sizeof(msg));
+

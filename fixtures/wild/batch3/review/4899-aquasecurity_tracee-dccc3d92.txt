@@ -1,0 +1,99 @@
+repo: aquasecurity/tracee
+commit: dccc3d92465de39fbb43c9719cb08ac0e10d8b79
+rank: 4899
+
+feat(ebpf): use bpf_task_pt_regs when available (#4238)
+
+Tracee's `get_task_pt_regs` function mimics the logic of this helper, but relies on assuming some values defined in the kernel.
+This commit changes this function to use the helper if it is available.
+This helper must receive a task_struct with BTF info obtained from `bpf_get_current_task_btf`.
+From my experimentation, the verifier cannot determine whether a task_struct contains BTF info if it was stored outside of the stack.
+This means that this function cannot acutally retrieve the registers of any task except for the current one.
+The function name was changed to reflect this requirement, and it no longer receives a task_struct as a parameter.
+
+Thanks @oshaked1 for writing this commit!
+
+--- pkg/ebpf/c/common/arch.h
+@@ -13,7 +13,7 @@ statfunc bool is_x86_compat(struct task_struct *);
+ statfunc bool is_arm64_compat(struct task_struct *);
+ statfunc bool is_compat(struct task_struct *);
+ statfunc int get_syscall_id_from_regs(struct pt_regs *);
+-statfunc struct pt_regs *get_task_pt_regs(struct task_struct *);
++statfunc struct pt_regs *get_current_task_pt_regs(void);
+ statfunc bool has_syscall_fd_arg(uint);
+ statfunc uint get_syscall_fd_num_from_arg(uint syscall_id, args_t *);
+ 
+@@ -58,8 +58,20 @@ statfunc int get_syscall_id_from_regs(struct pt_regs *regs)
+     return id;
+ }
+ 
+-statfunc struct pt_regs *get_task_pt_regs(struct task_struct *task)
++statfunc struct pt_regs *get_current_task_pt_regs(void)
+ {
++    struct task_struct *task;
++
++    // Use the bpf_task_pt_regs helper if possible
++    if (bpf_core_enum_value_exists(enum bpf_func_id, BPF_FUNC_get_current_task_btf) &&
++        bpf_core_enum_value_exists(enum bpf_func_id, BPF_FUNC_task_pt_regs)) {
++        task = bpf_get_current_task_btf();
++        return (struct pt_regs *) bpf_task_pt_regs(task);
++    }
++
++    // Helper not available, extract registers manually
++    task = (struct task_struct *) bpf_get_current_task();
++
+ // THREAD_SIZE here is statistically defined and assumed to work for 4k page sizes.
+ #if defined(bpf_target_x86)
+     void *__ptr = BPF_CORE_READ(task, stack) + THREAD_SIZE - TOP_OF_KERNEL_STACK_PADDING;
+
+--- pkg/ebpf/c/common/context.h
+@@ -140,7 +140,7 @@ statfunc int init_program_data(program_data_t *p, void *ctx, u32 event_id)
+     p->event->context.eventid = event_id;
+     p->event->context.ts = get_current_time_in_ns();
+     p->event->context.processor_id = (u16) bpf_get_smp_processor_id();
+-    p->event->context.syscall = get_task_syscall_id(p->event->task);
++    p->event->context.syscall = get_current_task_syscall_id();
+ 
+     u32 host_pid = p->event->context.task.host_pid;
+     p->proc_info = bpf_map_lookup_elem(&proc_info_map, &host_pid);
+
+--- pkg/ebpf/c/common/task.h
+@@ -10,7 +10,7 @@
+ // PROTOTYPES
+ 
+ statfunc int get_task_flags(struct task_struct *task);
+-statfunc int get_task_syscall_id(struct task_struct *task);
++statfunc int get_current_task_syscall_id(void);
+ statfunc u32 get_task_mnt_ns_id(struct task_struct *task);
+ statfunc u32 get_task_pid_ns_for_children_id(struct task_struct *task);
+ statfunc u32 get_task_pid_ns_id(struct task_struct *task);
+@@ -39,13 +39,13 @@ statfunc int get_task_flags(struct task_struct *task)
+     return BPF_CORE_READ(task, flags);
+ }
+ 
+-statfunc int get_task_syscall_id(struct task_struct *task)
++statfunc int get_current_task_syscall_id(void)
+ {
+     // There is no originated syscall in kernel thread context
+-    if (get_task_flags(task) & PF_KTHREAD) {
++    if (get_task_flags((struct task_struct *) bpf_get_current_task()) & PF_KTHREAD) {
+         return NO_SYSCALL;
+     }
+-    struct pt_regs *regs = get_task_pt_regs(task);
++    struct pt_regs *regs = get_current_task_pt_regs();
+     return get_syscall_id_from_regs(regs);
+ }
+ 
+
+--- pkg/ebpf/c/vmlinux.h
+@@ -684,7 +684,9 @@ enum bpf_func_id
+     BPF_FUNC_sk_storage_get = 107,
+     BPF_FUNC_ktime_get_boot_ns = 125,
+     BPF_FUNC_copy_from_user = 148,
++    BPF_FUNC_get_current_task_btf = 158,
+     BPF_FUNC_for_each_map_elem = 164,
++    BPF_FUNC_task_pt_regs = 175,
+ };
+ 
+ #define MODULE_NAME_LEN (64 - sizeof(unsigned long))
+

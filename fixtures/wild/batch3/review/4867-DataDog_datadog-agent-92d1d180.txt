@@ -1,0 +1,861 @@
+repo: DataDog/datadog-agent
+commit: 92d1d180200f3383e2e87b73b23558c06d373985
+rank: 4867
+
+dyninst: emit synthetic returns for panic-unwound probed frames (#50714)
+
+### What does this PR do?
+
+Detects when a probed Go function exits via `panic`+`recover` (instead of returning normally) and emits synthetic "return" events for the unwound frames, so they're finalized and reported instead of leaking indefinitely as in-progress entries.
+
+irgen splices an internal probe attached to `runtime.recovery` into the IR program when at least one user probe targets a function. It runs through the standard `probe_run` → `sm_run` → `sm_loop` pipeline with a synthesised `@exception` capture expression bookended by two new stack-machine opcodes:
+
+- `SM_OP_PANIC_UNWIND_PREPARE` reads `g._panic.{startSP,sp,recovered,goexit,arg}` via DWARF offsets, validates the panic chain, and writes `panic_lo_depth` / `panic_hi_depth` / `goid` into the event header.
+- `SM_OP_PANIC_UNWIND_EVICT_SLOTS` walks `in_progress_calls[goid]` and zeroes every slot whose depth lies in `(lo, hi]`; deletes the map entry if empty.
+
+The `@exception` capture reads `gp._panic.arg` (a 16-byte `runtime.eface`) and flows through `PROCESS_GO_EMPTY_INTERFACE` + `CHASE_POINTERS`, so the panic value renders as a typed Go value rather than a raw type pointer. One BPF event per recovery fans out across every matching in-flight invocation via `Buffer.NotePanicUnwoundRange` + a refcounted `SharedMessage` wrapper.
+
+New `RuntimeStats` counters expose handler health: `RecoveryFires`, `RecoveryEvictedFrames`, `RecoverySubmitFailures`, `RecoveryNoOpenCalls`, `RecoveryFilteredGoexit`, `RecoveryInvalidState`. The recovery counters live in `stats_buf` slot 0 (the buffer is a shared ARRAY keyed by probe id; recovery counters are process-wide, not per-probe) and are written with `__sync_fetch_and_add`.
+
+### Motivation
+
+Before this change, when a probed function exited via `panic`, its `in_progress_calls` slot in BPF and its `bufferedEvent` in userspace were never reclaimed — the entry capture sat around until the buffer filled or the goroutine ID was reused. Users saw no return event and no diagnostic for the call. Both sides now get cleaned up promptly, and the user sees the entry capture plus a clear `"function did not return: panic was recovered by an ancestor frame"` evaluation error with the panic value rendered as the Return capture.
+
+### Follow-up commit: review feedback
+
+The second commit, `dyninst: address review feedback on panic-recover`, collects the changes that emerged from review. It bundles several distinct fixes:
+
+- **`SharedMessage` refcount race.** The original `ReleaseBase()` unconditionally released the underlying dispatcher message, and sink.go gated the call on `len(readys)==0` — but a range-scan match can acquire a handle even when its `bufferedEvent` cannot finalize yet (entry side still in flight), so the handle would alias a sync.Pool-recycled `*ringbuf.Record`. Switched `SharedMessage` to a constructor-holds-base-ref pattern: `NewSharedMessage` takes one reference, `ReleaseBase` decrements it, and whichever caller performs the final decrement releases the underlying. Acquire and handle Release can interleave with ReleaseBase freely.
+- **Submit-failure leak for panic-unwound events.** `SM_OP_PANIC_UNWIND_EVICT_SLOTS` evicts `in_progress_calls` slots before the final ringbuf submit. If the submit failed, the existing failure branches had no path for the recovery probe and the matching userspace `bufferedEvent`s leaked until budget/time eviction. Added `DROP_REASON_PANIC_UNWOUND_LOST` (carrying `goid`, `panic_lo_depth`, `panic_hi_depth`) and a new buffer method `NotePanicUnwoundRangeLost` that scans the tree and emits each matching invocation as a truncated panic-unwound capture. Hoisted the recovery-probe detection to the top of both submit-failure sites in `event.c` so the partial-fragment semantics of `PARTIAL_ENTRY` never apply to the recovery probe.
+- **Budget eviction during fanout.** `chargeForFragment`'s single `excludeKey` could evict any of the other matches during a panic-unwound fanout, leaving the per-match mutation loop dereferencing dangling pointers. `NotePanicUnwoundRange` now pins every attaching match with a single upfront charge via a new `chargeExcluding` helper that takes a predicate. The pin set is a Buffer-resident scratch map cleared via `defer` to avoid per-call allocation.
+- **Circuit-breaker for the recovery probe.** The recovery probe is irgen-synthesised and lives outside the user-configured probe set, so the existing breaker's `circuitBrokenProbes` filter couldn't suppress it on recompile. Added `irgen.WithSkipRuntimeRecoveryProbe` and an `actuator.LoadOptions.SkipRuntimeRecoveryProbe` flag wired through `runtime_impl`. When the breaker trips the recovery probe, the next recompile builds a program without it (recovery stays disabled for the process lifetime, matching pre-PR behaviour). User-facing diagnostics are suppressed for the synthetic probe.
+- **Atomic recovery counters.** `stats_buf` is a shared ARRAY (not PERCPU); the existing hit/cpu counters use `__sync_fetch_and_add`. Converted the new `recovery_*` counters in `event.c` and `stack_machine.h` to the same atomics so concurrent recovery firings on different CPUs don't lose increments.
+- **DWARF gating.** `synthesizeRecoveryProbeEventRoot` now requires `runtime._panic.{startSP, sp}` fields in DWARF; without both the BPF handler would degenerate to a `sp == start_sp == 0` coincidence to bail. Defense in depth: `sm_panic_unwind_prepare` bails explicitly when either offset is 0.
+
+### Describe how you validated your changes
+
+- New `panic_recover` testprog at `pkg/dyninst/testprogs/progs/panic_recover/main.go` covers six scenarios: a panic crossing an intermediate frame, `recover()` with no panic in flight, error-typed panic value, an unprobed frame between the panicker and the recoverer, panic+recover inside a probed-frame goroutine, and panic+recover in an unprobed-only goroutine.
+- `pkg/dyninst/recovery_metrics_test.go` runs the testprog end-to-end and asserts the BPF stat counters match the scenario expectations.
+- 11 new decoded-output fixtures pin the per-function expected captures and eval-errors.
+- New unit tests in `pkg/dyninst/eventbuf/buffer_test.go` cover deferred-finalize, mixed-finalize, no-eviction-of-matches, and the `NotePanicUnwoundRangeLost` paths (single/multi-frame, goid boundary, no-matches, deferred-finalize, skip-when-real-return-present).
+- New snapshot test `pkg/dyninst/actuator/testdata/snapshot/circuit_breaker_runtime_recovery_trip.yaml` exercises the full circuit-breaker trip → detach → recompile-without-recovery cycle.
+- New focused test `pkg/dyninst/module/report_probe_error_test.go` verifies the kind filter on `ReportProbeError`.
+- Snapshot fixtures regenerated to reflect the additional probe per program and `runtime._panic` entering the type catalog.
+- Verified across all four Go toolchain versions on amd64 (arm64 builds; integration tests skipped per existing convention).
+- `bazel build //pkg/dyninst/...` and `bazel test //pkg/dyninst/...` pass.
+
+### Additional Notes
+
+The `panic_recover` testprog uses `fmt.Errorf` (heap-allocated) rather than string-literal panics: `.rodata` pages aren't guaranteed resident at BPF read time, and `bpf_probe_read_user` returns `-EFAULT` for non-resident pages, which made the rendered value Go-version-dependent.
+
+Note also that this doesn't let you use `@exception` in an expression, that's left as future work.
+
+Multi-fragment recovery payloads (large interface{} panic values that span ringbuf flushes) are tolerated as a graceful degradation: `scratch_buf_flush_and_continue` does not preserve `panic_lo_depth`/`panic_hi_depth` across continuation headers, so fragments 1+ arrive at the sink with a zero range, match no invocations in `NotePanicUnwoundRange`, and are silently dropped. Fragment 0 already attaches the panic value to every match — the user sees a truncated single-fragment view in the rare large-payload case, and BPF eviction still happens correctly.
+
+Co-authored-by: piob-io <piotr.bejda@datadoghq.com>
+
+--- pkg/dyninst/ebpf/event.c
+@@ -15,8 +15,6 @@
+ 
+ char _license[] SEC("license") = "GPL";
+ 
+-const uint32_t zero_uint32 = 0;
+-
+ static inline __attribute__((always_inline)) void
+ read_g_fields(uint64_t g_ptr, uint64_t stack_ptr, uint64_t* goid, uint32_t* stack_byte_depth) {
+   if (OFFSET_runtime_dot_g__goid == 0 && OFFSET_runtime_dot_g__m == 0) {
+@@ -68,6 +66,30 @@ struct {
+   __type(value, call_depths_t);
+ } in_progress_calls_buf SEC(".maps");
+ 
++// notify_panic_unwound_lost publishes a DROP_REASON_PANIC_UNWOUND_LOST
++// notification carrying the unwound range from the recovery probe's
++// event header. Probe_id, stack_byte_depth, last_seq and entry_ktime_ns
++// are zero — the notification applies to every buffered invocation on
++// header->goid whose depth falls in (panic_lo_depth, panic_hi_depth].
++static inline __attribute__((always_inline)) void
++notify_panic_unwound_lost(uint32_t prog_id, const di_event_header_t* header) {
++  stats_t* stats = bpf_map_lookup_elem(&stats_buf, &zero_uint32);
++  if (stats) {
++    __sync_fetch_and_add(&stats->recovery_submit_failures, 1);
++  }
++  di_drop_notification_t* dn = drop_notify_prepare();
++  if (dn) {
++    *dn = (di_drop_notification_t){
++        .prog_id = prog_id,
++        .goid = header->goid,
++        .drop_reason = DROP_REASON_PANIC_UNWOUND_LOST,
++        .panic_lo_depth = header->panic_lo_depth,
++        .panic_hi_depth = header->panic_hi_depth,
++    };
++    (void)send_drop_notification();
++  }
++}
++
+ static inline __attribute__((always_inline)) void
+ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs) {
+   LOG(4, "probe_run: %d %d %llx", params->probe_id, params->stack_machine_pc);
+@@ -250,9 +272,20 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
+         // the side channel so the buffered entry can be emitted alone rather
+         // than leaking until process shutdown.
+         LOG(1, "probe_run: failed to submit condition-failed signal for return event");
+-        send_drop_notification(
+-            prog_id, params->probe_id, header->goid, header->stack_byte_depth,
+-            0, global_ctx.stack_machine->entry_ktime_ns, DROP_REASON_RETURN_LOST);
++        {
++          di_drop_notification_t* dn = drop_notify_prepare();
++          if (dn) {
++            *dn = (di_drop_notification_t){
++                .prog_id = prog_id,
++                .probe_id = params->probe_id,
++                .goid = header->goid,
++                .stack_byte_depth = header->stack_byte_depth,
++                .entry_ktime_ns = global_ctx.stack_machine->entry_ktime_ns,
++                .drop_reason = DROP_REASON_RETURN_LOST,
++            };
++            (void)send_drop_notification();
++          }
++        }
+       }
+     }
+     // Entry: in_progress_calls insertion was deferred, so nothing to clean up.
+@@ -268,9 +301,20 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
+       header->event_pairing_expectation = EVENT_PAIRING_EXPECTATION_CONDITION_FAILED;
+       if (!events_scratch_buf_submit(global_ctx.buf, start_ns)) {
+         LOG(1, "probe_run: failed to submit throttled condition-failed signal");
+-        send_drop_notification(
+-            prog_id, params->probe_id, header->goid, header->stack_byte_depth,
+-            0, global_ctx.stack_machine->entry_ktime_ns, DROP_REASON_RETURN_LOST);
++        {
++          di_drop_notification_t* dn = drop_notify_prepare();
++          if (dn) {
++            *dn = (di_drop_notification_t){
++                .prog_id = prog_id,
++                .probe_id = params->probe_id,
++                .goid = header->goid,
++                .stack_byte_depth = header->stack_byte_depth,
++                .entry_ktime_ns = global_ctx.stack_machine->entry_ktime_ns,
++                .drop_reason = DROP_REASON_RETURN_LOST,
++            };
++            (void)send_drop_notification();
++          }
++        }
+       }
+     }
+     // Entry: in_progress_calls insertion was deferred, so nothing to clean up.
+@@ -312,21 +356,52 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
+     // A mid-chase flush failed. Skip the final submit — sending it now
+     // would leave a gap in the fragment sequence — and notify userspace
+     // so it can finalize whatever (if anything) reached it.
+-    if (sm->last_submitted_seq != LAST_SUBMITTED_SEQ_NONE) {
++    if (header->event_pairing_expectation ==
++        EVENT_PAIRING_RETURN_PANIC_UNWOUND) {
++      // Recovery probe: in_progress_calls slots in (lo, hi] were already
++      // evicted by SM_OP_PANIC_UNWIND_EVICT_SLOTS, so any fragments that
++      // reached userspace cannot be re-paired with their entries. Tell
++      // userspace to range-scan its buffer; the partial-fragment
++      // semantics of PARTIAL_ENTRY do not apply here.
++      notify_panic_unwound_lost(prog_id, header);
++    } else if (sm->last_submitted_seq != LAST_SUBMITTED_SEQ_NONE) {
+       // Earlier fragments reached userspace; tell it to emit them as
+       // truncated.
+       uint8_t reason = (params->kind == EVENT_KIND_RETURN)
+                            ? DROP_REASON_PARTIAL_RETURN
+                            : DROP_REASON_PARTIAL_ENTRY;
+-      send_drop_notification(
+-          prog_id, params->probe_id, header->goid, header->stack_byte_depth,
+-          sm->last_submitted_seq, sm->entry_ktime_ns, reason);
++      {
++        di_drop_notification_t* dn = drop_notify_prepare();
++        if (dn) {
++          *dn = (di_drop_notification_t){
++              .prog_id = prog_id,
++              .probe_id = params->probe_id,
++              .goid = header->goid,
++              .stack_byte_depth = header->stack_byte_depth,
++              .last_seq = sm->last_submitted_seq,
++              .entry_ktime_ns = sm->entry_ktime_ns,
++              .drop_reason = reason,
++          };
++          (void)send_drop_notification();
++        }
++      }
+     } else if (params->kind == EVENT_KIND_RETURN) {
+       // The very first flush failed; no return fragments are in flight.
+       // Tell userspace to emit the matching entry alone.
+-      send_drop_notification(
+-          prog_id, params->probe_id, header->goid, header->stack_byte_depth,
+-          0, sm->entry_ktime_ns, DROP_REASON_RETURN_LOST);
++      {
++        di_drop_notification_t* dn = drop_notify_prepare();
++        if (dn) {
++          *dn = (di_drop_notification_t){
++              .prog_id = prog_id,
++              .probe_id = params->probe_id,
++              .goid = header->goid,
++              .stack_byte_depth = header->stack_byte_depth,
++              .entry_ktime_ns = sm->entry_ktime_ns,
++              .drop_reason = DROP_REASON_RETURN_LOST,
++          };
++          (void)send_drop_notification();
++        }
++      }
+     }
+     // Entry probe with no fragments: no userspace state to clean up.
+     LOG(1, "probe_run: continuation aborted at seq=%d", sm->last_submitted_seq);
+@@ -339,23 +414,55 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
+   final_header->continuation_flags = 0; // final fragment
+   if (!events_scratch_buf_submit(global_ctx.buf, start_ns)) {
+     LOG(1, "probe_run output dropped");
+-    if (sm->last_submitted_seq != LAST_SUBMITTED_SEQ_NONE) {
++    if (header->event_pairing_expectation ==
++        EVENT_PAIRING_RETURN_PANIC_UNWOUND) {
++      // Recovery probe: in_progress_calls slots in (lo, hi] were already
++      // evicted by SM_OP_PANIC_UNWIND_EVICT_SLOTS, so any fragments that
++      // reached userspace cannot be re-paired with their entries. Tell
++      // userspace to range-scan its buffer; the partial-fragment
++      // semantics of PARTIAL_ENTRY do not apply here.
++      notify_panic_unwound_lost(prog_id, header);
++    } else if (sm->last_submitted_seq != LAST_SUBMITTED_SEQ_NONE) {
+       // Some fragments already reached userspace; this final fragment is
+       // lost. Notify userspace to emit the partial event as truncated.
+       uint8_t reason = (params->kind == EVENT_KIND_RETURN)
+                            ? DROP_REASON_PARTIAL_RETURN
+                            : DROP_REASON_PARTIAL_ENTRY;
+-      send_drop_notification(
+-          prog_id, params->probe_id, header->goid, header->stack_byte_depth,
+-          sm->last_submitted_seq, sm->entry_ktime_ns, reason);
++      {
++        di_drop_notification_t* dn = drop_notify_prepare();
++        if (dn) {
++          *dn = (di_drop_notification_t){
++              .prog_id = prog_id,
++              .probe_id = params->probe_id,
++              .goid = header->goid,
++              .stack_byte_depth = header->stack_byte_depth,
++              .last_seq = sm->last_submitted_seq,
++              .entry_ktime_ns = sm->entry_ktime_ns,
++              .drop_reason = reason,
++          };
++          (void)send_drop_notification();
++        }
++      }
+     } else if (params->kind == EVENT_KIND_RETURN) {
+       // No fragments were submitted; the return probe produced nothing in
+       // userspace. Tell userspace to emit the matching entry alone.
+-      send_drop_notification(
+-          prog_id, params->probe_id, header->goid, header->stack_byte_depth,
+-          0, sm->entry_ktime_ns, DROP_REASON_RETURN_LOST);
++      {
++        di_drop_notification_t* dn = drop_notify_prepare();
++        if (dn) {
++          *dn = (di_drop_notification_t){
++              .prog_id = prog_id,
++              .probe_id = params->probe_id,
++              .goid = header->goid,
++              .stack_byte_depth = header->stack_byte_depth,
++              .entry_ktime_ns = sm->entry_ktime_ns,
++              .drop_reason = DROP_REASON_RETURN_LOST,
++          };
++          (void)send_drop_notification();
++        }
++      }
+     }
+-    // Entry probe with no fragments: no userspace state to clean up.
++    // Entry probe with no fragments (and not the recovery probe): no
++    // userspace state to clean up.
+   } else {
+     sm->last_submitted_seq = sm->continuation_seq;
+     if (stack_hash != 0) {
+@@ -366,16 +473,6 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
+   return;
+ }
+ 
+-// Cumulative per-probe stats. ARRAY (not PERCPU_ARRAY) so we can size
+-// it per IR probe count and key by probe_id; updates use __sync atomics
+-// to remain race-free across CPUs. max_entries is set by the loader.
+-struct {
+-  __uint(type, BPF_MAP_TYPE_ARRAY);
+-  __uint(max_entries, 0);
+-  __type(key, uint32_t);
+-  __type(value, stats_t);
+-} stats_buf SEC(".maps");
+-
+ SEC("uprobe")
+ int probe_run_with_cookie(struct pt_regs* regs) {
+   uint64_t start_ns = bpf_ktime_get_ns();
+
+--- pkg/dyninst/ebpf/framing.h
+@@ -20,6 +20,13 @@ typedef enum event_pairing_expectation {
+   EVENT_PAIRING_EXPECTATION_NONE_INLINED = 6,
+   EVENT_PAIRING_EXPECTATION_NONE_NO_BODY = 7,
+   EVENT_PAIRING_EXPECTATION_CONDITION_FAILED = 8,
++  // Stamped on the single synthetic event the recovery probe emits
++  // when a goroutine recovers a panic that has unwound one or more
++  // probed frames. The header's panic_lo_depth / panic_hi_depth bound
++  // the unwound depth range; userspace fans the panic-value payload
++  // out across every in-flight invocation on the goid whose
++  // StackByteDepth is in (lo, hi] via NotePanicUnwoundRange.
++  EVENT_PAIRING_RETURN_PANIC_UNWOUND = 9,
+ } event_pairing_expectation_t;
+ 
+ // The message header used for the event program.
+@@ -83,6 +90,19 @@ typedef struct di_event_header {
+   // return for a single invocation, and to disambiguate rapid sequential
+   // calls with the same (goid, stack_byte_depth, probe_id).
+   uint64_t entry_ktime_ns;
++
++  // Recovery-probe-only fields. Zero on every non-recovery event (the
++  // scratch buffer is zero-initialised by events_scratch_buf_init).
++  //
++  // panic_lo_depth and panic_hi_depth describe the stack-byte-depth
++  // range of in-progress probed calls being unwound by panic-recover,
++  // computed by SM_OP_PANIC_UNWIND_PREPARE as
++  //   lo = stack_hi - p.sp        (exclusive lower bound)
++  //   hi = stack_hi - p.startSP   (inclusive upper bound)
++  // Userspace scans buffered entries with matching goid and
++  // stack_byte_depth in (lo, hi] to finalize them as panic-unwound.
++  uint32_t panic_lo_depth;
++  uint32_t panic_hi_depth;
+ }
+ // Use aligned attribute to ensure that the size of the structure is a multiple
+ // of 8 bytes; the attribute leads to the compiler adding padding.
+@@ -112,24 +132,33 @@ typedef struct di_data_item_header {
+ // Reasons a drop notification is sent on the side channel. Describe what
+ // userspace state a drop affected, not which BPF failure site caused it.
+ //
+-//  RETURN_LOST    — return-side submit failed with no fragments sent; the
+-//                   matching entry sits in userspace's pairing store. Userspace
+-//                   should emit the entry alone.
+-//  PARTIAL_ENTRY  — entry submit succeeded for fragments [0..last_seq], then
+-//                   subsequently failed. Userspace has or will receive exactly
+-//                   last_seq+1 entry fragments; treat them as a truncated
+-//                   complete entry.
+-//  PARTIAL_RETURN — same as PARTIAL_ENTRY, but for the return side.
++//  RETURN_LOST        — return-side submit failed with no fragments sent;
++//                       the matching entry sits in userspace's pairing
++//                       store. Userspace should emit the entry alone.
++//  PARTIAL_ENTRY      — entry submit succeeded for fragments [0..last_seq],
++//                       then subsequently failed. Userspace has or will
++//                       receive exactly last_seq+1 entry fragments; treat
++//                       them as a truncated complete entry.
++//  PARTIAL_RETURN     — same as PARTIAL_ENTRY, but for the return side.
++//  PANIC_UNWOUND_LOST — the runtime.recovery synthetic event for the
++//                       range (panic_lo_depth, panic_hi_depth] on goid
++//                       failed to submit. BPF already evicted the matching
++//                       in_progress_calls slots; userspace should range-
++//                       scan its buffer and emit every matching invocation
++//                       as a truncated panic-unwound capture. probe_id,
++//                       stack_byte_depth, last_seq and entry_ktime_ns are
++//                       not meaningful for this reason.
+ typedef enum drop_reason {
+-  DROP_REASON_RETURN_LOST    = 1,
+-  DROP_REASON_PARTIAL_ENTRY  = 2,
+-  DROP_REASON_PARTIAL_RETURN = 3,
++  DROP_REASON_RETURN_LOST        = 1,
++  DROP_REASON_PARTIAL_ENTRY      = 2,
++  DROP_REASON_PARTIAL_RETURN     = 3,
++  DROP_REASON_PANIC_UNWOUND_LOST = 4,
+ } drop_reason_t;
+ 
+ // Side-channel message published to drop_notify_ringbuf to inform userspace
+ // that a drop has affected buffered state for one invocation.
+ //
+-// Fixed 32-byte layout, kept in sync with ../output/drop_notification_linux.go.
++// Fixed 40-byte layout, kept in sync with ../output/framing_linux.go.
+ typedef struct di_drop_notification {
+   uint32_t prog_id;
+   uint32_t probe_id;
+@@ -139,13 +168,20 @@ typedef struct di_drop_notification {
+   uint8_t drop_reason;
+   uint8_t __padding[1];
+   // continuation_seq of the last successfully submitted fragment. Ignored
+-  // when drop_reason == DROP_REASON_RETURN_LOST (no fragments exist).
++  // when drop_reason == DROP_REASON_RETURN_LOST (no fragments exist) or
++  // DROP_REASON_PANIC_UNWOUND_LOST (range applies to many invocations).
+   uint16_t last_seq;
+   // Invocation ID. For return-side drops, the entry's start_ns (pulled from
+   // in_progress_calls). For entry-side drops, the entry's own start_ns. This
+   // matches the entry_ktime_ns field on the main-channel event header so
+-  // userspace can correlate notifications with fragments by key.
++  // userspace can correlate notifications with fragments by key. Ignored
++  // when drop_reason == DROP_REASON_PANIC_UNWOUND_LOST.
+   uint64_t entry_ktime_ns;
++  // Unwound stack depth range (panic_lo_depth, panic_hi_depth]. Only
++  // meaningful when drop_reason == DROP_REASON_PANIC_UNWOUND_LOST; zero
++  // for all other reasons.
++  uint32_t panic_lo_depth;
++  uint32_t panic_hi_depth;
+ } __attribute__((aligned(8))) di_drop_notification_t;
+ 
+ #endif // __FRAMING_H__
+
+--- pkg/dyninst/ebpf/program.h
+@@ -14,6 +14,17 @@ volatile const uint32_t OFFSET_runtime_dot_g__m = 0;
+ volatile const uint32_t OFFSET_runtime_dot_m__curg = 0;
+ volatile const uint32_t OFFSET_runtime_dot_stack__hi = 0;
+ 
++// runtime._panic field offsets, used by the runtime.recovery uprobe to
++// identify the SP range being unwound and capture the panic value. Zero
++// if the binary's DWARF lacks runtime._panic; the loader skips
++// attaching the recovery probe in that case.
++volatile const uint32_t OFFSET_runtime_dot_g___panic = 0;
++volatile const uint32_t OFFSET_runtime_dot__panic__arg = 0;
++volatile const uint32_t OFFSET_runtime_dot__panic__startSP = 0;
++volatile const uint32_t OFFSET_runtime_dot__panic__sp = 0;
++volatile const uint32_t OFFSET_runtime_dot__panic__recovered = 0;
++volatile const uint32_t OFFSET_runtime_dot__panic__goexit = 0;
++
+ volatile const uint32_t prog_id = 0;
+ 
+ struct {
+@@ -57,6 +68,27 @@ struct {
+ } probe_params SEC(".maps");
+ volatile const uint32_t num_probe_params = 0;
+ 
++// Cumulative per-probe stats. ARRAY (not PERCPU_ARRAY) so we can size
++// it per IR probe count and key by probe_id; updates use __sync atomics
++// to remain race-free across CPUs. max_entries is set by the loader.
++// Declared here (rather than in event.c) so stack_machine.h can update
++// the recovery counters without a forward-declaration dance.
++struct {
++  __uint(type, BPF_MAP_TYPE_ARRAY);
++  __uint(max_entries, 0);
++  __type(key, uint32_t);
++  __type(value, stats_t);
++} stats_buf SEC(".maps");
++
++// zero_uint32 is a reusable zero key. Used to address PERCPU_ARRAY maps
++// that hold a single per-CPU value (in_progress_calls_buf, the per-CPU
++// events scratch buffer) and also to address slot 0 of the shared
++// stats_buf ARRAY — the runtime.recovery probe writes its process-wide
++// counters into slot 0 regardless of which probe_id the recovery
++// firing nominally belongs to. Declared in the shared header so any
++// .c/.h file can address such maps without a forward declaration.
++static const uint32_t zero_uint32 = 0;
++
+ struct {
+   __uint(type, BPF_MAP_TYPE_ARRAY);
+   __uint(max_entries, 0);
+
+--- pkg/dyninst/ebpf/scratch.h
+@@ -46,10 +46,11 @@ typedef uint64_t buf_offset_t;
+ // than this many fragments for a single invocation.
+ #define MAX_CONTINUATION_FRAGMENTS 16
+ 
+-// Side-channel for drop notifications. Notifications are 32 bytes each; at
+-// 16 KiB the side channel holds ~500 notifications — far more than the
+-// number of concurrently-buffered events userspace can hold, so the side
+-// channel is very unlikely to fill even when out_ringbuf is saturated.
++// Side-channel for drop notifications. Notifications are 40 bytes each
++// (see di_drop_notification_t); at 16 KiB the side channel holds ~400
++// notifications — far more than the number of concurrently-buffered
++// events userspace can hold, so the side channel is very unlikely to
++// fill even when out_ringbuf is saturated.
+ #define DROP_NOTIFY_RINGBUF_CAPACITY ((uint64_t)1 << 14) // 16KiB
+ 
+ struct {
+@@ -79,35 +80,49 @@ struct {
+   __type(value, uint64_t);
+ } drop_notify_lost_at SEC(".maps");
+ 
+-// send_drop_notification publishes a drop notification to the side channel.
+-// On failure (drop_notify_ringbuf full), stamps drop_notify_lost_at with
+-// the current ktime so userspace can later reconcile the stuck eventbuf
+-// entry.
+-static inline void send_drop_notification(
+-    uint32_t prog_id,
+-    uint32_t probe_id,
+-    uint64_t goid,
+-    uint32_t stack_byte_depth,
+-    uint16_t last_seq,
+-    uint64_t entry_ktime_ns,
+-    uint8_t drop_reason) {
+-  di_drop_notification_t notif = {
+-      .prog_id = prog_id,
+-      .probe_id = probe_id,
+-      .goid = goid,
+-      .stack_byte_depth = stack_byte_depth,
+-      .drop_reason = drop_reason,
+-      .last_seq = last_seq,
+-      .entry_ktime_ns = entry_ktime_ns,
+-  };
+-  if (bpf_ringbuf_output(&drop_notify_ringbuf, &notif, sizeof(notif), 0) !=
++// Per-CPU scratch slot for building drop notifications without a stack-local
++// struct. The 40-byte di_drop_notification_t would otherwise inflate
++// probe_run_with_cookie's frame (the root of every call chain the BPF
++// verifier checks), pushing the combined stack over the 512-byte limit on
++// arm64.
++struct {
++  __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
++  __uint(max_entries, 1);
++  __type(key, uint32_t);
++  __type(value, di_drop_notification_t);
++} drop_notify_scratch SEC(".maps");
++
++// drop_notify_prepare returns a pointer to the per-CPU drop notification
++// scratch slot, or NULL if the map lookup fails (should never happen).
++// Callers fill the struct fields, then call send_drop_notification() to
++// submit it to the side-channel ringbuf.
++static inline di_drop_notification_t* drop_notify_prepare(void) {
++  uint32_t zero = 0;
++  return bpf_map_lookup_elem(&drop_notify_scratch, &zero);
++}
++
++// send_drop_notification submits the notification prepared in
++// drop_notify_scratch to drop_notify_ringbuf. On failure (ringbuf full),
++// stamps drop_notify_lost_at so userspace can reconcile.
++//
++// Noinline global function: its frame (ringbuf output + error handling)
++// is accounted separately from probe_run_with_cookie, and zero args
++// sidesteps the BPF 5-register calling convention limit.
++__attribute__((noinline)) int send_drop_notification(void) {
++  uint32_t zero = 0;
++  di_drop_notification_t* notif =
++      bpf_map_lookup_elem(&drop_notify_scratch, &zero);
++  if (!notif) {
++    return 0;
++  }
++  if (bpf_ringbuf_output(&drop_notify_ringbuf, notif, sizeof(*notif), 0) !=
+       0) {
+-    uint32_t zero = 0;
+     uint64_t* slot = bpf_map_lookup_elem(&drop_notify_lost_at, &zero);
+     if (slot) {
+       *slot = bpf_ktime_get_ns();
+     }
+   }
++  return 0;
+ }
+ 
+ // A helper to check if the scratch buffer has enough space.
+@@ -187,34 +202,32 @@ static bool scratch_buf_flush_and_continue(scratch_buf_t* scratch_buf,
+   header->continuation_seq = *continuation_seq;
+   header->continuation_flags = 1; // more fragments follow
+ 
+-  // Save header fields before submit.
+-  uint32_t prog_id = header->prog_id;
+-  uint64_t goid = header->goid;
+-  uint32_t stack_byte_depth = header->stack_byte_depth;
+-  uint32_t probe_id = header->probe_id;
+-  unsigned char event_pairing_expectation = header->event_pairing_expectation;
+-
+   if (!events_scratch_buf_submit(scratch_buf, start_ns)) {
+     return false;
+   }
+ 
+   *last_submitted_seq = *continuation_seq;
+   (*continuation_seq)++;
+ 
+-  // Reinitialize the buffer with a continuation header.
++  // Reinitialize the buffer for the next continuation fragment.
++  // bpf_ringbuf_output (called by events_scratch_buf_submit) copies the
++  // buffer without modifying the source, so header fields we want to
++  // keep (prog_id, goid, stack_byte_depth, probe_id,
++  // event_pairing_expectation, entry_ktime_ns) are still in place.
++  // ktime_ns was set to start_ns by events_scratch_buf_submit.
++  // Reset the buffer length and zero only the fields that must differ
++  // in continuation fragments — this avoids a 64-byte struct literal
++  // and 5 saved-field locals on the stack, which matters for staying
++  // within the 512-byte BPF combined-stack limit.
+   scratch_buf_set_len(scratch_buf, sizeof(di_event_header_t));
+-  di_event_header_t* new_header = (di_event_header_t*)scratch_buf;
+-  *new_header = (di_event_header_t){
+-      .data_byte_len = sizeof(di_event_header_t),
+-      .prog_id = prog_id,
+-      .goid = goid,
+-      .stack_byte_depth = stack_byte_depth,
+-      .probe_id = probe_id,
+-      .stack_byte_len = 0, // no stack trace in continuations
+-      .event_pairing_expectation = event_pairing_expectation,
+-      .ktime_ns = start_ns, // same timestamp for fragment correlation
+-      .entry_ktime_ns = entry_ktime_ns,
+-  };
++  header->stack_byte_len = 0;       // no stack trace in continuations
++  header->condition_eval_error = 0;
++  header->continuation_seq = 0;     // set on next flush
++  header->continuation_flags = 0;
++  header->__padding[0] = 0;
++  header->stack_hash = 0;
++  header->panic_lo_depth = 0;
++  header->panic_hi_depth = 0;
+   return true;
+ }
+ 
+@@ -348,9 +361,10 @@ SIZE_LIST
+ 
+ #undef X
+ 
+-buf_offset_t scratch_buf_serialize_whole(scratch_buf_t* scratch_buf,
+-                                         di_data_item_header_t* data_item_header,
+-                                         const uint64_t len) {
++static __always_inline buf_offset_t
++scratch_buf_serialize_whole(scratch_buf_t* scratch_buf,
++                            di_data_item_header_t* data_item_header,
++                            const uint64_t len) {
+   // Use macro to also define the checking for the size classes.
+ #define X(max_size)                                                         \
+   if (len <= max_size) {                                                    \
+
+--- pkg/dyninst/ebpf/stack_machine.h
+@@ -2892,6 +2892,174 @@ sm_swissmap_loop_short_circuit_check(scratch_buf_t* buf, stack_machine_t* sm) {
+   #undef ST
+ }
+ 
++// sm_panic_unwind_prepare reads gp from DWARF reg 0, validates the
++// goroutine has a recovered (non-goexit) panic with an open
++// in_progress_calls entry, and writes panic_lo_depth / panic_hi_depth
++// / goid into the event header. Returns true on success; on failure
++// the caller sets sm->condition_failed to abort the event. Factored
++// out as a noinline helper to keep sm_loop's own stack frame small —
++// the verifier sums local stack across the worst-case call chain and
++// would otherwise reject sm_loop combined with its other handlers.
++__attribute__((noinline)) bool
++sm_panic_unwind_prepare(uint64_t gp, scratch_buf_t* buf) {
++  if (!buf) {
++    return false;
++  }
++  stats_t* stats = bpf_map_lookup_elem(&stats_buf, &zero_uint32);
++  if (stats) {
++    __sync_fetch_and_add(&stats->recovery_fires, 1);
++  }
++  if (OFFSET_runtime_dot_g___panic == 0) {
++    if (stats) __sync_fetch_and_add(&stats->recovery_invalid_state, 1);
++    return false;
++  }
++  // Defense in depth: irgen drops the recovery probe when these offsets
++  // are absent from DWARF (see synthesizeRecoveryProbeEventRoot), so we
++  // should never see them as 0 here. Bail explicitly anyway rather than
++  // letting the (lo, hi] computation below silently degenerate to
++  // start_sp == sp == 0 → sp <= start_sp → return false.
++  if (OFFSET_runtime_dot__panic__startSP == 0 ||
++      OFFSET_runtime_dot__panic__sp == 0) {
++    if (stats) __sync_fetch_and_add(&stats->recovery_invalid_state, 1);
++    return false;
++  }
++  if (gp == 0) {
++    if (stats) __sync_fetch_and_add(&stats->recovery_invalid_state, 1);
++    return false;
++  }
++  di_event_header_t* hdr = (di_event_header_t*)buf;
++  uint64_t goid = 0;
++  if (bpf_probe_read_user(&goid, sizeof(goid),
++                          (void*)(gp + OFFSET_runtime_dot_g__goid))) {
++    if (stats) __sync_fetch_and_add(&stats->recovery_invalid_state, 1);
++    return false;
++  }
++  if (goid == 0) {
++    uint64_t m_ptr = 0;
++    if (bpf_probe_read_user(&m_ptr, sizeof(m_ptr),
++                            (void*)(gp + OFFSET_runtime_dot_g__m)) ||
++        bpf_probe_read_user(&gp, sizeof(gp),
++                            (void*)(m_ptr + OFFSET_runtime_dot_m__curg)) ||
++        bpf_probe_read_user(&goid, sizeof(goid),
++                            (void*)(gp + OFFSET_runtime_dot_g__goid))) {
++      if (stats) __sync_fetch_and_add(&stats->recovery_invalid_state, 1);
++      return false;
++    }
++  }
++  if (!bpf_map_lookup_elem(&in_progress_calls, &goid)) {
++    if (stats) __sync_fetch_and_add(&stats->recovery_no_open_calls, 1);
++    return false;
++  }
++  uint64_t panic_ptr = 0;
++  if (bpf_probe_read_user(&panic_ptr, sizeof(panic_ptr),
++                          (void*)(gp + OFFSET_runtime_dot_g___panic))) {
++    if (stats) __sync_fetch_and_add(&stats->recovery_invalid_state, 1);
++    return false;
++  }
++  if (panic_ptr == 0) {
++    if (stats) __sync_fetch_and_add(&stats->recovery_invalid_state, 1);
++    return false;
++  }
++  if (OFFSET_runtime_dot__panic__recovered != 0) {
++    uint8_t recovered = 0;
++    if (bpf_probe_read_user(&recovered, sizeof(recovered),
++                            (void*)(panic_ptr +
++                                    OFFSET_runtime_dot__panic__recovered)) ||
++        recovered == 0) {
++      if (stats) __sync_fetch_and_add(&stats->recovery_invalid_state, 1);
++      return false;
++    }
++  }
++  if (OFFSET_runtime_dot__panic__goexit != 0) {
++    uint8_t goexit = 0;
++    if (bpf_probe_read_user(&goexit, sizeof(goexit),
++                            (void*)(panic_ptr +
++                                    OFFSET_runtime_dot__panic__goexit))) {
++      if (stats) __sync_fetch_and_add(&stats->recovery_invalid_state, 1);
++      return false;
++    }
++    if (goexit != 0) {
++      if (stats) __sync_fetch_and_add(&stats->recovery_filtered_goexit, 1);
++      return false;
++    }
++  }
++  uint64_t stack_hi = 0, start_sp = 0, sp = 0;
++  if (bpf_probe_read_user(&stack_hi, sizeof(stack_hi),
++                          (void*)(gp + OFFSET_runtime_dot_g__stack +
++                                  OFFSET_runtime_dot_stack__hi)) ||
++      bpf_probe_read_user(&start_sp, sizeof(start_sp),
++                          (void*)(panic_ptr +
++                                  OFFSET_runtime_dot__panic__startSP)) ||
++      bpf_probe_read_user(&sp, sizeof(sp),
++                          (void*)(panic_ptr +
++                                  OFFSET_runtime_dot__panic__sp))) {
++    if (stats) __sync_fetch_and_add(&stats->recovery_invalid_state, 1);
++    return false;
++  }
++  if (start_sp == 0 || sp == 0 || start_sp >= stack_hi ||
++      sp >= stack_hi || sp <= start_sp) {
++    if (stats) __sync_fetch_and_add(&stats->recovery_invalid_state, 1);
++    return false;
++  }
++  hdr->panic_lo_depth = (uint32_t)(stack_hi - sp);
++  hdr->panic_hi_depth = (uint32_t)(stack_hi - start_sp);
++  hdr->goid = goid;
++  // Stamp the pairing expectation so the sink routes this event
++  // through NotePanicUnwoundRange rather than treating it as a
++  // normal probe entry.
++  hdr->event_pairing_expectation = EVENT_PAIRING_RETURN_PANIC_UNWOUND;
++  return true;
++}
++
++// sm_panic_unwind_evict_slots clears in_progress_calls slots in
++// (lo, hi]. Reads (goid, lo, hi) from the event header populated by
++// sm_panic_unwind_prepare. Deletes the map entry if all slots become
++// empty. Factored out for the same verifier-budget reason as
++// sm_panic_unwind_prepare. Returns 0 — the BPF verifier requires
++// noinline "global functions" to return a scalar.
++__attribute__((noinline)) int
++sm_panic_unwind_evict_slots(scratch_buf_t* buf) {
++  if (!buf) {
++    return 0;
++  }
++  di_event_header_t* hdr = (di_event_header_t*)buf;
++  uint64_t goid = hdr->goid;
++  uint32_t lo = hdr->panic_lo_depth;
++  uint32_t hi = hdr->panic_hi_depth;
++  if (lo >= hi || goid == 0) {
++    return 0;
++  }
++  call_depths_t* depths =
++      bpf_map_lookup_elem(&in_progress_calls, &goid);
++  if (!depths) {
++    return 0;
++  }
++  stats_t* stats = bpf_map_lookup_elem(&stats_buf, &zero_uint32);
++  int remaining = 0;
++  for (int s = 0; s < CALL_DEPTHS_SIZE; s++) {
++    if (depths->depths[s].depth == 0 && depths->depths[s].probe_id == 0) {
++      continue;
++    }
++    if (depths->depths[s].depth <= lo || depths->depths[s].depth > hi) {
++      remaining++;
++      continue;
++    }
++    depths->depths[s].depth = 0;
++    depths->depths[s].probe_id = 0;
++    depths->depths[s].condition_state = 0;
++    depths->depths[s].dict_ptr = 0;
++    depths->depths[s].entry_ktime_ns = 0;
++    if (stats) {
++      __sync_fetch_and_add(&stats->recovery_evicted_frames, 1);
++    }
++  }
++  if (remaining == 0) {
++    bpf_map_delete_elem(&in_progress_calls, &goid);
++  }
++  return 0;
++}
++
++
+ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+   global_ctx_t* ctx = (global_ctx_t*)_ctx;
+   scratch_buf_t* buf = ctx->buf;
+@@ -4781,6 +4949,24 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+     sm->pc = op_start;
+   } break;
+ 
++  case SM_OP_PANIC_UNWIND_PREPARE: {
++    // All the panic-chain reads and validation happens in a noinline
++    // helper so sm_loop's stack frame stays small enough that the
++    // verifier accepts sm_loop -> sm_run -> probe_run's worst-case
++    // call chain. The helper takes gp by value (rather than the full
++    // pt_regs*) so its signature uses verifier-friendly scalar types.
++    struct pt_regs* regs = ctx->regs;
++    uint64_t gp = regs ? regs->DWARF_REGISTER(0) : 0;
++    if (!sm_panic_unwind_prepare(gp, buf)) {
++      sm->condition_failed = true;
++      return 1;
++    }
++  } break;
++
++  case SM_OP_PANIC_UNWIND_EVICT_SLOTS:
++    (void)sm_panic_unwind_evict_slots(buf);
++    break;
++
+   default:
+     LOG(1, "enqueue: @0x%x unknown instruction %d\n", sm->pc - 1, op);
+     return 1;
+
+--- pkg/dyninst/ebpf/types.h
+@@ -36,6 +36,32 @@ typedef struct stats {
+   uint64_t cpu_ns;
+   uint64_t hit_cnt;
+   uint64_t throttled_cnt;
++  // runtime.recovery probe counters. All zero on cores that haven't
++  // observed a recovery firing.
++  //
++  //  recovery_fires            — number of times the recovery handler ran
++  //                              (i.e. uprobe on runtime.recovery hit).
++  //  recovery_evicted_frames   — total in_progress_calls slots evicted
++  //                              across all recoveries.
++  //  recovery_submit_failures  — synthetic-event ringbuf submits that
++  //                              failed; we fell back to a RETURN_LOST
++  //                              drop notification.
++  //  recovery_no_open_calls    — recoveries where the goroutine had no
++  //                              entry in in_progress_calls; we short-
++  //                              circuited before reading the panic
++  //                              chain.
++  //  recovery_filtered_goexit  — recoveries we skipped because the
++  //                              innermost panic was a runtime.Goexit
++  //                              (out of scope for this revision).
++  //  recovery_invalid_state    — defensive bails: panic_ptr==0,
++  //                              recovered!=1, missing SP fields, or
++  //                              lo>=hi. Should normally stay zero.
++  uint64_t recovery_fires;
++  uint64_t recovery_evicted_frames;
++  uint64_t recovery_submit_failures;
++  uint64_t recovery_no_open_calls;
++  uint64_t recovery_filtered_goexit;
++  uint64_t recovery_invalid_state;
+ } stats_t;
+ 
+ typedef enum dynamic_size_class {
+@@ -194,6 +220,14 @@ typedef enum sm_opcode {
+   // lowering for @it to position sm->offset at a field within the loop's
+   // @it scratch slot before the body's PushOffset/CmpBase sequence.
+   SM_OP_EXPR_ADVANCE_OFFSET = 57,
++  // Recovery probe opcodes. PREPARE validates that the goroutine has
++  // a recovered panic and computes (lo, hi) depth bounds into the
++  // event header; on validation failure it sets condition_failed so
++  // the SM aborts and probe_run skips submitting the event. EVICT_SLOTS
++  // walks in_progress_calls[goid] and zeros every slot whose depth is
++  // in (lo, hi]; deletes the per-goroutine map entry if empty.
++  SM_OP_PANIC_UNWIND_PREPARE = 58,
++  SM_OP_PANIC_UNWIND_EVICT_SLOTS = 59,
+ } sm_opcode_t;
+ 
+ // cmp_op_t identifies which comparison SM_OP_EXPR_CMP_BASE /
+@@ -318,6 +352,10 @@ static const char* op_code_name(sm_opcode_t op_code) {
+     return "GO_CONTEXT_CHAIN_INIT";
+   case SM_OP_GO_CONTEXT_CHAIN_HOP:
+     return "GO_CONTEXT_CHAIN_HOP";
++  case SM_OP_PANIC_UNWIND_PREPARE:
++    return "PANIC_UNWIND_PREPARE";
++  case SM_OP_PANIC_UNWIND_EVICT_SLOTS:
++    return "PANIC_UNWIND_EVICT_SLOTS";
+   default:
+     break;
+   }
+

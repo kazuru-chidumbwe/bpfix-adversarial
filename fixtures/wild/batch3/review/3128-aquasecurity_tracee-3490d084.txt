@@ -1,0 +1,143 @@
+repo: aquasecurity/tracee
+commit: 3490d0846acbcf96ea4ff3c85d93739e2601c9ba
+rank: 3128
+
+fix(ebpf): never use buf[0] as a string read destination
+
+Kernels from 5.8 up to 6.1 that lack upstream commit 8678ea06852c
+("maccess: Fix writing offset in case of fault in
+strncpy_from_kernel_nofault()") have a bug in the error path of
+bpf_probe_read_kernel_str(): when the source faults on the very first
+byte, the kernel writes a '\0' one byte BEFORE the destination buffer.
+
+Tracee's per-CPU string buffers start on a page boundary. When the
+destination of such a read is buf[0] and the page preceding the buffer
+is unmapped, the stray write oopses the kernel inside the kprobe
+handler. The dying task leaks the per-CPU bpf_prog_active counter, and
+from that moment on every kprobe-attached BPF program on that CPU is
+silently skipped until reboot: events vanish with no error reported
+anywhere.
+
+EOL Ubuntu 5.13 (impish / focal HWE) never received the fix and made
+this visible as the chronically flaky "Ubuntu 20.04 generic
+(5.13.0-52) [aarch64]" e2e leg (~53% red over the last 100 PR runs),
+where only the late-triggering kprobe-based tests failed
+(SECURITY_INODE_RENAME, STACK_PIVOT) and later suites inherited the
+poisoned CPU. Where the preceding page IS mapped, the same kernel bug
+silently corrupts one byte of adjacent kernel memory instead.
+
+Reproduced and root-caused on a QEMU arm64 VM running 5.13.0-52:
+unpatched, the first repro round oopsed (dmesg backtrace:
+strncpy_from_kernel_nofault -> bpf_probe_read_kernel_str ->
+security_mmap_file_signal -> trace_call_bpf) and permanently killed
+kprobe events on CPU 0, while a parallel tracefs kprobe on the same
+function kept counting every hit (6 hits / 0 missed). With this fix
+applied: 30/30 rounds clean, zero oopses.
+
+The fix constrains the two dentry-walk path builders,
+get_path_str_buf() and get_dentry_path_str_buf():
+
+1. the component-copy loop refuses a destination whose masked offset
+   is 0, breaking out like the existing wrap-around guard does;
+2. the memfd fallback reads the dentry name into buf[1] instead of
+   buf[0], with the returned offset/pointer following accordingly.
+
+With every destination at buf[1] or later, a first-byte fault on the
+buggy kernels writes into our own buffer instead of the preceding page.
+
+Why this does not change behavior:
+
+- Loop guard: a masked offset of 0 requires the accumulated path to
+  reach exactly 16KB (the buffer half) - impossible for legitimate
+  paths (PATH_MAX is 4096 and per-component length is masked to at
+  most 4095) and reachable only through five-plus pathological
+  components or a corrupted/racy d_name.len. In the len == 0 sub-case
+  the old code performed a 0-byte read that returned 0 and broke out
+  of the loop. The new guard breaks one line earlier - same outcome.
+  In the len > 0 sub-case the old code drove buf_off to 0, underflowed
+  it in the epilogue and returned an empty string (planting a stray
+  '/' at buf[0x7fff] on the way); the new code returns a well-formed
+  truncated path. The only divergences are cases whose old output was
+  already garbage.
+
+- memfd fallback: the extracted name is byte-for-byte identical, only
+  shifted by one byte, and the returned offset/pointer shift with it.
+  All four consumers (get_path_str, get_path_str_cached and the two
+  mount-event call sites in tracee.bpf_private.c) compute the string
+  location as &buf[off & mask] and pass the pointer on; none treats
+  offset 0 as a sentinel or measures distances from the buffer base.
+  The <disconnected> branches are untouched: their source is program
+  rodata and cannot fault.
+
+- Verifier/codegen: one extra scalar compare per loop iteration. No
+  new memory accesses and no change to loop unrolling.
+
+Kernel fix: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=8678ea06852c
+Discussion: https://lore.kernel.org/bpf/20221110085614.111213-2-albancrequy@linux.microsoft.com
+
+--- pkg/ebpf/c/common/filesystem.h
+@@ -251,7 +251,26 @@ statfunc size_t get_path_str_buf(struct path *path, buf_t *out_buf)
+         off = buf_off - len;
+         // Is string buffer big enough for dentry name?
+         sz = 0;
+-        if (off <= buf_off) { // verify no wrap occurred
++
++        // NOTE: never use buf[0] as the destination of a string read.
++        //
++        // Some kernels (5.8 up to 6.1 when unpatched - EOL Ubuntu 5.13 being one)
++        // have a bug in strncpy_from_kernel_nofault(): if the source faults on the
++        // very first byte, the error path writes a '\0' one byte BEFORE the
++        // destination buffer. This per-CPU buffer starts on a page boundary, so
++        // that stray byte lands on whatever memory precedes the buffer - and when
++        // that page is unmapped, the kernel oopses right inside the kprobe handler.
++        // The dying task leaks the per-CPU bpf_prog_active counter, and from that
++        // moment on every kprobe-attached BPF program on that CPU is silently
++        // skipped until the machine reboots.
++        //
++        // Keeping the destination at buf[1] or later makes the stray write land
++        // harmlessly inside our own buffer instead.
++        // Kernel fix:
++        // https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=8678ea06852c
++        // Discussion:
++        // https://lore.kernel.org/bpf/20221110085614.111213-2-albancrequy@linux.microsoft.com
++        if (off <= buf_off && (off & ((MAX_PERCPU_BUFSIZE >> 1) - 1)) != 0) {
+             len = len & ((MAX_PERCPU_BUFSIZE >> 1) - 1);
+             sz = bpf_probe_read_kernel_str(
+                 &(out_buf->buf[off & ((MAX_PERCPU_BUFSIZE >> 1) - 1)]), len, (void *) d_name.name);
+@@ -269,9 +288,10 @@ statfunc size_t get_path_str_buf(struct path *path, buf_t *out_buf)
+     }
+     if (buf_off == (MAX_PERCPU_BUFSIZE >> 1)) {
+         // memfd files have no path in the filesystem -> extract their name
+-        buf_off = 0;
++        // (into buf[1], never buf[0] - see the dst[-1] note above)
++        buf_off = 1;
+         d_name = get_d_name_from_dentry(dentry);
+-        bpf_probe_read_kernel_str(&(out_buf->buf[0]), MAX_STRING_SIZE, (void *) d_name.name);
++        bpf_probe_read_kernel_str(&(out_buf->buf[1]), MAX_STRING_SIZE, (void *) d_name.name);
+     } else {
+         // Add leading slash
+         buf_off -= 1;
+@@ -357,7 +377,8 @@ statfunc void *get_dentry_path_str_buf(struct dentry *dentry, buf_t *out_buf)
+         unsigned int off = buf_off - len;
+         // Is string buffer big enough for dentry name?
+         int sz = 0;
+-        if (off <= buf_off) { // verify no wrap occurred
++        // Destination must never be buf[0] (see the dst[-1] note in get_path_str_buf).
++        if (off <= buf_off && (off & ((MAX_PERCPU_BUFSIZE >> 1) - 1)) != 0) {
+             len = len & ((MAX_PERCPU_BUFSIZE >> 1) - 1);
+             sz = bpf_probe_read_kernel_str(
+                 &(out_buf->buf[off & ((MAX_PERCPU_BUFSIZE >> 1) - 1)]), len, (void *) d_name.name);
+@@ -376,9 +397,10 @@ statfunc void *get_dentry_path_str_buf(struct dentry *dentry, buf_t *out_buf)
+ 
+     if (buf_off == (MAX_PERCPU_BUFSIZE >> 1)) {
+         // memfd files have no path in the filesystem -> extract their name
+-        buf_off = 0;
++        // (into buf[1], never buf[0] - see the dst[-1] note in get_path_str_buf)
++        buf_off = 1;
+         struct qstr d_name = get_d_name_from_dentry(dentry);
+-        bpf_probe_read_kernel_str(&(out_buf->buf[0]), MAX_STRING_SIZE, (void *) d_name.name);
++        bpf_probe_read_kernel_str(&(out_buf->buf[1]), MAX_STRING_SIZE, (void *) d_name.name);
+     } else {
+         // Add leading slash
+         buf_off -= 1;
+

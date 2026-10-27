@@ -1,0 +1,1057 @@
+repo: open-telemetry/opentelemetry-ebpf-instrumentation
+commit: 14b9bf60bb851a8f0fab24fb5575bdcd6a1dc278
+rank: 2831
+
+Add HotSpot JVM memory metrics via GCTracer uprobe and USDT probes (#2305)
+
+* Add JVM heap runtime metrics
+
+* feat(jvm): add HotSpot USDT runtime metrics
+
+* fix(jvm): stabilize HotSpot USDT runtime metrics
+
+* test(jvm): assert HotSpot events without log scraping
+
+* fix: JVM runtime metrics edge cases
+
+* doc: Add important links
+
+* fix(jvm): avoid trace_vprintk in USDT debug logs
+
+Split the HotSpot USDT argument error diagnostic into three debug log calls with at most three formatted arguments each.
+
+The previous seven-argument bpf_dbg_printk expanded through bpf_trace_vprintk/helper 177. Kernel 5.10 rejects that helper in the verifier matrix when g_bpf_debug=true, causing generictracer programs to fail loading with invalid func unknown#177.
+
+This keeps the phase, argument, error, PID namespace, and IP diagnostics while staying on the older bpf_printk path supported by the 5.10 verifier job.
+
+* fix(jvm): route runtime metrics through shared events
+
+Emit JVM heap summary and memory-pool GC metrics through the shared events ring buffer with dedicated JVM event type IDs. Remove the dedicated JVM runtime metric ring buffers and dispatch JVM records from the shared parser path used by generic and Go tracers.
+
+Move the JVM and USDT BPF map definitions into map headers so the BPF layout follows the existing map organization. Remove the JVMRuntimeEventTracer interface plumbing and store the JVM runtime metrics queue on the shared eBPF event context.
+
+Address CI lint feedback by marking the BPF_UPROBE ctx parameter as intentionally unused and removing the redundant uint64 conversion in the USDT test.
+
+Validation: go test ./pkg/ebpf/common ./pkg/appolly/app/runtime ./pkg/ebpf; golangci-lint run ./pkg/ebpf; focused clang-tidy misc-unused-parameters for bpf/generictracer/jvm.c; BPF x86 and arm64 clang compiles; Linux generictracer and gotracer test compiles; make compile; git diff --check.
+
+* fix(jvm): make BPF map headers clang-tidy safe
+
+Split shared USDT and JVM BPF structs/constants into type-only headers so clang-tidy can parse the new map headers as standalone translation units.
+
+Include vmlinux.h plus the relevant type headers from the split map definitions, which provides BPF integer typedefs and key/value types without recursive includes.
+
+This fixes the Ubuntu clang-tidy-19 failure where obi_usdt_* and JVM sample map headers cascaded into bpf_helper_defs.h unknown __u32/__u64 diagnostics.
+
+Validation:
+
+- clang-tidy focused checks for the new standalone map/type headers
+
+- clang-tidy focused misc-unused-parameters check for bpf/generictracer/jvm.c
+
+- clang -target bpf compile of bpf/generictracer/generictracer.c for x86 and arm64
+
+- make vanity-import-check
+
+- go test ./pkg/ebpf/common ./pkg/appolly/app/runtime ./pkg/ebpf ./pkg/internal/ebpf/generictracer ./pkg/internal/ebpf/gotracer
+
+- go tool -modfile=internal/tools/go.mod golangci-lint run ./pkg/ebpf --timeout=6m
+
+- make compile
+
+* fix(ebpf): skip unresolved return-offset probes
+
+Treat missing symbol data as a resolution failure when a uprobe needs return offsets. Optional probes are marked skipped so attachment does not proceed with empty return offsets, while required probes fail during offset gathering.
+
+Add a TODO to evaluate replacing the Go-side USDT note and argument parser with github.com/parca-dev/usdt while keeping the existing BPF map lookup path.
+
+Validation:
+
+- GOOS=linux GOARCH=amd64 go test -c -o /tmp/obi-ebpf.test ./pkg/ebpf
+
+- go test ./pkg/ebpf/common ./pkg/appolly/app/runtime ./pkg/ebpf
+
+- go test ./pkg/internal/goexec
+
+- go tool -modfile=internal/tools/go.mod golangci-lint run ./pkg/ebpf --timeout=6m
+
+- make vanity-import-check
+
+- git diff --check
+
+* docs(ebpf): record Parca USDT parser blockers
+
+Document why github.com/parca-dev/usdt v0.0.2 is not safe to adopt directly for the current Go-side USDT parser without changing OBI's BPF ABI.
+
+The evaluated module uses runtime.GOARCH for register parsing, lacks OBI's x86 SIB argument representation, uses a different spec layout, and its note parser assumes little-endian ELF64 notes.
+
+Validation:
+
+- GOOS=linux GOARCH=amd64 go test -c -o /tmp/obi-pkg-ebpf-linux-amd64.test ./pkg/ebpf
+
+- go test ./pkg/ebpf/common ./pkg/appolly/app/runtime ./pkg/ebpf
+
+- go tool -modfile=internal/tools/go.mod golangci-lint run ./pkg/ebpf --timeout=6m
+
+- make vanity-import-check
+
+- git diff --check
+
+* refactor(runtime): unify JVM runtime metrics pipeline
+
+Route JVM runtime metric events through the shared runtimemetrics.RuntimeMetricSnapshot queue instead of maintaining a dedicated JVM event pipeline.
+
+Add Go and JVM sections to runtime snapshots, adapt eBPF JVM event forwarding to the runtime metrics sender, and fold JVM Prometheus and OTEL meters into the existing runtime metrics exporters.
+
+Preserve per-runtime feature gating so Go-only and JVM-only configurations initialize only the required meter sections. Filter OTEL snapshots before allocating per-service reporters and shut down evicted runtime providers through sharedExporter to avoid leaking periodic readers.
+
+Update runtime, exporter, and generic tracer tests for the unified snapshot path.
+
+Verification:
+
+- go tool -modfile=internal/tools/go.mod golangci-lint run ./pkg/appolly ./pkg/appolly/discover ./pkg/internal/appolly ./pkg/ebpf ./pkg/ebpf/common ./pkg/export/otel ./pkg/export/prom ./pkg/runtimemetrics ./pkg/internal/ebpf/generictracer ./pkg/internal/ebpf/gotracer --timeout=6m
+
+- go test ./pkg/appolly ./pkg/appolly/discover ./pkg/internal/appolly ./pkg/ebpf ./pkg/ebpf/common ./pkg/export/prom ./pkg/runtimemetrics ./pkg/internal/ebpf/gotracer
+
+- go test ./pkg/export/otel -run 'TestRuntimeMetricsReporter|TestSetupRuntimeMeters'
+
+- GOOS=linux go test -c -o /tmp/generictracer.test ./pkg/internal/ebpf/generictracer
+
+- git diff --check
+
+* fix(ebpf): clean USDT IP map entries on close
+
+Track the USDT IP-map keys inserted for each attached target and delete them when the owning uprobe link is closed. This prevents stale IP-to-spec mappings from accumulating across process churn while keeping the existing hash map semantics.
+
+Wrap USDT links in an idempotent closer guarded by sync.Once so repeated or concurrent shutdown paths do not race the underlying eBPF link close or delete the same IP-map keys multiple times.
+
+Clean partially inserted IP-map keys on map update or attach failures, and make the substring symbol test architecture-aware so pkg/ebpf validates correctly on both amd64 and arm64.
+
+Tests: docker run --rm -v "/Users/abalaian/github/grafana/opentelemetry-ebpf-instrumentation":/src -v go-mod-cache:/go/pkg/mod -v go-build-cache:/root/.cache/go-build -w /src golang:1.26 go test ./pkg/ebpf -count=1
+
+Tests: docker run --rm -v "/Users/abalaian/github/grafana/opentelemetry-ebpf-instrumentation":/src -v go-mod-cache:/go/pkg/mod -v go-build-cache:/root/.cache/go-build -w /src golang:1.26 go test -race ./pkg/ebpf -run 'TestUSDTLinkCloser' -count=1
+
+Tests: GOOS=linux go test -c -o /tmp/pkg-ebpf.test ./pkg/ebpf
+
+Tests: go tool -modfile=internal/tools/go.mod golangci-lint run ./pkg/ebpf --timeout=6m
+
+Tests: docker run --rm -v "/Users/abalaian/github/grafana/opentelemetry-ebpf-instrumentation":/src -v go-mod-cache:/go/pkg/mod -v go-build-cache:/root/.cache/go-build -w /src golang:1.26 go tool -modfile=internal/tools/go.mod golangci-lint run ./pkg/ebpf --timeout=6m
+
+* fix(ebpf): address JVM runtime metrics review feedback
+
+Rename the HotSpot heap metric and JVM runtime metrics environment variables from Beyla-specific names to OBI names across config, exporters, schemas, and tests.
+
+Remove x86 SIB USDT argument support from the userspace parser and BPF ABI, add explicit layout and parser coverage, and parse STAPSDT note headers with typed binary reads.
+
+Expose the JVM memory-pool BPF event shape for generated layout checks, add USDT map value comments, warn when the runtime metrics queue is missing, and fix clang-tidy BPF diagnostics.
+
+* fix(ebpf): read STAPSDT note headers as structs
+
+Define an SDT note header type and parse namesz, descsz, and type with binary.Read using the target ELF byte order.
+
+Add coverage for big-endian header decoding to keep the parser behavior explicit.
+
+* fix(config): sync JVM runtime metrics schema
+
+Regenerate the config schema and reference docs so the new jvm_runtime_metrics section and application_jvm metric feature are present in generated artifacts.
+
+Make TestConfig_Overrides independent of ambient OTLP protocol environment variables by unsetting them for the test and expecting the loaded config protocol fields to remain unset. Exporter setup still resolves the default protocol via its existing guess path.
+
+* fix(tests): stabilize CI symbol lookup checks
+
+Make the procs symbol lookup tests build a small unstripped Go fixture binary instead of inspecting the temporary go test executable, which can be stripped of the symbol table in CI.
+
+Update the config override test environment cleanup to satisfy lint while still testing with OTLP protocol variables absent.
+
+* fix(runtime): refine JVM memory type and duration schema
+
+Add an explicit unknown JVM memory type so exported memory labels are never empty for vendor-specific pools.
+
+Update generated configuration schemas to describe Go-compatible duration values, including hours, microseconds, fractional values, and compound durations.
+
+* refactor(runtime): share runtime metrics dispatch
+
+Route Go and JVM runtime metric ring-buffer records through a single ebpf/common handler backed by the shared EBPF event context.
+
+Group Go and JVM runtime metric feature checks behind runtimemetrics.Enabled so exporters and queue creation do not maintain parallel runtime booleans.
+
+* fix(ebpf): harden USDT probe lifecycle
+
+Use an LRU hash for the USDT IP-to-spec map so stale process mappings cannot permanently fill the pinned map when processes churn.
+
+Share instrumentation path resolution between uprobes and USDT probes, make USDT probe discovery part of the tracer contract, and avoid double-registering USDT link closers.
+
+Tighten the BPF-side USDT lookup by using valid_pid consistently, adding a pt_regs size assertion, and simplifying verifier-friendly bounds handling.
+
+* fix(ebpf): drop unrelated h2_defs formatting
+
+* fix(ebpf): key USDT probes by host pid
+
+Use valid_pid only as the BPF-side filter gate and key USDT IP lookups with pid_from_pid_tgid so userspace and BPF agree on the host PID used for uprobe attachment.
+
+Remove namespace PID alias insertion from the userspace IP map setup and drop the namespace field from obi_usdt_ip_key. Keep explicit padding in the key layout so the Go and C map-key ABI stays stable and free of implicit padding warnings.
+
+* fix: improve jvm_read_usdt_string
+
+* fix: undo unrelated changes
+
+* fix(ebpf): bulk read JVM USDT strings
+
+Replace per-byte bpf_probe_read_user calls in JVM USDT string parsing with a single bounded bulk read.
+
+The destination buffer is still zeroed first and the copied length remains capped to k_jvm_raw_string_len - 1, preserving NUL termination while avoiding repeated user-memory probe overhead.
+
+* fix(ebpf): gate JVM USDT probes before arg reads
+
+Move the JVM runtime metrics and PID filter checks into the top-level HotSpot memory-pool USDT probe preambles.
+
+This lets disabled or filtered processes return before decoding USDT arguments, and passes the validated pid_tgid and pid into the shared event helper.
+
+* refactor(runtime): decode JVM events with generated BPF structs
+
+Move JVM runtime metric ring buffer decoding into generictracer, where the bpf2go-generated event types are available, and use ReinterpretCast instead of manually maintained raw mirror structs.
+
+Keep the runtime package focused on mapping typed JVM fields into runtime metric events, and leave common runtime metric handling as a fallback consumer for JVM event types.
+
+Update tests to construct generated JVM BPF event payloads directly and assert the generated layouts used by the decoder.
+
+* style(ebpf): name runtime metric event type before switch
+
+Follow the established ring buffer dispatch pattern by assigning record.RawSample[0] to a local eventType before switching on it.
+
+Apply the same clarity pattern to the shared runtime metric fallback and the generictracer JVM runtime metric dispatcher.
+
+* perf(runtime): decorate JVM memory pool events once
+
+Decorate only the first JVM memory-pool runtime event from a raw sample and copy its resolved service to the remaining fanned-out events, avoiding repeated PID filter lookups for events that share the same PID identity.
+
+Add a regression assertion for the single lookup behavior and document why peeking at the first event is sufficient.
+
+Keep lint clean by marking the unused shared runtime-metric logger parameter and adding the missing runtimemetrics vanity import.
+
+* perf(ebpf): combine exact and substring symbol lookup
+
+Add a combined ELF symbol lookup helper that scans .symtab and .dynsym once while collecting both exact-name and substring matches.
+
+Use the combined lookup from gatherOffsetsImpl so probes with mixed symbol matchers do not force duplicate symbol-table traversal.
+
+Keep the existing exact and substring lookup APIs as wrappers around the combined path, and cover the combined lookup with a Linux test fixture.
+
+* refactor(ebpf): simplify matched symbol name collection
+
+Remove the redundant seen map from symbolNames because probe descriptors are already grouped by symbol name in the input map.
+
+Stop scanning a symbol's probe descriptors after the first probe with the requested matcher, preserving behavior while avoiding duplicate append bookkeeping.
+
+* docs(ebpf): clarify USDT spec lifetime
+
+Note that USDT specs and their manager IDs are append-only while link closers only clean up IP map entries.
+
+* refactor(runtime): route JVM metrics through common handler
+
+Add an optional runtime metric record handler hook so tracers can decode payloads whose generated BPF types live outside pkg/ebpf/common.
+
+Use the shared HandleRuntimeMetricsRecord path from generictracer for both Go and JVM runtime metric events, while keeping JVM bpf2go decoding in the generictracer package to avoid an import cycle.
+
+Add coverage for custom runtime metric handler delegation.
+
+* refactor(bpf): use memory helpers in JVM probes
+
+Replace local JVM probe uses of __builtin_memset, __builtin_memcpy, and __builtin_memcmp with the optimized bpf_memset, bpf_memcpy, and bpf_memcmp helpers from bpf_builtins.h.
+
+* refactor(runtime): infer JVM metrics from sampling interval
+
+Remove the separate JVM runtime metrics BPF boolean and use jvm_sampling_interval_ns as the single feature gate.
+
+Set the interval to zero when JVM runtime metrics are disabled and to the configured positive interval when enabled. Add generictracer coverage for the constants map and verifier permutations for disabled and enabled interval values.
+
+* fix(test): satisfy generictracer lint rule
+
+* fix: undo the change
+
+* fix(schema): omit redundant duration description
+
+* fix(ebpf): restore namespace-aware USDT keys
+
+Restore PID namespace id to the USDT IP map key and insert the host PID plus namespaced PID aliases when registering HotSpot USDT probe specs.
+
+The host-PID-only key path prevented BPF-side USDT argument decoding from resolving the spec for memory-pool probes in container PID namespaces. Heap-summary uprobes kept working because they do not use the USDT spec lookup map, which hid the regression unless the live test asserted memory-pool events.
+
+Keep the existing closer-based IP map cleanup, extend the ABI layout tests, and restore the live JVM runtime event test to require memory-pool events.
+
+* fix(schema): avoid restrictive duration regex
+
+Remove the generated JSON schema pattern for time.Duration fields and rely on format: duration plus examples instead. Runtime config parsing uses Go duration parsing, so a hand-written regex can become stricter than the accepted config syntax.
+
+* fix(schema): keep duration examples millisecond based
+
+Stop advertising sub-millisecond and fractional duration examples in generated config schema and docs. Keep format: duration without the branch-added broad regex fallback so runtime parsing remains the source of truth while docs stay aligned with the previous millisecond examples.
+
+* fix(schema): restore duration pattern handling
+
+Restore the upstream duration schema generator and config-docs handling. Regenerate the config schema so duration fields use the original millisecond/second/minute pattern instead of the branch-added duration format metadata.
+
+--- bpf/common/event_defs.h
+@@ -23,3 +23,5 @@
+ #define EVENT_DNS_REQUEST 16
+ #define EVENT_GO_RUNTIME_METRICS 17
+ #define EVENT_GO_CHANNEL_LINK 18
++#define EVENT_JVM_GC_HEAP_SUMMARY 19
++#define EVENT_JVM_MEM_POOL_GC 20
+
+--- bpf/common/maps/obi_usdt_ip_to_spec_id.h
+@@ -0,0 +1,18 @@
++// Copyright The OpenTelemetry Authors
++// SPDX-License-Identifier: Apache-2.0
++
++#pragma once
++
++#include <bpfcore/vmlinux.h>
++#include <bpfcore/bpf_helpers.h>
++#include <common/pin_internal.h>
++#include <common/usdt_types.h>
++
++struct {
++    __uint(type, BPF_MAP_TYPE_LRU_HASH);
++    __uint(max_entries, k_obi_usdt_max_ip_cnt);
++    __type(key, struct obi_usdt_ip_key);
++    // Value is an index into obi_usdt_specs.
++    __type(value, u32);
++    __uint(pinning, OBI_PIN_INTERNAL);
++} obi_usdt_ip_to_spec_id SEC(".maps");
+
+--- bpf/common/maps/obi_usdt_specs.h
+@@ -0,0 +1,18 @@
++// Copyright The OpenTelemetry Authors
++// SPDX-License-Identifier: Apache-2.0
++
++#pragma once
++
++#include <bpfcore/vmlinux.h>
++#include <bpfcore/bpf_helpers.h>
++#include <common/pin_internal.h>
++#include <common/usdt_types.h>
++
++struct {
++    __uint(type, BPF_MAP_TYPE_ARRAY);
++    __uint(max_entries, k_obi_usdt_max_spec_cnt);
++    __type(key, u32);
++    // Value describes how to read one USDT probe's arguments.
++    __type(value, struct obi_usdt_spec);
++    __uint(pinning, OBI_PIN_INTERNAL);
++} obi_usdt_specs SEC(".maps");
+
+--- bpf/common/usdt.h
+@@ -0,0 +1,162 @@
++// Copyright The OpenTelemetry Authors
++// SPDX-License-Identifier: Apache-2.0
++
++#pragma once
++
++#include <bpfcore/vmlinux.h>
++#include <bpfcore/bpf_helpers.h>
++#include <bpfcore/bpf_tracing.h>
++#include <common/pin_internal.h>
++#include <common/usdt_types.h>
++#include <pid/pid.h>
++
++#ifndef barrier_var
++#define barrier_var(var) asm volatile("" : "+r"(var))
++#endif
++
++#include <common/maps/obi_usdt_ip_to_spec_id.h>
++#include <common/maps/obi_usdt_specs.h>
++
++_Static_assert(sizeof(struct pt_regs) >= sizeof(unsigned long),
++               "pt_regs must hold register-sized values");
++
++static __always_inline u8 obi_usdt_arg_bitshift_ok(u8 arg_bitshift) {
++    switch (arg_bitshift) {
++    case 0:
++    case 32:
++    case 48:
++    case 56:
++        return 1;
++    default:
++        return 0;
++    }
++}
++
++static __always_inline u8 obi_usdt_reg_off_ok(s16 reg_off) {
++    if (reg_off < 0) {
++        return 0;
++    }
++
++    return (size_t)reg_off <= sizeof(struct pt_regs) - sizeof(unsigned long);
++}
++
++static __always_inline struct obi_usdt_spec *obi_usdt_spec_for_ctx(struct pt_regs *ctx) {
++    const u64 pid_tgid = bpf_get_current_pid_tgid();
++    const u32 pid = valid_pid(pid_tgid);
++    if (!pid) {
++        return NULL;
++    }
++
++    const struct task_struct *task = (struct task_struct *)bpf_get_current_task();
++    int ns_pid = 0;
++    int ns_ppid = 0;
++    u32 pid_ns_id = 0;
++    ns_pid_ppid(task, &ns_pid, &ns_ppid, &pid_ns_id);
++
++    struct obi_usdt_ip_key key = {
++        .pid = pid,
++        .ns = pid_ns_id,
++        .ip = PT_REGS_IP(ctx),
++    };
++
++    u32 *spec_id = bpf_map_lookup_elem(&obi_usdt_ip_to_spec_id, &key);
++    if (!spec_id) {
++        return NULL;
++    }
++
++    return bpf_map_lookup_elem(&obi_usdt_specs, spec_id);
++}
++
++static __always_inline int obi_usdt_read_user_value(u64 addr, u8 arg_bitshift, unsigned long *val) {
++    *val = 0;
++
++    switch ((64 - arg_bitshift) / 8) {
++    case 1: {
++        u8 tmp = 0;
++        int err = bpf_probe_read_user(&tmp, sizeof(tmp), (void *)addr);
++        *val = tmp;
++        return err;
++    }
++    case 2: {
++        u16 tmp = 0;
++        int err = bpf_probe_read_user(&tmp, sizeof(tmp), (void *)addr);
++        *val = tmp;
++        return err;
++    }
++    case 4: {
++        u32 tmp = 0;
++        int err = bpf_probe_read_user(&tmp, sizeof(tmp), (void *)addr);
++        *val = tmp;
++        return err;
++    }
++    case 8:
++        return bpf_probe_read_user(val, sizeof(*val), (void *)addr);
++    default:
++        return k_obi_usdt_arg_err_bad_size;
++    }
++}
++
++static __always_inline int obi_usdt_arg(struct pt_regs *ctx, u64 arg_num, long *res) {
++    *res = 0;
++
++    struct obi_usdt_spec *spec = obi_usdt_spec_for_ctx(ctx);
++    if (!spec) {
++        return k_obi_usdt_arg_err_no_spec;
++    }
++
++    if (arg_num >= k_obi_usdt_max_args) {
++        return k_obi_usdt_arg_err_out_of_range;
++    }
++    barrier_var(arg_num);
++    if (arg_num >= spec->arg_cnt) {
++        return k_obi_usdt_arg_err_out_of_range;
++    }
++
++    struct obi_usdt_arg_spec *arg = &spec->args[arg_num];
++    if (!obi_usdt_arg_bitshift_ok(arg->arg_bitshift)) {
++        return k_obi_usdt_arg_err_bad_size;
++    }
++
++    unsigned long val = 0;
++    int err = 0;
++
++    switch (arg->arg_type) {
++    case k_obi_usdt_arg_const:
++        val = arg->val_off;
++        break;
++    case k_obi_usdt_arg_reg:
++        if (!obi_usdt_reg_off_ok(arg->reg_off)) {
++            return k_obi_usdt_arg_err_bad_reg;
++        }
++        err = bpf_probe_read_kernel(&val, sizeof(val), (unsigned char *)ctx + arg->reg_off);
++        if (err) {
++            return err;
++        }
++        break;
++    case k_obi_usdt_arg_reg_deref:
++        if (!obi_usdt_reg_off_ok(arg->reg_off)) {
++            return k_obi_usdt_arg_err_bad_reg;
++        }
++        err = bpf_probe_read_kernel(&val, sizeof(val), (unsigned char *)ctx + arg->reg_off);
++        if (err) {
++            return err;
++        }
++        err = obi_usdt_read_user_value(val + arg->val_off, arg->arg_bitshift, &val);
++        if (err) {
++            return err;
++        }
++        break;
++    default:
++        return k_obi_usdt_arg_err_bad_type;
++    }
++
++    val <<= arg->arg_bitshift;
++    if (arg->arg_signed) {
++        val = ((long)val) >> arg->arg_bitshift;
++    } else {
++        val >>= arg->arg_bitshift;
++    }
++
++    *res = (long)val;
++    return 0;
++}
+
+--- bpf/common/usdt_types.h
+@@ -0,0 +1,44 @@
++// Copyright The OpenTelemetry Authors
++// SPDX-License-Identifier: Apache-2.0
++
++#pragma once
++
++#include <bpfcore/vmlinux.h>
++
++enum { k_obi_usdt_max_args = 12, k_obi_usdt_max_spec_cnt = 256, k_obi_usdt_max_ip_cnt = 1024 };
++
++enum obi_usdt_arg_type {
++    k_obi_usdt_arg_const = 0,
++    k_obi_usdt_arg_reg = 1,
++    k_obi_usdt_arg_reg_deref = 2,
++};
++
++enum obi_usdt_arg_error {
++    k_obi_usdt_arg_err_no_spec = -2,
++    k_obi_usdt_arg_err_out_of_range = -3,
++    k_obi_usdt_arg_err_bad_type = -4,
++    k_obi_usdt_arg_err_bad_size = -5,
++    k_obi_usdt_arg_err_bad_reg = -6,
++};
++
++struct obi_usdt_arg_spec {
++    u64 val_off;
++    s16 reg_off;
++    u8 arg_type;
++    u8 arg_signed;
++    u8 arg_bitshift;
++    u8 _pad[3];
++};
++
++struct obi_usdt_spec {
++    struct obi_usdt_arg_spec args[k_obi_usdt_max_args];
++    u64 cookie;
++    u16 arg_cnt;
++    u8 _pad[6];
++};
++
++struct obi_usdt_ip_key {
++    u32 pid;
++    u32 ns;
++    u64 ip;
++};
+
+--- bpf/generictracer/generictracer.c
+@@ -4,6 +4,7 @@
+ //go:build obi_bpf_ignore
+ #include "iter_tcp.c"
+ #include "java_tls.c"
++#include "jvm.c"
+ #include "k_tracer.c"
+ #include "libssl.c"
+ #include "nginx.c"
+
+--- bpf/generictracer/jvm.c
+@@ -0,0 +1,315 @@
++// Copyright The OpenTelemetry Authors
++// SPDX-License-Identifier: Apache-2.0
++
++//go:build obi_bpf_ignore
++
++#include <bpfcore/vmlinux.h>
++#include <bpfcore/bpf_builtins.h>
++#include <bpfcore/bpf_helpers.h>
++#include <bpfcore/bpf_tracing.h>
++
++#include <generictracer/jvm.h>
++#include <common/algorithm.h>
++#include <common/event_defs.h>
++#include <common/ringbuf.h>
++#include <logger/bpf_dbg.h>
++#include <pid/pid.h>
++#include <common/usdt.h>
++
++enum { k_jvm_task_comm_len = 16 };
++
++struct jvm_gc_heap_summary_event _jvm_gc_heap_summary_event = {};
++struct jvm_mem_pool_gc_event _jvm_mem_pool_gc_event = {};
++
++static __always_inline bool jvm_current_comm_is_g1_main_marker(void) {
++    char comm[k_jvm_task_comm_len] = {};
++    bpf_get_current_comm(comm, sizeof(comm));
++
++    const char g1_main_marker[] = "G1 Main Marker";
++    return bpf_memcmp(comm, g1_main_marker, sizeof(g1_main_marker)) == 0;
++}
++
++struct jvm_pid_fields {
++    u32 global_pid;
++    u32 global_tid;
++    u32 ns_pid;
++    u32 ns_tid;
++    u32 pid_ns_id;
++};
++
++static __always_inline void jvm_current_pid_fields(u64 pid_tgid, struct jvm_pid_fields *fields) {
++    struct task_struct *task = (struct task_struct *)bpf_get_current_task();
++    int ns_pid = 0;
++    int ns_ppid = 0;
++    u32 pid_ns_id = 0;
++
++    ns_pid_ppid(task, &ns_pid, &ns_ppid, &pid_ns_id);
++
++    fields->global_pid = pid_from_pid_tgid(pid_tgid);
++    fields->global_tid = tid_from_pid_tgid(pid_tgid);
++    fields->ns_pid = (u32)ns_pid;
++    fields->ns_tid = get_task_tid();
++    fields->pid_ns_id = pid_ns_id;
++}
++
++static __always_inline void jvm_fill_heap_pid_fields(u64 pid_tgid,
++                                                     struct jvm_gc_heap_summary_event *e) {
++    struct jvm_pid_fields fields = {};
++    jvm_current_pid_fields(pid_tgid, &fields);
++
++    e->global_pid = fields.global_pid;
++    e->global_tid = fields.global_tid;
++    e->ns_pid = fields.ns_pid;
++    e->ns_tid = fields.ns_tid;
++    e->pid_ns_id = fields.pid_ns_id;
++}
++
++static __always_inline void jvm_fill_mem_pool_pid_fields(u64 pid_tgid,
++                                                         struct jvm_mem_pool_gc_event *e) {
++    struct jvm_pid_fields fields = {};
++    jvm_current_pid_fields(pid_tgid, &fields);
++
++    e->global_pid = fields.global_pid;
++    e->global_tid = fields.global_tid;
++    e->ns_pid = fields.ns_pid;
++    e->ns_tid = fields.ns_tid;
++    e->pid_ns_id = fields.pid_ns_id;
++}
++
++static __always_inline int
++jvm_read_usdt_string(unsigned char *dst, const unsigned char *src, long src_len) {
++    bpf_memset(dst, 0, k_jvm_raw_string_len);
++    if (!src || src_len <= 0) {
++        return -1;
++    }
++
++    const u32 max_len = (u32)min((long)(k_jvm_raw_string_len - 1), src_len);
++    if (bpf_probe_read_user(dst, max_len, src) != 0) {
++        return -1;
++    }
++
++    return 0;
++}
++
++SEC("uprobe/report_gc_heap_summary")
++int BPF_UPROBE(obi_uprobe_report_gc_heap_summary,
++               void *clazz,
++               enum jvm_gc_when_type when,
++               struct jvm_gc_heap_summary *summary) {
++    (void)ctx;
++    (void)clazz;
++
++    if (!jvm_runtime_metrics_are_enabled()) {
++        return 0;
++    }
++
++    if (jvm_current_comm_is_g1_main_marker()) {
++        return 0;
++    }
++
++    if (when != k_jvm_before_gc && when != k_jvm_after_gc) {
++        return 0;
++    }
++
++    if (!summary) {
++        return 0;
++    }
++
++    const u64 pid_tgid = bpf_get_current_pid_tgid();
++    const u32 pid = valid_pid(pid_tgid);
++    if (!pid) {
++        return 0;
++    }
++
++    const u64 ts = bpf_ktime_get_ns();
++    struct jvm_heap_summary_key key = {
++        .pid = pid,
++        .gc_when_type = when,
++    };
++
++    if (!jvm_should_sample_heap_summary(&key, ts)) {
++        return 0;
++    }
++
++    u64 used = 0;
++    if (bpf_probe_read_user(&used, sizeof(used), &summary->used) != 0) {
++        bpf_dbg_printk("jvm: failed to read GCHeapSummary.used");
++        return 0;
++    }
++
++    struct jvm_gc_heap_summary_event *e = bpf_ringbuf_reserve(&events, sizeof(*e), 0);
++    if (!e) {
++        return 0;
++    }
++
++    bpf_memset(e, 0, sizeof(*e));
++    e->type = EVENT_JVM_GC_HEAP_SUMMARY;
++    e->timestamp = ts;
++    jvm_fill_heap_pid_fields(pid_tgid, e);
++    e->gc_when_type = when;
++    e->used = used;
++
++    bpf_ringbuf_submit(e, get_flags());
++    return 0;
++}
++
++static __always_inline int jvm_hotspot_mem_pool_gc(enum jvm_gc_when_type when,
++                                                   u64 pid_tgid,
++                                                   u32 pid,
++                                                   const unsigned char *manager,
++                                                   long manager_len,
++                                                   const unsigned char *pool,
++                                                   long pool_len,
++                                                   u64 init_size,
++                                                   u64 used,
++                                                   u64 committed,
++                                                   u64 max_size) {
++    if (when != k_jvm_before_gc && when != k_jvm_after_gc) {
++        return 0;
++    }
++
++    struct jvm_mem_pool_key key = {
++        .pid = pid,
++        .gc_when_type = when,
++    };
++    if (jvm_read_usdt_string(key.manager, manager, manager_len) != 0) {
++        bpf_dbg_printk("jvm: failed to read HotSpot memory manager name len=%ld", manager_len);
++        return 0;
++    }
++    if (jvm_read_usdt_string(key.pool, pool, pool_len) != 0) {
++        bpf_dbg_printk("jvm: failed to read HotSpot memory pool name len=%ld", pool_len);
++        return 0;
++    }
++
++    const u64 ts = bpf_ktime_get_ns();
++    if (!jvm_should_sample_mem_pool(&key, ts)) {
++        return 0;
++    }
++
++    struct jvm_mem_pool_gc_event *e = bpf_ringbuf_reserve(&events, sizeof(*e), 0);
++    if (!e) {
++        return 0;
++    }
++
++    bpf_memset(e, 0, sizeof(*e));
++    e->type = EVENT_JVM_MEM_POOL_GC;
++    e->timestamp = ts;
++    jvm_fill_mem_pool_pid_fields(pid_tgid, e);
++    e->gc_when_type = when;
++    e->init_size = init_size;
++    e->used = used;
++    e->committed = committed;
++    e->max_size = max_size;
++    bpf_memcpy(e->manager, key.manager, sizeof(e->manager));
++    bpf_memcpy(e->pool, key.pool, sizeof(e->pool));
++
++    bpf_ringbuf_submit(e, get_flags());
++    return 0;
++}
++
++static __always_inline int
++jvm_read_hotspot_usdt_arg(struct pt_regs *ctx, enum jvm_gc_when_type when, u64 arg_num, long *dst) {
++    int err = obi_usdt_arg(ctx, arg_num, dst);
++    if (err != 0) {
++        const u64 pid_tgid = bpf_get_current_pid_tgid();
++        struct jvm_pid_fields fields = {};
++        jvm_current_pid_fields(pid_tgid, &fields);
++        bpf_dbg_printk("jvm usdt ph=%d a=%llu e=%d", when, arg_num, err);
++        bpf_dbg_printk(
++            "jvm usdt gp=%d up=%d ns=%d", fields.global_pid, fields.ns_pid, fields.pid_ns_id);
++        bpf_dbg_printk("jvm usdt ip=%llx", (u64)PT_REGS_IP(ctx));
++    }
++    return err;
++}
++
++// https://github.com/openjdk/jdk/blob/jdk-21%2B35/src/hotspot/share/services/memoryManager.cpp#L230
++SEC("usdt/hotspot_mem_pool_gc_begin")
++int obi_usdt_hotspot_mem_pool_gc_begin(struct pt_regs *ctx) {
++    if (!jvm_runtime_metrics_are_enabled()) {
++        return 0;
++    }
++
++    const u64 pid_tgid = bpf_get_current_pid_tgid();
++    const u32 pid = valid_pid(pid_tgid);
++    if (!pid) {
++        return 0;
++    }
++
++    long manager = 0;
++    long manager_len = 0;
++    long pool = 0;
++    long pool_len = 0;
++    long init_size = 0;
++    long used = 0;
++    long committed = 0;
++    long max_size = 0;
++
++    if (jvm_read_hotspot_usdt_arg(ctx, k_jvm_before_gc, 0, &manager) != 0 ||
++        jvm_read_hotspot_usdt_arg(ctx, k_jvm_before_gc, 1, &manager_len) != 0 ||
++        jvm_read_hotspot_usdt_arg(ctx, k_jvm_before_gc, 2, &pool) != 0 ||
++        jvm_read_hotspot_usdt_arg(ctx, k_jvm_before_gc, 3, &pool_len) != 0 ||
++        jvm_read_hotspot_usdt_arg(ctx, k_jvm_before_gc, 4, &init_size) != 0 ||
++        jvm_read_hotspot_usdt_arg(ctx, k_jvm_before_gc, 5, &used) != 0 ||
++        jvm_read_hotspot_usdt_arg(ctx, k_jvm_before_gc, 6, &committed) != 0 ||
++        jvm_read_hotspot_usdt_arg(ctx, k_jvm_before_gc, 7, &max_size) != 0) {
++        return 0;
++    }
++
++    return jvm_hotspot_mem_pool_gc(k_jvm_before_gc,
++                                   pid_tgid,
++                                   pid,
++                                   (const unsigned char *)manager,
++                                   manager_len,
++                                   (const unsigned char *)pool,
++                                   pool_len,
++                                   (u64)init_size,
++                                   (u64)used,
++                                   (u64)committed,
++                                   (u64)max_size);
++}
++
++// https://github.com/openjdk/jdk/blob/jdk-21%2B35/src/hotspot/share/services/memoryManager.cpp#L263
++SEC("usdt/hotspot_mem_pool_gc_end")
++int obi_usdt_hotspot_mem_pool_gc_end(struct pt_regs *ctx) {
++    if (!jvm_runtime_metrics_are_enabled()) {
++        return 0;
++    }
++
++    const u64 pid_tgid = bpf_get_current_pid_tgid();
++    const u32 pid = valid_pid(pid_tgid);
++    if (!pid) {
++        return 0;
++    }
++
++    long manager = 0;
++    long manager_len = 0;
++    long pool = 0;
++    long pool_len = 0;
++    long init_size = 0;
++    long used = 0;
++    long committed = 0;
++    long max_size = 0;
++
++    if (jvm_read_hotspot_usdt_arg(ctx, k_jvm_after_gc, 0, &manager) != 0 ||
++        jvm_read_hotspot_usdt_arg(ctx, k_jvm_after_gc, 1, &manager_len) != 0 ||
++        jvm_read_hotspot_usdt_arg(ctx, k_jvm_after_gc, 2, &pool) != 0 ||
++        jvm_read_hotspot_usdt_arg(ctx, k_jvm_after_gc, 3, &pool_len) != 0 ||
++        jvm_read_hotspot_usdt_arg(ctx, k_jvm_after_gc, 4, &init_size) != 0 ||
++        jvm_read_hotspot_usdt_arg(ctx, k_jvm_after_gc, 5, &used) != 0 ||
++        jvm_read_hotspot_usdt_arg(ctx, k_jvm_after_gc, 6, &committed) != 0 ||
++        jvm_read_hotspot_usdt_arg(ctx, k_jvm_after_gc, 7, &max_size) != 0) {
++        return 0;
++    }
++
++    return jvm_hotspot_mem_pool_gc(k_jvm_after_gc,
++                                   pid_tgid,
++                                   pid,
++                                   (const unsigned char *)manager,
++                                   manager_len,
++                                   (const unsigned char *)pool,
++                                   pool_len,
++                                   (u64)init_size,
++                                   (u64)used,
++                                   (u64)committed,
++                                   (u64)max_size);
++}
+
+--- bpf/generictracer/jvm.h
+@@ -0,0 +1,56 @@
++// Copyright The OpenTelemetry Authors
++// SPDX-License-Identifier: Apache-2.0
++
++#pragma once
++
++#include <bpfcore/vmlinux.h>
++#include <bpfcore/bpf_helpers.h>
++#include <generictracer/types/jvm.h>
++
++#include <generictracer/maps/jvm_heap_summary_samples.h>
++#include <generictracer/maps/jvm_mem_pool_samples.h>
++
++// Use https://godbolt.org/z/YcodaPhvY to understand the memory layout of `GCHeapSummary` C++ class
++// https://github.com/openjdk/jdk/blob/jdk-21%2B35/src/hotspot/share/gc/shared/gcHeapSummary.hpp#L76
++struct jvm_gc_heap_summary {
++    u64 _s1;
++    u64 _s2;
++    u64 _s4;
++    u64 _s5;
++    u64 used;
++};
++
++volatile const u64 jvm_sampling_interval_ns = 0;
++
++static __always_inline bool jvm_runtime_metrics_are_enabled(void) {
++    return jvm_sampling_interval_ns > 0;
++}
++
++static __always_inline bool jvm_should_report(u64 ts, u64 reference_ts) {
++    return ts - reference_ts >= jvm_sampling_interval_ns;
++}
++
++static __always_inline bool jvm_should_sample_heap_summary(struct jvm_heap_summary_key *key,
++                                                           u64 ts) {
++    struct jvm_sample_value new_value = {.last_ts = ts};
++    struct jvm_sample_value *value = bpf_map_lookup_elem(&jvm_heap_summary_samples, key);
++
++    if (value && !jvm_should_report(ts, value->last_ts)) {
++        return false;
++    }
++
++    bpf_map_update_elem(&jvm_heap_summary_samples, key, &new_value, BPF_ANY);
++    return true;
++}
++
++static __always_inline bool jvm_should_sample_mem_pool(struct jvm_mem_pool_key *key, u64 ts) {
++    struct jvm_sample_value new_value = {.last_ts = ts};
++    struct jvm_sample_value *value = bpf_map_lookup_elem(&jvm_mem_pool_samples, key);
++
++    if (value && !jvm_should_report(ts, value->last_ts)) {
++        return false;
++    }
++
++    bpf_map_update_elem(&jvm_mem_pool_samples, key, &new_value, BPF_ANY);
++    return true;
++}
+
+--- bpf/generictracer/maps/jvm_heap_summary_samples.h
+@@ -0,0 +1,17 @@
++// Copyright The OpenTelemetry Authors
++// SPDX-License-Identifier: Apache-2.0
++
++#pragma once
++
++#include <bpfcore/vmlinux.h>
++#include <bpfcore/bpf_helpers.h>
++#include <common/pin_internal.h>
++#include <generictracer/types/jvm.h>
++
++struct {
++    __uint(type, BPF_MAP_TYPE_LRU_HASH);
++    __uint(max_entries, 4096);
++    __type(key, struct jvm_heap_summary_key);
++    __type(value, struct jvm_sample_value);
++    __uint(pinning, OBI_PIN_INTERNAL);
++} jvm_heap_summary_samples SEC(".maps");
+
+--- bpf/generictracer/maps/jvm_mem_pool_samples.h
+@@ -0,0 +1,17 @@
++// Copyright The OpenTelemetry Authors
++// SPDX-License-Identifier: Apache-2.0
++
++#pragma once
++
++#include <bpfcore/vmlinux.h>
++#include <bpfcore/bpf_helpers.h>
++#include <common/pin_internal.h>
++#include <generictracer/types/jvm.h>
++
++struct {
++    __uint(type, BPF_MAP_TYPE_LRU_HASH);
++    __uint(max_entries, 4096);
++    __type(key, struct jvm_mem_pool_key);
++    __type(value, struct jvm_sample_value);
++    __uint(pinning, OBI_PIN_INTERNAL);
++} jvm_mem_pool_samples SEC(".maps");
+
+--- bpf/generictracer/protocol_http2.h
+@@ -435,7 +435,7 @@ int obi_protocol_http2_grpc_handle_start_frame_server(void *ctx) {
+     const u32 frame_len =
+         ((u32)h2g_info->data[0] << 16) | ((u32)h2g_info->data[1] << 8) | (u32)h2g_info->data[2];
+     const u32 raw_len = frame_len < k_h2_max_payload ? frame_len : k_h2_max_payload;
+-    const u32 skip = prefix + padded * h2g_info->data[k_h2_frame_header_len];
++    const u32 skip = prefix + (padded * h2g_info->data[k_h2_frame_header_len]);
+     const u32 hpack_len = raw_len > skip ? raw_len - skip : 0;
+     if (!parse_hpack_traceparent(
+             h2g_info->data + k_h2_frame_header_len + prefix, hpack_len, &tp_p->tp)) {
+
+--- bpf/generictracer/types/jvm.h
+@@ -0,0 +1,62 @@
++// Copyright The OpenTelemetry Authors
++// SPDX-License-Identifier: Apache-2.0
++
++#pragma once
++
++#include <bpfcore/vmlinux.h>
++
++// https://github.com/openjdk/jdk/blob/jdk-21%2B35/src/hotspot/share/gc/shared/gcWhen.hpp#L32-L37
++enum jvm_gc_when_type {
++    k_jvm_before_gc = 0,
++    k_jvm_after_gc = 1,
++    k_jvm_gc_when_end_sentinel = 2,
++};
++
++enum { k_jvm_raw_string_len = 64 };
++
++struct jvm_gc_heap_summary_event {
++    u8 type;
++    u8 _pad[7];
++    u64 timestamp;
++    u32 global_pid;
++    u32 global_tid;
++    u32 ns_pid;
++    u32 ns_tid;
++    u32 pid_ns_id;
++    u32 gc_when_type;
++    u64 used;
++};
++
++struct jvm_mem_pool_gc_event {
++    u8 type;
++    u8 _pad[7];
++    u64 timestamp;
++    u32 global_pid;
++    u32 global_tid;
++    u32 ns_pid;
++    u32 ns_tid;
++    u32 pid_ns_id;
++    u32 gc_when_type;
++    u64 init_size;
++    u64 used;
++    u64 committed;
++    u64 max_size;
++    unsigned char manager[k_jvm_raw_string_len];
++    unsigned char pool[k_jvm_raw_string_len];
++};
++
++struct jvm_heap_summary_key {
++    u32 pid;
++    u32 gc_when_type;
++};
++
++struct jvm_mem_pool_key {
++    u32 pid;
++    u32 gc_when_type;
++    unsigned char manager[k_jvm_raw_string_len];
++    unsigned char pool[k_jvm_raw_string_len];
++};
++
++struct jvm_sample_value {
++    u64 last_ts;
++};
+

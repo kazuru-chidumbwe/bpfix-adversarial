@@ -1,0 +1,30 @@
+repo: oracle/bpftune
+commit: a9fa5ebcbfd9cd14a184387882291a0421f0edf3
+rank: 3023
+
+netdev budget: fix criteria for budget increase
+
+because we can have net_rx_action() run on different processors
+we may have cases where we do not see increases for every sample
+but the increases do happen for different cpus; as such, relax
+criteria for time_squeezed to simply increase from one sample to
+the next.
+
+Also fix budget test to verify budget + budget_usecs increase.
+
+Signed-off-by: Alan Maguire <alan.maguire@oracle.com>
+
+--- src/net_buffer_tuner.bpf.c
+@@ -120,10 +120,7 @@ int BPF_PROG(net_rx_action)
+ 	if (!last_time_squeezep)
+ 		return 0;
+ 	last_time_squeeze = *last_time_squeezep;
+-	/* if time squeeze increased for every instance of
+-	 * net_rx_action() since last sample, we increase.
+-	 */
+-	if (time_squeeze <= (last_time_squeeze + bpftune_sample_rate))
++	if (time_squeeze <= last_time_squeeze)
+ 		return 0;
+ 	*last_time_squeezep = time_squeeze;
+ 	/* did not have previous time_squeeze value for comparison, bail. */
+

@@ -1,0 +1,176 @@
+repo: microsoft/retina
+commit: 1936ab65f4d384cc6f2dd5fa4e6e47935709a78d
+rank: 3673
+
+feat(packetparser): add configurable BPF Ring Buffer support (#1981)
+
+# Description
+
+This PR introduces support for `BPF_MAP_TYPE_RINGBUF` in the
+`packetparser` plugin as a configurable alternative to
+`BPF_MAP_TYPE_PERF_EVENT_ARRAY`. Ring Buffers offer better performance
+and memory efficiency, especially on high-core systems, by using a
+shared buffer across CPUs rather than per-CPU buffers.
+
+### Changes
+- **Configuration**: Added `packetParserRingBuffer` (enum:
+`enabled`/`disabled`; `auto` reserved) and `packetParserRingBufferSize`
+(uint32) to the Retina configuration and Helm charts.
+- **BPF**: Updated `packetparser.c` to conditionally compile with
+`BPF_MAP_TYPE_RINGBUF` when enabled.
+- **Userspace**: Updated `packetparser_linux.go` to:
+- Pass `-DUSE_RING_BUFFER` and `-DRING_BUFFER_SIZE` flags during BPF
+compilation.
+- Implement a `ringBufReaderWrapper` to adapt the `cilium/ebpf/ringbuf`
+reader to the existing reader interface.
+    - Add logging to indicate which buffer type is active.
+- **Testing**: Updated unit tests to mock metrics correctly and added a
+new test case to verify compilation with Ring Buffer enabled.
+- **Userspace (follow-up)**:
+- Decoupled the reader interface from `cilium/ebpf/perf.Record` by
+introducing a custom `perfRecord` struct to support both perf array and
+ring buffer paths cleanly.
+- Added a `perfReaderWrapper` and updated `ringBufReaderWrapper` to
+convert records into the new `perfRecord` type.
+- **Kernel gating**:
+- Added shared kernel version parsing/comparison helpers and reusable
+kernel release retrieval utils.
+- Enforced a minimum kernel version when ring buffer mode is enabled.
+    - Updated telemetry to reuse the shared kernel release helper.
+- **Docs/config**: Updated config docs and Helm `values.yaml` to reflect
+`packetParserRingBuffer`.
+- **Tests**:
+- Added unit tests for kernel release parsing and version comparison
+helpers.
+    - Limited the ring buffer config test to Linux builds.
+- Adjusted packetparser tests to align with the new `perfRecord` reader
+interface.
+- **Chore/lint**: Addressed linting by using safe page-size casts,
+wrapping perf errors, and splitting long lines.
+
+### Verification
+- Verified unit tests pass: `go test -v ./pkg/plugin/packetparser/...`
+- Manual verification on Kind:
+    - Built image with `enablePacketParserRingBuffer: true`.
+    - Deployed to Kind cluster.
+    - Verified logs show "Initializing Ring Buffer reader".
+    - Verified BPF map type is `ringbuf` using `bpftool`.
+
+## Related Issues/PRs
+
+- #655 
+- fixes #1966 
+- #1965 
+
+## Checklist
+
+- [x] I have read the [contributing
+documentation](https://retina.sh/docs/Contributing/overview).
+- [x] I signed and signed-off the commits (`git commit -S -s ...`). See
+[this
+documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification)
+on signing commits.
+- [x] I have correctly attributed the author(s) of the code.
+- [x] I have tested the changes locally.
+- [x] I have followed the project's style guidelines.
+- [x] I have updated the documentation, if necessary.
+- [x] I have added tests, if applicable.
+
+## Screenshots (if applicable) or Testing Completed
+
+<img width="1335" height="1448" alt="image"
+src="https://github.com/user-attachments/assets/7b775c40-6683-4faa-aa2d-4748ea7277be"
+/>
+
+<img width="1913" height="355" alt="Screenshot 2025-12-15 093850"
+src="https://github.com/user-attachments/assets/83701a79-2b3f-46d6-8d87-8ff5e3aa9318"
+/>
+
+<img width="2517" height="1351" alt="Screenshot 2025-12-15 093819"
+src="https://github.com/user-attachments/assets/4a81b526-cc1d-41e2-b06d-5a8d90061ad6"
+/>
+
+
+## Additional Notes
+
+Once this PR gets reviewed and merged, I will update the site docs
+accordingly. See issue #2016
+
+In addition, I created an issue to implement an auto option to let
+retina decide at runtime whether to use `BPF_MAP_TYPE_RINGBUF` or not.
+See #2017
+
+I stuck with `BPF_MAP_TYPE_PERF_EVENT_ARRAY` (Perf Buffers) as the
+default implementation because we still have a requirement to support
+Linux Kernel 5.4+, as noted in our [intro
+docs](https://retina.sh/docs/Introduction/intro). Since Ring Buffers
+(`BPF_MAP_TYPE_RINGBUF`) weren't introduced until kernel 5.8, making
+them the default would break Retina on older LTS environments (like
+Ubuntu 20.04) that we're currently committed to supporting.
+
+We also haven't had a chance to benchmark the performance difference on
+high-core clusters yet. The [upstream
+documentation](https://docs.ebpf.io/linux/map-type/BPF_MAP_TYPE_RINGBUF/)
+is clear that while `BPF_MAP_TYPE_RINGBUF` is generally more efficient,
+it uses a single shared ring buffer whereas
+`BPF_MAP_TYPE_PERF_EVENT_ARRAY` uses a per-CPU approach, which has
+different scalability characteristics.
+
+---
+
+Please refer to the [CONTRIBUTING.md](../CONTRIBUTING.md) file for more
+information on how to contribute to this project.
+
+---------
+
+Signed-off-by: Simone Rodigari <srodigari@microsoft.com>
+
+--- pkg/plugin/conntrack/_cprog/dynamic.h
+@@ -1,2 +1 @@
+-// Place holder header file that will be replaced by the actual header file during runtime
+-// DO NOT DELETE
++#define ENABLE_CONNTRACK_METRICS 1
+
+--- pkg/plugin/packetparser/_cprog/packetparser.c
+@@ -16,8 +16,16 @@ char __license[] SEC("license") = "Dual MIT/GPL";
+ 
+ struct
+ {
++#ifdef USE_RING_BUFFER
++	__uint(type, BPF_MAP_TYPE_RINGBUF);
++#ifndef RING_BUFFER_SIZE
++#define RING_BUFFER_SIZE (8 * 1024 * 1024)
++#endif
++	__uint(max_entries, RING_BUFFER_SIZE);
++#else
+ 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
+ 	__uint(max_entries, 16384);
++#endif
+ } retina_packetparser_events SEC(".maps");
+ 
+ // Define const variables to avoid warnings.
+@@ -231,15 +239,23 @@ static void parse(struct __sk_buff *skb, __u8 obs)
+ 		p.previously_observed_packets = 0;
+ 		p.previously_observed_bytes = 0;
+ 		__builtin_memset(&p.previously_observed_flags, 0, sizeof(struct tcpflagscount));
++#ifdef USE_RING_BUFFER
++		bpf_ringbuf_output(&retina_packetparser_events, &p, sizeof(p), 0);
++#else
+ 		bpf_perf_event_output(skb, &retina_packetparser_events, BPF_F_CURRENT_CPU, &p, sizeof(p));
++#endif
+ 		return;
+ 	// If the data aggregation level is high, only send the packet to the perf buffer if it needs to be reported.
+ 	#elif DATA_AGGREGATION_LEVEL == DATA_AGGREGATION_LEVEL_HIGH
+ 		if (report.report) {
+ 			p.previously_observed_packets = report.previously_observed_packets;
+ 			p.previously_observed_bytes = report.previously_observed_bytes;
+ 			p.previously_observed_flags = report.previously_observed_flags;
++#ifdef USE_RING_BUFFER
++			bpf_ringbuf_output(&retina_packetparser_events, &p, sizeof(p), 0);
++#else
+ 			bpf_perf_event_output(skb, &retina_packetparser_events, BPF_F_CURRENT_CPU, &p, sizeof(p));
++#endif
+ 		}
+ 	#endif
+ 	#endif
+

@@ -1,0 +1,75 @@
+repo: inspektor-gadget/inspektor-gadget
+commit: d33e3325b2c30ca0884b1d30028213f56a379b32
+rank: 5676
+
+trace_malloc: add user stacks
+
+```
+$ go run -exec sudo ./cmd/ig/... run ghcr.io/inspektor-gadget/gadget/trace_malloc:alban_user_stack --verify-image=false --print-ustack --fields=proc.comm,proc.pid,operation,ustack
+WARN[0001] image signature verification is disabled due to using corresponding option
+WARN[0001] image signature verification is disabled due to using corresponding option
+COMM                    PID OPERATION     USTACK
+symbols             3376606 malloc        [0]level3; [1]level2; [2]level1; [3]main; [4][unknown];
+symbols             3376606 free          [0][unknown]; [1]level2; [2]level1; [3]main; [4][unknown];
+symbols             3376606 malloc        [0]level3; [1]level2; [2]level1; [3]main; [4][unknown];
+symbols             3376606 free          [0][unknown]; [1]level2; [2]level1; [3]main; [4][unknown];
+symbols             3376606 malloc        [0]level3; [1]level2; [2]level1; [3]main; [4][unknown];
+symbols             3376606 free          [0][unknown]; [1]level2; [2]level1; [3]main; [4][unknown];
+```
+
+Signed-off-by: Alban Crequy <albancrequy@linux.microsoft.com>
+
+--- gadgets/trace_malloc/program.bpf.c
+@@ -5,10 +5,12 @@
+ #include <bpf/bpf_helpers.h>
+ #include <bpf/bpf_tracing.h>
+ 
++#include <gadget/types.h>
+ #include <gadget/buffer.h>
+ #include <gadget/common.h>
+ #include <gadget/filter.h>
+ #include <gadget/macros.h>
++#include <gadget/user_stack_map.h>
+ 
+ #define MAX_ENTRIES 10240
+ 
+@@ -31,6 +33,8 @@ struct event {
+ 	gadget_timestamp timestamp_raw;
+ 	struct gadget_process proc;
+ 
++	struct gadget_user_stack ustack_raw;
++
+ 	enum memop operation_raw;
+ 	__u64 addr;
+ 	__u64 size;
+@@ -71,6 +75,9 @@ int trace_sched_process_exit(void *ctx)
+ GADGET_TRACER_MAP(events, 1024 * 256);
+ GADGET_TRACER(malloc, events, event);
+ 
++const volatile bool print_ustack = false;
++GADGET_PARAM(print_ustack);
++
+ static __always_inline int gen_alloc_enter(size_t size)
+ {
+ 	u32 tid;
+@@ -111,6 +118,9 @@ static __always_inline int gen_alloc_exit(struct pt_regs *ctx,
+ 	event->size = size;
+ 	event->timestamp_raw = bpf_ktime_get_ns();
+ 
++	if (print_ustack)
++		gadget_get_user_stack(ctx, &event->ustack_raw);
++
+ 	gadget_submit_buf(ctx, &events, event, sizeof(*event));
+ 
+ 	return 0;
+@@ -134,6 +144,9 @@ static __always_inline int gen_free_enter(struct pt_regs *ctx,
+ 	event->size = 0;
+ 	event->timestamp_raw = bpf_ktime_get_ns();
+ 
++	if (print_ustack)
++		gadget_get_user_stack(ctx, &event->ustack_raw);
++
+ 	gadget_submit_buf(ctx, &events, event, sizeof(*event));
+ 
+ 	return 0;
+

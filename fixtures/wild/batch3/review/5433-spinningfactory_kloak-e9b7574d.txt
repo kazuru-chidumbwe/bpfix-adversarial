@@ -1,0 +1,273 @@
+repo: spinningfactory/kloak
+commit: e9b7574da8fef8e12e580991b9d6541a2e372ba4
+rank: 5433
+
+feat: run eBPF e2e tests in CI with continue-on-error (#19)
+
+* feat: add eBPF e2e tests to CI with continue-on-error
+
+Runs TestEBPFSecretRewrite in GitHub Actions on every PR. The test
+deploys the demo-go app, verifies that the eBPF uprobe rewrites
+kloak:UUID → real secret values in-flight (checked via httpbin.org
+header echo).
+
+Uses k3d on ubuntu-latest (kernel 6.8+, BPF-capable). Marked as
+continue-on-error since eBPF in Docker-in-Docker may not work on
+all runner configurations.
+
+Changes:
+- New overlay config/overlays/e2e-ebpf/ (base manifests + e2e tag,
+  keeps eBPF enabled with privileged + BPF/BTF volumes)
+- TestMain reads KLOAK_E2E_OVERLAY env var to select overlay
+  (defaults to "e2e" for backward compat)
+- New e2e-ebpf CI job: builds kloak + demo-go images, sets
+  KLOAK_E2E_OVERLAY=e2e-ebpf, runs with -tags=e2e_ebpf
+- Makefile: e2e-ebpf, e2e-ebpf-setup, e2e-ebpf-run, e2e-ebpf-cleanup
+- demo-go Dockerfile: Go 1.22 → 1.25
+- e2e-ebpf.yml: default runner changed to ubuntu-latest
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: correct eBPF e2e test secret key and demo-go image tag
+
+Two bugs prevented TestEBPFSecretRewrite from running:
+
+1. Secret key mismatch: test created secrets with key "key" but the
+   demo-go deployment mounts them at /etc/secrets/allowed/api-key.
+   Fixed to use "api-key" as the secret data key.
+
+2. Image tag mismatch: demo-go deployment uses image kloak-demo-go:latest
+   (imagePullPolicy: Never) but CI only built kloak-demo-go:e2e.
+   Now also tags as :latest and imports both into k3d.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: mount /sys/kernel/btf and /sys/fs/bpf into k3d node for eBPF
+
+The kloak controller's eBPF programs need BTF type info and the BPF
+filesystem. Pod hostPath volumes reference the k3d node's filesystem,
+so these host paths must be explicitly mounted into the k3d Docker
+container for the pod mounts to resolve.
+
+Also added diagnostic logging in the eBPF test — dumps controller
+and demo-go logs inline so they're visible even after teardown.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* feat: generate eBPF bindings at Docker build time for multi-arch (#20)
+
+* feat: generate eBPF bindings at Docker build time for multi-arch support
+
+The eBPF program was compiled with -D__TARGET_ARCH_arm64 and committed
+to the repo, but CI runs on x86_64. CO-RE can handle kernel version
+differences but not CPU architecture differences (struct pt_regs layout
+is fundamentally different between arm64 and x86_64).
+
+Fix: generate eBPF bindings inside the Dockerfile using the build
+platform's architecture. Docker buildx sets TARGETARCH automatically;
+plain docker build receives it via --build-arg.
+
+Changes:
+- Dockerfile: install clang/llvm, run go generate with arch-specific
+  KLOAK_TARGET_ARCH before building the Go binary
+- Remove pre-committed .o and .go eBPF files from repo (now generated
+  at build time)
+- go:generate directive: read KLOAK_TARGET_ARCH env var instead of
+  hardcoding arm64
+- CI: install clang and generate eBPF bindings in lint/build/test jobs
+  (needed since generated files are no longer committed)
+- .gitignore: revert to ignoring generated eBPF files
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* ci: trigger on all branches, not just main
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* ci: remove redundant E2E Tests job, keep only E2E Tests (eBPF)
+
+The eBPF e2e job runs all control plane tests plus the eBPF rewrite
+test (the non-eBPF test files have no build tag so they're always
+included). The separate non-eBPF e2e job was a strict subset.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: suppress unused variable warnings in eBPF C code
+
+Move pid variable inside #ifdef KLOAK_DEBUG blocks (only used in
+debug printk). Mark ret with __attribute__((unused)) since the
+bpf_probe_read_user call is needed but the return value is only
+logged in debug mode. Fixes -Werror,-Wunused-variable on x86 builds.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: add cgroupfs driver patterns and walk fallback for k3s/k3d
+
+FindContainerCgroupPath only had systemd cgroup driver patterns.
+K3s uses the cgroupfs driver by default, with paths like:
+  /sys/fs/cgroup/kubepods/burstable/pod<UID>/<containerID>
+
+Added:
+- cgroupfs driver patterns for burstable/besteffort/guaranteed QoS
+- Guaranteed QoS class for systemd driver (was missing)
+- Walk-based fallback that searches the cgroup tree for the container
+  ID, handling non-standard layouts (k3d, minikube, etc.)
+
+This fixes the "cgroup path not found" error that prevented eBPF
+uprobe attachment in k3d environments.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: increase eBPF test wait time and add post-request controller logs
+
+Increase wait from 25s to 45s to give more time for:
+- Demo-go 15s startup delay
+- Controller to detect pod, find cgroup, attach uprobes
+- BPF map sync cycle (every 5s)
+- Multiple request cycles to complete
+
+Also dump controller logs AFTER requests are made to capture
+rewrite events and any eBPF errors.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: use direct clang compilation for eBPF .o files in Dockerfile
+
+bpf2go's llvm-strip corrupts eBPF object files, producing programs
+that compile to 'return 0' (xlated 16B). This affected both Alpine
+and Debian-based Docker builds despite the same clang/flags producing
+correct bytecode when invoked directly.
+
+Fix: multi-stage Dockerfile where:
+1. ebpf-gen stage (Debian): runs bpf2go to generate .go wrapper files,
+   then overwrites the .o files with direct clang compilation
+2. builder stage (Alpine): copies correct .go + .o files and builds
+   the Go binary
+
+Also changed arm64 uprobe register access from PT_REGS_PARMx (CO-RE
+macros that get poisoned) to raw bpf_probe_read_kernel with fixed
+offsets, matching the x86 code path. And changed function signatures
+from 'struct pt_regs *ctx' to 'void *ctx' to avoid CO-RE relocations
+on the parameter type.
+
+Verified: uprobe programs now load as 992B/936B (not 16B), and the
+demo-go app shows REAL-ALLOWED-KEY-12345 in httpbin.org response
+headers (eBPF rewrite working end-to-end).
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: prevent duplicate CI runs on PR branches
+
+Push to a PR branch triggered both 'push' and 'pull_request' events.
+Restrict 'push' trigger to main only — PR branches are covered by
+the 'pull_request' trigger.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+---------
+
+Co-authored-by: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+---------
+
+Co-authored-by: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+--- pkg/ebpf/bpf/tls_uprobe.c
+@@ -144,7 +144,7 @@ static __always_inline void parse_host(struct scratch_buf *scratch) {
+ // Host comparison uses fixed-size uint64 comparisons (no loops).
+ // -----------------------------------------------------------------------------
+ SEC("uprobe/phase2_rewrite")
+-int bpf_phase2_rewrite(struct pt_regs *ctx) {
++int bpf_phase2_rewrite(void *ctx) {
+   __u32 zero = 0;
+   struct scratch_buf *scratch_data = bpf_map_lookup_elem(&scratch, &zero);
+   if (!scratch_data)
+@@ -237,25 +237,28 @@ int bpf_phase2_rewrite(struct pt_regs *ctx) {
+ // -----------------------------------------------------------------------------
+ 
+ SEC("uprobe/go_tls_write")
+-int bpf_uprobe_go_tls_write(struct pt_regs *ctx) {
+-  __u32 pid = bpf_get_current_pid_tgid();
+-
++int bpf_uprobe_go_tls_write(void *ctx) {
+   void *data_ptr;
+   __u64 data_len;
+ 
+ #if defined(bpf_target_x86)
+   // x86_64 Go register ABI: RAX=receiver, RBX=data, RCX=len
++  // pt_regs offsets: rbx=40, rcx=88
+   bpf_probe_read_kernel(&data_ptr, sizeof(void *), (char *)ctx + 40);
+   bpf_probe_read_kernel(&data_len, sizeof(__u64), (char *)ctx + 88);
+ #elif defined(bpf_target_arm64)
+   // ARM64 Go register ABI: R0=receiver, R1=data, R2=len
+-  data_ptr = (void *)PT_REGS_PARM2(ctx);
+-  data_len = PT_REGS_PARM3(ctx);
++  // user_pt_regs offsets: regs[1]=8, regs[2]=16
++  // Use raw offsets instead of PT_REGS_PARMx to avoid CO-RE relocation
++  // failures (kernel BTF may expose user_pt_regs, not pt_regs).
++  bpf_probe_read_kernel(&data_ptr, sizeof(void *), (char *)ctx + 8);
++  bpf_probe_read_kernel(&data_len, sizeof(__u64), (char *)ctx + 16);
+ #else
+   return 0;
+ #endif
+ 
+ #ifdef KLOAK_DEBUG
++  __u32 pid = bpf_get_current_pid_tgid();
+   bpf_printk("kloak go_tls: ptr=%llx len=%llu pid=%d", (__u64)data_ptr,
+              data_len, pid);
+ #endif
+@@ -274,7 +277,8 @@ int bpf_uprobe_go_tls_write(struct pt_regs *ctx) {
+     read_len = MAX_DATA_SIZE;
+ 
+   // Read plaintext into scratch buffer (per-CPU array, not ringbuf)
+-  long ret = bpf_probe_read_user(scratch_data->data, read_len, data_ptr);
++  long ret __attribute__((unused)) =
++      bpf_probe_read_user(scratch_data->data, read_len, data_ptr);
+ #ifdef KLOAK_DEBUG
+   bpf_printk("kloak go_tls: read_user ret=%ld read_len=%u first4=%.4s", ret,
+              read_len, scratch_data->data);
+@@ -300,25 +304,28 @@ int bpf_uprobe_go_tls_write(struct pt_regs *ctx) {
+ // -----------------------------------------------------------------------------
+ 
+ SEC("uprobe/ssl_write")
+-int bpf_uprobe_ssl_write(struct pt_regs *ctx) {
+-  __u32 pid = bpf_get_current_pid_tgid();
+-
++int bpf_uprobe_ssl_write(void *ctx) {
+   void *data_ptr;
+   int num;
+ 
+ #if defined(bpf_target_x86)
+   // x86_64 C ABI: RDI=ssl, RSI=buf, RDX=num
++  // pt_regs offsets: rsi=104, rdx=96
+   bpf_probe_read_kernel(&data_ptr, sizeof(void *), (char *)ctx + 104);
+   bpf_probe_read_kernel(&num, sizeof(int), (char *)ctx + 96);
+ #elif defined(bpf_target_arm64)
+   // ARM64 C ABI: X0=ssl, X1=buf, X2=num
+-  data_ptr = (void *)PT_REGS_PARM2(ctx);
+-  num = (int)PT_REGS_PARM3(ctx);
++  // user_pt_regs offsets: regs[1]=8, regs[2]=16
++  // Use raw offsets instead of PT_REGS_PARMx to avoid CO-RE relocation
++  // failures (kernel BTF may expose user_pt_regs, not pt_regs).
++  bpf_probe_read_kernel(&data_ptr, sizeof(void *), (char *)ctx + 8);
++  bpf_probe_read_kernel(&num, sizeof(int), (char *)ctx + 16);
+ #else
+   return 0;
+ #endif
+ 
+ #ifdef KLOAK_DEBUG
++  __u32 pid = bpf_get_current_pid_tgid();
+   bpf_printk("kloak ssl: ptr=%llx num=%d pid=%d", (__u64)data_ptr, num, pid);
+ #endif
+ 
+@@ -334,7 +341,8 @@ int bpf_uprobe_ssl_write(struct pt_regs *ctx) {
+   if (read_len > MAX_DATA_SIZE)
+     read_len = MAX_DATA_SIZE;
+ 
+-  long ret = bpf_probe_read_user(scratch_data->data, read_len, data_ptr);
++  long ret __attribute__((unused)) =
++      bpf_probe_read_user(scratch_data->data, read_len, data_ptr);
+ #ifdef KLOAK_DEBUG
+   bpf_printk("kloak ssl: read_user ret=%ld len=%u first4=%.4s", ret, read_len,
+              scratch_data->data);
+

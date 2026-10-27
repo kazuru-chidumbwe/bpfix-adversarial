@@ -1,0 +1,24 @@
+repo: bpfman/bpfman
+commit: 23acc51ef5ce5b77aa868370f3349efa419a91fe
+rank: 2125
+
+Move BPF dispatcher sources into the bpfman crate
+
+The build.rs referenced ../bpf which is outside the crate directory.
+This caused cargo publish verification to fail because the extracted
+tarball does not include files from outside the crate.
+
+Move bpf/ into bpfman/bpf/ so the dispatcher sources are part of the
+published crate and cargo publish can verify the build successfully.
+
+Signed-off-by: Andrew McDermott <amcdermo@redhat.com>
+
+--- bpfman/bpf/tc_dispatcher.bpf.c
+(no patch: binary or too large)
+
+--- bpfman/bpf/xdp_dispatcher_v1.bpf.c
+(no patch: binary or too large)
+
+--- bpfman/bpf/xdp_dispatcher_v2.bpf.c
+(no patch: binary or too large)
+

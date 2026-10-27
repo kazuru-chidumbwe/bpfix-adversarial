@@ -1,0 +1,391 @@
+repo: spinningfactory/kloak
+commit: b1a084dbaf9ebb8ffdcb1d2ac57e3ea2e860b967
+rank: 5678
+
+fix: key go_tls_offset_config by (cgroup_id, exe_inode) (#157)
+
+* fix: validate kloak-enabled secrets at admission (close host-filter bypass)
+
+The BPF host filter check `val_host_len < MAX_HOST_LEN` meant a 64-byte host
+silently disabled filtering, allowing the secret to be rewritten on any wire
+destination. The Go sync path was also truncating oversize values and short
+values were only caught by the reconciler after admission — both surfaces
+deferred problems to runtime or left them silent.
+
+- sync.go: reject entries whose host ≥ 64 bytes instead of truncating; the
+  secret stays on the shadow placeholder so the real value never leaks.
+- pkg/webhook/secret_validator.go: new ValidatingAdmissionWebhook wired on
+  Secrets with getkloak.io/enabled=true. Checks: hosts label (≤63 bytes,
+  valid RFC 1123 DNS or "*"), port label (valid PORT or PORT/PROTO), data
+  entries (8..128 bytes, non-empty). Failures surface at `kubectl apply`
+  with a clear reason instead of showing up as "shadow not found" on pods.
+- Helm chart: append ValidatingWebhookConfiguration reusing the same service
+  and CA bundle as the mutating webhook. Scoped by objectSelector,
+  failurePolicy: Fail.
+- e2e: new secret_validation_test.go (11 cases) + helper tryCreateEnabledSecret
+  that returns the API error. Updated TestShadowSecretLengthMatching to stay
+  within [8, 128] and removed TestShadowSecretLengthTooShort (admission now
+  catches the case before the reconciler sees it).
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+* fix: gofmt import order in secret_validation_test.go
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+* fix: reject *.domain wildcard patterns (BPF filter is exact-match)
+
+The BPF host filter (helpers.h: hosts_match) does byte-for-byte comparison,
+so a literal "*.example.com" in the map would never match a real hostname
+on the wire. Only the single-character literal "*" is meaningful (treated
+as "skip host filter").
+
+- Validator comment now documents the rule and points to the runtime.
+- Happy-path e2e test no longer uses "*.internal.example.com" (would fail).
+- New test RejectsWildcardSubdomain pins the behavior so a future change
+  to allow globs must also relax the validator.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+* fix: single-host only; align validator with k8s label constraints
+
+Addresses review from @ghislainbourgeois and CI failures. k8s label values
+are restricted to [A-Za-z0-9._-] and ≤63 chars at the API layer, so CSV
+lists, `443/tcp`, and `*.example.com` can never reach the validator via
+labels. The old CSV parsing was therefore dead code and three of the new
+e2e tests were asserting webhook behavior on inputs k8s rejects first.
+
+- Validator now enforces a single host (returns a clear "multi-host not
+  supported yet" error if it ever sees a comma — kept for future
+  annotation-based config and to document intent in code).
+- sync.go: drop the comma-split loop; trim-and-assign is enough.
+- Unit tests: replace the multi-host happy-path cases with rejection
+  assertions (where we can invoke validateHostsLabel directly).
+- E2E tests: remove RejectsEmptyCSVHostEntry, RejectsBadPortProtocol,
+  and RejectsWildcardSubdomain (all unreachable). Simplify happy-path
+  to a single host and plain port.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+* fix: key go_tls_offset_config by (cgroup_id, exe_inode)
+
+The Go H-extraction path was broken in nested container deployments (kind
+nodes, k3d) because go_tls_offset_config was keyed by tgid. BPF's
+bpf_get_current_pid_tgid() always returns root-NS PIDs, while kloak running
+inside a kind-control-plane container sees only kind-NS PIDs. The two
+never match, so every Go connection's H extraction hit "no offsets" and
+bailed — no tls_conn_state populated, no tc_pending, no rewrite.
+
+This also wires up three pre-existing but dead DBG_KPROBE_BRIDGE_*
+counters and corrects debugCounterNames: it had stale entries from a
+removed version of the C enum (tc_skip_reclen/load/store/nontls,
+tc_no_tail/empty/no_entry) that were silently mislabeling the bridge
+counters.
+
+Fix: key by (cgroup_id, exe_inode). cgroup_id is a kernel-level ID
+consistent across PID namespaces. exe_inode prevents collisions when
+different binaries share a cgroup (e.g. a shell that execs a Go binary,
+or one binary forking another) — without it, the last-pushed offsets
+would overwrite earlier ones and corrupt TLS for the first binary.
+
+- BPF: new struct go_tls_key { cgroup_id; exe_inode }; kprobe reads
+  cgroup via bpf_get_current_cgroup_id and inode via BPF_CORE_READ on
+  task->mm->exe_file->f_inode->i_ino.
+- Go: pushGoTLSOffsets/AttachTLS now take cgroupID; stat(/proc/<pid>/exe)
+  resolves the inode; push uses the generated tlsuprobeGoTlsKey type.
+- UntrackCgroup iterates go_tls_offset_config and deletes any key whose
+  cgroup_id matches, so pod teardown doesn't leak entries.
+- UntrackTGID no longer touches go_tls_offset_config (it's not keyed
+  by tgid any more).
+- Missing DBG_KPROBE_BRIDGE / BRIDGE_NO_ENTRY / BRIDGE_H_FAIL dbg_inc
+  calls are now in place — surface at top of the tcp_sendmsg kprobe,
+  at each H-extraction early-return, and after a successful bridge.
+- debug bpf_printk markers added under #ifdef KLOAK_DEBUG at each Go
+  H-extraction failure site to narrow future debugging.
+
+Verified end-to-end on kind (linuxkit 6.12 kernel): demo-go pod's
+httpbin.org call rewrites the allowed secret on the wire and leaves
+the blocked secret as the shadow placeholder.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+* fix: apply (cgroup_id, exe_inode) keying to OpenSSL path + kind exec fixes
+
+Follow-up to the Go fix in the same branch. Three related changes:
+
+1. tls_offset_config (OpenSSL) now uses the same (cgroup_id, exe_inode)
+   composite key as go_tls_offset_config. The previous PID-keyed map with
+   a global key=0 fallback silently broke isolation between different
+   OpenSSL versions on the same node (e.g. Node.js BoringSSL + system
+   libssl) on nested deployments where userspace PIDs don't match BPF's
+   root-NS PIDs. Drop the key=0 fallback entirely now that the lookup
+   is namespace-safe. Both maps share one struct tls_binary_key.
+
+2. setupCgroupAncestor now substring-matches "kubepods" instead of
+   requiring exact "kubepods" / "kubepods.slice" names. On kind the
+   directory is "kubelet-kubepods.slice" and the old code missed it,
+   leaving cgroup_ancestor empty. With an empty ancestor,
+   bpf_current_task_under_cgroup() returns !=1 for every task and the
+   sched_process_exec tracepoint drops every event in BPF — which meant
+   post-exec uprobe re-attach never ran (shells that exec into the real
+   binary left kloak with offsets for the shell, not the app). Also
+   anchors detection on /proc/self/cgroup so the found ancestor is
+   guaranteed to be on the controller's own task chain.
+
+3. The exec tracepoint handler was using event.Tgid (BPF's root-NS PID)
+   to open /proc/<pid>/exe. In nested deployments the controller's /proc
+   is a child namespace and can't see root-NS PIDs, so every re-attach
+   failed with ENOENT. Resolve current PIDs via the tracked cgroup's
+   cgroup.procs (which lists PIDs in the controller's own NS) and attach
+   to each. This is a superset of what we need and is idempotent.
+
+Verified end-to-end on kind:
+- Go demo: allowed secret rewritten on wire, blocked stays as shadow
+  (host-filter match behaves correctly).
+- Python/OpenSSL demo: same. Shell entrypoint exec's python →
+  tracepoint fires → kloak re-attaches with python's exe inode → next
+  requests.get() rewrites the allowed secret.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+* fix: per-cgroup OpenSSL offset fallback for short-lived processes
+
+The composite (cgroup_id, exe_inode) key breaks when a process fires
+SSL_write before the controller has pushed offsets for its specific
+inode — e.g. `curl` spawned via `kubectl exec`, apt-get helpers during
+container startup, or anything exec'd too briefly to race the push. The
+old global key=0 fallback masked this; once removed, TestCipherSuites/3hop
+timed out because the debian image fires curl from a fresh shell and the
+per-binary push never caught up.
+
+Fix: push a second entry at (cgroup_id, 0) carrying the same OpenSSL
+offsets. BPF tries (cgroup_id, current_exe_inode) first and falls back
+to (cgroup_id, 0). Safe because every process in a cgroup shares the
+same libssl.so through the container's rootfs — one offset set is valid
+for all of them.
+
+Scoped to OpenSSL only. Go's map still requires an exact inode match:
+statically-linked Go binaries can legitimately embed different
+crypto/tls layouts, so a cgroup-wide fallback there would risk corrupting
+TLS for whichever binary didn't push last. OpenSSL has no such concern.
+
+UntrackCgroup's existing iterate-by-cgroup-id cleanup reaps the fallback
+entry the same as any other key in that cgroup, so pod teardown stays
+clean.
+
+Verified on kind: debian:bookworm-slim with `kubectl exec sh -c "curl …"`
+now sees the real secret on the wire — the pattern TestCipherSuites/3hop
+exercises.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+---------
+
+Co-authored-by: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+--- pkg/ebpf/bpf/tls_uprobe.c
+@@ -490,12 +490,28 @@ struct tls_offsets {
+   __u32 ssl_to_version;     // SSL_CONNECTION* + off → int version (0xFFFFFFFF=unknown)
+ };
+ 
+-// Keyed by TGID (per-process), allowing different OpenSSL versions to coexist
+-// on the same node (e.g., Node.js with statically linked 3.5 + curl with system 3.0).
++// Shared key for per-binary TLS config maps (see tls_offset_config and
++// go_tls_offset_config below). Keyed by (cgroup_id, exe_inode) rather than
++// tgid for two reasons:
++//   1. cgroup_id survives PID namespace mismatches in nested setups
++//      (kind, k3d) where BPF's bpf_get_current_pid_tgid() returns
++//      root-NS PIDs while userspace sees its own NS PIDs.
++//   2. exe_inode distinguishes different binaries running inside the same
++//      cgroup (e.g. a shell that exec's an app, or one binary spawning
++//      another). Without it, the last-pushed offsets would overwrite
++//      earlier ones and corrupt TLS for the first binary.
++struct tls_binary_key {
++  __u64 cgroup_id;
++  __u64 exe_inode;
++};
++
++// Per-binary OpenSSL/BoringSSL offsets for the XOR-patch path. Per-binary
++// keying lets different OpenSSL versions coexist on the same node (e.g.,
++// Node.js with statically linked BoringSSL + curl with system OpenSSL 3.0).
+ struct {
+   __uint(type, BPF_MAP_TYPE_HASH);
+   __uint(max_entries, 4096);
+-  __type(key, __u32);
++  __type(key, struct tls_binary_key);
+   __type(value, struct tls_offsets);
+ } tls_offset_config SEC(".maps");
+ 
+@@ -524,10 +540,12 @@ struct go_tls_offsets {
+   __u32 conn_vers_off;    // Conn* + off → uint16 negotiated TLS version (e.g. 0x0303, 0x0304)
+ };
+ 
++// Per-binary Go crypto/tls offsets. Shares the tls_binary_key struct with
++// tls_offset_config — see the commentary there for the rationale.
+ struct {
+   __uint(type, BPF_MAP_TYPE_HASH);
+   __uint(max_entries, 256);
+-  __type(key, __u32);
++  __type(key, struct tls_binary_key);
+   __type(value, struct go_tls_offsets);
+ } go_tls_offset_config SEC(".maps");
+ 
+@@ -1467,13 +1485,22 @@ int bpf_h_extract(void *ctx) {
+   if (!ssl_ptr)
+     return 0;
+ 
+-  __u32 h_tgid = (__u32)(bpf_get_current_pid_tgid() >> 32);
+-  struct tls_offsets *offsets = bpf_map_lookup_elem(&tls_offset_config, &h_tgid);
++  // Look up OpenSSL offsets by (cgroup_id, exe_inode). See tls_binary_key
++  // commentary near the map decl for why we don't use tgid.
++  struct tls_binary_key bk = {};
++  bk.cgroup_id = bpf_get_current_cgroup_id();
++  struct task_struct *h_task = (struct task_struct *)bpf_get_current_task();
++  bk.exe_inode = BPF_CORE_READ(h_task, mm, exe_file, f_inode, i_ino);
++  struct tls_offsets *offsets = bpf_map_lookup_elem(&tls_offset_config, &bk);
+   if (!offsets || offsets->ssl_to_wrl == 0) {
+-    // Fallback: try global default (key=0) for short-lived processes whose
+-    // per-tgid entry wasn't pushed in time by the controller.
+-    __u32 fallback = 0;
+-    offsets = bpf_map_lookup_elem(&tls_offset_config, &fallback);
++    // Per-cgroup fallback: short-lived processes (curl spawned via
++    // `kubectl exec`, apt-get children, etc.) can fire SSL_write before
++    // the controller's push runs for their specific inode. Every binary
++    // in a cgroup shares the same libssl.so (the container's rootfs), so
++    // the fallback entry at (cgroup_id, 0) carries valid offsets for any
++    // OpenSSL process in this container.
++    bk.exe_inode = 0;
++    offsets = bpf_map_lookup_elem(&tls_offset_config, &bk);
+     if (!offsets || offsets->ssl_to_wrl == 0)
+       return 0;
+   }
+@@ -1884,8 +1911,10 @@ int bpf_kprobe_tcp_sendmsg(void *ctx) {
+   __u32 tgid = (__u32)(pid_tgid >> 32);
+ 
+   struct xor_pending_val *pending = bpf_map_lookup_elem(&xor_pending, &tgid);
+-  if (!pending || pending->patch_count == 0)
++  if (!pending || pending->patch_count == 0) {
++    dbg_inc(DBG_KPROBE_BRIDGE_NO_ENTRY);
+     return 0;
++  }
+ 
+   // TTL cleanup: for memory BIO apps, xor_pending persists across tcp_sendmsg
+   // calls. Delete stale entries older than 2 seconds to bound kprobe overhead.
+@@ -1954,30 +1983,70 @@ int bpf_kprobe_tcp_sendmsg(void *ctx) {
+     // Go crypto/tls: H×2 stored at productTable offset 224 (entry 14).
+     // gcmAesInit computes H = AES_K(0^128), byte-swaps, doubles in GF(2^128).
+     // We read the two 64-bit words and apply GF halving to recover H.
+-    struct go_tls_offsets *go_off = bpf_map_lookup_elem(&go_tls_offset_config, &tgid);
+-    if (!go_off)
+-      return 0; // No Go offsets — bail (fail-secure, no corruption).
++    // Look up Go offsets by (cgroup_id, exe_inode) — see tls_binary_key
++    // rationale near the map declaration.
++    struct tls_binary_key gk = {};
++    gk.cgroup_id = bpf_get_current_cgroup_id();
++    struct task_struct *task = (struct task_struct *)bpf_get_current_task();
++    gk.exe_inode = BPF_CORE_READ(task, mm, exe_file, f_inode, i_ino);
++    struct go_tls_offsets *go_off = bpf_map_lookup_elem(&go_tls_offset_config, &gk);
++    if (!go_off) {
++#ifdef KLOAK_DEBUG
++      bpf_printk("kloak [2-KPROBE-GO] H-fail: no offsets cgid=%llx ino=%llu tgid=%u",
++                 gk.cgroup_id, gk.exe_inode, tgid);
++#endif
++      dbg_inc(DBG_KPROBE_BRIDGE_H_FAIL);
++      return 0;
++    }
+ 
+     __u64 cipher_data = 0;
+-    if (bpf_probe_read_user(&cipher_data, 8,
+-        (void *)(ssl_ptr + go_off->conn_to_cipher)) < 0 || !cipher_data)
++    long r_cd = bpf_probe_read_user(&cipher_data, 8,
++        (void *)(ssl_ptr + go_off->conn_to_cipher));
++    if (r_cd < 0 || !cipher_data) {
++#ifdef KLOAK_DEBUG
++      bpf_printk("kloak [2-KPROBE-GO] H-fail: cipher_data r=%ld val=%llx off=%u",
++                 r_cd, cipher_data, go_off->conn_to_cipher);
++#endif
++      dbg_inc(DBG_KPROBE_BRIDGE_H_FAIL);
+       return 0;
++    }
+     __u64 gcm_ptr = 0;
+-    if (bpf_probe_read_user(&gcm_ptr, 8,
+-        (void *)(cipher_data + go_off->aead_iface_off)) < 0 || !gcm_ptr)
++    long r_gp = bpf_probe_read_user(&gcm_ptr, 8,
++        (void *)(cipher_data + go_off->aead_iface_off));
++    if (r_gp < 0 || !gcm_ptr) {
++#ifdef KLOAK_DEBUG
++      bpf_printk("kloak [2-KPROBE-GO] H-fail: gcm_ptr r=%ld val=%llx off=%u",
++                 r_gp, gcm_ptr, go_off->aead_iface_off);
++#endif
++      dbg_inc(DBG_KPROBE_BRIDGE_H_FAIL);
+       return 0;
++    }
+ 
+     // Read H×2 as two separate 64-bit words (arch-aware offsets from userspace).
+     // h2_hi_off points to the GF "high" word (contains the GF MSB at bit 63).
+     // h2_lo_off points to the GF "low" word (contains the GF LSB at bit 0).
+     __u64 hi = 0, lo = 0;
+-    if (bpf_probe_read_user(&hi, 8, (void *)(gcm_ptr + go_off->h2_hi_off)) < 0)
+-      return 0;
+-    if (bpf_probe_read_user(&lo, 8, (void *)(gcm_ptr + go_off->h2_lo_off)) < 0)
++    long r_hi = bpf_probe_read_user(&hi, 8, (void *)(gcm_ptr + go_off->h2_hi_off));
++    long r_lo = bpf_probe_read_user(&lo, 8, (void *)(gcm_ptr + go_off->h2_lo_off));
++    if (r_hi < 0 || r_lo < 0) {
++#ifdef KLOAK_DEBUG
++      bpf_printk("kloak [2-KPROBE-GO] H-fail: h2 read r_hi=%ld r_lo=%ld", r_hi, r_lo);
++#endif
++      dbg_inc(DBG_KPROBE_BRIDGE_H_FAIL);
+       return 0;
++    }
+ 
+-    if (hi == 0 && lo == 0)
++    if (hi == 0 && lo == 0) {
++#ifdef KLOAK_DEBUG
++      bpf_printk("kloak [2-KPROBE-GO] H-fail: hi=0 lo=0 gcm=%llx hi_off=%u lo_off=%u",
++                 gcm_ptr, go_off->h2_hi_off, go_off->h2_lo_off);
++#endif
++      dbg_inc(DBG_KPROBE_BRIDGE_H_FAIL);
+       return 0;
++    }
++#ifdef KLOAK_DEBUG
++    bpf_printk("kloak [2-KPROBE-GO] H-ok hi=%llx lo=%llx", hi, lo);
++#endif
+ 
+     // GF(2^128) halving: recover H from H×2.
+     //
+@@ -2023,14 +2092,22 @@ int bpf_kprobe_tcp_sendmsg(void *ctx) {
+     // 4-hop (3.2+): SSL → wrl → enc_ctx → algctx → H
+     // 3-hop (3.0-3.1): SSL → enc_write_ctx → algctx → H
+     // wrl_to_enc_ctx == 0 signals 3-hop mode (ssl_to_wrl stores enc_write_ctx).
+-    struct tls_offsets *offsets = bpf_map_lookup_elem(&tls_offset_config, &tgid);
++    // Look up offsets by (cgroup_id, exe_inode) — see tls_binary_key rationale.
++    struct tls_binary_key bk = {};
++    bk.cgroup_id = bpf_get_current_cgroup_id();
++    struct task_struct *ssl_task = (struct task_struct *)bpf_get_current_task();
++    bk.exe_inode = BPF_CORE_READ(ssl_task, mm, exe_file, f_inode, i_ino);
++    struct tls_offsets *offsets = bpf_map_lookup_elem(&tls_offset_config, &bk);
+     if (!offsets || offsets->ssl_to_wrl == 0) {
+-      __u32 fallback = 0;
+-      offsets = bpf_map_lookup_elem(&tls_offset_config, &fallback);
++      // Per-cgroup fallback — see h_extract commentary for why this is safe.
++      bk.exe_inode = 0;
++      offsets = bpf_map_lookup_elem(&tls_offset_config, &bk);
+       if (!offsets || offsets->ssl_to_wrl == 0) {
+ #ifdef KLOAK_DEBUG
+-        bpf_printk("kloak [2-KPROBE] H-fail: no offsets");
++        bpf_printk("kloak [2-KPROBE] H-fail: no offsets cgid=%llx",
++                   bk.cgroup_id);
+ #endif
++        dbg_inc(DBG_KPROBE_BRIDGE_H_FAIL);
+         return 0;
+       }
+     }
+@@ -2141,6 +2218,7 @@ int bpf_kprobe_tcp_sendmsg(void *ctx) {
+   w->staged_tc.write_seq = is_membio ? 0 : wseq;
+ 
+   bpf_map_update_elem(&tc_pending, &tdk, &w->staged_tc, BPF_ANY);
++  dbg_inc(DBG_KPROBE_BRIDGE);
+ #ifdef KLOAK_DEBUG
+   bpf_printk("kloak [2-KPROBE] sport=%u cg=%x membio=%u", src_port_h, (__u32)tdk.cgroup_id, is_membio);
+ #endif
+

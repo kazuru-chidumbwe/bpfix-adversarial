@@ -1,0 +1,72 @@
+repo: cilium/tetragon
+commit: 1fbb7f3ca582cc695205714aa3cf44ccc1826197
+rank: 2148
+
+bpf: read_call_arg, copy_path once
+
+The generic tracepoint program does not seem to work on GKE kernel
+5.15.133+. This patch, modifies read_call_arg to call copy_path only
+once. The goal is to reduce the complexity by having the code for
+copy_path() being inlined only once.
+
+The error on the GKE kernel is:
+> loadInstance: opening collection 'bpf/objs/bpf_generic_tracepoint_v511.o' failed: program generic_tracepoint_process_event: load program: operation not supported: stack depth 256 (3214132 line(s) omitted)"
+
+As well as:
+>         from 22 to 1547: safe
+>         1563: R0=inv0 R6=ctx(id=0,off=0,imm=0) R9=map_value(id=0,off=0,ks=4,vs=24304,imm=0) R10=fp0 fp-176=mmmm????
+>         ; return generic_process_event(ctx, (struct bpf_map_def *)&tp_heap,
+>         1563: (b7) r0 = 0
+>         1564: R0_w=inv0 R6=ctx(id=0,off=0,imm=0) R9=map_value(id=0,off=0,ks=4,vs=24304,imm=0) R10=fp0 fp-176=mmmm????
+>         1564: (95) exit
+>         1563: R0_w=inv0 R6_w=ctx(id=0,off=0,imm=0) R9_w=inv0 R10=fp0 fp-176=mmmm????
+>         1563: (b7) r0 = 0
+>         1564: R0_w=inv0 R6_w=ctx(id=0,off=0,imm=0) R9_w=inv0 R10=fp0 fp-176=mmmm????
+>         1564: (95) exit
+>         verification time 22016603 usec
+>         stack depth 256
+>         processed 559046 insns (limit
+
+It's not clear why the error happens, and we were not able to reproduce
+it in upstream kernels but this patch seems to fix the issue.
+
+Signed-off-by: Kornilios Kourtis <kornilios@isovalent.com>
+
+--- bpf/process/types/basic.h
+@@ -2537,13 +2537,11 @@ read_call_arg(void *ctx, struct msg_generic_kprobe *e, int index, int type,
+ 		struct file *file;
+ 		probe_read(&file, sizeof(file), &arg);
+ 		path_arg = _(&file->f_path);
++		goto do_copy_path;
+ 	}
+-		// fallthrough to copy_path
+ 	case path_ty: {
+-		if (!path_arg)
+-			probe_read(&path_arg, sizeof(path_arg), &arg);
+-		size = copy_path(args, path_arg);
+-		break;
++		probe_read(&path_arg, sizeof(path_arg), &arg);
++		goto do_copy_path;
+ 	}
+ 	case fd_ty: {
+ 		struct fdinstall_key key = { 0 };
+@@ -2585,7 +2583,7 @@ read_call_arg(void *ctx, struct msg_generic_kprobe *e, int index, int type,
+ 		arg = (unsigned long)_(&bprm->file);
+ 		probe_read(&file, sizeof(file), (const void *)arg);
+ 		path_arg = _(&file->f_path);
+-		size = copy_path(args, path_arg);
++		goto do_copy_path;
+ 	} break;
+ #endif
+ 	case filename_ty: {
+@@ -2698,6 +2696,9 @@ read_call_arg(void *ctx, struct msg_generic_kprobe *e, int index, int type,
+ 		break;
+ 	}
+ 	return size;
++
++do_copy_path:
++	return copy_path(args, path_arg);
+ }
+ 
+ #endif /* __BASIC_H__ */
+

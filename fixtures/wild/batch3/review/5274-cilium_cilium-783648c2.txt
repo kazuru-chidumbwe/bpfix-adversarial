@@ -1,0 +1,26 @@
+repo: cilium/cilium
+commit: 783648c20626f69936f6eef00637ec0e997047d3
+rank: 5274
+
+bpf: Add missing __align_stack_8 in encap_geneve_dsr_opt4
+
+LLVM 18 doesn't align these structs to 8 by default, and our memcpy
+implementation fails to pass the verifier when applied to these structs,
+because the verifier requires stack access to be aligned. Align all
+affected structs.
+
+Ref: 4853fb153410 ("bpf: Use __align_stack_8 on IPv6 structs")
+Fixes: c6a2836a115c ("bpf: dsr: refactor encap_geneve_dsr_opt()")
+Signed-off-by: Maxim Mikityanskiy <maxim@isovalent.com>
+
+--- bpf/lib/nodeport.h
+@@ -1568,7 +1568,7 @@ static __always_inline int encap_geneve_dsr_opt4(struct __ctx_buff *ctx, int l3_
+ 						 __be16 svc_port, int *ifindex, __be16 *ohead)
+ {
+ 	struct remote_endpoint_info *info __maybe_unused;
+-	struct geneve_dsr_opt4 gopt;
++	struct geneve_dsr_opt4 gopt __align_stack_8;
+ 	bool need_opt = true;
+ 	__u16 encap_len = sizeof(struct iphdr) + sizeof(struct udphdr) +
+ 		sizeof(struct genevehdr) + ETH_HLEN;
+

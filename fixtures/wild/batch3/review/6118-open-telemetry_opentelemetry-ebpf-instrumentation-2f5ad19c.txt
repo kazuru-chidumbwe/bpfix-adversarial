@@ -1,0 +1,26 @@
+repo: open-telemetry/opentelemetry-ebpf-instrumentation
+commit: 2f5ad19c3fa505933e01c1d1113d082a3b3edd3f
+rank: 6118
+
+Track Go SpanContext field offsets (#2698)
+
+Discover the trace ID, span ID, and trace flags layout across supported
+OpenTelemetry Go releases. Register these offsets in the Go tracer table
+so later Auto SDK span integration can populate context without relying
+on hard-coded struct layouts.
+
+Generate the database from a trace-only fixture to keep module versions
+aligned, and verify both DWARF and stripped-binary discovery paths.
+
+--- bpf/gotracer/go_offsets.h
+@@ -85,6 +85,9 @@ typedef enum {
+     _tracer_delegate_pos,
+     _tracer_attribute_opt_off,
+     _error_string_off,
++    _span_context_trace_id_pos,
++    _span_context_span_id_pos,
++    _span_context_trace_flags_pos,
+     // go runtime channels
+     _hchan_qcount_pos,
+     _hchan_dataqsiz_pos,
+

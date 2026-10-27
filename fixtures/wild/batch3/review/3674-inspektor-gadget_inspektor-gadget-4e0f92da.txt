@@ -1,0 +1,67 @@
+repo: inspektor-gadget/inspektor-gadget
+commit: 4e0f92da843d43421bff4f862d8cdf700d01e1d5
+rank: 3674
+
+pkg,gadgets: Support OTel stacks from perf_event gadgets
+
+OTel eBPF Profiler symbolization (which produces interpreted-language
+frames, notably Python) previously worked only for kprobe/uprobe gadgets.
+The correlation id is computed by an OTel entry program reached via
+bpf_tail_call, and tail calls require the caller and callee to share the
+same BPF_PROG_TYPE. Perf_event gadgets (most importantly profile_cpu,
+SEC("perf_event/profiler")) could therefore never get OTel/Python stacks.
+
+Add a perf_event-typed OTel path in parallel to the kprobe one:
+
+- Expose the fork's perf_event entry program via GetPerfEntryEbpfProgram()
+  (go.mod bumped to the fork commit that adds the getter) and surface it as
+  OtelEbpfProgramPerf alongside the new otel_tc_perf prog-array constant.
+- user_stack_map.h now defines both otel_tc_kprobe and otel_tc_perf
+  prog-arrays and provides per-program-type wrappers
+  (gadget_get_user_stack_from_kprobe() and
+  gadget_get_user_stack_from_perf_event()), sharing the ustack fill body in
+  __gadget_fill_user_stack(). A given prog-array is only referenced by a
+  wrapper of its matching program type, so the kernel prog-array type lock
+  is never violated.
+- The eBPF loader loads each OTel entry program only into the prog-array
+  actually referenced by a gadget program of the matching type, and warns
+  (instead of failing) when a mismatched-type program references an array.
+
+Keep gadget_get_user_stack() as the single API most gadgets call: it is now
+a _Generic macro that dispatches on the static C type of ctx at compile
+time (struct bpf_perf_event_data * -> perf_event, struct pt_regs * ->
+kprobe/uprobe). Only the selected wrapper's bpf_tail_call survives, so each
+program still references only its own prog-array. There is deliberately no
+default association, so an unsupported ctx type is a compile-time error.
+
+Add gadget_get_user_stack_from_tracepoint() for tracepoint gadgets, whose
+program type cannot tail-call into any OTel entry program. It always
+collects the plain user stack (still symbolizable by the symbol-table
+symbolizer) and guards the unsupported OTel path with bpf_core_unreachable():
+when --collect-otel-stack is unset (the default) the verifier prunes the
+branch at zero cost, and when it is explicitly requested the loader rejects
+the program loudly instead of silently returning empty OTel stacks.
+
+Update all callers accordingly: profile_cpu uses the perf_event variant via
+gadget_get_user_stack(); audit_seccomp, profile_cuda, trace_capabilities,
+trace_malloc and ci/stacks use the kprobe variant via gadget_get_user_stack();
+trace_open uses gadget_get_user_stack_from_tracepoint().
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+Signed-off-by: Alban Crequy <albancrequy@microsoft.com>
+
+--- gadgets/trace_open/program.bpf.c
+@@ -126,7 +126,11 @@ static __always_inline int trace_exit(struct syscall_trace_exit *ctx)
+ 
+ 	/* event data */
+ 	gadget_process_populate(&event->proc);
+-	gadget_get_user_stack(ctx, &event->ustack);
++	/* trace_open is a tracepoint gadget: OTel symbolization is not available
++	 * for tracepoint programs, but the plain user stack is still collected
++	 * and symbolized by the symbol-table symbolizer.
++	 */
++	gadget_get_user_stack_from_tracepoint(ctx, &event->ustack);
+ 
+ 	bpf_probe_read_user_str(&event->fname, sizeof(event->fname), ap->fname);
+ 	event->flags_raw = ap->flags;
+

@@ -1,0 +1,301 @@
+repo: DataDog/datadog-agent
+commit: cacb75669c0ae9e5ea2e499338b9e4391eba6b3b
+rank: 4534
+
+[CWS-6628] Implement the unshare syscall event (#54609)
+
+<!--Please give us some feedback on your experience writing this PR ! https://app.datadoghq.com/forms/43db4c02-6837-400c-8083-692e141b1b88 !-->
+
+### What does this PR do?
+
+Adds a public `unshare` CWS event carrying the requested namespace flags, so detection rules can match the syscall itself rather than the name of the calling binary:
+
+```
+unshare.flags & CLONE_NEWNET > 0
+unshare.flags & (CLONE_NEWUSER | CLONE_NEWNET) > 0 && process.file.name != "docker"
+```
+
+New SECL surface: `unshare.flags` (bitmask, `Clone flags` constants) and `unshare.retval`. 12 `CLONE_*` constants are registered.
+
+### Motivation
+
+Jira: [CWS-6628](https://datadoghq.atlassian.net/browse/CWS-6628) (also filed as [CWS-6778](https://datadoghq.atlassian.net/browse/CWS-6778) — duplicates).
+
+Requested by the detection guild. Recent Linux LPE exploits call `unshare` **directly** to create a new network namespace and thereby obtain `CAP_NET_ADMIN`. Today CWS can only catch this via `process.executable.name == "unshare"`, which misses every exploit that invokes the syscall from its own code.
+
+> [!NOTE]
+> The Jira description claims this complements an existing `setns` event. There is no `setns` instrumentation in CWS — `setns` appears only in the syscall-number tables used by the syscall-monitor event. This is CWS's first namespace-lifecycle event. Scope is unchanged; the ticket framing is just wrong.
+
+### Describe how you validated your changes
+
+Added `pkg/security/tests/unshare_test.go` with per-flag rules plus a combined `CLONE_NEWUSER|CLONE_NEWNET` case (the actual exploit shape), asserting the exact raw bitmask and `retval`. The `syscall_tester` helper invokes `unshare(2)` **directly** rather than exec'ing `unshare(1)`, since catching direct syscall callers is the point.
+
+Verified locally:
+
+| Check | Result |
+|---|---|
+| eBPF C compiles — kprobe, fentry, syscall-wrapper | all 3 objects rebuilt; `tracepoint/"handle_sys_unshare_exit"` present |
+| `dda inv test --targets=./pkg/security/secl/...` | 1420 passed |
+| `dda inv security-agent.build-functional-tests` | testsuite + `syscall_tester` build clean |
+| Codegen idempotent | re-ran generation, byte-identical output |
+| `dda inv linter.go` on secl, probe, serializers, ebpf | 0 issues |
+
+> [!IMPORTANT]
+> **KMT functional tests have not been run** — they need a real kernel. Since this modifies an event the mount resolver depends on, please run `TestUnshareEvent` **plus the mount, pivot_root and network suites** before merging. `syscall_tester.c:test_new_netns_exec` already calls `unshare(CLONE_NEWNET)`, so this event will start firing inside existing network tests.
+
+### Additional Notes
+
+<details>
+<summary>Why the public event reuses event ordinal 46, and why that matters</summary>
+
+`unshare` was already hooked, but narrowly: the hook bailed out unless `CLONE_NEWNS` was set, and the resulting `unshare_mntns` event was swallowed in userspace after registering the mount-namespace copy (`field:"-"`, never dispatched to rules).
+
+That internal event fires **once per cloned mount** — `hook_make_visible`, `hook_attach_mnt`, `hook___attach_mnt`, `hook_attach_recursive_mnt` and `hook_propagate_mnt` each call `handle_new_mount()` for a distinct mount, which tail-calls through to `dr_mount_stage_two_callback` → `send_event`. Correct for mount bookkeeping; wrong for detection, where a rule must fire once per syscall.
+
+So the two concerns are now separate event types:
+
+- **`EVENT_UNSHARE` (ordinal 46, reusing the old slot)** — public, per-syscall. Full process/cgroup/span context plus the raw flags bitmask, sent once from the exit hook.
+- **`EVENT_UNSHARE_MNTNS` (newly appended)** — internal, per-mount. Semantics unchanged, still consumed by `handleNewMount` and never dispatched to rules.
+
+Keeping the *public* event at ordinal 46 is load-bearing. `probe_ebpf.go` packs enabled events as `1 << (eventType - 1)` into a **`uint64`**, mirrored kernel-side in `helpers/events.h`. `PivotRootEventType` is ordinal 64 — the last representable bit, which is exactly why `LastEventType = PivotRootEventType`. A newly appended public type would be ordinal 69 and therefore permanently unreachable by `is_event_enabled()` and by `applyDefaultFilterPolicies()`. The internal event doesn't care, since internal events are never gated by that mask.
+
+</details>
+
+<details>
+<summary>Event volume</summary>
+
+Bounded by a single gate: **`is_event_enabled(EVENT_UNSHARE)`** — no event at all when no loaded rule references `unshare.*`. Every `unshare` call is reported once that gate opens, so all 12 exposed `CLONE_*` constants are matchable and the `flags` field carries the full raw bitmask.
+
+An earlier revision also filtered kernel-side on `CLONE_NEWUSER | CLONE_NEWNET | CLONE_NEWNS | CLONE_NEWPID`. That was dropped in review: it silently made rules on the other exposed constants (`CLONE_NEWUTS`, `CLONE_NEWIPC`, `CLONE_NEWTIME`, …) unable to fire. Per-flag volume control belongs in `unshare` approvers, as a follow-up.
+
+`CLONE_NEWNS` is always *cached* regardless of the gate, because the mount resolver depends on that hook entry.
+
+</details>
+
+<details>
+<summary>Known gap and follow-ups</summary>
+
+- In `handle_new_mount` (`mount.h`), if the mount bookkeeping bails early it calls `pop_syscall()`, dropping the cache entry before the exit hook runs — so that particular `unshare(CLONE_NEWNS)` produces no public event. Narrow degraded path, mirrors existing behaviour, but a real coverage hole for `CLONE_NEWNS` specifically.
+- ebpfless/ptracer support deferred, as `setrlimit` did.
+- `setns` instrumentation (the join-side signal) not in scope.
+- Four existing events (ordinals 65–68: `SampleRefresh`, `SetSid`, `Nop`, `Socket`) are already unreachable by the `enabled_events` mask and silently stay that way. Widening it past 64 bits is separate, cross-cutting work worth filing.
+
+</details>
+
+
+[CWS-6628]: https://datadoghq.atlassian.net/browse/CWS-6628?atlOrigin=eyJpIjoiNWRkNTljNzYxNjVmNDY3MDlhMDU5Y2ZhYzA5YTRkZjUiLCJwIjoiZ2l0aHViLWNvbS1KU1cifQ
+[CWS-6778]: https://datadoghq.atlassian.net/browse/CWS-6778?atlOrigin=eyJpIjoiNWRkNTljNzYxNjVmNDY3MDlhMDU5Y2ZhYzA5YTRkZjUiLCJwIjoiZ2l0aHViLWNvbS1KU1cifQ
+
+
+Co-authored-by: daniel.zhou <daniel.zhou@datadoghq.com>
+
+--- pkg/security/ebpf/c/include/constants/enums.h
+@@ -56,7 +56,7 @@ enum event_type
+     EVENT_VETH_PAIR_NS,
+     EVENT_ACCEPT,
+     EVENT_BIND,
+-    EVENT_UNSHARE_MNTNS,
++    EVENT_UNSHARE,
+     EVENT_SYSCALLS,
+     EVENT_IMDS,
+     EVENT_ON_DEMAND,
+@@ -79,6 +79,7 @@ enum event_type
+     EVENT_SETSID,
+     EVENT_NOP,
+     EVENT_SOCKET,
++    EVENT_UNSHARE_MNTNS,
+     EVENT_MAX, // has to be the last one
+ 
+     EVENT_ALL = 0xffffffff // used as a mask for all the events
+
+--- pkg/security/ebpf/c/include/events_definition.h
+@@ -349,6 +349,17 @@ struct mount_event_t {
+     u32    source;
+ };
+ 
++struct unshare_event_t {
++    struct kevent_t event;
++    struct process_context_t process;
++    struct span_context_t span;
++    struct go_labels_context_t go_labels;
++    struct cgroup_context_t cgroup;
++    struct syscall_t syscall;
++
++    u64 flags;
++};
++
+ struct unshare_mntns_event_t {
+     struct kevent_t event;
+     struct mount_fields_t mountfields;
+@@ -701,6 +712,7 @@ union event_t {
+     struct delete_module_event_t delete_module;
+     struct mount_event_t mount;
+     struct unshare_mntns_event_t unshare_mntns;
++    struct unshare_event_t unshare;
+     struct mprotect_event_t mprotect;
+     struct net_device_event_t net_device;
+     struct veth_pair_event_t veth_pair;
+
+--- pkg/security/ebpf/c/include/helpers/approvers.h
+@@ -851,6 +851,21 @@ static enum SYSCALL_STATE __attribute__((always_inline)) socket_approvers(struct
+     return state;
+ }
+ 
++static enum SYSCALL_STATE __attribute__((always_inline)) unshare_approvers(struct syscall_cache_t *syscall) {
++    u32 flags = 0;
++
++    int exists = lookup_u32_flags(&unshare_flags_approvers, &flags);
++    if (!exists) {
++        return DISCARDED;
++    }
++
++    if ((flags == 0 && syscall->mount.unshare_flags == 0) || (syscall->mount.unshare_flags & flags) > 0) {
++        monitor_event_approved(syscall->type, FLAG_APPROVER_TYPE);
++        return APPROVED;
++    }
++    return DISCARDED;
++}
++
+ static enum SYSCALL_STATE __attribute__((always_inline)) approve_syscall_with_tgid(u32 tgid, struct syscall_cache_t *syscall, enum SYSCALL_STATE (*check_approvers)(struct syscall_cache_t *syscall)) {
+     if (syscall->policy.mode != DENY) {
+         monitor_event_approved(syscall->type, POLICY_APPROVER_TYPE);
+
+--- pkg/security/ebpf/c/include/helpers/events_predicates.h
+@@ -29,23 +29,23 @@ static int __attribute__((always_inline)) credentials_predicate(u64 type) {
+ }
+ 
+ static int __attribute__((always_inline)) mountpoint_predicate(u64 type) {
+-    return type == EVENT_MOUNT || type == EVENT_UNSHARE_MNTNS || type == EVENT_OPEN_TREE || type == EVENT_MOVE_MOUNT || type == EVENT_PIVOT_ROOT;
++    return type == EVENT_MOUNT || type == EVENT_UNSHARE || type == EVENT_OPEN_TREE || type == EVENT_MOVE_MOUNT || type == EVENT_PIVOT_ROOT;
+ }
+ 
+ static int __attribute__((always_inline)) mount_or_open_tree(u64 type) {
+     return type == EVENT_MOUNT || type == EVENT_OPEN_TREE;
+ }
+ 
+ static int __attribute__((always_inline)) unshare_or_move_mount(u64 type) {
+-    return type == EVENT_UNSHARE_MNTNS || type == EVENT_MOVE_MOUNT || type == EVENT_PIVOT_ROOT;
++    return type == EVENT_UNSHARE || type == EVENT_MOVE_MOUNT || type == EVENT_PIVOT_ROOT;
+ }
+ 
+ static int __attribute__((always_inline)) mount_or_move_mount(u64 type) {
+     return type == EVENT_MOUNT || type == EVENT_MOVE_MOUNT;
+ }
+ 
+ static int __attribute__((always_inline)) unshare_or_open_tree_or_move_mount(u64 type) {
+-    return type == EVENT_UNSHARE_MNTNS || type == EVENT_OPEN_TREE || type == EVENT_MOVE_MOUNT || type == EVENT_PIVOT_ROOT;
++    return type == EVENT_UNSHARE || type == EVENT_OPEN_TREE || type == EVENT_MOVE_MOUNT || type == EVENT_PIVOT_ROOT;
+ }
+ 
+ #endif
+
+--- pkg/security/ebpf/c/include/hooks/mount.h
+@@ -2,6 +2,7 @@
+ #define _HOOKS_MOUNT_H_
+ 
+ #include "constants/syscall_macro.h"
++#include "helpers/approvers.h"
+ #include "helpers/events_predicates.h"
+ #include "helpers/filesystem.h"
+ #include "helpers/span_fill.h"
+@@ -126,25 +127,65 @@ HOOK_SYSCALL_COMPAT_ENTRY3(mount, const char *, source, const char *, target, co
+ }
+ 
+ HOOK_SYSCALL_ENTRY1(unshare, unsigned long, flags) {
+-    // unshare is only used to propagate mounts created when a mount namespace is copied
+-    if (!(flags & CLONE_NEWNS)) {
++    // unshare(0) is a no-op, there is nothing to report
++    if (!flags) {
++        return 0;
++    }
++
++    // CLONE_NEWNS is cached rules or no rules, the mount resolver relies on this entry
++    if (!((flags & CLONE_NEWNS) || is_event_enabled(EVENT_UNSHARE))) {
+         return 0;
+     }
+ 
+     struct syscall_cache_t syscall = {
+-        .type = EVENT_UNSHARE_MNTNS,
++        .type = EVENT_UNSHARE,
++        .policy = fetch_policy(EVENT_UNSHARE),
++        .mount = {
++            .unshare_flags = flags,
++        },
+     };
+ 
+     cache_syscall_update_cgroup(ctx, &syscall);
+ 
+     return 0;
+ }
+ 
+-HOOK_SYSCALL_EXIT(unshare) {
+-    pop_syscall(EVENT_UNSHARE_MNTNS);
++int __attribute__((always_inline)) sys_unshare_ret(void *ctx, int retval) {
++    struct syscall_cache_t *syscall = pop_syscall(EVENT_UNSHARE);
++    if (!syscall) {
++        return 0;
++    }
++
++    // the CLONE_NEWNS entry above is cached even with no rule loaded
++    if (!is_event_enabled(EVENT_UNSHARE)) {
++        return 0;
++    }
++
++    if (approve_syscall(syscall, unshare_approvers) == DISCARDED) {
++        return 0;
++    }
++
++    struct unshare_event_t event = {
++        .syscall.retval = retval,
++        .flags = syscall->mount.unshare_flags,
++    };
++
++    struct proc_cache_t *entry = fill_process_context(&event.process);
++    fill_cgroup_context(entry, &event.cgroup);
++    fill_span_context(&event.span, &event.go_labels);
++
++    send_event(ctx, EVENT_UNSHARE, event);
+     return 0;
+ }
+ 
++HOOK_SYSCALL_EXIT(unshare) {
++    return sys_unshare_ret(ctx, (int)SYSCALL_PARMRET(ctx));
++}
++
++TAIL_CALL_TRACEPOINT_FNC(handle_sys_unshare_exit, struct tracepoint_raw_syscalls_sys_exit_t *args) {
++    return sys_unshare_ret(args, args->ret);
++}
++
+ void __attribute__((always_inline)) fill_mount_fields(struct syscall_cache_t *syscall, struct mount_fields_t *mfields) {
+     mfields->root_key = syscall->mount.root_key;
+     mfields->mountpoint_key = syscall->mount.mountpoint_key;
+@@ -302,7 +343,7 @@ int __attribute__((always_inline)) dr_mount_stage_two_callback(void *ctx, enum T
+             event->source = SOURCE_PIVOT_ROOT;
+         }
+         span_fill_tail_call(ctx, prog_type);
+-    } else if (syscall->type == EVENT_UNSHARE_MNTNS) {
++    } else if (syscall->type == EVENT_UNSHARE && (syscall->mount.unshare_flags & CLONE_NEWNS)) {
+         struct unshare_mntns_event_t event = { 0 };
+ 
+         fill_mount_fields(syscall, &event.mountfields);
+
+--- pkg/security/ebpf/c/include/maps.h
+@@ -38,6 +38,7 @@ BPF_ARRAY_MAP(connect_addr_family_approvers, struct u64_flags_filter_t, 1)
+ BPF_ARRAY_MAP(prctl_option_approvers, struct u64_flags_filter_t, 1)
+ BPF_ARRAY_MAP(setsockopt_level_or_optname_approvers, struct u64_flags_filter_t, 2)
+ BPF_ARRAY_MAP(socket_field_approvers, struct u64_flags_filter_t, 3)
++BPF_ARRAY_MAP(unshare_flags_approvers, struct u32_flags_filter_t, 1)
+ BPF_ARRAY_MAP(syscalls_stats_enabled, u32, 1)
+ BPF_ARRAY_MAP(syscall_ctx_gen_id, u32, 1)
+ BPF_ARRAY_MAP(syscall_ctx, char[MAX_SYSCALL_CTX_SIZE], MAX_SYSCALL_CTX_ENTRIES)
+
+--- pkg/security/ebpf/c/include/structs/syscalls.h
+@@ -119,6 +119,7 @@ struct syscall_cache_t {
+             int clone_mnt_ctr;
+             int source;
+             u64 ns_inum;
++            u64 unshare_flags;
+         } mount;
+ 
+         struct {
+

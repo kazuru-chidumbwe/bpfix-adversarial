@@ -1,0 +1,32 @@
+repo: projectcalico/calico
+commit: d03662abc0b959f4c81c842bde68a41ba75f7201
+rank: 3353
+
+felix BPF: drop in-loop IPv6 ext-header debug logs (#13204)
+
+The IPv6 extension-header parse loop in tc_state_fill_from_iphdr_v6_offset
+is unrolled 8x and feeds the whole of calico_tc_main. The two per-iteration
+CALI_DEBUG calls sit at that state-multiplying chokepoint: each is a
+bpf_trace_printk helper call that spills the loop-carried precise scalars
+across a verifier checkpoint, so states downstream of the loop stop merging
+and the verifier re-walks the large downstream once per surviving state.
+
+Measured on the test_from_hep_debug_v6 object, calico_tc_main drops from
+426,491 to 139,718 processed insns (-67%; total_states 22,564 -> 8,829) with
+no change to no_log builds.
+
+Co-authored-by: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+--- felix/bpf-gpl/parsing6.h
+@@ -130,8 +130,8 @@ static CALI_BPF_INLINE void tc_state_fill_from_iphdr_v6_offset(struct cali_tc_ct
+ 			goto deny;
+ 		}
+ 
+-		CALI_DEBUG("loading extension at offset %d", ipoff + len);
+-		CALI_DEBUG("ext nexthdr %d hdrlen %d", opt.nexthdr, opt.hdrlen);
++		// We used to log out the offsets and lengths here, but that causes a
++		// combinatorial explosion in the verifier.
+ 
+ 		switch(hdr) {
+ 		case NEXTHDR_FRAGMENT:
+

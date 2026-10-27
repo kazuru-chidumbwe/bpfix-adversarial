@@ -1,0 +1,75 @@
+repo: libbpf/bpftool
+commit: 8328f373c0ef27fda14f12e67f1d6ed882dd2e81
+rank: 4298
+
+bpf: Introduce may_goto instruction
+
+Introduce may_goto instruction that from the verifier pov is similar to
+open coded iterators bpf_for()/bpf_repeat() and bpf_loop() helper, but it
+doesn't iterate any objects.
+In assembly 'may_goto' is a nop most of the time until bpf runtime has to
+terminate the program for whatever reason. In the current implementation
+may_goto has a hidden counter, but other mechanisms can be used.
+For programs written in C the later patch introduces 'cond_break' macro
+that combines 'may_goto' with 'break' statement and has similar semantics:
+cond_break is a nop until bpf runtime has to break out of this loop.
+It can be used in any normal "for" or "while" loop, like
+
+  for (i = zero; i < cnt; cond_break, i++) {
+
+The verifier recognizes that may_goto is used in the program, reserves
+additional 8 bytes of stack, initializes them in subprog prologue, and
+replaces may_goto instruction with:
+aux_reg = *(u64 *)(fp - 40)
+if aux_reg == 0 goto pc+off
+aux_reg -= 1
+*(u64 *)(fp - 40) = aux_reg
+
+may_goto instruction can be used by LLVM to implement __builtin_memcpy,
+__builtin_strcmp.
+
+may_goto is not a full substitute for bpf_for() macro.
+bpf_for() doesn't have induction variable that verifiers sees,
+so 'i' in bpf_for(i, 0, 100) is seen as imprecise and bounded.
+
+But when the code is written as:
+for (i = 0; i < 100; cond_break, i++)
+the verifier see 'i' as precise constant zero,
+hence cond_break (aka may_goto) doesn't help to converge the loop.
+A static or global variable can be used as a workaround:
+static int zero = 0;
+for (i = zero; i < 100; cond_break, i++) // works!
+
+may_goto works well with arena pointers that don't need to be bounds
+checked on access. Load/store from arena returns imprecise unbounded
+scalar and loops with may_goto pass the verifier.
+
+Reserve new opcode BPF_JMP | BPF_JCOND for may_goto insn.
+JCOND stands for conditional pseudo jump.
+Since goto_or_nop insn was proposed, it may use the same opcode.
+may_goto vs goto_or_nop can be distinguished by src_reg:
+code = BPF_JMP | BPF_JCOND
+src_reg = 0 - may_goto
+src_reg = 1 - goto_or_nop
+
+Signed-off-by: Alexei Starovoitov <ast@kernel.org>
+Signed-off-by: Andrii Nakryiko <andrii@kernel.org>
+Acked-by: Andrii Nakryiko <andrii@kernel.org>
+Acked-by: Eduard Zingerman <eddyz87@gmail.com>
+Acked-by: John Fastabend <john.fastabend@gmail.com>
+Tested-by: John Fastabend <john.fastabend@gmail.com>
+Link: https://lore.kernel.org/bpf/20240306031929.42666-2-alexei.starovoitov@gmail.com
+
+--- src/kernel/bpf/disasm.c
+@@ -322,6 +322,10 @@ void print_bpf_insn(const struct bpf_insn_cbs *cbs,
+ 		} else if (insn->code == (BPF_JMP | BPF_JA)) {
+ 			verbose(cbs->private_data, "(%02x) goto pc%+d\n",
+ 				insn->code, insn->off);
++		} else if (insn->code == (BPF_JMP | BPF_JCOND) &&
++			   insn->src_reg == BPF_MAY_GOTO) {
++			verbose(cbs->private_data, "(%02x) may_goto pc%+d\n",
++				insn->code, insn->off);
+ 		} else if (insn->code == (BPF_JMP32 | BPF_JA)) {
+ 			verbose(cbs->private_data, "(%02x) gotol pc%+d\n",
+ 				insn->code, insn->imm);
+

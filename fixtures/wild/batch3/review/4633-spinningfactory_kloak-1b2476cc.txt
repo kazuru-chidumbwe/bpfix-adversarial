@@ -1,0 +1,97 @@
+repo: spinningfactory/kloak
+commit: 1b2476ccc7a8f3244fdb95da01491c2f265a7f62
+rank: 4633
+
+fix: increase BPF map sizes for production scale, fix TLS record_len minimum (#144)
+
+* fix: increase BPF map sizes for production scale, fix TLS record_len minimum
+
+Map size increases for clusters with 100s of pods per node:
+- tracked_cgroups: 256 → 4096 (was the critical bottleneck — nodes
+  with >256 pods would silently drop new containers)
+- secret_map: 1024 → 4096 (supports more secrets across namespaces)
+- watched_hosts: 256 → 1024 (supports more unique host restrictions)
+
+Map max_entries only affects kernel memory reservation (hash maps grow
+dynamically), not BPF verifier instruction budget.
+
+Also fixes:
+- record_len minimum: 24 → 17 (TLS 1.3 minimum is 0 plaintext +
+  1 content_type + 16 tag = 17 bytes; the old check rejected valid
+  small TLS 1.3 records)
+- Stale comment: "keyed by pid_tgid" → "keyed by tgid"
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: guard ct_len against unsigned underflow for small TLS records
+
+When record_len is 17-23 and nonce_len is 8 (TLS 1.2), the subtraction
+record_len - 16 - nonce_len underflows. Add an explicit check before
+the computation, as suggested by review.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+---------
+
+Co-authored-by: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+--- pkg/ebpf/bpf/tls_uprobe.c
+@@ -75,7 +75,7 @@ struct secret_value {
+ 
+ struct {
+   __uint(type, BPF_MAP_TYPE_HASH);
+-  __uint(max_entries, 1024);
++  __uint(max_entries, 4096);
+   __uint(map_flags, BPF_F_RDONLY_PROG);
+   __type(key, struct secret_key);
+   __type(value, struct secret_value);
+@@ -364,7 +364,7 @@ struct watched_host_key {
+ 
+ struct {
+   __uint(type, BPF_MAP_TYPE_HASH);
+-  __uint(max_entries, 256);
++  __uint(max_entries, 1024);
+   __uint(map_flags, BPF_F_RDONLY_PROG);
+   __type(key, struct watched_host_key);
+   __type(value, __u8);
+@@ -379,7 +379,7 @@ struct {
+ // Used by sched_process_exec/exit tracepoints to filter events to tracked containers.
+ struct {
+   __uint(type, BPF_MAP_TYPE_HASH);
+-  __uint(max_entries, 256);
++  __uint(max_entries, 4096);
+   __type(key, __u64);  // cgroup id (inode)
+   __type(value, __u8); // 1 = tracked
+ } tracked_cgroups SEC(".maps");
+@@ -466,7 +466,7 @@ struct xor_pending_val {
+   __u64 created_at;         // bpf_ktime_get_ns() — for TTL-based cleanup (memory BIO)
+ };
+ 
+-// Per-thread pending XOR patches, keyed by pid_tgid.
++// Per-process pending XOR patches, keyed by tgid.
+ // Written by the uprobe (xor_path), read by the tcp_sendmsg kprobe which
+ // bridges to tc_pending with the per-connection (dst_ip, src_port) key.
+ struct {
+@@ -2550,7 +2550,7 @@ int tc_egress_patch(struct __sk_buff *skb) {
+     return 0 /* TC_ACT_OK */;
+ 
+   __u16 record_len = ((__u16)tls_hdr[3] << 8) | (__u16)tls_hdr[4];
+-  if (record_len < 24) // minimum: 8 nonce + 0 payload + 16 tag
++  if (record_len < 17) // minimum: 0 plaintext + 1 content_type + 16 tag (TLS 1.3)
+     return 0 /* TC_ACT_OK */;
+ 
+   // Now that we know this is a valid TLS application_data record, look up
+@@ -2637,6 +2637,12 @@ int tc_egress_patch(struct __sk_buff *skb) {
+     }
+   }
+ 
++  // Ensure record is large enough for the nonce + tag. For TLS 1.2 (nonce_len=8),
++  // minimum is 24; for TLS 1.3 (nonce_len=0), minimum is 17. Without this check,
++  // the subtraction underflows for small records with the wrong nonce_len.
++  if (record_len < 16 + nonce_len)
++    return 0 /* TC_ACT_OK */;
++
+   __u32 ct_len = record_len - 16 - nonce_len;
+ 
+   // Copy ALL data from pending to ghash_scratch staging area.
+

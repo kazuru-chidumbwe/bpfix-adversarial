@@ -1,0 +1,74 @@
+repo: cilium/cilium
+commit: 36c7d66282449265eb4a897a4e18b39cbcdb177d
+rank: 3962
+
+bpf: nodeport: split up ingress path when HostFW is enabled
+
+On modern kernels, bpf_host currently builds a
+tail_nodeport_nat_ingress_ipv4() that includes the code for RevSNAT,
+HostFW and RevDNAT. But at least for the 6.1 kernel we're scratching at the
+complexity limit and hitting verifier troubles in main [0] and 1.15 [1].
+It's currently unclear why we can't reliably(!) reproduce those troubles in
+CI.
+
+Take the pressure off by splitting the tail-call into two parts, whenever
+the HostFW is enabled - leaving RevSNAT and HostFW in the first part, while
+RevDNAT is handled in a separate tail-call. This prevents the trace_ctx
+from the RevSNAT to reach the nodeport_add_tunnel_encap() call in the
+RevDNAT code, but that's acceptable for now.
+
+[0]: https://github.com/cilium/cilium/issues/30266
+[1]: https://github.com/cilium/cilium/issues/30093
+Co-developed-by: Tom Hadlaw <tom.hadlaw@isovalent.com>
+Signed-off-by: Julian Wiedmann <jwi@isovalent.com>
+
+--- bpf/lib/nodeport.h
+@@ -1032,8 +1032,10 @@ nodeport_rev_dnat_ingress_ipv6(struct __ctx_buff *ctx, struct trace_ctx *trace,
+ 	return fib_redirect(ctx, true, &fib_params, allow_neigh_map, ext_err, &ifindex);
+ }
+ 
+-declare_tailcall_if(__or(__not(is_defined(HAVE_LARGE_INSN_LIMIT)),
+-			 is_defined(IS_BPF_LXC)),
++declare_tailcall_if(__or3(__not(is_defined(HAVE_LARGE_INSN_LIMIT)),
++			  __and(is_defined(ENABLE_HOST_FIREWALL),
++				is_defined(IS_BPF_HOST)),
++			  is_defined(IS_BPF_LXC)),
+ 		    CILIUM_CALL_IPV6_NODEPORT_REVNAT)
+ int tail_nodeport_rev_dnat_ingress_ipv6(struct __ctx_buff *ctx)
+ {
+@@ -1117,7 +1119,9 @@ int tail_nodeport_nat_ingress_ipv6(struct __ctx_buff *ctx)
+ 	ctx_skip_host_fw_set(ctx);
+ # endif
+ 
+-	ret = invoke_traced_tailcall_if(__not(is_defined(HAVE_LARGE_INSN_LIMIT)),
++	ret = invoke_traced_tailcall_if(__or(__not(is_defined(HAVE_LARGE_INSN_LIMIT)),
++					     __and(is_defined(ENABLE_HOST_FIREWALL),
++						   is_defined(IS_BPF_HOST))),
+ 					CILIUM_CALL_IPV6_NODEPORT_REVNAT,
+ 					nodeport_rev_dnat_ingress_ipv6,
+ 					&trace, &ext_err);
+@@ -2503,8 +2507,10 @@ nodeport_rev_dnat_ingress_ipv4(struct __ctx_buff *ctx, struct trace_ctx *trace,
+ 	return fib_redirect(ctx, true, &fib_params, allow_neigh_map, ext_err, &ifindex);
+ }
+ 
+-declare_tailcall_if(__or(__not(is_defined(HAVE_LARGE_INSN_LIMIT)),
+-			 is_defined(IS_BPF_LXC)),
++declare_tailcall_if(__or3(__not(is_defined(HAVE_LARGE_INSN_LIMIT)),
++			  __and(is_defined(ENABLE_HOST_FIREWALL),
++				is_defined(IS_BPF_HOST)),
++			  is_defined(IS_BPF_LXC)),
+ 		    CILIUM_CALL_IPV4_NODEPORT_REVNAT)
+ int tail_nodeport_rev_dnat_ingress_ipv4(struct __ctx_buff *ctx)
+ {
+@@ -2604,7 +2610,9 @@ int tail_nodeport_nat_ingress_ipv4(struct __ctx_buff *ctx)
+ 	 * Also let nodeport_rev_dnat_ingress_ipv4() redirect EgressGW
+ 	 * reply traffic into tunnel (see there for details).
+ 	 */
+-	ret = invoke_traced_tailcall_if(__not(is_defined(HAVE_LARGE_INSN_LIMIT)),
++	ret = invoke_traced_tailcall_if(__or(__not(is_defined(HAVE_LARGE_INSN_LIMIT)),
++					     __and(is_defined(ENABLE_HOST_FIREWALL),
++						   is_defined(IS_BPF_HOST))),
+ 					CILIUM_CALL_IPV4_NODEPORT_REVNAT,
+ 					nodeport_rev_dnat_ingress_ipv4,
+ 					&trace, &ext_err);
+

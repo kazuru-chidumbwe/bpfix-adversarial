@@ -1,0 +1,31 @@
+repo: open-telemetry/opentelemetry-ebpf-instrumentation
+commit: 1aee8085179f61ee68984e03621afcba6d3c5990
+rank: 5826
+
+Add Go Auto SDK activation eligibility gate (#2819)
+
+* Gate Go Auto SDK activation by verified ABI
+
+Parse Go build information with replacement and checksum awareness, then
+limit activation eligibility to the Auto SDK and OpenTelemetry versions
+whose private layouts have verified offsets.
+
+Record the Auto SDK span-context offset and expose a single eligibility
+marker so the later activation path can fail closed without duplicating
+module validation.
+
+* Separate Auto SDK test intents
+
+* Exercise Auto SDK eligibility paths
+
+--- bpf/gotracer/go_offsets.h
+@@ -88,6 +88,8 @@ typedef enum {
+     _span_context_trace_id_pos,
+     _span_context_span_id_pos,
+     _span_context_trace_flags_pos,
++    _auto_sdk_span_context_pos,
++    _auto_sdk_activation_supported,
+     // go runtime channels
+     _hchan_qcount_pos,
+     _hchan_dataqsiz_pos,
+

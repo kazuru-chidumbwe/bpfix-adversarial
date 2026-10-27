@@ -1,0 +1,46 @@
+repo: cilium/cilium
+commit: 34e6ae57b27a60a63263d682e772545351cbe651
+rank: 2845
+
+bpf/analyze: sign-extend constants after dereferencing
+
+Before comparing values to signed integer global consts smaller than 64 bits,
+the compiler will emit lsh/rsh instructions on the loaded map value to make
+sure it's properly sign-extended, since the value occupies fewer than 64 bits
+in the data section.
+
+This commit teaches the backtracker to tolerate these shifts and uses them as
+a heuristic to perform its own sign extension, since it would incorrectly sign-
+extend uints before, leading to hard-to-debug behaviour. This makes sure it sees
+the same value the verifier would see, which would result in false negatives
+(deleting used maps) otherwise.
+
+Signed-off-by: Timo Beckers <timo@isovalent.com>
+
+--- pkg/bpf/testdata/reachability.c
+@@ -11,6 +11,9 @@ DECLARE_CONFIG(bool, sym_a, "Make sym_a reachable")
+ DECLARE_CONFIG(__u64, sym_b, "Make sym_b reachable if value >= max uint32, requiring 64-bit reg-reg comparison")
+ DECLARE_CONFIG(struct { __u8 _pad; bool sym_c; __u32 sym_d; }, sym_cd, "Make sym_c and sym_d reachable")
+ DECLARE_CONFIG(__s64, sym_e, "Make sym_e reachable if value is negative")
++DECLARE_CONFIG(__s8, sym_f, "Make sym_f reachable if value is negative, testing sign extension")
++DECLARE_CONFIG(__s16, sym_g, "Make sym_g reachable if value is negative, testing sign extension")
++DECLARE_CONFIG(__s32, sym_h, "Make sym_h reachable if value is negative, testing sign extension")
+ 
+ __section("tc")
+ static int entry() {
+@@ -29,5 +32,14 @@ static int entry() {
+         if (CONFIG(sym_e) < 0)
+                 SYMBOL(sym_e);
+ 
++        if (CONFIG(sym_f) < 0)
++                SYMBOL(sym_f);
++
++        if (CONFIG(sym_g) < 0)
++                SYMBOL(sym_g);
++
++        if (CONFIG(sym_h) < 0)
++                SYMBOL(sym_h);
++
+         return 0;
+ }
+

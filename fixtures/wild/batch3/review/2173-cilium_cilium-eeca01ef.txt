@@ -1,0 +1,133 @@
+repo: cilium/cilium
+commit: eeca01efc0b7d12e6632b8f179be2a5dba72abcb
+rank: 2173
+
+bpf: ipv6: use builtin memcpy for copying addresses
+
+Seen in verifier log where byte-by-byte copy happens:
+
+        [...]
+        ; if (nat_46x64) {
+        404: (16) if w5 == 0x1 goto pc+2437   ; R5=scalar(umax=4294967295,var_off=(0x0; 0xffffffff))
+        ; dst->d1 = src->d1;
+        405: (71) r2 = *(u8 *)(r1 +8)         ; R1_w=pkt(off=0,r=40,imm=0) R2_w=scalar(umax=255,var_off=(0x0; 0xff))
+        406: (71) r3 = *(u8 *)(r1 +9)         ; R1_w=pkt(off=0,r=40,imm=0) R3_w=scalar(umax=255,var_off=(0x0; 0xff))
+        407: (67) r3 <<= 8                    ; R3_w=scalar(umax=65280,var_off=(0x0; 0xff00))
+        408: (4f) r3 |= r2                    ; R2_w=scalar(umax=255,var_off=(0x0; 0xff)) R3_w=scalar()
+        409: (71) r4 = *(u8 *)(r1 +10)        ; R1_w=pkt(off=0,r=40,imm=0) R4_w=scalar(umax=255,var_off=(0x0; 0xff))
+        410: (71) r2 = *(u8 *)(r1 +11)        ; R1_w=pkt(off=0,r=40,imm=0) R2_w=scalar(umax=255,var_off=(0x0; 0xff))
+        411: (67) r2 <<= 8                    ; R2_w=scalar(umax=65280,var_off=(0x0; 0xff00))
+        412: (4f) r2 |= r4                    ; R2_w=scalar() R4_w=scalar(umax=255,var_off=(0x0; 0xff))
+        413: (67) r2 <<= 16                   ; R2_w=scalar(smax=9223372036854710272,umax=18446744073709486080,var_off=(0x0; 0xffffffffffff0000),s32_max=2147418112,u32_max=-65536)
+        414: (4f) r2 |= r3                    ; R2_w=scalar() R3_w=scalar()
+        415: (71) r3 = *(u8 *)(r1 +13)        ; R1_w=pkt(off=0,r=40,imm=0) R3_w=scalar(umax=255,var_off=(0x0; 0xff))
+        416: (64) w3 <<= 8                    ; R3_w=scalar(umax=65280,var_off=(0x0; 0xff00))
+        417: (71) r4 = *(u8 *)(r1 +12)        ; R1_w=pkt(off=0,r=40,imm=0) R4_w=scalar(umax=255,var_off=(0x0; 0xff))
+        418: (4c) w3 |= w4                    ; R3_w=scalar() R4_w=scalar(umax=255,var_off=(0x0; 0xff))
+        419: (71) r4 = *(u8 *)(r1 +15)        ; R1_w=pkt(off=0,r=40,imm=0) R4_w=scalar(umax=255,var_off=(0x0; 0xff))
+        420: (64) w4 <<= 8                    ; R4_w=scalar(umax=65280,var_off=(0x0; 0xff00))
+        421: (71) r5 = *(u8 *)(r1 +14)        ; R1_w=pkt(off=0,r=40,imm=0) R5_w=scalar(umax=255,var_off=(0x0; 0xff))
+        422: (4c) w4 |= w5                    ; R4_w=scalar() R5_w=scalar(umax=255,var_off=(0x0; 0xff))
+        423: (64) w4 <<= 16                   ; R4_w=scalar(umax=4294901760,var_off=(0x0; 0xffff0000),s32_max=2147418112)
+        424: (4c) w4 |= w3                    ; R3_w=scalar() R4_w=scalar()
+        425: (67) r4 <<= 32                   ; R4_w=scalar(smax=9223372032559808512,umax=18446744069414584320,var_off=(0x0; 0xffffffff00000000),s32_min=0,s32_max=0,u32_max=0)
+        426: (4f) r4 |= r2                    ; R2_w=scalar() R4_w=scalar()
+        ; dst->d1 = src->d1;
+        427: (7b) *(u64 *)(r10 -264) = r4     ; R4_w=scalar() R10=fp0 fp-264_w=mmmmmmmm
+        ; dst->d2 = src->d2;
+        [...]
+
+Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
+[jwi: add ipv6_addr_copy_unaligned() to tolerate some unaligned access]
+Signed-off-by: Julian Wiedmann <jwi@isovalent.com>
+
+--- bpf/lib/encap.h
+@@ -267,7 +267,8 @@ set_geneve_dsr_opt6(__be16 port, const union v6addr *addr,
+ 	gopt->hdr.opt_class = bpf_htons(DSR_GENEVE_OPT_CLASS);
+ 	gopt->hdr.type = DSR_GENEVE_OPT_TYPE;
+ 	gopt->hdr.length = DSR_IPV6_GENEVE_OPT_LEN;
+-	ipv6_addr_copy((union v6addr *)&gopt->addr, addr);
++	ipv6_addr_copy_unaligned((union v6addr *)&gopt->addr, addr);
++
+ 	gopt->port = port;
+ }
+ #endif
+
+--- bpf/lib/ipv6.h
+@@ -88,6 +88,12 @@ static __always_inline int ipv6_hdrlen(struct __ctx_buff *ctx, __u8 *nexthdr)
+ 
+ static __always_inline void ipv6_addr_copy(union v6addr *dst,
+ 					   const union v6addr *src)
++{
++	memcpy(dst, src, sizeof(*dst));
++}
++
++static __always_inline void ipv6_addr_copy_unaligned(union v6addr *dst,
++						     const union v6addr *src)
+ {
+ 	dst->d1 = src->d1;
+ 	dst->d2 = src->d2;
+
+--- bpf/lib/lb.h
+@@ -751,7 +751,7 @@ __lb6_affinity_backend_id(const struct lb6_service *svc, bool netns_cookie,
+ 	};
+ 	struct lb_affinity_val *val;
+ 
+-	ipv6_addr_copy(&key.client_id.client_ip, &id->client_ip);
++	ipv6_addr_copy_unaligned(&key.client_id.client_ip, &id->client_ip);
+ 
+ 	val = map_lookup_elem(&LB6_AFFINITY_MAP, &key);
+ 	if (val != NULL) {
+@@ -800,7 +800,7 @@ __lb6_update_affinity(const struct lb6_service *svc, bool netns_cookie,
+ 		.last_used	= now,
+ 	};
+ 
+-	ipv6_addr_copy(&key.client_id.client_ip, &id->client_ip);
++	ipv6_addr_copy_unaligned(&key.client_id.client_ip, &id->client_ip);
+ 
+ 	map_update_elem(&LB6_AFFINITY_MAP, &key, &val, 0);
+ }
+
+--- bpf/lib/nodeport.h
+@@ -346,7 +346,7 @@ static __always_inline int dsr_set_ext6(struct __ctx_buff *ctx,
+ 	opt.hdr.hdrlen = DSR_IPV6_EXT_LEN;
+ 	opt.opt_type = DSR_IPV6_OPT_TYPE;
+ 	opt.opt_len = DSR_IPV6_OPT_LEN;
+-	ipv6_addr_copy(&opt.addr, svc_addr);
++	ipv6_addr_copy_unaligned(&opt.addr, svc_addr);
+ 	opt.port = svc_port;
+ 
+ 	if (ctx_adjust_hroom(ctx, sizeof(opt), BPF_ADJ_ROOM_NET,
+@@ -526,7 +526,8 @@ nodeport_extract_dsr_v6(struct __ctx_buff *ctx,
+ 			    gopt.hdr.type == DSR_GENEVE_OPT_TYPE) {
+ 				*dsr = true;
+ 				*port = gopt.port;
+-				ipv6_addr_copy(addr, (union v6addr *)&gopt.addr);
++				ipv6_addr_copy_unaligned(addr,
++							 (union v6addr *)&gopt.addr);
+ 				return 0;
+ 			}
+ 		}
+
+--- bpf/lib/trace_sock.h
+@@ -120,7 +120,7 @@ send_trace_sock_notify6(struct __ctx_sock *ctx,
+ 		.l4_proto	= parse_protocol(ctx->protocol),
+ 		.ipv6		= 1,
+ 	};
+-	ipv6_addr_copy(&msg.dst_ip.ip6, dst_addr);
++	ipv6_addr_copy_unaligned(&msg.dst_ip.ip6, dst_addr);
+ 
+ 	ctx_event_output(ctx, &EVENTS_MAP, BPF_F_CURRENT_CPU, &msg, sizeof(msg));
+ }
+
+--- bpf/tests/tc_nodeport_lb6_dsr_backend.c
+@@ -102,7 +102,7 @@ int nodeport_dsr_backend_pktgen(struct __ctx_buff *ctx)
+ 
+ 	opt->opt_type = DSR_IPV6_OPT_TYPE;
+ 	opt->opt_len = DSR_IPV6_OPT_LEN;
+-	ipv6_addr_copy((union v6addr *)&opt->addr, &frontend_ip);
++	ipv6_addr_copy_unaligned((union v6addr *)&opt->addr, &frontend_ip);
+ 	opt->port = FRONTEND_PORT;
+ 
+ 	/* Push TCP header */
+

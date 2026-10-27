@@ -1,0 +1,32 @@
+repo: eunomia-bpf/agentsight
+commit: e33e3b6b5a13545d858b9e1f0e17fdc6f3ba52fe
+rank: 4649
+
+Add ARM64 support with Docker and build testing
+
+- Introduced a new Dockerfile for ARM64 architecture to facilitate building the project in a compatible environment.
+- Added a test script to automate the ARM64 build process, including Docker image creation, BPF program compilation, and execution of tests.
+- Updated `test_process_utils.c` to conditionally include Linux types, ensuring compatibility with ARM64 and preventing conflicts with system headers.
+- Verified that the build process works seamlessly on both x86_64 and ARM64 architectures.
+
+--- bpf/test_process_utils.c
+@@ -7,10 +7,18 @@
+ #include <stdbool.h>
+ #include <stdint.h>
+ 
++// Include Linux types if available, otherwise define our own
++#ifdef __linux__
++#include <linux/types.h>
++#else
+ // BPF type definitions for testing
+ typedef uint32_t __u32;
+ typedef uint64_t __u64;
++#endif
++
++#ifndef BPF_ANY
+ #define BPF_ANY 0
++#endif
+ 
+ #include "process.h"
+ 
+

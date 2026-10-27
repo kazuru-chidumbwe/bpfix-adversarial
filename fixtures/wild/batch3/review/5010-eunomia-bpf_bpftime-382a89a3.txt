@@ -1,0 +1,287 @@
+repo: eunomia-bpf/bpftime
+commit: 382a89a3dd47234f6ce80d1af3ea8df42938e220
+rank: 5010
+
+Add trap-based uprobe backend for architectures without Frida (#665)
+
+* feat(attach): add trap-based uprobe backend for architectures without frida
+
+Add a portable uprobe/uretprobe/override/ureplace attach implementation
+that works without frida-gum. It writes a breakpoint at the probe address
+and services SIGTRAP: the original instruction is executed from an
+out-of-line slot (with rip-relative fix-ups on x86) or emulated when it
+is pc-relative, so no event is lost under contention and no free
+register is needed. uretprobes hijack the return address with a
+trampoline and keep the real one on a per-thread mmap'ed shadow stack.
+
+Supported: x86_64, aarch64 and riscv64 (compressed instructions
+included). The engine keeps an immutable probe table behind an atomic
+pointer so the handler never takes a lock, uses initial-exec TLS so the
+first hit on a new thread does not allocate (probing malloc works),
+chains to any pre-existing SIGTRAP handler and never terminates the
+host.
+
+The agent selects the backend with BPFTIME_UPROBE_BACKEND=frida|trap
+(default: frida where a devkit exists, trap elsewhere); the agent's own
+environment overrides the loader's shared config.
+
+Also add an architecture-neutral bpftime_pt_regs.hpp with the riscv64
+layout, a riscv64 cross toolchain file, Catch2 tests for the backend
+(uprobe/uretprobe/override, multithread no-loss, attach/detach races,
+recursion, malloc probing, signal chaining, backtrace, per-arch
+instruction emulation) and a runtime-level test driving it with a real
+eBPF program. Tests pass natively on x86_64 and riscv64 (Debug and
+Release) and under qemu-user for riscv64 and aarch64.
+
+* fix(attach): gate trap uprobe to riscv only, fix LTO and backtrace issues
+
+- Add BPFTIME_ENABLE_TRAP_UPROBE cmake option, ON only when
+  CMAKE_SYSTEM_PROCESSOR matches riscv; x86_64/aarch64 builds are
+  unaffected and keep using frida exclusively.
+- Move g_trap_global into assembly .data sections so LTO does not
+  discard the symbol (fixes benchmark CI link error).
+- Replace glibc backtrace() with _Unwind_Backtrace + CFA filtering
+  for generate_stack; works correctly under LTO inlining and across
+  x86_64, aarch64 and riscv64.
+- Update backtrace test assertions: frame 0 is the interrupted pc,
+  frame 1+ are callers.
+- Update README to document riscv-only default.
+
+* ci: add riscv64 cross-build and qemu-user test workflow
+
+Add BPFTIME_ENABLE_FRIDA cmake option (ON by default, OFF on riscv64)
+so the tree can configure without frida-gum. Gate frida.cmake, the
+frida uprobe attach impl, text_segment_transformer and the CLI tool
+(all of which require frida) behind the option. The runtime, agent and
+static-lib sections are similarly guarded.
+
+Also gate the unconditional -lncurses linker flag behind BPFTIME_LLVM_JIT
+so cross-compilation works without a host ncurses library.
+
+New workflow .github/workflows/test-riscv64.yml:
+- Cross-compiles with cmake/riscv64-toolchain.cmake (Debug + Release)
+- Runs bpftime_trap_uprobe_attach_tests under qemu-user
+- Triggered by changes to the trap backend, attach, runtime agent,
+  cmake or root CMakeLists
+
+Verified: x86_64 builds (Release, LTO) still produce a working agent
+with frida; riscv64 cross builds produce a working trap test binary
+that passes all 24 test cases under qemu-riscv64.
+
+* fix(build): correct link order so -lz follows libbpf
+
+libbpf.a references gzopen64 from libz; the linker resolves symbols
+left-to-right, so -lz must appear after libbpf on the link line.
+The previous refactoring placed -lz in the base set before libbpf
+was appended, breaking bpftimetool and bpftime-cli-cpp.
+
+* refactor(attach): remove x86_64 and aarch64 from trap uprobe backend
+
+The trap backend is only used on riscv64 where frida is unavailable.
+Remove the x86_64 and aarch64 arch implementations, the x86 instruction
+decoder, and all non-riscv64 test code. The insn_info struct drops the
+x86-only riprel/disp_off fields.
+
+* fix(attach): signal safety, torn instruction fix, and prepare_thread API
+
+- Remove pthread_setspecific from SIGTRAP handler path (not async-signal-safe);
+  uret_stack now uses mmap-only allocation with initial-exec TLS.
+- Remove all spdlog calls from signal handler paths (handle_hit, handle_return).
+- Replace two-store write_code() for 4-byte instructions at 2-byte boundaries
+  with a three-phase c.ebreak protocol: intermediate states are always a
+  trapping compressed instruction, so no hart can fetch a torn non-trapping word.
+- Add trap_attach_impl::prepare_thread() to pre-allocate per-thread state
+  outside of signal context.
+- Add test_trap_signal_safety.cpp: allocator stress with probed malloc.
+- Add test_trap_concurrent_patch.cpp: concurrent arm/disarm while calling target.
+
+* docs(attach): clarify three-phase write protocol in README
+
+The "How it works" section claimed writes are always single aligned
+stores.  Update to describe the three-phase c.ebreak protocol used
+for 4-byte instructions at 2-byte boundaries.
+
+* fix(attach): embed uret_stack in TLS, drop initial-exec, add alignment tests
+
+- Embed uret_stack directly in thread_local (~3KB) instead of lazily
+  mmap'ing it from the signal handler. This eliminates async-signal-safety
+  violations (mmap is not guaranteed signal-safe) and fixes VMA leaks for
+  short-lived threads since TLS is reclaimed on thread exit.
+
+- Remove tls_model("initial-exec") from all thread-local variables.
+  The trap library is linked into bpftime-agent (a shared library loaded
+  via LD_PRELOAD or late dlopen), where initial-exec TLS may exhaust the
+  static-TLS surplus. Global-dynamic (the default) works in all scenarios.
+
+- Add test for three-phase write with a 4-byte instruction at addr ≡ 2
+  (mod 4): __trap_rv_misaligned4 uses c.nop to shift a beq/addi to the
+  exact alignment that triggers the c.ebreak staging protocol. The test
+  asserts the alignment precondition before probing.
+
+- Add concurrent three-phase patch test on riscv64: 4 worker threads
+  call the misaligned-4 function while the main thread repeatedly arms
+  and disarms probes (200 cycles).
+
+- Add trap-uprobe microbenchmark (benchmark/trap-uprobe/) with results
+  from native riscv64 hardware and x86_64 kernel uprobe comparison.
+
+Tested: 30 test cases (74298 assertions) pass on native riscv64 32-core
+hardware; qemu-user also passes all tests.
+
+* fix(build): add stub Makefile for trap-uprobe benchmark
+
+The top-level benchmark/Makefile recurses into all subdirectories with
+make -C. benchmark/trap-uprobe/ uses CMake (built via
+BPFTIME_ENABLE_TRAP_UPROBE=1), so the recursion fails without a
+Makefile. Add a no-op stub that prints a skip message.
+
+* fix(runtime): add riscv64 memory barrier macros for perf_event and ringbuf
+
+perf_event_handler.cpp and ringbuf_map.cpp only defined smp_load_acquire
+and smp_store_release for x86_64 and aarch64. Add RISC-V implementations
+using fence instructions (fence rw,w for release, fence r,rw for acquire)
+matching the RISC-V memory model.
+
+* fix(runtime): provide glib type fallbacks when frida is unavailable
+
+agent.cpp uses gchar, gboolean, TRUE, FALSE from frida-gum.h throughout
+its code (not just in frida-guarded blocks). Provide typedef/macro
+fallbacks when BPFTIME_HAVE_FRIDA_ATTACH is off so the agent compiles
+on architectures where frida is not available (e.g. riscv64).
+
+* fix(runtime): qualify trap namespace for attach constants in agent
+
+The trap backend constants (ATTACH_UPROBE etc.) live in
+bpftime::attach::trap:: while the frida equivalents are in
+bpftime::attach::. Since agent.cpp uses 'using namespace
+bpftime::attach', the trap constants need a trap:: prefix.
+
+* fix(runtime): use asm-generic/unistd.h on non-x86_64 architectures
+
+syscall_server_main.cpp included asm/unistd_64.h for everything except
+aarch64. Invert the condition: use the x86-specific header only on
+x86_64, and asm-generic/unistd.h everywhere else (aarch64, riscv64, etc).
+
+* fix(runtime): default to ubpf VM when LLVM JIT is not built
+
+When BPFTIME_LLVM_JIT is OFF, define DEFAULT_VM_NAME="ubpf" so the
+runtime does not try to load a non-existent LLVM backend. This fixes
+the "Unknown VM type requested: llvm" error on architectures where
+only the ubpf interpreter is available.
+
+* refactor(attach): slim trap uprobe backend and add ISA comments
+
+Consolidate three small test files into test_trap_misc.cpp, remove
+machine-specific benchmark results.md, replace inline /proc/self/maps
+parsing with get_module_base_addr(), inline the no-op prepare_thread(),
+compress branch switch cases to single lines, and add English comments
+to RISC-V instruction decode/emulate, RCU publish pattern, and signal
+dispatch logic.  Also fix JIT compilation failure to fall back to the
+interpreter instead of returning an error.
+
+Net reduction: ~275 lines from the trap uprobe diff.
+
+* refactor(attach): add SPDLOG diagnostics to trap uprobe error paths
+
+Add structured logging to all error and warning returns in the trap
+engine so failures in attach/detach/decode are diagnosable without a
+debugger.
+
+* refactor(runtime): select uprobe backend at compile time
+
+Replace the runtime BPFTIME_UPROBE_BACKEND env var with a pure
+compile-time choice driven by BPFTIME_ENABLE_TRAP_UPROBE and
+BPFTIME_ENABLE_FRIDA cmake variables.  On riscv64 the trap backend
+is selected; all other architectures keep frida unchanged.
+
+This removes dead code paths, the resolve_use_trap_uprobe_backend()
+function, and the use_trap_uprobe_backend config field.
+
+* docs(attach): add cross-backend benchmark and update trap README
+
+Add a performance comparison table (trap vs frida vs kernel uprobe)
+with fresh measurements: x86_64 frida/kernel (100k iter, 5 runs)
+and riscv64 trap (200k iter, 5 runs, SG2042 board).
+
+Update the trap README to reflect compile-time backend selection
+and refresh the latency numbers in the Limitations section.
+
+Also update the llvm-jit submodule to include the ORC symbol
+visibility fix (clairjoestar/llvmbpf fix/orc-symbol-visibility).
+
+* fix(cmake): write BPFTIME_ENABLE_FRIDA/TRAP to CMakeCache
+
+Use set(... CACHE BOOL FORCE) instead of plain set() so the
+variables appear in CMakeCache.txt.  CI scripts grep the cache
+to verify the build configuration; plain set() only creates a
+local variable invisible to cache inspection.
+
+* chore: update llvm-jit submodule to upstream latest
+
+Includes the merged ORC symbol visibility fix (#49) and other
+upstream improvements (RTTI fix, kernel-compatible lift mode,
+target CPU/features API, array map inline, signed LDX, etc.).
+
+* fix: support runtime test builds without Frida on RISC-V
+
+* fix: make trap state signal-safe and propagate patch permission errors
+
+* test: exercise exact 2-mod-4 RISC-V concurrent patching
+
+* fix: reject unsafe BPF programs before trap attachment
+
+* ci: run RISC-V trap integration with target LLVM dependencies
+
+* test: restore empty shared-memory state after tailcall cleanup
+
+Leave a live SHM_NO_CREATE object for subsequent standalone program configuration. This fixes the tailcall-to-filter test sequence accessing an unmapped runtime configuration.
+
+* fix: handle empty and missing Frida module paths without throwing
+
+Treat an empty module name as the main executable and use the error-code filesystem equivalence overload for missing paths. Cover both cases in module resolution tests.
+
+Validation: local x86 runtime 101/101 cases passed; Frida 17/17 cases passed; tailcall, filter, and shared-memory attach sequence passed.
+
+* fix: remove extra blank line at EOF in bpftime_config.cpp
+
+---------
+
+Co-authored-by: Yunwei 123 <yunwei356@gmail.com>
+
+--- runtime/unit-test/assets/uprobe_trap.bpf.c
+@@ -0,0 +1,34 @@
++#define BPF_NO_GLOBAL_DATA
++#include "vmlinux.h"
++#include <bpf/bpf_tracing.h>
++#include <bpf/bpf_helpers.h>
++
++SEC("uprobe")
++__u64 BPF_KPROBE(my_function_uprobe, int number, char *str, char ch)
++{
++	// Exercise all three target register offsets, including dereferencing
++	// PARM2, without an unsafe formatting/stdio helper in SIGTRAP.
++	if (number != 1 || str[0] != 'h' || str[1] != 'e' || ch != 'c')
++		return 0;
++	return bpf_get_func_ip(ctx);
++}
++
++SEC("uretprobe")
++__u64 BPF_KRETPROBE(my_function_uretprobe)
++{
++	return bpf_get_func_ip(ctx);
++}
++
++SEC("uprobe")
++__u64 BPF_KPROBE(strdup_uprobe, char *str)
++{
++	return str[0] == 'a' && str[1] == 'a' ? 0 : 1;
++}
++
++SEC("uretprobe")
++__u64 BPF_KRETPROBE(strdup_uretprobe, char *str)
++{
++	return str[0] == 'a' && str[1] == 'a' ? 0 : 1;
++}
++
++char LICENSE[] SEC("license") = "Dual BSD/GPL";
+

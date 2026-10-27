@@ -1,0 +1,583 @@
+repo: spinningfactory/kloak
+commit: f03cfcbc3ce18f53ed5b4e902696883516f14ec0
+rank: 2744
+
+fix(secrets): bit-exact shadow generator closes HTTP/2 HPACK padding bug (#233)
+
+* test(e2e): regression test for HTTP/2 HPACK over-padding bug
+
+The BPF map sync in pkg/ebpf/sync.go pads the Huffman-encoded real
+value with 0xFF (EOS bits) until it matches the shadow's Huffman
+length. RFC 7541 §5.2 only allows up to 7 bits of trailing 1s as
+padding; anything longer MUST be treated as a decoding error. When
+the shadow's Huffman density exceeds the real's by more than one
+byte (typical when the real is mostly lowercase letters and the
+shadow is Crockford Base32 uppercase + digits), the padding becomes
+illegal and strict HPACK decoders (nghttp2, AWS ALB) drop the stream.
+
+Existing coverage misses this:
+  - TestEBPFSecretRewrite's real/shadow Huffman lengths happen to
+    differ by ≤1 byte (legal 7-bit padding), so the bug stays latent.
+  - demo-python (requests) and demo-js (node http) default to
+    HTTP/1.1 — no HPACK in their path.
+  - demo-go-boring explicitly forces HTTP/1.1 (ForceAttemptHTTP2=
+    false), almost certainly to dodge this exact issue; no
+    HTTP/2 + non-Go-stdlib-TLS coverage remains.
+
+This commit adds TestEBPFHttp2HpackOverPadding which exercises
+demo-go (HTTP/2 via ALPN against httpbin.org) with a low-Huffman-
+density real value ("lowercase-secret-triggering-hpack-bug", 37
+chars, HuffmanLen=26). The generated shadow's HuffmanLen lands at
+~31 bytes — a 5-byte (40-bit) gap, well past the RFC's 7-bit
+allowance. Without a fix, httpbin's HPACK decoder rejects the
+header block and the demo never echoes the real secret back.
+
+The test is t.Skip'd with a clear TODO and a list of candidate
+fixes (tighten the shadow generator's Huffman invariant; rewrite
+the HPACK length prefix in BPF; per-secret fail-open with WARN +
+metric). Removing the Skip is the verification step for whichever
+fix lands.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+* test(e2e): remove t.Skip — let HPACK over-padding test fail in CI
+
+Per reviewer feedback: the regression test should expose the bug
+loudly in CI, not be silenced behind t.Skip. Removing the skip and
+the surrounding TODO; the test now runs as a hard failure on main
+until one of the proposed fixes in the comment block lands.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+* refactor(secrets): ShadowGenerator takes Huffman length, not cleartext
+
+generateShadowValue and ShadowGenerator.Generate previously took both
+the cleartext real secret and its byte length as separate parameters.
+The cleartext was used for exactly one thing — computing
+hpack.HuffmanEncodeLength(realSecret) — and originalLen was always
+len(realSecret) at every call site (verified across pkg/controller
+and pkg/secrets/yaml). Two consequences:
+
+  1. The two parameters were vestigial: every caller passed
+     (len(real), real), so an accidental mismatch would silently
+     produce a shadow of the wrong plaintext length and corrupt the
+     in-kernel rewrite buffer.
+
+  2. The cleartext entered pkg/secrets's shadow-generation code path
+     even though the algorithm only needs a length target. Any future
+     debug log, panic dump, or error format string inside this package
+     could inadvertently surface the real secret.
+
+Change the signature to take originalLen + realHuffmanLen and push the
+HPACK length computation up to the two callers (pkg/controller and
+pkg/secrets/yaml). The cleartext now never enters pkg/secrets.shadow's
+scope. Test fixtures updated to call hpack.HuffmanEncodeLength locally.
+
+No behavior change: same algorithm, same invariant guarantees, same
+ErrHuffmanInvariantUnsatisfiable contract. Verified by the existing
+pkg/secrets, pkg/secrets/yaml, and pkg/controller test suites.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+* fix(secrets): bit-exact byte-by-byte shadow construction
+
+Replaces the random-then-tune shadow algorithm with byte-by-byte
+construction against an exact (originalLen, realHuffmanBits) budget.
+Every shadow now satisfies len(huffShadow_bits) == realHuffmanBits
+exactly, which means the encoded wire byte count matches the real's
+exactly, which means the BPF map sync in pkg/ebpf/sync.go rewrites the
+HPACK slot byte-for-byte with zero EOS padding regardless of the
+real's character class.
+
+This closes the HTTP/2 HPACK over-padding bug demonstrated by
+TestEBPFHttp2HpackOverPadding: low-Huffman-density reals (lowercase +
+dashes) previously produced shadows whose Huffman length exceeded the
+real's by more than 7 bits — the sync path filled the gap with 0xFF
+EOS bytes, violating RFC 7541 §5.2's "padding strictly longer than 7
+bits MUST be treated as a decoding error" and triggering stream
+resets from strict HPACK decoders (nghttp2, AWS ALB fronting
+httpbin.org).
+
+Algorithm (pkg/secrets/shadow.go):
+
+  - Bucket every alphanumeric ASCII byte by its HPACK Huffman bit
+    length into huffmanBuckets[5..7] (alphabet limits the per-byte
+    code length to [MinBits, MaxBits]).
+  - On each generation: tailLen = originalLen - len(ValuePrefix),
+    tailBits = realHuffmanBits - prefixHuffmanBits.
+  - Feasibility: pre-check tailBits ∈ [tailLen*MinBits, tailLen*MaxBits]
+    in a single comparison. Returns ErrHuffmanInvariantUnsatisfiable
+    immediately on the unreachable cases, with no randomness consumed
+    on the error path (no timing oracle on realHuffmanBits beyond the
+    feasibility predicate itself).
+  - Per byte: pick code length k ∈ [lo, hi] uniformly where the
+    [lo, hi] window is the intersection of [MinBits, MaxBits] and the
+    bit budget remaining feasibility for the suffix. Then uniformly
+    pick a byte from huffmanBuckets[k]. Two CSPRNG draws per byte;
+    control flow does not branch on realHuffmanBits's value.
+
+Side benefits beyond closing the bug:
+
+  - Catches the previously-unhandled `shadowBits > realBits` case
+    (old code's tuning loop only ran in the < direction; an
+    unfortunately-dense ULID could overshoot a low-density real
+    silently).
+  - Removes the timing oracle on realHuffmanBits — the old code's
+    tuning loop iterated `realHuffLen - initialShadowHuffLen` times,
+    giving direct timing access to the real's encoded length.
+  - Drops the github.com/oklog/ulid/v2 dependency — the new algorithm
+    doesn't need timestamp-ordered shadows; pure CSPRNG with prefix
+    collision retry is sufficient.
+
+Public API:
+
+  - Generate(originalLen, realHuffmanBits int, ownerID string,
+    maxRetries int) — realHuffmanBits is now an exact bit count, not
+    a byte count. Callers compute it via secrets.HuffmanBits(real)
+    (added in pkg/secrets/huffman.go).
+  - HuffmanBits(s string) int — bit-exact sibling of
+    hpack.HuffmanEncodeLength (which rounds up to bytes).
+
+Test-fixture updates:
+
+  - Test reals using single/triple-char values ("v", "vvv", "abc",
+    "abcd", "real-val", "real-dual", "aaa") were updated to feasible
+    fixtures. The previous algorithm tolerated infeasible fixtures by
+    silently producing wrong-length or invariant-violating shadows;
+    the new algorithm rejects them cleanly with
+    ErrHuffmanInvariantUnsatisfiable. This is a behavior tightening,
+    not a regression — production secrets are ≥8 chars in practice.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+* test(e2e): surface kubectl errors in HPACK over-padding test
+
+Per Gemini review on PR #233: ignored errors from kubectl describe
+and the cleanup kubectl delete made deployment failures harder to
+debug — describe returning empty silently lost the postmortem signal,
+and a cleanup failure could leak resources into the next test run
+without notice.
+
+Both now log via t.Logf. The waitForSecretAbsent calls keep the
+existing `_ =` pattern (best-effort GC; matches TestEBPFSecretRewrite)
+since a stale shadow that fails to GC in 30s shouldn't tank the test
+before we get to the actual rewrite assertion.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+* fix: CI lint + klor e2e regressions on PR #233
+
+Lint (golangci-lint v2.11.4): pkg/controller/reconciler_test.go
+tripped staticcheck SA5011 on the post-t.Fatal deref of r.CgroupRoot.
+t.Fatal is in fact no-return (runtime.Goexit), but the analyzer
+doesn't model that, so add an explicit `return` to make the dead
+path visible. Latent — the lint version bump surfaced it; this PR's
+changes to pkg/controller/secret_reconciler.go are what caused the
+package to be re-analyzed.
+
+Klor e2e: TestKlor_RunPropagatesChildExitCode in
+test/e2e/klor/klor_test.go used `value: vvv` (3 chars), which the
+new byte-by-byte shadow generator correctly rejects with
+ErrHuffmanInvariantUnsatisfiable (a shadow shorter than the
+"kloak:" prefix cannot be minted). klor surfaces the YAML-load
+error as exit 1, masking the child's exit 17 that the test wants
+to observe. Swap to "src-snapshot-real" — the same feasible
+fixture the rest of the PR's test updates use.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+* feat(secrets): shorten shadow prefix from "kloak:" to "kl::"
+
+Drops the literal shadow prefix from 6 bytes (37 HPACK Huffman bits) to
+4 bytes (27 bits). This widens the byte-by-byte shadow generator's
+feasibility window from `[5N+7, 7N−5]` to `[5N+7, 7N−1]` total Huffman
+bits, which translates to dramatically better coverage at small N:
+
+  Length 8:  upper density 6.375 b/B → 6.875 b/B
+  Length 21: upper density 6.762 → 6.952
+  Length 40: upper density 6.875 → 6.975
+
+Equivalently, the *minimum supported shadow length* for the same upper
+density bound drops by ~5×: where the old prefix needed N=40 to cover
+the density range `kl::`@N=8 reaches, the new prefix gives that
+coverage out of the box at N=8.
+
+This closes the remaining CI fixture failures from the previous
+commit (`SECRET-8`, `BLOCKED8`, `REAL-BLOCKED-PORT-KEY`,
+`BLOCKE-42B-...`) — they all sat just above the old window's upper
+bound at their respective lengths and now slot comfortably inside.
+
+eBPF matcher updates (pkg/ebpf/bpf/helpers.h):
+
+  is_kloak_prefix:        6-byte literal "kloak:"           → 4-byte "kl::"
+  is_kloak_prefix_huffman: 4 stable Huffman bytes
+                          (0xeb 0x41 0xc7 0xd6)             → 3 stable bytes
+                                                              (0xeb 0x45 0xcb)
+
+The Huffman matcher drops one stable byte (32-bit → 24-bit pattern),
+trading ~256× more BPF prescan-trigger candidates for the bit-budget
+headroom. The 8-byte `secret_map` lookup confirms genuine matches, so
+the extra prescan hits cost a few hundred nanoseconds each — negligible
+under realistic traffic loads.
+
+Coverage of common secret formats (1000-sample feasibility rate with
+the new prefix):
+
+  openssl rand -hex N=16:  98% feasible (was 51% with kloak:)
+  openssl rand -hex N=20:  >99.8%       (was 88%)
+  openssl rand -hex N=32:  100%
+  openssl rand -base64 N=16:  98%
+  openssl rand -base64 N=32:  >99.8%
+  JWTs (any realistic size):  100%
+
+Files touched:
+
+  pkg/secrets/shadow.go        ValuePrefix constant + doc.
+  pkg/ebpf/bpf/helpers.h       Matcher bodies + doc.
+  pkg/ebpf/bpf/helpers_test.c  Renamed/updated unit-test fixtures.
+  pkg/ebpf/bpf/tls_uprobe.c    Stale comment refs.
+  pkg/ebpf/sync.go             Stale comment ref.
+  pkg/secrets/huffman.go       Stale comment refs.
+  pkg/{ebpf,secrets,controller,runtime}/{...}_test.go
+                               Test fixtures using literal shadow
+                               values updated mechanically; BPF map
+                               key fixtures (which assume 8-byte
+                               `kl::ABCD`-shape prefixes) extended
+                               from the previous 6-byte truncation.
+  CLAUDE.md, README.md         User-facing docs updated.
+  test/e2e/*                   Strings.Contains checks for the
+                               on-the-wire shadow placeholder.
+
+Verified: `make test-bpf-helpers` (32/32 PASS, includes renamed
+`test_prefix_single_colon` / `test_prefix_wrong_second_char` /
+`test_prefix_exact_four`), `go test ./...` (all green on darwin + Lima
+linux), `golangci-lint run ./...` (0 issues).
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+* feat(webhook): fail-closed on Huffman-infeasible secrets at admission
+
+Stricter than the soft-fail design discussed earlier: when a secret's
+real value has a Huffman bit count outside the achievable shadow
+window for its length, the validating admission webhook now denies
+the Secret at apply time. This matches the explicit product
+preference — a kloak-labeled Secret that can't be safely shadowed for
+HTTP/2 should NOT be silently accepted as HTTP/1.1-only. Users get
+immediate `kubectl apply` feedback instead of discovering at runtime
+that a credential is leaking unprotected through HTTP/2 paths.
+
+Public API:
+  pkg/secrets/shadow.go::CanShadow(originalLen, realHuffmanBits int)
+    error
+      Returns nil iff (originalLen, realHuffmanBits) lies inside the
+      construction algorithm's feasibility window. Single source of
+      truth for the predicate — both generateShadowValue (runtime
+      mint) and the webhook (admission gate) call it.
+
+  pkg/webhook/secret_validator.go::validateSecretData
+      Now invokes secrets.CanShadow per-key with realHuffmanBits =
+      secrets.HuffmanBits(value). Error wraps ErrHuffmanInvariantUn-
+      satisfiable so callers can errors.Is-match it; the surface
+      message names the key, the achievable bit range, and suggests
+      a fix.
+
+E2E fixture updates:
+  test/e2e/secret_test.go
+    TestShadowSecretMultipleKeys: "admin-user" (56 bits, 1 below
+      floor at length 10) → "admin-User" (57 bits, inside window).
+      Other two values were already feasible.
+    TestShadowSecretLengthMatching: "abcdefgh" (45 bits, 2 below
+      floor at length 8) → "PASS1234" (49 bits, inside window);
+      strings.Repeat("x", 128) (896 bits, 1 above ceiling) →
+      strings.Repeat("Test1234", 16) (704 bits, inside window).
+      Boundary-density behavior is now covered by webhook tests
+      (next bullet) instead of this happy-path length test.
+
+Unit-test additions:
+  pkg/webhook/secret_validator_test.go
+    Adds "infeasible density rejected" case asserting webhook denial
+    for "12345678" (46 bits at length 8, 1 below floor). Existing
+    fixtures that happened to be infeasible were updated to
+    "PASS1234" or the new long-form to keep their happy-path intent.
+
+Verified: go vet ./..., go test ./..., golangci-lint run ./... all
+green; pkg/secrets and pkg/webhook unit tests cover both the
+construction-side and the admission-side of the predicate.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+* feat(secrets): widen shadow tail alphabet to MaxBits=8
+
+Expands the byte-by-byte shadow construction's per-byte ceiling from
+7 to 8 bits, lifting the feasibility window's upper bound from
+`7N − 1` to `8N − 5` bits at any shadow length N. The lower bound
+stays put at `5N + 7` — HPACK's 5-bit code-length floor is the
+absolute global minimum and no alphabet change can reach lower.
+
+What gets covered now (previously rejected at the ceiling):
+
+  | Real value                                  | Bits | N=N window before  | window now      |
+  | ------------------------------------------- | ---- | ------------------ | --------------- |
+  | "SECRET-8" / "BLOCKED8"                     | 54/55| [47, 55]           | [47, 59]        |
+  | "BLOCKE-42B-FGHIJKLMNOPQRSTUVWXYZ..."       | 290  | [217, 289] (-1)    | [217, 331]      |
+  | "REAL-BLOCKED-PORT-KEY"                     | 143  | [112, 142] (-1)    | [112, 163]      |
+  | strings.Repeat("x", 128)                    | 896  | [647, 895] (-1)    | [647, 1019]     |
+
+Pure-lowercase reals like `strings.Repeat("a", 32)` still correctly
+fail — they sit below the unfixable 5-bit floor and the admission
+webhook rejects them at apply time via secrets.CanShadow.
+
+bucket[8] population: the two natural 8-bit ASCII alphanumerics
+('X', 'Z') plus four 8-bit punctuation chars ('&', '*', ',', ';'),
+chosen so the upper bucket has 6 candidates rather than 2 — keeps
+per-byte sampling entropy reasonable. Shadows may now contain those
+punctuation chars in their tail (e.g. "kl::aB&cD*1"); still scannable
+as kloak placeholders in logs.
+
+Held the line at MaxBits=8 rather than pushing higher (10, 15, full
+HPACK). Past 8 bits, the alphabet bleeds into rarely-used punctuation
+('!', '"', '(', ')', '?' at 10 bits; '<', '{' at 15 bits) and the
+shadows look increasingly weird for diminishing real-world coverage
+gains — the practical population of secrets denser than 8 bits/byte
+is just binary blobs, which need a fundamentally different rewrite
+strategy (HPACK length-prefix manipulation + TLS record resizing).
+
+Verified: pkg/secrets, pkg/webhook unit tests green; the boundary
+test in TestGenerateShadowValue_UnsatisfiableReturnsError stays
+correctly classified — X×16 needs 8.42 bits/byte, still above the
+new MaxBits=8 ceiling by 5 bits.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+* fix(secrets): scrub value-derived bit count from admission errors
+
+CanShadow's error message previously included `target Huffman bits=%d`
+— that count is computed directly from the real secret's bytes
+(sum of per-byte HPACK code lengths) and the webhook surfaces this
+error verbatim in both the admission denial (returned to the kubectl
+caller and captured in apiserver audit logs) AND a structured
+controller log via Warnw. Two leak paths a security-conscious
+operator wouldn't want.
+
+The Huffman bit count is a weak side channel — many distinct
+secrets share the same bit count, so reversing the content from it
+is infeasible — but it's still a function of the value, and a
+security product has no business including value-derived statistics
+in error paths that the caller doesn't already have access to the
+value through. Strip it.
+
+Replacement error split into two directional variants for
+diagnostic clarity:
+
+  too low:   density below achievable floor (e.g. all-lowercase real)
+  too high:  density above achievable ceiling (e.g. binary blob)
+
+Both messages name only the originalLen and the achievable bit
+range, both of which are invariants the caller already knows (they
+constructed the secret; the algorithm parameters are public). Users
+get actionable diagnostics — "your secret is too low/high density
+at length N, achievable range A–B bits" — without exposing any
+statistic of the value's content distribution.
+
+Surrounding webhook wrapping ("data[%q]: %w (value's HPACK Huffman
+density is outside the range kloak can shadow…)") simplified to
+just "data[%q]: %w" since CanShadow's new message is already
+user-facing and self-contained.
+
+Test fixture for "infeasible density rejected" updated to assert
+the new "Huffman density is too low" substring; semantics unchanged
+(the same value is still rejected, just with a leak-free message).
+
+Verified: go vet ./..., go test ./..., golangci-lint run ./... —
+all green.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+* docs(ebpf): sync stale Huffman comment to "kl::" encoding
+
+Gemini review caught a comment in pkg/ebpf/sync.go that still cited
+the historical "kloak:" Huffman prefix bytes (0xeb 0x41 0xc7 0xd6)
+even though the matcher in helpers.h was updated for "kl::"
+(0xeb 0x45 0xcb, 3 stable leading bytes vs the old 4). The byte
+sequence was the only thing wrong; the surrounding sync logic is
+correct.
+
+Comment-only fix, no behavior change.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+---------
+
+Co-authored-by: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+--- pkg/ebpf/bpf/helpers.h
+@@ -91,23 +91,29 @@ HELPER_INLINE __u32 clamp_write_len(__u32 val_len) {
+   return ((val_len - 1) & (SECRET_MAX_LEN - 1)) + 1;
+ }
+ 
+-// Check if buffer starts with the 6-byte "kloak:" prefix (HTTP/1.1 plaintext).
+-// Returns 1 if it matches, 0 otherwise. Caller must ensure buf has >= 6 bytes.
++// Check if buffer starts with the 4-byte "kl::" prefix (HTTP/1.1 plaintext).
++// Returns 1 if it matches, 0 otherwise. Caller must ensure buf has >= 4 bytes.
++//
++// Historical "kloak:" (6 bytes / 37 Huffman bits) shortened to "kl::"
++// (4 bytes / 27 Huffman bits) to widen the byte-by-byte shadow generator's
++// feasibility window. The trailing `::` is still distinctive enough that
++// the cheap prefix filter rejects ~99.999% of byte windows; the 8-byte
++// secret_map lookup confirms genuine matches.
+ HELPER_INLINE int is_kloak_prefix(const char *buf) {
+-  return (buf[0] == 'k' && buf[1] == 'l' && buf[2] == 'o' && buf[3] == 'a' &&
+-          buf[4] == 'k' && buf[5] == ':')
++  return (buf[0] == 'k' && buf[1] == 'l' && buf[2] == ':' && buf[3] == ':')
+              ? 1
+              : 0;
+ }
+ 
+-// Check if buffer starts with the HPACK Huffman encoding of "kloak:" (HTTP/2).
+-// The HPACK static Huffman table (RFC 7541 Appendix B) encodes "kloak" as
+-// 4 stable bytes: 0xeb 0x41 0xc7 0xd6. The 5th byte varies depending on
+-// the character after ":" due to Huffman bit packing. 4 bytes is sufficient
+-// to avoid false positives — the 8-byte key lookup confirms the match.
++// Check if buffer starts with the HPACK Huffman encoding of "kl::" (HTTP/2).
++// The HPACK static Huffman table (RFC 7541 Appendix B) encodes "kl::" as
++// 27 bits, of which the first 3 stable bytes are 0xeb 0x45 0xcb. The 4th
++// byte's bits depend on the character after the second ":" because the
++// 27-bit "kl::" doesn't end on a byte boundary. 3 bytes (24 bits) is
++// sufficient to keep BPF false-positive lookups rare; the 8-byte
++// secret_map confirms genuine matches.
+ HELPER_INLINE int is_kloak_prefix_huffman(const unsigned char *buf) {
+-  return (buf[0] == 0xeb && buf[1] == 0x41 && buf[2] == 0xc7 &&
+-          buf[3] == 0xd6)
++  return (buf[0] == 0xeb && buf[1] == 0x45 && buf[2] == 0xcb)
+              ? 1
+              : 0;
+ }
+
+--- pkg/ebpf/bpf/helpers_test.c
+@@ -166,27 +166,28 @@ static void test_clamp_exhaustive(void) {
+ }
+ 
+ // ============================================================================
+-// is_kloak_prefix
++// is_kloak_prefix — matches the 4-byte "kl::" plaintext prefix.
+ // ============================================================================
+ 
+ static void test_prefix_valid(void) {
+-  assert(is_kloak_prefix("kloak:abc") == 1);
++  assert(is_kloak_prefix("kl::abc") == 1);
+ }
+ 
+-static void test_prefix_wrong_colon(void) {
+-  assert(is_kloak_prefix("kloak;abc") == 0);
++static void test_prefix_single_colon(void) {
++  // One colon is not the prefix; the matcher requires both colons.
++  assert(is_kloak_prefix("kl:abcd") == 0);
+ }
+ 
+ static void test_prefix_uppercase(void) {
+-  assert(is_kloak_prefix("Kloak:abc") == 0);
++  assert(is_kloak_prefix("Kl::abc") == 0);
+ }
+ 
+-static void test_prefix_wrong_char(void) {
+-  assert(is_kloak_prefix("kloal:abc") == 0);
++static void test_prefix_wrong_second_char(void) {
++  assert(is_kloak_prefix("ka::abc") == 0);
+ }
+ 
+-static void test_prefix_exact_six(void) {
+-  assert(is_kloak_prefix("kloak:") == 1);
++static void test_prefix_exact_four(void) {
++  assert(is_kloak_prefix("kl::") == 1);
+ }
+ 
+ // ============================================================================
+@@ -369,10 +370,10 @@ int main(void) {
+ 
+   printf("is_kloak_prefix:\n");
+   RUN_TEST(test_prefix_valid);
+-  RUN_TEST(test_prefix_wrong_colon);
++  RUN_TEST(test_prefix_single_colon);
+   RUN_TEST(test_prefix_uppercase);
+-  RUN_TEST(test_prefix_wrong_char);
+-  RUN_TEST(test_prefix_exact_six);
++  RUN_TEST(test_prefix_wrong_second_char);
++  RUN_TEST(test_prefix_exact_four);
+ 
+   printf("gf128_mul:\n");
+   RUN_TEST(test_gf128_mul_identity);
+
+--- pkg/ebpf/bpf/tls_uprobe.c
+@@ -40,7 +40,7 @@
+ #define MAX_DATA_SIZE 256
+ // Fixed secret rewrite size
+ #define SECRET_MAX_LEN 128
+-// BPF map key length — short key for lookup (kloak: + 2 UUID chars)
++// BPF map key length — short key for lookup (kl:: + 4 UUID chars)
+ #define SECRET_KEY_LEN 8
+ // Max prefix bytes stored in secret_value (for future verification use)
+ #define SECRET_PREFIX_MAX 42
+@@ -72,7 +72,7 @@ struct secret_value {
+   __u16 port;                          // 0 = wildcard, otherwise port number (host byte order)
+   __u8 protocol;                       // IPPROTO_TCP (6) = TCP, IPPROTO_UDP (17) = UDP
+   __u32 prefix_len;                    // actual prefix length (8..42)
+-  char full_prefix[SECRET_PREFIX_MAX]; // full kloak:UUID prefix for verification
++  char full_prefix[SECRET_PREFIX_MAX]; // full kl::UUID prefix for verification
+ };
+ 
+ struct {
+@@ -99,7 +99,7 @@ struct scratch_buf {
+   __u32 xor_match_count;   // total matches found by pre-scan
+   __u32 xor_current_match; // index of the next match to process
+   struct {
+-     __u32 pos;                    // byte offset of kloak: prefix in data[]
++     __u32 pos;                    // byte offset of kl:: prefix in data[]
+      struct secret_key key;        // 8-byte key prefix
+    } xor_matches[XOR_MAX_MATCHES];
+    char host_value[MAX_HOST_LEN]; // host from DNS chain
+@@ -179,7 +179,7 @@ enum {
+   DBG_RESOLVE_HOST_OK,        // hostname resolved successfully
+   DBG_XOR_CONN_CHECK,         // entry uprobe checked tls_conn_state
+   DBG_XOR_CONN_HIT,           // tls_conn_state found + AES-GCM confirmed
+-  DBG_XOR_PRESCAN_MATCH,      // pre-scan found kloak: prefix
++  DBG_XOR_PRESCAN_MATCH,      // pre-scan found kl:: prefix
+   DBG_XOR_TAILCALL,           // tail-called to xor_path
+   DBG_XOR_PATH_ENTERED,       // bpf_xor_path entered
+   DBG_XOR_SECRET_FOUND,       // secret_map lookup succeeded in xor_path
+@@ -1516,7 +1516,7 @@ static __always_inline void resolve_host(struct scratch_buf *scratch_data,
+ }
+ 
+ // -----------------------------------------------------------------------------
+-// Prescan: bpf_loop callback to find all kloak: prefixes in the SSL_write buffer.
++// Prescan: bpf_loop callback to find all kl:: prefixes in the SSL_write buffer.
+ // Scans in MAX_DATA_SIZE chunks with SECRET_KEY_LEN-1 overlap so that tokens
+ // straddling chunk boundaries are always detected. Match positions are stored as
+ // global byte offsets (relative to the start of the SSL_write buffer).
+@@ -2553,7 +2553,7 @@ int bpf_uprobe_go_tls_write(void *ctx) {
+   // resolve_host uses last_verified_fd -> conn_ip_map -> dns_ip_map for Go.
+   resolve_host(scratch_data, 0);
+ 
+-  // Pre-scan for kloak: prefix and tail-call to xor_path.
++  // Pre-scan for kl:: prefix and tail-call to xor_path.
+   // Same flow as SSL_write — the downstream pipeline is generic.
+   dbg_inc(DBG_XOR_CONN_CHECK);
+   scratch_data->ssl_ptr = (__u64)conn_ptr; // reuse ssl_ptr field as connection ID
+@@ -2662,15 +2662,15 @@ int bpf_uprobe_ssl_write(void *ctx) {
+   // Look up hostname via DNS chain: ssl_fd_map -> conn_ip_map -> dns_ip_map
+   resolve_host(scratch_data, (__u64)ssl_ptr);
+ 
+-  // Pre-scan for kloak: prefix BEFORE conn_state check, so both
++  // Pre-scan for kl:: prefix BEFORE conn_state check, so both
+   // h_extract and xor_path have the match position in scratch_buf.
+   dbg_inc(DBG_XOR_CONN_CHECK);
+   scratch_data->ssl_ptr = (__u64)ssl_ptr;
+   scratch_data->chain_type = 0; // OpenSSL/BoringSSL
+   scratch_data->xor_match_count = 0;
+   scratch_data->xor_current_match = 0;
+ 
+-  // Scan the FULL SSL_write buffer for kloak: prefixes using bpf_loop.
++  // Scan the FULL SSL_write buffer for kl:: prefixes using bpf_loop.
+   // Each chunk reads MAX_DATA_SIZE bytes with SECRET_KEY_LEN-1 overlap,
+   // so tokens spanning chunk boundaries are always detected. Match positions
+   // are stored as global offsets relative to the SSL_write buffer start.
+

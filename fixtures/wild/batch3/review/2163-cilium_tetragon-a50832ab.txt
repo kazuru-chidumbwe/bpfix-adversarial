@@ -1,0 +1,117 @@
+repo: cilium/tetragon
+commit: a50832ab317dafb42a52c0b3e3a87c2bee157b52
+rank: 2163
+
+bpf: use bpf_loop for v61 substring filters
+
+Recent verifiers explore excessive states when the fixed substring loop
+is inlined into each argument-filter path. Move only the v61 variant to
+bpf_loop and make the callback index bound explicit before pointer
+arithmetic.
+
+Keep weak-kfunc availability checks in the callback-visible worker so
+kernels without the string kfuncs reject neither kprobe nor raw
+tracepoint programs.
+
+veristat results for generic_rawtp_filter_arg:
+
+Kernel          Result   Insns      States        Peak
+---             ---        ---         ---         ---
+6.1             before   42807        3502        2818
+bpf-next (7.2+) before  735755       19686        4286
+---             ---        ---         ---         ---
+6.1             after    67077(+57%)  3502        2818
+bpf-next (7.2+) after   189487(-74%) 14031(-29%) 34677(+709%)
+
+This reduces greatly the number of instruction on 7.2+ at the cost of
+more instructions for 6.1. In absolute, the increase for 6.1 is
+acceptable but the peak state explosion on bpf-next will be addressed in
+the next commit.
+
+Signed-off-by: Mahe Tardy <mahe.tardy@gmail.com>
+
+--- bpf/process/types/basic.h
+@@ -891,10 +891,11 @@ struct filter_char_substring_data {
+ 	char *arg_str;
+ 	uint arg_len;
+ 	bool igncase;
++	bool match;
+ };
+ 
+-FUNC_LOCAL long
+-do_filter_char_substring(int i, struct filter_char_substring_data *data, bool igncase)
++FUNC_INLINE long
++do_filter_char_substring(__u32 i, struct filter_char_substring_data *data, bool igncase)
+ {
+ 	__u32 id = ((__u32 *)&data->filter->value)[i];
+ 	char *sub_str;
+@@ -904,22 +905,58 @@ do_filter_char_substring(int i, struct filter_char_substring_data *data, bool ig
+ 	if (!sub_str)
+ 		return 0;
+ 
+-	if (igncase)
++	if (igncase) {
++		if (!bpf_ksym_exists(bpf_strncasestr))
++			return 0;
+ 		idx = bpf_strncasestr(data->arg_str, sub_str, data->arg_len);
+-	else
++	} else {
++		if (!bpf_ksym_exists(bpf_strnstr))
++			return 0;
+ 		idx = bpf_strnstr(data->arg_str, sub_str, data->arg_len);
++	}
+ 
+ 	return idx >= 0 ? 1 : 0;
+ }
+ 
++#ifdef __V61_BPF_PROG
++FUNC_LOCAL long
++do_filter_char_substring_loop(__u32 i, struct filter_char_substring_data *data)
++{
++	/*
++	 * The verifier does not preserve the bpf_loop callback index bound when
++	 * it is used for pointer arithmetic. Force a verifier-visible upper bound
++	 * before indexing filter->value. bpf_loop itself only supplies 0..99.
++	 */
++	asm volatile("%[i] &= 0x7f;\n" : [i] "+r"(i));
++	if (i >= MAX_SUBSTRING_VALUES)
++		return 1;
++
++	/* Match the original loop's post-iteration vallen check. */
++	if (i && i * sizeof(__u32) + 8 >= data->filter->vallen)
++		return 1;
++
++	if (do_filter_char_substring(i, data, data->igncase)) {
++		data->match = true;
++		return 1;
++	}
++	return 0;
++}
++#endif
++
+ FUNC_LOCAL long
+ filter_char_substring(struct selector_arg_filter *filter, char *arg_str, uint arg_len, bool igncase)
+ {
+ 	struct filter_char_substring_data data = {
+ 		.filter = filter,
+ 		.arg_str = arg_str,
+ 		.arg_len = arg_len,
++		.igncase = igncase,
+ 	};
++
++#ifdef __V61_BPF_PROG
++	loop(MAX_SUBSTRING_VALUES, do_filter_char_substring_loop, &data, 0);
++	return data.match;
++#else
+ 	int i, j = 0;
+ 
+ 	if (CONFIG(ITER_NUM)) {
+@@ -941,6 +978,7 @@ filter_char_substring(struct selector_arg_filter *filter, char *arg_str, uint ar
+ 		}
+ 	}
+ 	return 0;
++#endif
+ }
+ #endif /* __LARGE_BPF_PROG */
+ 
+

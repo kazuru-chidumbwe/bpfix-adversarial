@@ -1,0 +1,138 @@
+repo: cilium/tetragon
+commit: 0f807a577d8d2c709b5e3e653973343346c61a34
+rank: 3994
+
+tetragon: Use config_map in generic functions
+
+Using config_map in generic functions directly, so we don't
+need to pass it as argument.
+
+Passing map pointer through argument might end up storing and loading
+it to/from heap which makes it scalar value and breaks verifier.
+
+Signed-off-by: Jiri Olsa <jolsa@kernel.org>
+
+--- bpf/process/bpf_generic_kprobe.c
+@@ -94,7 +94,6 @@ generic_kprobe_setup_event(void *ctx)
+ 	return generic_process_event_and_setup(
+ 		ctx,
+ 		(struct bpf_map_def *)&kprobe_calls,
+-		(struct bpf_map_def *)&config_map,
+ 		(struct bpf_map_def *)data_heap_ptr);
+ }
+ 
+@@ -103,7 +102,6 @@ generic_kprobe_process_event(void *ctx)
+ {
+ 	return generic_process_event(ctx,
+ 				     (struct bpf_map_def *)&kprobe_calls,
+-				     (struct bpf_map_def *)&config_map,
+ 				     (struct bpf_map_def *)data_heap_ptr);
+ }
+ 
+
+--- bpf/process/bpf_generic_lsm_core.c
+@@ -64,7 +64,6 @@ generic_lsm_setup_event(void *ctx)
+ 	return generic_process_event_and_setup(
+ 		ctx,
+ 		(struct bpf_map_def *)&lsm_calls,
+-		(struct bpf_map_def *)&config_map,
+ 		(struct bpf_map_def *)data_heap_ptr);
+ }
+ 
+@@ -73,7 +72,6 @@ generic_lsm_process_event(void *ctx)
+ {
+ 	return generic_process_event(ctx,
+ 				     (struct bpf_map_def *)&lsm_calls,
+-				     (struct bpf_map_def *)&config_map,
+ 				     (struct bpf_map_def *)data_heap_ptr);
+ }
+ 
+
+--- bpf/process/bpf_generic_tracepoint.c
+@@ -227,8 +227,7 @@ __attribute__((section("tracepoint"), used)) int
+ generic_tracepoint_process_event(void *ctx)
+ {
+ 	return generic_process_event(ctx,
+-				     (struct bpf_map_def *)&tp_calls,
+-				     (struct bpf_map_def *)&config_map, 0);
++				     (struct bpf_map_def *)&tp_calls, 0);
+ }
+ 
+ __attribute__((section("tracepoint"), used)) int
+
+--- bpf/process/bpf_generic_uprobe.c
+@@ -66,16 +66,14 @@ generic_uprobe_setup_event(void *ctx)
+ {
+ 	return generic_process_event_and_setup(
+ 		ctx,
+-		(struct bpf_map_def *)&uprobe_calls,
+-		(struct bpf_map_def *)&config_map, 0);
++		(struct bpf_map_def *)&uprobe_calls, 0);
+ }
+ 
+ __attribute__((section("uprobe"), used)) int
+ generic_uprobe_process_event(void *ctx)
+ {
+ 	return generic_process_event(ctx,
+-				     (struct bpf_map_def *)&uprobe_calls,
+-				     (struct bpf_map_def *)&config_map, 0);
++				     (struct bpf_map_def *)&uprobe_calls, 0);
+ }
+ 
+ __attribute__((section("uprobe"), used)) int
+
+--- bpf/process/generic_calls.h
+@@ -26,7 +26,7 @@ generic_start_process_filter(void *ctx, struct generic_maps *maps)
+ 
+ 	/* setup index, check policy filter, and setup function id */
+ 	msg->idx = get_index(ctx);
+-	config = map_lookup_elem(maps->config, &msg->idx);
++	config = map_lookup_elem(&config_map, &msg->idx);
+ 	if (!config)
+ 		return 0;
+ 	if (!policy_filter_check(config->policy_id))
+@@ -63,7 +63,7 @@ generic_start_process_filter(void *ctx, struct generic_maps *maps)
+ }
+ 
+ FUNC_INLINE int
+-generic_process_event(void *ctx, struct bpf_map_def *tailcals, struct bpf_map_def *config_map,
++generic_process_event(void *ctx, struct bpf_map_def *tailcals,
+ 		      struct bpf_map_def *data_heap)
+ {
+ 	struct msg_generic_kprobe *e;
+@@ -76,7 +76,7 @@ generic_process_event(void *ctx, struct bpf_map_def *tailcals, struct bpf_map_de
+ 	if (!e)
+ 		return 0;
+ 
+-	config = map_lookup_elem(config_map, &e->idx);
++	config = map_lookup_elem(&config_map, &e->idx);
+ 	if (!config)
+ 		return 0;
+ 
+@@ -150,7 +150,6 @@ generic_process_init(struct msg_generic_kprobe *e, u8 op, struct event_config *c
+ FUNC_INLINE int
+ generic_process_event_and_setup(struct pt_regs *ctx,
+ 				struct bpf_map_def *tailcals,
+-				struct bpf_map_def *config_map,
+ 				struct bpf_map_def *data_heap)
+ {
+ 	struct msg_generic_kprobe *e;
+@@ -163,7 +162,7 @@ generic_process_event_and_setup(struct pt_regs *ctx,
+ 	if (!e)
+ 		return 0;
+ 
+-	config = map_lookup_elem(config_map, &e->idx);
++	config = map_lookup_elem(&config_map, &e->idx);
+ 	if (!config)
+ 		return 0;
+ 
+@@ -217,7 +216,7 @@ generic_process_event_and_setup(struct pt_regs *ctx,
+ 	generic_process_init(e, MSG_OP_GENERIC_UPROBE, config);
+ #endif
+ 
+-	return generic_process_event(ctx, tailcals, config_map, data_heap);
++	return generic_process_event(ctx, tailcals, data_heap);
+ }
+ 
+ #endif /* __GENERIC_CALLS_H__ */
+

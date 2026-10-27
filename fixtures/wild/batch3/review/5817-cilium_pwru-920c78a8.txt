@@ -1,0 +1,32 @@
+repo: cilium/pwru
+commit: 920c78a8556020543245a03dbe5ecbdce331920c
+rank: 5817
+
+fix: pwru build error on LoongArch
+
+commit c4a911e ("Replace BPF_PROG_ADDR with get_func_ip()") caused
+pwru build error on LoongArch [0] because Leon do not have LoongArch
+to verify the change for LoongArch,so left out LoongArch.
+
+Since LoongArch does not support bpf trampoline, get_func_ip is not going
+to be called on LoongArch, add a fake ip_offset value for LoongArch in
+get_func_ip to avoid the build error. We could fix the ip_offset value when
+LoongArch starts to support bpf trampoline.
+
+[0]: https://github.com/cilium/pwru/issues/559
+
+Suggested-by: Hengqi Chen <hengqi.chen@gmail.com>
+Signed-off-by: Vincent Li <vincent.mc.li@gmail.com>
+
+--- bpf/kprobe_pwru.c
+@@ -773,6 +773,9 @@ get_func_ip(void) {
+ #elif defined(bpf_target_arm64)
+ 	/* Ref: commit b2ad54e1533e ("bpf, arm64: Implement bpf_arch_text_poke() for arm64") */
+ 	static const int ip_offset = 12/* sizeof 3 insns */;
++#elif defined(bpf_target_loongarch)
++	/* LoongArch does not support trampoline, get_func_ip does not apply to LoongArch */
++	static const int ip_offset = 0;
+ #else
+ #error Unsupported architecture
+ #endif
+

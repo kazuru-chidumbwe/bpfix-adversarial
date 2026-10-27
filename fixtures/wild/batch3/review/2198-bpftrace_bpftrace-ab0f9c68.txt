@@ -1,0 +1,66 @@
+repo: bpftrace/bpftrace
+commit: ab0f9c68b38672c1b4a2db2348ac135b3a92b051
+rank: 2198
+
+Make `curtask` a trusted pointer (#5321)
+
+`curtask` was obtained via `bpf_get_current_task`, which the kernel defines
+as returning a scalar. Kfuncs declared `KF_TRUSTED_ARGS`, such as the
+open-coded iterators, reject it with "arg#N pointer type STRUCT task_struct
+must point to scalar, or struct with scalar".
+
+Switching to `bpf_get_current_task_btf` meant moving the call out of the C
+standard library. libbpf only defines trustedness tags for global function
+arguments (`arg:trusted` and friends); there is no return-side equivalent, so
+a global subprog's return value is always an unknown scalar to the verifier,
+and a getter returns by definition. Inlining the shim away is not possible
+either, as the standard library is linked as an object after compilation.
+
+So the helper is emitted inline in codegen as `__builtin_curtask`. The
+bpftrace-visible type is unchanged; the old macro already cast the result to
+`struct task_struct *`, and only the documented type was stale.
+
+Signed-off-by: Jordan Rome <jordalgo@meta.com>
+
+stack-info: PR: https://github.com/bpftrace/bpftrace/pull/5321, branch: user/jordalgo/curtask_trusted/2
+Signed-off-by: Jordan Rome <jordalgo@meta.com>
+
+---------
+
+Signed-off-by: Jordan Rome <jordalgo@meta.com>
+
+--- src/stdlib/process/process.bpf.c
+@@ -21,7 +21,3 @@ unsigned long long __get_current_uid_gid() {
+ unsigned long long __get_cgroup() {
+     return bpf_get_current_cgroup_id();
+ }
+-
+-unsigned long long __get_current_task() {
+-    return bpf_get_current_task();
+-}
+
+--- src/stdlib/task/vma.bpf.c
+@@ -19,7 +19,9 @@ extern struct vm_area_struct *bpf_iter_task_vma_next(
+ extern void bpf_iter_task_vma_destroy(
+     struct __compat_bpf_iter_task_vma *it) __ksym __weak;
+ 
+-unsigned long __bpf_task_map_file_min_addr(unsigned long ino)
++unsigned long __bpf_task_map_file_min_addr(
++    struct task_struct *task __arg_trusted,
++    unsigned long ino)
+ {
+   // linux >= 6.7
+   if (!bpf_iter_task_vma_new || !bpf_iter_task_vma_destroy ||
+@@ -28,10 +30,9 @@ unsigned long __bpf_task_map_file_min_addr(unsigned long ino)
+ 
+   struct __compat_bpf_iter_task_vma vma_it;
+   struct vm_area_struct *vma;
+-  struct task_struct *cur_task = bpf_get_current_task_btf();
+   unsigned long off = 0;
+ 
+-  if (bpf_iter_task_vma_new(&vma_it, cur_task, 0)) {
++  if (bpf_iter_task_vma_new(&vma_it, task, 0)) {
+     bpf_iter_task_vma_destroy(&vma_it);
+     return 0;
+   }
+

@@ -1,0 +1,22 @@
+repo: aquasecurity/tracee
+commit: 0ea829c82a54ff830d307f029c93bff84ebfa6a1
+rank: 3558
+
+fix: ebpf max inst limit
+
+Its necessary to reduce the MAX_NUM_MODULES const from
+440 to 420 in order to eBPF to work. Otherwise the eBPF
+verifier complains about exceeding the maximum instruction
+limit.
+
+--- pkg/ebpf/c/tracee.bpf.c
+@@ -757,7 +757,7 @@ int tracepoint__sched__sched_process_fork(struct bpf_raw_tracepoint_args *ctx)
+     return 0;
+ }
+ 
+-#define MAX_NUM_MODULES          440
++#define MAX_NUM_MODULES          420
+ #define MAX_MODULES_MAP_ENTRIES  2 * MAX_NUM_MODULES
+ #define MOD_TREE_LOOP_ITERATIONS 240
+ #define MOD_TREE_LOOP_DEPTH      14
+

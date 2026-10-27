@@ -1,0 +1,59 @@
+repo: falcosecurity/libs
+commit: 0fb9d35685e092f582b8b4095e37e22e77243a52
+rank: 2501
+
+fix(driver/bpf): fix `socket_x` and `socketpair_x` domain encoding
+
+Partially revert changes introduced in
+dfdd45cc2c905a917331d91a3605815f98d99c2b by replacing the usage
+of `socket_family_to_scap` helper with a calls to a new ad-hoc helper
+for the legacy bpf probe. To avoid breaking the verifier on old kernel
+version, just convert user-provided negative socket family values to
+`PPM_AF_UNSPEC` and leave positive values as are. This simplified
+version relies on the fact that `AF_*` and corresponding `PPM_AF_*`
+macros map to the same values.
+
+Signed-off-by: Leonardo Di Giovanna <leonardodigiovanna1@gmail.com>
+
+--- driver/bpf/filler_helpers.h
+@@ -1407,3 +1407,15 @@ static __always_inline pid_t bpf_push_pgid(struct filler_data *data, struct task
+ }
+ 
+ #endif
++
++/* Legacy-probe-specific replacement for `socket_family_to_scap` helper. As encoding the socket
++ * family using the `socket_family_to_scap` helper breaks the verifier on old kernel versions, just
++ * send `PPM_AF_UNSPEC` if the user-provided socket family is negative, and leave it as is
++ * otherwise. This solution relies on the fact that `AF_*` and corresponding `PPM_AF_*` macros map
++ * to the same values. */
++static __always_inline uint8_t bpf_socket_family_to_scap(int8_t family) {
++	if(family < 0) {
++		family = PPM_AF_UNSPEC;
++	}
++	return (uint8_t)family;
++}
+
+--- driver/bpf/fillers.h
+@@ -1336,8 +1336,8 @@ FILLER(sys_socketpair_x, true) {
+ 
+ 	/* Parameter 6: domain (type: PT_ENUMFLAGS32) */
+ 	/* why to send 32 bits if we need only 8 bits? */
+-	uint8_t domain = (uint8_t)bpf_syscall_get_argument(data, 0);
+-	res = bpf_push_u32_to_ring(data, (uint32_t)socket_family_to_scap(domain));
++	int8_t domain = (int8_t)bpf_syscall_get_argument(data, 0);
++	res = bpf_push_u32_to_ring(data, (uint32_t)bpf_socket_family_to_scap(domain));
+ 	CHECK_RES(res);
+ 
+ 	/* Parameter 7: type (type: PT_UINT32) */
+@@ -5362,8 +5362,8 @@ FILLER(sys_socket_x, true) {
+ 	}
+ 
+ 	/* Parameter 2: domain (type: PT_ENUMFLAGS32) */
+-	uint8_t domain = (uint8_t)bpf_syscall_get_argument(data, 0);
+-	res = bpf_push_u32_to_ring(data, (uint32_t)socket_family_to_scap(domain));
++	int8_t domain = (int8_t)bpf_syscall_get_argument(data, 0);
++	res = bpf_push_u32_to_ring(data, (uint32_t)bpf_socket_family_to_scap(domain));
+ 	CHECK_RES(res);
+ 
+ 	/* Parameter 3: type (type: PT_UINT32) */
+

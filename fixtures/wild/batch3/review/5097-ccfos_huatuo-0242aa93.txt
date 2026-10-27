@@ -1,0 +1,105 @@
+repo: ccfos/huatuo
+commit: 0242aa935cbe200710a30489c08f868d6a438615
+rank: 5097
+
+fix(bpf): use stable TCP retransmit tracepoint context
+
+Linux 7.0 renamed the generated tracepoint BTF type, causing CO-RE to
+poison skbaddr and skaddr field accesses before verifier loading.
+
+Define the stable tracepoint prefix locally so these two context reads keep
+fixed offsets while sk_buff and sock accesses remain CO-RE relocated.
+
+Testing:
+- make bpf-build
+- make check
+- load retrans_skb on kernel 7.0.0-15 in QEMU
+
+--- bpf/hungtask.c
+@@ -5,8 +5,8 @@
+ #include <bpf/bpf_tracing.h>
+ 
+ #include "bpf_common.h"
+-#include "bpf_compat_7_0.h"
+ #include "bpf_ratelimit.h"
++#include "bpf_tracepoint.h"
+ #include "abi/hungtask_types.h"
+ 
+ char __license[] SEC("license") = "Dual MIT/GPL";
+@@ -32,8 +32,8 @@ int tracepoint_sched_process_hang(struct trace_event_raw_sched_process_hang *ctx
+ 	if (bpf_core_field_exists(ctx->comm)) {
+ 		BPF_CORE_READ_STR_INTO(&info.comm, ctx, comm);
+ 	} else {
+-		struct trace_event_raw_sched_process_hang___7_0 *ctx7 =
+-			(struct trace_event_raw_sched_process_hang___7_0 *)ctx;
++		struct trace_event_raw_sched_process_hang___7_0_compat *ctx7 =
++			(struct trace_event_raw_sched_process_hang___7_0_compat *)ctx;
+ 		u32 dl = BPF_CORE_READ(ctx7, __data_loc_comm);
+ 
+ 		bpf_probe_read_str(info.comm, sizeof(info.comm),
+
+--- bpf/include/bpf_compat_7_0.h
+@@ -40,14 +40,4 @@ struct bio___7_0 {
+ 	u64 issue_time_ns;
+ } __attribute__((preserve_access_index));
+ 
+-/*
+- * hungtask: trace_event_raw_sched_process_hang::comm changed from a
+- * fixed-size __array to a __data_loc string on 7.0+.
+- */
+-struct trace_event_raw_sched_process_hang___7_0 {
+-	struct trace_entry ent;
+-	u32 __data_loc_comm;
+-	pid_t pid;
+-} __attribute__((preserve_access_index));
+-
+ #endif /* __BPF_COMPAT_7_0_H__ */
+
+--- bpf/include/bpf_tracepoint.h
+@@ -1,6 +1,26 @@
+ #ifndef __BPF_TRACEPOINT_H__
+ #define __BPF_TRACEPOINT_H__
+ 
++/*
++ * Linux 7.0 renamed the tcp_retransmit_skb BTF context type, so CO-RE
++ * cannot resolve the old name. Use a local layout to avoid that relocation.
++ */
++struct trace_event_raw_tcp_event_sk_skb_compat {
++	struct trace_entry ent;
++	const void *skbaddr;
++	const void *skaddr;
++};
++
++/*
++ * hungtask: trace_event_raw_sched_process_hang::comm changed from a
++ * fixed-size __array to a __data_loc string on 7.0+.
++ */
++struct trace_event_raw_sched_process_hang___7_0_compat {
++	struct trace_entry ent;
++	u32 __data_loc_comm;
++	pid_t pid;
++} __attribute__((preserve_access_index));
++
+ static __always_inline char *__data_loc_address(char *ctx, u32 __data_loc)
+ {
+ 	return ((char *)ctx + (__data_loc & 0xffff));
+
+--- bpf/tcp_retransmit.c
+@@ -11,6 +11,7 @@
+ #include "bpf_pcap_stub.h"
+ #include "bpf_ratelimit.h"
+ #include "bpf_skbuff.h"
++#include "bpf_tracepoint.h"
+ #include "abi/tcp_retransmit_types.h"
+ 
+ struct {
+@@ -177,7 +178,7 @@ static __always_inline void read_retransmit_skb_tcp_fields(struct tcp_retransmit
+ }
+ 
+ SEC("tracepoint/tcp/tcp_retransmit_skb")
+-int retrans_skb(struct trace_event_raw_tcp_event_sk_skb *ctx)
++int retrans_skb(struct trace_event_raw_tcp_event_sk_skb_compat *ctx)
+ {
+ 	struct sk_buff *skb = (struct sk_buff *)ctx->skbaddr;
+ 
+

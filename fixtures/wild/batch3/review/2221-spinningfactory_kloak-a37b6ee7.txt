@@ -1,0 +1,580 @@
+repo: spinningfactory/kloak
+commit: a37b6ee7dc17c25bb9dde34c1936e10be0a41b76
+rank: 2221
+
+Pure ebpf (#1)
+
+* feat: Implement gRPC-based secret synchronization service in the controller and introduce a new agent component.
+
+* feat: generate TLS certificates only if they don't already exist
+
+* fix ca
+
+* feat: Refactor CA certificate distribution to use a ConfigMap volume mount managed by a new CA reconciler instead of init container injection.
+
+* feat: Migrate controller to a per-node DaemonSet with Kustomize overlays for deployment.
+
+* feat: Implement automatic certificate generation and management by the controller, with components waiting for their availability.
+
+* feat: Extend Kloak enablement to include namespace labels, ensuring mutated pods are explicitly annotated, and update webhook failure policy to Fail.
+
+* feat: Extend pod enablement checks to include owner references from Deployments, DaemonSets, and StatefulSets.
+
+* chore: Remove verbose delta SDS request info log statement.
+
+* feat: Add agent init container to wait for CA secret, removing internal CA file waiting logic.
+
+* refactor: replace the demo application's Pod definition with a Deployment and update the setup script to manage it.
+
+* Remove the dynamic secret hashing and storage functionality, including the controller server and hash converter, from the webhook.
+
+* feat: move eBPF cgroup management and remove unused webhook argument.
+
+* remove binary
+
+* feat: Integrate XDS server functionality into the main executable and enhance eBPF support with a new vmlinux.h header.
+
+* refactor: Integrate buf for protobuf generation and remove the GetSecrets and StoreHash RPCs.
+
+* refactor: remove ListByPod method from the Storage interface and its concrete implementation.
+
+* Refactor certificate generation into `pkg/ca` to support Subject Alternative Names (SANs) for server certificates, and remove the Kind cluster example.
+
+* Refactor CA management to use `ca.Provider` in SDS and XDS servers and delegate CA loading to `ca.store` functions, simplifying the `ca.Reconciler`'s role to ConfigMap syncing.
+
+* refactor: Remove `ca.Provider` abstraction and `ca.Store.Get` method, allowing SDS server to directly use `*ca.CA`.
+
+* feat: Implement CA certificate injection via init container from Secret instead of ConfigMap volume mount.
+
+* feat: Embed Envoy configuration into the webhook and inject it into sidecars using an init container and emptyDir volume instead of a ConfigMap.
+
+* feat: unify Envoy config and CA certificate injection into a single init container and refactor CA handling
+
+* feat: Add a new Go demo application and update the setup script to build, deploy, and verify it.
+
+* feat: Add CNI plugin for pod network lifecycle management with gRPC communication.
+
+* fix: Track container cgroups instead of pod cgroups for eBPF traffic interception
+
+The eBPF program uses bpf_get_current_cgroup_id() which returns the
+container-specific cgroup (.scope), not the pod-level cgroup (.slice).
+This fix ensures we track the correct cgroup IDs for traffic interception.
+
+Changes:
+- Controller now tracks all container cgroups per pod (not just one pod cgroup)
+- Changed from GetPodCgroupPath() to FindContainerCgroupPath() to get
+  container .scope cgroups instead of pod .slice cgroups
+- CNI plugin no longer fails when cgroup isn't found during early pod
+  creation (expected since container cgroup doesn't exist yet)
+- Controller handles eBPF tracking after containers are running
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+
+* extract configs and make it non k3s specific (need to be tested on other kubes deployments)
+
+* add java demo and support java as a special use case
+
+* feat: Implement eBPF TLS uprobes for in-kernel secret rewriting in Go and OpenSSL, and adjust secret padding for compatibility.
+
+GO not working, host blocking not working
+
+* feat: remove XDS, SDS, ExtProc, and eBPF traffic redirection, focusing the agent on TLS uprobe interception.
+
+* feat: Remove CNI and gRPC sync, introduce webhook-based certificate management, and delete Java demo.
+
+* feat: Implement eBPF tail call for TLS uprobe to separate host parsing and secret rewriting, addressing verifier limits.
+work for js with host matching!
+
+* fix libsso for newer python, force http1.1 for go demo
+
+* remove binary
+
+---------
+
+Co-authored-by: Claude Opus 4.5 <noreply@anthropic.com>
+
+--- bpf/redirect.c
+@@ -1,139 +0,0 @@
+-// go:build ignore
+-
+-// redirect.c - eBPF program for redirecting HTTPS traffic to localhost
+-//
+-// This program attaches to cgroup connect4/connect6 hooks and redirects
+-// outbound port 443 connections to localhost:15001 where Envoy listens.
+-
+-#include "vmlinux.h"
+-#include <bpf/bpf_endian.h>
+-#include <bpf/bpf_helpers.h>
+-
+-// Constants
+-#define AF_INET 2
+-#define AF_INET6 10
+-#define HTTPS_PORT 443
+-#define ENVOY_PORT 15001
+-
+-// Legacy map definition for BTF-less loading
+-struct bpf_map_def {
+-  unsigned int type;
+-  unsigned int key_size;
+-  unsigned int value_size;
+-  unsigned int max_entries;
+-  unsigned int map_flags;
+-};
+-
+-// Map to track which cgroup IDs should have traffic redirected
+-struct bpf_map_def SEC("maps") tracked_cgroups = {
+-    .type = BPF_MAP_TYPE_HASH,
+-    .key_size = sizeof(__u64),
+-    .value_size = sizeof(__u8),
+-    .max_entries = 10240,
+-};
+-
+-// Map to store original destination for each connection
+-// Key: socket cookie, Value: original destination
+-struct orig_dst {
+-  __u32 ip4;
+-  __u16 port;
+-  __u8 family;
+-  __u8 pad;
+-};
+-
+-struct bpf_map_def SEC("maps") original_dst = {
+-    .type = BPF_MAP_TYPE_HASH,
+-    .key_size = sizeof(__u64),
+-    .value_size = sizeof(struct orig_dst),
+-    .max_entries = 65535,
+-};
+-
+-// Check if this cgroup should have traffic redirected
+-static __always_inline int is_tracked(__u64 cgroup_id) {
+-  __u8 *enabled = bpf_map_lookup_elem(&tracked_cgroups, &cgroup_id);
+-  return enabled != NULL && *enabled == 1;
+-}
+-
+-// IPv4 connect hook
+-SEC("cgroup/connect4")
+-int cgroup_connect4(struct bpf_sock_addr *ctx) {
+-  // Only intercept TCP connections to port 443
+-  if (ctx->protocol != IPPROTO_TCP) {
+-    return 1; // Allow
+-  }
+-
+-  __u16 dst_port = bpf_ntohs(ctx->user_port);
+-  if (dst_port != HTTPS_PORT) {
+-    return 1; // Allow
+-  }
+-
+-  // Check if this cgroup is tracked
+-  __u64 cgroup_id = bpf_get_current_cgroup_id();
+-  if (!is_tracked(cgroup_id)) {
+-    return 1; // Allow - not a tracked pod
+-  }
+-
+-  // Exclude Envoy sidecar (UID 1337)
+-  __u32 uid = bpf_get_current_uid_gid();
+-  if (uid == 1337) {
+-    return 1; // Allow Envoy traffic
+-  }
+-
+-  // Store original destination
+-  __u64 cookie = bpf_get_socket_cookie(ctx);
+-  struct orig_dst dst = {
+-      .ip4 = ctx->user_ip4,
+-      .port = dst_port,
+-      .family = AF_INET,
+-  };
+-  bpf_map_update_elem(&original_dst, &cookie, &dst, BPF_ANY);
+-
+-  // Redirect to localhost:15001
+-  ctx->user_ip4 = bpf_htonl(0x7f000001); // 127.0.0.1
+-  ctx->user_port = bpf_htons(ENVOY_PORT);
+-
+-  bpf_printk("kloak: redirected %pI4:%d -> 127.0.0.1:%d", &dst.ip4, dst_port,
+-             ENVOY_PORT);
+-
+-  return 1; // Allow (with modified destination)
+-}
+-
+-// IPv6 connect hook (simplified - redirects to IPv6 localhost)
+-SEC("cgroup/connect6")
+-int cgroup_connect6(struct bpf_sock_addr *ctx) {
+-  // Only intercept TCP connections to port 443
+-  if (ctx->protocol != IPPROTO_TCP) {
+-    return 1;
+-  }
+-
+-  __u16 dst_port = bpf_ntohs(ctx->user_port);
+-  if (dst_port != HTTPS_PORT) {
+-    return 1;
+-  }
+-
+-  // Check if this cgroup is tracked
+-  __u64 cgroup_id = bpf_get_current_cgroup_id();
+-  if (!is_tracked(cgroup_id)) {
+-    return 1;
+-  }
+-
+-  // For IPv6, we store the last 4 bytes as "ip4" for simplicity
+-  __u64 cookie = bpf_get_socket_cookie(ctx);
+-  struct orig_dst dst = {
+-      .ip4 = ctx->user_ip6[3], // Last 32 bits
+-      .port = dst_port,
+-      .family = AF_INET6,
+-  };
+-  bpf_map_update_elem(&original_dst, &cookie, &dst, BPF_ANY);
+-
+-  // Redirect to IPv6 localhost (::1)
+-  ctx->user_ip6[0] = 0;
+-  ctx->user_ip6[1] = 0;
+-  ctx->user_ip6[2] = 0;
+-  ctx->user_ip6[3] = bpf_htonl(1);
+-  ctx->user_port = bpf_htons(ENVOY_PORT);
+-
+-  return 1;
+-}
+-
+-char LICENSE[] SEC("license") = "GPL";
+
+--- pkg/ebpf/bpf/tls_uprobe.c
+@@ -0,0 +1,334 @@
++// go:build ignore
++
++// tls_uprobe.c - eBPF uprobes for TLS interception in Go and OpenSSL apps.
++// Uses a per-CPU array as scratch buffer (not ringbuf) to avoid verifier
++// issues with ringbuf_mem pointer tracking in loops.
++// Supports both x86_64 and ARM64 architectures.
++
++#include "vmlinux.h"
++#include <bpf/bpf_helpers.h>
++
++// Architecture detection
++#if defined(__TARGET_ARCH_x86) || defined(__x86_64__) || defined(__amd64__)
++#define bpf_target_x86
++#endif
++
++#if defined(__TARGET_ARCH_arm64) || defined(__aarch64__)
++#define bpf_target_arm64
++#endif
++
++#include <bpf/bpf_core_read.h>
++#include <bpf/bpf_tracing.h>
++
++// Buffer size for reading TLS data. Must be a power of 2 for bitmask bounds.
++// 256 keeps the phase 2 scan loop under the verifier's 8192-jump limit.
++#define MAX_DATA_SIZE 256
++// Fixed secret rewrite size
++#define SECRET_MAX_LEN 128
++// Max host length for matching (compared as 4 x uint64, no loop needed)
++#define MAX_HOST_LEN 32
++
++// BPF Map: shadow secret prefix -> real secret value
++struct secret_key {
++  char prefix[16];
++};
++
++struct secret_value {
++  __u32 len;
++  char real_secret[SECRET_MAX_LEN];
++  __u32 host_len;                  // 0 = wildcard (allow all hosts)
++  char allowed_host[MAX_HOST_LEN]; // e.g. "httpbin.org"
++};
++
++struct {
++  __uint(type, BPF_MAP_TYPE_HASH);
++  __uint(max_entries, 1024);
++  __type(key, struct secret_key);
++  __type(value, struct secret_value);
++} secret_map SEC(".maps");
++
++// Per-CPU array used as scratch space for reading and scanning data.
++struct scratch_buf {
++  __u64 user_data_ptr;
++  __u32 read_len;
++  __u32 host_offset;
++  __u32 host_value_len; // length of extracted host value
++  char host_value[MAX_HOST_LEN]; // extracted host bytes from HTTP header
++  char data[MAX_DATA_SIZE];
++};
++
++struct {
++  __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
++  __uint(max_entries, 1);
++  __type(key, __u32);
++  __type(value, struct scratch_buf);
++} scratch SEC(".maps");
++
++struct {
++  __uint(type, BPF_MAP_TYPE_PROG_ARRAY);
++  __uint(max_entries, 1);
++  __type(key, __u32);
++  __type(value, __u32);
++} prog_array SEC(".maps");
++
++// Ringbuffer for lightweight events to userspace (metrics/logging only)
++struct {
++  __uint(type, BPF_MAP_TYPE_RINGBUF);
++  __uint(max_entries, 256 * 1024);
++} tls_events SEC(".maps");
++
++// Lightweight event - no data payload, just metadata
++struct tls_event {
++  __u32 pid;
++  __u32 tgid;
++  __u32 len;
++  __u8 is_rewritten; // 1 = secret was rewritten in-kernel
++};
++
++// -----------------------------------------------------------------------------
++// Phase 1: Parse Host header and extract its value into scratch buffer.
++// This runs inline in the uprobe entry points (before tail-calling phase 2).
++// By extracting host bytes here, phase 2 can compare using fixed-size
++// uint64 comparisons with zero loops, staying under verifier limits.
++// -----------------------------------------------------------------------------
++static __always_inline void parse_host(struct scratch_buf *scratch) {
++  scratch->host_offset = 0;
++  scratch->host_value_len = 0;
++  __builtin_memset(scratch->host_value, 0, MAX_HOST_LEN);
++
++  __u32 read_len = scratch->read_len;
++  if (read_len > MAX_DATA_SIZE)
++    read_len = MAX_DATA_SIZE;
++
++  // Scan the first 256 bytes to find "Host: "
++  __u32 host_start = 0;
++  for (__u32 i = 0; i < 256; i++) {
++    if (i + 6 > read_len)
++      break;
++
++    if (scratch->data[i] == 'H' && scratch->data[i + 1] == 'o' &&
++        scratch->data[i + 2] == 's' && scratch->data[i + 3] == 't' &&
++        scratch->data[i + 4] == ':' && scratch->data[i + 5] == ' ') {
++      host_start = i + 6;
++      scratch->host_offset = host_start;
++      break;
++    }
++  }
++
++  if (host_start == 0)
++    return;
++
++  // Extract host value bytes into scratch->host_value (up to MAX_HOST_LEN)
++  // Stop at \r, \n, or : (end of host value)
++  __u32 host_len = 0;
++  for (__u32 j = 0; j < MAX_HOST_LEN; j++) {
++    __u32 idx = host_start + j;
++    if (idx >= read_len)
++      break;
++    char c = scratch->data[idx];
++    if (c == '\r' || c == '\n' || c == ':')
++      break;
++    scratch->host_value[j] = c;
++    host_len++;
++  }
++  scratch->host_value_len = host_len;
++}
++
++// -----------------------------------------------------------------------------
++// Phase 2: Scan for "kloak:" secrets and rewrite.
++// Host comparison uses fixed-size uint64 comparisons (no loops).
++// -----------------------------------------------------------------------------
++SEC("uprobe/phase2_rewrite")
++int bpf_phase2_rewrite(struct pt_regs *ctx) {
++  __u32 zero = 0;
++  struct scratch_buf *scratch_data = bpf_map_lookup_elem(&scratch, &zero);
++  if (!scratch_data)
++    return 0;
++
++  __u32 read_len = scratch_data->read_len;
++  if (read_len > MAX_DATA_SIZE)
++    read_len = MAX_DATA_SIZE;
++
++  int rewritten = 0;
++
++  for (__u32 i = 0; i < MAX_DATA_SIZE; i++) {
++    if (i + 16 > read_len)
++      break;
++
++    if (scratch_data->data[i] != 'k')
++      continue;
++
++    // Check for "kloak:"
++    if (scratch_data->data[i + 1] == 'l' && scratch_data->data[i + 2] == 'o' &&
++        scratch_data->data[i + 3] == 'a' && scratch_data->data[i + 4] == 'k' &&
++        scratch_data->data[i + 5] == ':') {
++
++      struct secret_key key = {};
++      __builtin_memcpy(key.prefix, &scratch_data->data[i], 16);
++
++      struct secret_value *val = bpf_map_lookup_elem(&secret_map, &key);
++      if (val && val->len > 0 && val->len <= SECRET_MAX_LEN) {
++
++        // Host-based filtering: compare pre-extracted host against allowed_host
++        // using fixed-size uint64 comparisons (no loop, no verifier complexity)
++        if (val->host_len > 0 && val->host_len < MAX_HOST_LEN) {
++          if (scratch_data->host_value_len == 0)
++            continue;
++
++          // Compare as 4 x uint64 (covers all 32 bytes)
++          __u64 *host_a = (__u64 *)scratch_data->host_value;
++          __u64 *host_b = (__u64 *)val->allowed_host;
++          if (host_a[0] != host_b[0] || host_a[1] != host_b[1] ||
++              host_a[2] != host_b[2] || host_a[3] != host_b[3])
++            continue;
++        }
++
++        // Rewrite: bounds-check i for the verifier
++        __u32 safe_i = i & (MAX_DATA_SIZE - 1);
++        char *target = (char *)scratch_data->user_data_ptr + safe_i;
++
++        __u32 write_len = val->len;
++        write_len &= (SECRET_MAX_LEN - 1);
++
++        if (write_len == 0)
++          continue;
++
++        bpf_probe_write_user(target, val->real_secret, write_len);
++        rewritten = 1;
++      }
++    }
++  }
++
++  bpf_printk("kloak phase2: rewritten=%d", rewritten);
++
++  if (rewritten) {
++    struct tls_event *event =
++        bpf_ringbuf_reserve(&tls_events, sizeof(struct tls_event), 0);
++    if (event) {
++      event->pid = bpf_get_current_pid_tgid();
++      event->tgid = bpf_get_current_pid_tgid() >> 32;
++      event->len = read_len;
++      event->is_rewritten = 1;
++      bpf_ringbuf_submit(event, 0);
++    }
++  }
++
++  return 0;
++}
++
++// -----------------------------------------------------------------------------
++// Go crypto/tls.(*Conn).Write uprobe
++//
++// Go register ABI (1.17+):
++//   x86_64: RAX=receiver, RBX=data, RCX=len  (pt_regs offsets: bx=40, cx=88)
++//   ARM64:  R0=receiver,  R1=data,  R2=len    (pt_regs: regs[1], regs[2])
++// -----------------------------------------------------------------------------
++
++SEC("uprobe/go_tls_write")
++int bpf_uprobe_go_tls_write(struct pt_regs *ctx) {
++  __u32 pid = bpf_get_current_pid_tgid();
++
++  void *data_ptr;
++  __u64 data_len;
++
++#if defined(bpf_target_x86)
++  // x86_64 Go register ABI: RAX=receiver, RBX=data, RCX=len
++  bpf_probe_read_kernel(&data_ptr, sizeof(void *), (char *)ctx + 40);
++  bpf_probe_read_kernel(&data_len, sizeof(__u64), (char *)ctx + 88);
++#elif defined(bpf_target_arm64)
++  // ARM64 Go register ABI: R0=receiver, R1=data, R2=len
++  data_ptr = (void *)PT_REGS_PARM2(ctx);
++  data_len = PT_REGS_PARM3(ctx);
++#else
++  return 0;
++#endif
++
++  bpf_printk("kloak go_tls: ptr=%llx len=%llu pid=%d", (__u64)data_ptr,
++             data_len, pid);
++
++  if (!data_ptr || data_len == 0)
++    return 0;
++
++  // Get scratch buffer from per-CPU array
++  __u32 zero = 0;
++  struct scratch_buf *scratch_data = bpf_map_lookup_elem(&scratch, &zero);
++  if (!scratch_data)
++    return 0;
++
++  __u32 read_len = data_len;
++  if (read_len > MAX_DATA_SIZE)
++    read_len = MAX_DATA_SIZE;
++
++  // Read plaintext into scratch buffer (per-CPU array, not ringbuf)
++  long ret = bpf_probe_read_user(scratch_data->data, read_len, data_ptr);
++  bpf_printk("kloak go_tls: read_user ret=%ld read_len=%u first4=%.4s", ret,
++             read_len, scratch_data->data);
++
++  scratch_data->user_data_ptr = (__u64)data_ptr;
++  scratch_data->read_len = read_len;
++
++  parse_host(scratch_data);
++
++  // Jump to Phase 2
++  bpf_tail_call(ctx, &prog_array, 0);
++
++  return 0;
++}
++
++// -----------------------------------------------------------------------------
++// OpenSSL/BoringSSL SSL_write uprobe
++//
++// C calling convention:  SSL_write(SSL *ssl, const void *buf, int num)
++//   x86_64: RDI=ssl, RSI=buf, RDX=num  (pt_regs offsets: si=104, dx=96)
++//   ARM64:  X0=ssl,  X1=buf,  X2=num   (pt_regs: regs[1], regs[2])
++// -----------------------------------------------------------------------------
++
++SEC("uprobe/ssl_write")
++int bpf_uprobe_ssl_write(struct pt_regs *ctx) {
++  __u32 pid = bpf_get_current_pid_tgid();
++
++  void *data_ptr;
++  int num;
++
++#if defined(bpf_target_x86)
++  // x86_64 C ABI: RDI=ssl, RSI=buf, RDX=num
++  bpf_probe_read_kernel(&data_ptr, sizeof(void *), (char *)ctx + 104);
++  bpf_probe_read_kernel(&num, sizeof(int), (char *)ctx + 96);
++#elif defined(bpf_target_arm64)
++  // ARM64 C ABI: X0=ssl, X1=buf, X2=num
++  data_ptr = (void *)PT_REGS_PARM2(ctx);
++  num = (int)PT_REGS_PARM3(ctx);
++#else
++  return 0;
++#endif
++
++  bpf_printk("kloak ssl: ptr=%llx num=%d pid=%d", (__u64)data_ptr, num, pid);
++
++  if (!data_ptr || num <= 0)
++    return 0;
++
++  __u32 zero = 0;
++  struct scratch_buf *scratch_data = bpf_map_lookup_elem(&scratch, &zero);
++  if (!scratch_data)
++    return 0;
++
++  __u32 read_len = num;
++  if (read_len > MAX_DATA_SIZE)
++    read_len = MAX_DATA_SIZE;
++
++  long ret = bpf_probe_read_user(scratch_data->data, read_len, data_ptr);
++  bpf_printk("kloak ssl: read_user ret=%ld len=%u first4=%.4s", ret, read_len,
++             scratch_data->data);
++
++  scratch_data->user_data_ptr = (__u64)data_ptr;
++  scratch_data->read_len = read_len;
++
++  parse_host(scratch_data);
++
++  // Jump to Phase 2
++  bpf_tail_call(ctx, &prog_array, 0);
++
++  return 0;
++}
++
++char LICENSE[] SEC("license") = "Dual BSD/GPL";
+
+--- pkg/ebpf/bpf/vmlinux.h
+(no patch: binary or too large)
+
+--- pkg/ebpf/vmlinux.h
+(no patch: binary or too large)
+

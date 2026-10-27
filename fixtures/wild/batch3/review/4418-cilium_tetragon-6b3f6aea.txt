@@ -1,0 +1,78 @@
+repo: cilium/tetragon
+commit: 6b3f6aeae19b8a3f9eab2083f616113ff13fa3a7
+rank: 4418
+
+tetragon: Add struct rodata_config for read-only config data
+
+Adding struct rodata_config for read-only config data, that will be
+used by verifier to choose code to executed based on earlier detection.
+At the moment it has just ITER_NUM and USE_PERF_RING_BUF fields, other
+will come in following changes.
+
+Signed-off-by: Jiri Olsa <jolsa@kernel.org>
+
+--- bpf/lib/config.h
+@@ -3,34 +3,41 @@
+ 
+ #pragma once
+ 
+-#ifdef __V511_BPF_PROG
+-
+-#define DECLARE_CONFIG(type, name) \
+-	volatile const type CONFIG_##name;
++#define __field(name) name
+ 
+ /*
+- * Reconstruct the rodata pointer on each access to prevent the compiler
+- * from reusing the pointer across multiple accesses in short
+- * succession. This makes branches based on config variables more likely
+- * to be predictable using backtracking, since load/deref/branch will be
+- * close to each other and the pointer won't be reused across basic
+- * blocks.
++ * Read a field from a frozen, read-only rodata map, reconstructing the map
++ * pointer on each access to prevent the compiler from reusing it across
++ * multiple accesses in short succession. This makes branches based on
++ * config variables more likely to be predictable using backtracking, since
++ * load/deref/branch will be close to each other and the pointer won't be
++ * reused across basic blocks.
+  *
+- * Specifying the global var ptr as an asm input gives enough
++ * Specifying the global map pointer as an asm input gives enough
+  * information to the compiler to allow it to reuse the pointer across
+  * blocks, so opt for a direct symbol reference instead. We need the
+  * pointer reconstructed in bytecode on every access.
+  */
+-#define CONFIG(name)                                                  \
+-	(*({                                                          \
+-		void *out;                                            \
+-		asm volatile("%0 = " __stringify(CONFIG_##name) " ll" \
+-			     : "=r"(out));                            \
+-		(typeof(CONFIG_##name) *)out;                         \
+-	}))
+-
+-DECLARE_CONFIG(bool, ITER_NUM);
+-DECLARE_CONFIG(bool, USE_PERF_RING_BUF);
++#define __CONFIG_FIELD(map, type, field)                      \
++	({                                                    \
++		void *out;                                    \
++		asm volatile("%0 = " #map " ll"               \
++			     : "=r"(out));                    \
++		((volatile const type *)out)->__field(field); \
++	})
++
++#ifdef __V511_BPF_PROG
++
++struct rodata_config {
++	__u8 ITER_NUM;
++	__u8 USE_PERF_RING_BUF;
++	__u8 pad[6];
++};
++
++volatile const struct rodata_config rodata_config
++	__attribute__((section(".rodata.config"), used));
++
++#define CONFIG(name) __CONFIG_FIELD(rodata_config, struct rodata_config, name)
+ 
+ #else
+ 
+

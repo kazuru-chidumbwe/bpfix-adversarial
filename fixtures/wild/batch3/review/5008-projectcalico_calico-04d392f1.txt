@@ -1,0 +1,197 @@
+repo: projectcalico/calico
+commit: 04d392f12ea3a10788908380a964b32c4ecfb3fd
+rank: 5008
+
+felix: make encapsulation a runtime flag and drop the vxlan object set
+
+CALI_F_TUNNEL was CALI_F_IPIP || CALI_F_WIREGUARD || CALI_F_VXLAN, and
+CALI_F_WIREGUARD was #defined as CALI_F_L3_DEV. Felix maps both
+IfaceTypeWireguard and IfaceTypeL3 to EpTypeL3Device, so a plain
+L3-classified NIC - a MAC-less NIC, a TUN device or a BPFL3IfacePattern
+match - compiled as a tunnel and took the tunnel arm at every site.
+Encapsulation is a property of the attach point, not of the compiled
+program, and the compile flags cannot carry it: wireguard and a plain L3
+NIC share the l3 object.
+
+Add a per-attach-point global, IFACE_ENCAPS, set from the set of
+encapsulating devices Calico itself owns, and read it at the five sites
+that asked CALI_F_TUNNEL. The set is built where the data-interface
+regex already collects those names, so a vxlan, ipip or wireguard device
+the user owns stays an ordinary host endpoint - deriving it from the
+link kind would have silently disabled NAT encap on one.
+
+With encapsulation carried at runtime, the vxlan endpoint type has
+nothing left to encode: its object parses packets exactly as the host
+object does. Collapse it into EpTypeHost, which drops 8 of the 126
+object files and one loaded program layout per direction and family on
+every node running an overlay. Default policy moves with it: it seeds
+the attach point's own policy jump slot rather than the shared layout,
+so it takes the device's encapsulation and vxlan.calico keeps
+default-allow while an ordinary host endpoint keeps real policy.
+
+The tunnel-key fast path in calico_tc_main runs before any ctx exists,
+so it reads the globals directly through a small helper.
+
+fib_co_re.h's PACKET_HOST repair is now reached by every host endpoint,
+so it is narrowed to the case it was written for in f029540a87: a frame
+that in-kernel decap delivered with a foreign inner MAC. It no longer
+rewrites a broadcast or multicast frame, and it cannot touch an ordinary
+NIC's PACKET_OTHERHOST traffic, which the host is meant to drop.
+
+Verified: 118 objects build under -Werror and all pass the kernel
+verifier; the largest object across the set grows 29875 -> 30009
+instructions (+0.4%) and every from-workload object is unchanged. The
+felix-side collapse is pinned in bpf_ep_mgr_test.go and load_test.go,
+both mutation-tested; deriving the flag from the link kind fails two of
+them. The BPF sites are a substitution with unchanged per-site meaning,
+covered by the existing NAT and encap unit tests. skb->pkt_type is not
+writable through BPF_PROG_TEST_RUN's ctx_in, so the PACKET_OTHERHOST
+guard has no unit test and rests on the vxlan FV matrix.
+
+--- felix/bpf-gpl/cali_bpf.h
+@@ -63,7 +63,6 @@
+ #define CALI_TC_NAT_IF	(1<<7)
+ #define CALI_TC_LO	(1<<8)
+ #define CALI_CT_CLEANUP	(1<<9)
+-#define CALI_TC_VXLAN	(1<<10)
+ #define CALI_TC_PREAMBLE	(1<<11)
+ #define CALI_TC_DEF_POLICY      (1<<12)
+ 
+@@ -104,11 +103,6 @@
+ #define CALI_F_IPIP_ENCAPPED ((CALI_F_INGRESS && CALI_F_IPIP))
+ #define CALI_F_L3_INGRESS    (CALI_F_INGRESS && CALI_F_L3_DEV)
+ 
+-#define CALI_F_WIREGUARD	CALI_F_L3_DEV
+-#define CALI_F_VXLAN		(((CALI_COMPILE_FLAGS) & CALI_TC_VXLAN) != 0)
+-
+-#define CALI_F_TUNNEL	(CALI_F_IPIP || CALI_F_WIREGUARD || CALI_F_VXLAN)
+-
+ #define CALI_F_CGROUP	(((CALI_COMPILE_FLAGS) & CALI_CGROUP) != 0)
+ #define CALI_F_DSR	((CALI_COMPILE_FLAGS & CALI_TC_DSR) != 0)
+ 
+@@ -349,6 +343,10 @@ extern const volatile struct cali_tc_preamble_globals __globals;
+ #define MAGLEV_LUT_SIZE CALI_CONFIGURABLE(maglev_lut_size)
+ #define IPFRAG_TIMEOUT CALI_CONFIGURABLE(ipfrag_timeout)
+ 
++/* The device this program is attached to encapsulates traffic. Compile flags
++ * cannot say: wireguard and a plain L3 NIC share the l3 object. Only a host
++ * endpoint is ever one, which keeps it out of the workload programs. */
++#define IFACE_ENCAPS (CALI_F_HEP && (GLOBAL_FLAGS & CALI_GLOBALS_IFACE_ENCAPS))
+ #define FLOWLOGS_ENABLED (GLOBAL_FLAGS & CALI_GLOBALS_FLOWLOGS_ENABLED)
+ #define INGRESS_PACKET_RATE_CONFIGURED (GLOBAL_FLAGS & CALI_GLOBALS_INGRESS_PACKET_RATE_CONFIGURED)
+ #define EGRESS_PACKET_RATE_CONFIGURED (GLOBAL_FLAGS & CALI_GLOBALS_EGRESS_PACKET_RATE_CONFIGURED)
+
+--- felix/bpf-gpl/conntrack.h
+@@ -1224,7 +1224,7 @@ static CALI_BPF_INLINE struct calico_ct_result calico_ct_lookup(struct cali_tc_c
+ 		}
+ 	}
+ 
+-	if ((CALI_F_INGRESS && CALI_F_TUNNEL) || !skb_seen(ctx->skb) ||
++	if ((CALI_F_INGRESS && IFACE_ENCAPS) || !skb_seen(ctx->skb) ||
+ 			(result.flags & CALI_CT_FLAG_NAT_OUT)) {
+ 		/* Account for the src->dst leg if we haven't seen the packet yet.
+ 		 * Since when the traffic is tunneled, BPF program on the host
+
+--- felix/bpf-gpl/fib_co_re.h
+@@ -310,7 +310,7 @@ static CALI_BPF_INLINE int forward_or_drop(struct cali_tc_ctx *ctx)
+ 				goto skip_fib;
+ 			}
+ 		}
+-	} else if (CALI_F_TUNNEL && CALI_F_TO_HEP) {
++	} else if (IFACE_ENCAPS && CALI_F_TO_HEP) {
+ 		if (!(ctx->skb->mark & CALI_SKB_MARK_SEEN) ||
+ 			!skb_mark_equals(ctx->skb, CALI_SKB_MARK_TUNNEL_KEY_SET, CALI_SKB_MARK_TUNNEL_KEY_SET)) {
+ 			/* packet to vxlan from the host, needs to set tunnel key. Either
+@@ -635,7 +635,10 @@ static CALI_BPF_INLINE int forward_or_drop(struct cali_tc_ctx *ctx)
+ 	rc = TC_ACT_SHOT;
+ 
+ allow:
+-	if (CALI_F_VXLAN && CALI_F_TO_HOST && rc != TC_ACT_SHOT) {
++	/* In-kernel decap can deliver an inner frame addressed to the sender's
++	 * choice of MAC, which local delivery would drop. */
++	if (IFACE_ENCAPS && CALI_F_TO_HOST && rc != TC_ACT_SHOT &&
++			ctx->skb->pkt_type == PACKET_OTHERHOST) {
+ 		bpf_skb_change_type(ctx->skb, PACKET_HOST);
+ 	}
+ 
+
+--- felix/bpf-gpl/globals.h
+@@ -53,6 +53,9 @@ struct cali_tc_preamble_globals {
+ };
+ 
+ enum cali_globals_flags {
++	/* Set on an attach point whose device encapsulates traffic: a vxlan,
++	 * ipip or wireguard device. */
++	CALI_GLOBALS_IFACE_ENCAPS                         = 0x00000001,
+ 	CALI_GLOBALS_RESERVED1                            = 0x00000002,
+ 	CALI_GLOBALS_RESERVED2                            = 0x00000004,
+ 	CALI_GLOBALS_RESERVED3                            = 0x00000008,
+@@ -72,6 +75,8 @@ enum cali_globals_flags {
+ 	CALI_GLOBALS_WORKLOAD_SRC_SPOOFING_CONFIGURED     = 0x00020000,
+ 	CALI_GLOBALS_INGRESS_CONN_LIMIT_CONFIGURED        = 0x00040000,
+ 	CALI_GLOBALS_EGRESS_CONN_LIMIT_CONFIGURED         = 0x00080000,
++	CALI_GLOBALS_RESERVED21                           = 0x00100000,
++	CALI_GLOBALS_RESERVED22                           = 0x00200000,
+ };
+ 
+ struct cali_ctlb_globals {
+
+--- felix/bpf-gpl/nat.h
+@@ -25,9 +25,12 @@
+ #include "nat4.h"
+ #endif
+ 
+-#define dnat_should_encap() (CALI_F_FROM_HEP && !CALI_F_TUNNEL && !CALI_F_L3_DEV && !CALI_F_NAT_IF)
+-#define dnat_return_should_encap() (CALI_F_FROM_WEP && !CALI_F_TUNNEL && !CALI_F_L3_DEV && !CALI_F_NAT_IF)
+-#define dnat_should_decap() (CALI_F_FROM_HEP && !CALI_F_TUNNEL && !CALI_F_L3_DEV && !CALI_F_NAT_IF)
++/* An encapsulating device never adds another layer of its own. */
++#define dnat_on_plain_dev() (!CALI_F_IPIP && !CALI_F_L3_DEV && !CALI_F_NAT_IF && !IFACE_ENCAPS)
++
++#define dnat_should_encap() (CALI_F_FROM_HEP && dnat_on_plain_dev())
++#define dnat_return_should_encap() (CALI_F_FROM_WEP && dnat_on_plain_dev())
++#define dnat_should_decap() (CALI_F_FROM_HEP && dnat_on_plain_dev())
+ 
+ static CALI_BPF_INLINE int is_vxlan_tunnel(struct cali_tc_ctx *ctx, __u16 vxlanport)
+ {
+
+--- felix/bpf-gpl/tc.c
+@@ -105,6 +105,20 @@ static CALI_BPF_INLINE int state_fill_from_l4(struct cali_tc_ctx *ctx, bool deca
+ 	return tc_state_fill_from_nexthdr(ctx, decap);
+ }
+ 
++/* True on an encapsulating device whose packet still needs its tunnel key set.
++ * Reads the globals directly: the fast path below has no ctx yet.
++ */
++static CALI_BPF_INLINE bool encap_needs_key(struct __sk_buff *skb)
++{
++	struct cali_tc_globals *gl = state_get_globals_tc();
++
++	if (!gl || !(gl->data.flags & CALI_GLOBALS_IFACE_ENCAPS)) {
++		return false;
++	}
++
++	return !skb_mark_equals(skb, CALI_SKB_MARK_TUNNEL_KEY_SET, CALI_SKB_MARK_TUNNEL_KEY_SET);
++}
++
+ /* calico_tc_main is the main function used in all of the tc programs.  It is specialised
+  * for particular hook at build time based on the CALI_F build flags.
+  */
+@@ -120,7 +134,7 @@ int calico_tc_main(struct __sk_buff *skb)
+ 	 * skip all processing. */
+ 	if (CALI_F_FROM_HOST && skb_mark_equals(skb, CALI_SKB_MARK_BYPASS, CALI_SKB_MARK_BYPASS) &&
+ 			/* If we are on tunnel and we do not have the key set, we cannot short-circuit */
+-			!(CALI_F_TUNNEL &&  !skb_mark_equals(skb, CALI_SKB_MARK_TUNNEL_KEY_SET, CALI_SKB_MARK_TUNNEL_KEY_SET))) {
++			!encap_needs_key(skb)) {
+ 		if  (CALI_LOG_LEVEL >= CALI_LOG_LEVEL_DEBUG) {
+ 			/* This generates a bit more richer output for logging */
+ 			DECLARE_TC_CTX(_ctx,
+@@ -243,7 +257,7 @@ int calico_tc_main(struct __sk_buff *skb)
+ 		goto finalize;
+ 	}
+ 
+-	if (CALI_F_TUNNEL && CALI_F_TO_HEP
++	if (IFACE_ENCAPS && CALI_F_TO_HEP
+ 			&& skb_mark_equals(ctx->skb, CALI_SKB_MARK_BYPASS, CALI_SKB_MARK_BYPASS)) {
+ 		/* In case we are on tunnel device, CALI_SKB_MARK_BYPASS is set we only got
+ 		 * here because CALI_SKB_MARK_TUNNEL_KEY_SET wasn't set. This happens when
+

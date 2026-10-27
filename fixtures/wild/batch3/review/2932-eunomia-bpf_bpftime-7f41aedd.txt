@@ -1,0 +1,829 @@
+repo: eunomia-bpf/bpftime
+commit: 7f41aeddfc6ac90668fff6e39a8e49334ecd1d6d
+rank: 2932
+
+[FEATURE] Implement pure data structure maps for queue_map & stack_map (#401)
+
+* init bpftrace CI
+
+* update bpftrace CI
+
+* add test
+
+* remove other workflow & update more debug info
+
+* update basic test
+
+* fix
+
+* fix
+
+* return to basic example
+
+* fix error
+
+* update
+
+* update test
+
+* test
+
+* test
+
+* fix error of lib path
+
+* fix
+
+* fix
+
+* fix
+
+* fix sysopenat
+
+* test
+
+* fix
+
+* fix
+
+* update
+
+* fix tmux error
+
+* test
+
+* update
+
+* update
+
+* update
+
+* update debug
+
+* update CI debug
+
+* update debug for CI
+
+* fix error
+
+* update test-bpftrace
+
+* move tmate session
+
+* fix errors
+
+* Update test-bpftrace.yml
+
+* Update test-bpftrace.yml
+
+* test
+
+* fix
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* fix
+
+* fix
+
+* fix
+
+* fix
+
+* fix
+
+* fix
+
+* fix
+
+* fix
+
+* fix
+
+* fix
+
+* fix
+
+* fix
+
+* fix
+
+* fix
+
+* fix
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* fix
+
+* add new example
+
+* fix uprobe test
+
+* bug fix
+
+* fix
+
+* fix
+
+* fix
+
+* fix
+
+* fix
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* test for make
+
+* Update test-examples.yml
+
+* Update test-examples.yml
+
+* fix invalid file
+
+* bpftrace -e for new ex
+
+* new ex test
+
+* Update test-examples.yml
+
+* update malloc tracing uprobe test
+
+* fix
+
+* fix
+
+* recover
+
+* final pre
+
+* update workflow
+
+* rollback test-example
+
+* add english comments
+
+* update codecov
+
+* fix compatible gcov version
+
+* update gpg
+
+* fix gpg error
+
+* update support for gpg
+
+* feat:bpftrace missing will lead error
+
+* add draft of queue_map
+
+* Add BPF Queue and Stack demo with comprehensive testing
+
+- Add uprobe_queue.bpf.c and uprobe_queue.c for FIFO queue testing
+- Add uprobe_stack.bpf.c and uprobe_stack.c for LIFO stack testing
+- Add target.c as demo program for uprobe monitoring
+- Add automated test scripts (run_demo.sh, run_stack_demo.sh)
+- Add comprehensive documentation (README.md, QUEUE_TEST_README.md, STACK_TEST_README.md)
+- Add Makefile for building all components
+- Implement BPF_MAP_TYPE_STACK support in bpftime runtime
+- Add unit tests for queue and stack functionality
+
+Features verified:
+- BPF_MAP_TYPE_QUEUE and BPF_MAP_TYPE_STACK map types
+- bpf_map_push_elem() operations
+- BPF_MAP_LOOKUP_AND_DELETE_ELEM (pop) operations
+- BPF_MAP_LOOKUP_ELEM (peek) operations
+- FIFO vs LIFO behavior verification
+- Uprobe integration with queue/stack maps
+
+* New BPF_TYPE_MAP related code & re-format
+
+* New interface for queue_map & stack_map & re-format
+
+* fix readme
+
+* feat: modify queue_map & stack_map's basic data structure to boost::interprocess::vector
+
+* Refactor the queue implementation to a circular queue and remove locks from both the queue and the stack
+
+* alternative 'null' to 'nullptr' & remove chinese comments
+
+* update errno
+
+* update unit-test for stack
+
+* update lpm_trie
+
+* update bloom_filrer_demo
+
+* update bloom_filter into bpftime maps
+
+* fix bloom_filter example details
+
+* remove useless files
+
+* use shm_remove to alternative ShmRemover for RAII and continuous defs
+
+* remove files
+
+* remove out-dated files and add new tests for stack_map
+
+* fix bloom filter lookup handler
+
+* remove special handler
+
+* Change spdlog_warn to error when encountering map error. Add log to lpm_trie
+
+* remove fixed seed in bloom_filter
+
+* update english comment
+
+* Unified calling format
+
+* Replace std::shared_ptr with boost::unique_ptr to prevent shared ownership issues
+
+* add CI test for bloom_filter
+
+* Add CI test for new examples
+
+* update workflow
+
+* test
+
+* test
+
+* test
+
+* test
+
+* update test
+
+* test
+
+* update remote test
+
+* update ssh test
+
+* test
+
+* test
+
+* test
+
+* test
+
+* test file location
+
+* [~] update path error in workflow
+
+* [~] move bpf_helpers.h to correct path
+
+* [~] fix path error
+
+* [~] fix build error in some workflow
+
+* [~] fix include headers error
+
+* [~] Fix compat error
+
+* [~] Recover test
+
+* [~] Recover old workflow test
+
+* [+] Add new unit-test for lpm_trie_map & queue_map & stack_map
+
+* [+] Update lru_hash_map unit-test
+
+* [~] Fix Ubuntu compile error
+
+* [~] Fix error of key calculate
+
+* [~] Error fixed
+
+* [~] Fix concurrent error
+
+* [~] Fix comments
+
+* [~] Enable unit-test
+
+* [~] Fix
+
+* [~] Recover examples
+
+* [+] Fix bloom_filter_demo bug of building libbpf
+
+* [~] Update random generation to alternative old /dev/urandom
+
+* [~] Remove mutex to use spin_lock in lpm_trie
+
+---------
+
+Co-authored-by: 云微 <1067852565@qq.com>
+Co-authored-by: Officeyutong <yt.xyxx@gmail.com>
+
+--- example/bloom_filter_demo/uprobe_bloom_filter.bpf.c
+@@ -0,0 +1,105 @@
++#define BPF_NO_GLOBAL_DATA
++#include <vmlinux.h>
++#include <bpf/bpf_helpers.h>
++#include <bpf/bpf_tracing.h>
++
++// Statistics index definitions (must match userspace)
++#define STAT_TOTAL_ACCESSES 0
++#define STAT_UNIQUE_USERS 1
++#define STAT_REPEAT_USERS 2
++#define STAT_ADMIN_OPS 3
++#define STAT_SYSTEM_EVENTS 4
++#define STAT_BLOOM_HITS 5
++#define STAT_BLOOM_MISSES 6
++
++// Bloom filter map for tracking user IDs
++struct {
++	__uint(type, BPF_MAP_TYPE_BLOOM_FILTER);
++	__uint(max_entries, 1000);
++	__uint(value_size, sizeof(u32));
++	__uint(map_extra, 3); // Number of hash functions
++} user_bloom_filter SEC(".maps");
++
++// Statistics map
++struct {
++	__uint(type, BPF_MAP_TYPE_ARRAY);
++	__uint(max_entries, 8);
++	__type(key, u32);
++	__type(value, u64);
++} stats SEC(".maps");
++
++// Helper function to increment statistics
++static inline void increment_stat(u32 index)
++{
++	u64 *count = bpf_map_lookup_elem(&stats, &index);
++	if (count) {
++		(*count)++;
++	} else {
++		u64 init_count = 1;
++		bpf_map_update_elem(&stats, &index, &init_count, BPF_ANY);
++	}
++}
++
++SEC("uprobe/./target:user_access")
++int user_access_entry(struct pt_regs *ctx)
++{
++	u32 user_id = (u32)PT_REGS_PARM1(ctx);
++
++	// Increment total accesses
++	increment_stat(STAT_TOTAL_ACCESSES);
++
++	// Check if user ID exists in bloom filter
++	void *exists = bpf_map_lookup_elem(&user_bloom_filter, &user_id);
++
++	if (exists) {
++		// Bloom filter hit - user might exist (possible false positive)
++		increment_stat(STAT_REPEAT_USERS);
++		increment_stat(STAT_BLOOM_HITS);
++		bpf_printk("Bloom filter HIT for user_id=%d (repeat user)\n",
++			   user_id);
++	} else {
++		// Bloom filter miss - user definitely doesn't exist (no false
++		// negatives)
++		increment_stat(STAT_UNIQUE_USERS);
++		increment_stat(STAT_BLOOM_MISSES);
++
++		// Add user to bloom filter
++		u32 value = 1; // Dummy value for bloom filter
++		long ret = bpf_map_update_elem(&user_bloom_filter, &user_id,
++					       &value, BPF_ANY);
++		if (ret != 0) {
++			bpf_printk(
++				"Failed to add user_id=%d to bloom filter, ret=%ld\n",
++				user_id, ret);
++		} else {
++			bpf_printk(
++				"Bloom filter MISS for user_id=%d (new user, added to filter)\n",
++				user_id);
++		}
++	}
++
++	return 0;
++}
++
++SEC("uprobe/./target:admin_operation")
++int admin_operation_entry(struct pt_regs *ctx)
++{
++	increment_stat(STAT_ADMIN_OPS);
++
++	u32 admin_id = (u32)PT_REGS_PARM1(ctx);
++	bpf_printk("Admin operation by admin_id=%d\n", admin_id);
++
++	return 0;
++}
++
++SEC("uprobe/./target:system_event")
++int system_event_entry(struct pt_regs *ctx)
++{
++	increment_stat(STAT_SYSTEM_EVENTS);
++
++	bpf_printk("System event triggered\n");
++
++	return 0;
++}
++
++char LICENSE[] SEC("license") = "GPL";
+\ No newline at end of file
+
+--- example/lpm_trie_demo/file_access_filter.bpf.c
+@@ -0,0 +1,128 @@
++// SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
++/* bpftime LPM Trie file access control */
++
++#define BPF_NO_GLOBAL_DATA
++#include "../../third_party/vmlinux/vmlinux.h"
++#include <bpf/bpf_helpers.h>
++#include <bpf/bpf_tracing.h>
++
++// LPM Trie key structure (matches kernel's bpf_lpm_trie_key)
++struct lpm_key {
++	u32 prefixlen; // Prefix length in bits
++	char data[64]; // Path data
++};
++
++struct event_data {
++	u64 timestamp;
++	u32 pid;
++	u32 tid;
++	u32 counter;
++	u32 function_id;
++	s32 flags;
++	char filename[64];
++	char comm[16];
++	u32 allowed; // 0 = denied, 1 = allowed
++};
++
++// LPM Trie map - stores allowed file path prefixes
++struct {
++	__uint(type, BPF_MAP_TYPE_LPM_TRIE);
++	__uint(max_entries, 100);
++	__type(key, struct lpm_key);
++	__type(value, u32);
++	__uint(map_flags, BPF_F_NO_PREALLOC);
++} allowed_paths SEC(".maps");
++
++// Queue map for FIFO event processing
++struct {
++	__uint(type, BPF_MAP_TYPE_QUEUE);
++	__uint(max_entries, 64);
++	__type(value, struct event_data);
++} events_queue SEC(".maps");
++
++// Counter for function calls
++struct {
++	__uint(type, BPF_MAP_TYPE_ARRAY);
++	__uint(max_entries, 1);
++	__type(key, u32);
++	__type(value, u32);
++} call_counter SEC(".maps");
++
++// Check if path matches any allowed prefix using LPM Trie
++// bpftime's userspace LPM Trie implementation handles the longest prefix
++// matching
++static __always_inline int is_path_allowed(const char *path)
++{
++	struct lpm_key key = {};
++	int path_len = 0;
++
++	// Copy path to key data and calculate length
++	for (int i = 0; i < 63 && path[i] != '\0'; i++) {
++		key.data[i] = path[i];
++		path_len++;
++	}
++	key.data[path_len] = '\0';
++
++	// Set prefix length to maximum possible for this path
++	// bpftime's LPM Trie implementation will find the longest matching
++	// prefix
++	key.prefixlen = path_len * 8;
++
++	// Single lookup - bpftime's userspace LPM Trie handles the matching
++	u32 *policy = bpf_map_lookup_elem(&allowed_paths, &key);
++
++	return policy ? *policy : 0; // 0 = denied, 1 = allowed
++}
++
++SEC("uprobe/./file_access_target:test_file_access")
++int uprobe_test_file_access(struct pt_regs *ctx)
++{
++	struct event_data event = {};
++
++	// Get function arguments
++	char *filename = (char *)PT_REGS_PARM1(ctx);
++	s32 flags = (s32)PT_REGS_PARM2(ctx);
++
++	// Fill event data
++	event.timestamp = bpf_ktime_get_ns();
++	event.pid = bpf_get_current_pid_tgid() >> 32;
++	event.tid = bpf_get_current_pid_tgid() & 0xFFFFFFFF;
++	event.flags = flags;
++	event.function_id = 1;
++
++	// Copy filename safely
++	if (filename) {
++		bpf_probe_read_user_str(event.filename, sizeof(event.filename),
++					filename);
++	}
++
++	// Get process name
++	bpf_get_current_comm(event.comm, sizeof(event.comm));
++
++	// Check if path is allowed using LPM Trie
++	event.allowed = is_path_allowed(event.filename);
++
++	// Update counter
++	u32 key = 0;
++	u32 *counter = bpf_map_lookup_elem(&call_counter, &key);
++	if (counter) {
++		u32 new_val = *counter + 1;
++		bpf_map_update_elem(&call_counter, &key, &new_val, BPF_ANY);
++		event.counter = new_val;
++	} else {
++		u32 init_val = 1;
++		bpf_map_update_elem(&call_counter, &key, &init_val, BPF_ANY);
++		event.counter = 1;
++	}
++
++	// Push event to queue
++	bpf_map_push_elem(&events_queue, &event, BPF_ANY);
++
++	// Print debug info
++	bpf_printk("LPM Trie: file=%s, allowed=%d, counter=%d", event.filename,
++		   event.allowed, event.counter);
++
++	return 0;
++}
++
++char _license[] SEC("license") = "GPL";
+\ No newline at end of file
+
+--- example/queue_demo/uprobe_queue.bpf.c
+@@ -0,0 +1,106 @@
++#define BPF_NO_GLOBAL_DATA
++#include <vmlinux.h>
++#include <bpf/bpf_helpers.h>
++#include <bpf/bpf_tracing.h>
++
++struct event_data {
++	u64 timestamp;
++	u32 pid;
++	u32 tid;
++	u32 counter;
++	u32 function_id; // 1=target_function, 2=secondary_function
++	s32 input_value;
++	char comm[16];
++};
++
++// Queue map for FIFO event processing
++struct {
++	__uint(type, BPF_MAP_TYPE_QUEUE);
++	__uint(max_entries, 64);
++	__type(value, struct event_data);
++} events_queue SEC(".maps");
++
++// Counter for function calls
++struct {
++	__uint(type, BPF_MAP_TYPE_ARRAY);
++	__uint(max_entries, 1);
++	__type(key, u32);
++	__type(value, u32);
++} call_counter SEC(".maps");
++
++SEC("uprobe/./target:target_function")
++int target_function_entry(struct pt_regs *ctx)
++{
++	struct event_data event = {};
++
++	event.timestamp = bpf_ktime_get_ns();
++	event.pid = bpf_get_current_pid_tgid() >> 32;
++	event.tid = bpf_get_current_pid_tgid() & 0xFFFFFFFF;
++	event.function_id = 1;
++	bpf_get_current_comm(&event.comm, sizeof(event.comm));
++	event.input_value = (s32)PT_REGS_PARM1(ctx);
++
++	// Update call counter
++	u32 key = 0;
++	u32 *count = bpf_map_lookup_elem(&call_counter, &key);
++	if (count) {
++		*count += 1;
++		event.counter = *count;
++	} else {
++		u32 init_count = 1;
++		bpf_map_update_elem(&call_counter, &key, &init_count, BPF_ANY);
++		event.counter = 1;
++	}
++
++	// Push event to queue
++	long ret = bpf_map_push_elem(&events_queue, &event, BPF_ANY);
++	if (ret != 0) {
++		bpf_printk("Failed to push event to queue, ret=%ld\n", ret);
++	} else {
++		bpf_printk(
++			"Pushed event to queue: pid=%d, counter=%d, input=%d\n",
++			event.pid, event.counter, event.input_value);
++	}
++
++	return 0;
++}
++
++SEC("uprobe/./target:secondary_function")
++int secondary_function_entry(struct pt_regs *ctx)
++{
++	struct event_data event = {};
++
++	event.timestamp = bpf_ktime_get_ns();
++	event.pid = bpf_get_current_pid_tgid() >> 32;
++	event.tid = bpf_get_current_pid_tgid() & 0xFFFFFFFF;
++	event.function_id = 2;
++	bpf_get_current_comm(&event.comm, sizeof(event.comm));
++	event.input_value = 0;
++
++	// Update call counter
++	u32 key = 0;
++	u32 *count = bpf_map_lookup_elem(&call_counter, &key);
++	if (count) {
++		*count += 1;
++		event.counter = *count;
++	} else {
++		u32 init_count = 1;
++		bpf_map_update_elem(&call_counter, &key, &init_count, BPF_ANY);
++		event.counter = 1;
++	}
++
++	// Push event to queue
++	long ret = bpf_map_push_elem(&events_queue, &event, BPF_ANY);
++	if (ret != 0) {
++		bpf_printk("Failed to push secondary event to queue, ret=%ld\n",
++			   ret);
++	} else {
++		bpf_printk(
++			"Pushed secondary event to queue: pid=%d, counter=%d\n",
++			event.pid, event.counter);
++	}
++
++	return 0;
++}
++
++char LICENSE[] SEC("license") = "GPL";
+\ No newline at end of file
+
+--- example/queue_demo/uprobe_stack.bpf.c
+@@ -0,0 +1,106 @@
++#define BPF_NO_GLOBAL_DATA
++#include <vmlinux.h>
++#include <bpf/bpf_helpers.h>
++#include <bpf/bpf_tracing.h>
++
++struct event_data {
++	u64 timestamp;
++	u32 pid;
++	u32 tid;
++	u32 counter;
++	u32 function_id; // 1=target_function, 2=secondary_function
++	s32 input_value;
++	char comm[16];
++};
++
++// Stack map for LIFO event processing
++struct {
++	__uint(type, BPF_MAP_TYPE_STACK);
++	__uint(max_entries, 64);
++	__type(value, struct event_data);
++} events_stack SEC(".maps");
++
++// Counter for function calls
++struct {
++	__uint(type, BPF_MAP_TYPE_ARRAY);
++	__uint(max_entries, 1);
++	__type(key, u32);
++	__type(value, u32);
++} call_counter SEC(".maps");
++
++SEC("uprobe/./target:target_function")
++int target_function_entry(struct pt_regs *ctx)
++{
++	struct event_data event = {};
++
++	event.timestamp = bpf_ktime_get_ns();
++	event.pid = bpf_get_current_pid_tgid() >> 32;
++	event.tid = bpf_get_current_pid_tgid() & 0xFFFFFFFF;
++	event.function_id = 1;
++	bpf_get_current_comm(&event.comm, sizeof(event.comm));
++	event.input_value = (s32)PT_REGS_PARM1(ctx);
++
++	// Update call counter
++	u32 key = 0;
++	u32 *count = bpf_map_lookup_elem(&call_counter, &key);
++	if (count) {
++		*count += 1;
++		event.counter = *count;
++	} else {
++		u32 init_count = 1;
++		bpf_map_update_elem(&call_counter, &key, &init_count, BPF_ANY);
++		event.counter = 1;
++	}
++
++	// Push event to stack
++	long ret = bpf_map_push_elem(&events_stack, &event, BPF_ANY);
++	if (ret != 0) {
++		bpf_printk("Failed to push event to stack, ret=%ld\n", ret);
++	} else {
++		bpf_printk(
++			"Pushed event to stack: pid=%d, counter=%d, input=%d\n",
++			event.pid, event.counter, event.input_value);
++	}
++
++	return 0;
++}
++
++SEC("uprobe/./target:secondary_function")
++int secondary_function_entry(struct pt_regs *ctx)
++{
++	struct event_data event = {};
++
++	event.timestamp = bpf_ktime_get_ns();
++	event.pid = bpf_get_current_pid_tgid() >> 32;
++	event.tid = bpf_get_current_pid_tgid() & 0xFFFFFFFF;
++	event.function_id = 2;
++	bpf_get_current_comm(&event.comm, sizeof(event.comm));
++	event.input_value = 0;
++
++	// Update call counter
++	u32 key = 0;
++	u32 *count = bpf_map_lookup_elem(&call_counter, &key);
++	if (count) {
++		*count += 1;
++		event.counter = *count;
++	} else {
++		u32 init_count = 1;
++		bpf_map_update_elem(&call_counter, &key, &init_count, BPF_ANY);
++		event.counter = 1;
++	}
++
++	// Push event to stack
++	long ret = bpf_map_push_elem(&events_stack, &event, BPF_ANY);
++	if (ret != 0) {
++		bpf_printk("Failed to push secondary event to stack, ret=%ld\n",
++			   ret);
++	} else {
++		bpf_printk(
++			"Pushed secondary event to stack: pid=%d, counter=%d\n",
++			event.pid, event.counter);
++	}
++
++	return 0;
++}
++
++char LICENSE[] SEC("license") = "GPL";
+\ No newline at end of file
+

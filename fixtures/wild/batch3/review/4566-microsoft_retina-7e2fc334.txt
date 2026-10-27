@@ -1,0 +1,147 @@
+repo: microsoft/retina
+commit: 7e2fc3346eaabf3ece23c1d181a1de7dcac2bd82
+rank: 4566
+
+feat(conntrack-metrics): legacy control plane basic mode (#1253)
+
+# Description
+
+Initial implementation of conntrack metrics for the legacy control plane
+in basic mode. The aggregation is at the node level, which makes the
+metric bounded.
+
+Metrics:
+- conntrack_bytes_tx
+- conntrack_bytes_rx
+- conntrack_packets_tx
+- conntrack_packets_rx
+- conntrack_total_connections
+
+## Related Issue
+
+fixes https://github.com/microsoft/retina/issues/1190
+
+## Checklist
+
+- [x] I have read the [contributing
+documentation](https://retina.sh/docs/contributing).
+- [x] I signed and signed-off the commits (`git commit -S -s ...`). See
+[this
+documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification)
+on signing commits.
+- [x] I have correctly attributed the author(s) of the code.
+- [x] I have tested the changes locally.
+- [x] I have followed the project's style guidelines.
+- [x] I have updated the documentation, if necessary.
+- [x] I have added tests, if applicable.
+
+## Screenshots (if applicable) or Testing Completed
+
+Bytes RX
+
+
+![image](https://github.com/user-attachments/assets/4e79109c-406c-47b7-b426-95003ecfdc64)
+
+
+Total connections metric
+
+
+![image](https://github.com/user-attachments/assets/f3759fd8-6d8f-4301-b4e0-c8f01a74d539)
+
+
+## Additional Notes
+
+Add any additional notes or context about the pull request here.
+
+---
+
+Please refer to the [CONTRIBUTING.md](../CONTRIBUTING.md) file for more
+information on how to contribute to this project.
+
+--- pkg/plugin/conntrack/_cprog/conntrack.c
+@@ -21,14 +21,14 @@ struct conntrackmetadata {
+         bytes_*_count indicates the number of bytes sent and received in the forward and reply direction.
+         These values will be based on the conntrack entry.
+     */
+-    __u64 bytes_forward_count;
+-    __u64 bytes_reply_count;
++    __u64 bytes_tx_count;
++    __u64 bytes_rx_count;
+     /*
+         packets_*_count indicates the number of packets sent and received in the forward and reply direction.
+         These values will be based on the conntrack entry.
+     */
+-    __u32 packets_forward_count;
+-    __u32 packets_reply_count;
++    __u32 packets_tx_count;
++    __u32 packets_rx_count;
+ };
+ 
+ struct packet
+@@ -145,8 +145,8 @@ static __always_inline bool _ct_create_new_tcp_connection(struct packet *p, stru
+     new_value.traffic_direction = _ct_get_traffic_direction(observation_point);
+ 
+     #ifdef ENABLE_CONNTRACK_METRICS
+-        new_value.conntrack_metadata.packets_forward_count = 1;
+-        new_value.conntrack_metadata.bytes_forward_count = p->bytes;
++        new_value.conntrack_metadata.packets_tx_count = 1;
++        new_value.conntrack_metadata.bytes_tx_count = p->bytes;
+         // Update initial conntrack metadata for the connection.
+         __builtin_memcpy(&p->conntrack_metadata, &new_value.conntrack_metadata, sizeof(struct conntrackmetadata));
+     #endif // ENABLE_CONNTRACK_METRICS
+@@ -177,8 +177,8 @@ static __always_inline bool _ct_handle_udp_connection(struct packet *p, struct c
+     new_value.last_report_tx_dir = now;
+     new_value.traffic_direction = _ct_get_traffic_direction(observation_point);
+     #ifdef ENABLE_CONNTRACK_METRICS
+-        new_value.conntrack_metadata.packets_forward_count = 1;
+-        new_value.conntrack_metadata.bytes_forward_count = p->bytes;
++        new_value.conntrack_metadata.packets_tx_count = 1;
++        new_value.conntrack_metadata.bytes_tx_count = p->bytes;
+         // Update packet's conntrack metadata.
+         __builtin_memcpy(&p->conntrack_metadata, &new_value.conntrack_metadata, sizeof(struct conntrackmetadata));;
+     #endif // ENABLE_CONNTRACK_METRICS    
+@@ -226,17 +226,17 @@ static __always_inline bool _ct_handle_tcp_connection(struct packet *p, struct c
+         new_value.flags_seen_rx_dir = p->flags;
+         new_value.last_report_rx_dir = now;
+         #ifdef ENABLE_CONNTRACK_METRICS
+-            new_value.conntrack_metadata.bytes_reply_count = p->bytes;
+-            new_value.conntrack_metadata.packets_reply_count = 1;
++            new_value.conntrack_metadata.bytes_rx_count = p->bytes;
++            new_value.conntrack_metadata.packets_rx_count = 1;
+         #endif // ENABLE_CONNTRACK_METRICS
+         bpf_map_update_elem(&retina_conntrack, &reverse_key, &new_value, BPF_ANY);
+     } else { // Otherwise, the packet is considered as a packet in the send direction.
+         p->is_reply = false;
+         new_value.flags_seen_tx_dir = p->flags;
+         new_value.last_report_tx_dir = now;
+         #ifdef ENABLE_CONNTRACK_METRICS
+-            new_value.conntrack_metadata.bytes_forward_count = p->bytes;
+-            new_value.conntrack_metadata.packets_forward_count = 1;
++            new_value.conntrack_metadata.bytes_tx_count = p->bytes;
++            new_value.conntrack_metadata.packets_tx_count = 1;
+         #endif // ENABLE_CONNTRACK_METRICS
+         bpf_map_update_elem(&retina_conntrack, &key, &new_value, BPF_ANY);
+     }
+@@ -400,8 +400,8 @@ static __always_inline __attribute__((unused)) bool ct_process_packet(struct pac
+         p->traffic_direction = entry->traffic_direction;
+         #ifdef ENABLE_CONNTRACK_METRICS
+             // Update packet count and bytes count on conntrack entry.
+-            WRITE_ONCE(entry->conntrack_metadata.packets_forward_count, READ_ONCE(entry->conntrack_metadata.packets_forward_count) + 1);
+-            WRITE_ONCE(entry->conntrack_metadata.bytes_forward_count, READ_ONCE(entry->conntrack_metadata.bytes_forward_count) + p->bytes);
++            WRITE_ONCE(entry->conntrack_metadata.packets_tx_count, READ_ONCE(entry->conntrack_metadata.packets_tx_count) + 1);
++            WRITE_ONCE(entry->conntrack_metadata.bytes_tx_count, READ_ONCE(entry->conntrack_metadata.bytes_tx_count) + p->bytes);
+             // Update packet's conntract metadata.
+             __builtin_memcpy(&p->conntrack_metadata, &entry->conntrack_metadata, sizeof(struct conntrackmetadata));
+         #endif // ENABLE_CONNTRACK_METRICS
+@@ -422,8 +422,8 @@ static __always_inline __attribute__((unused)) bool ct_process_packet(struct pac
+         p->traffic_direction = entry->traffic_direction;
+         #ifdef ENABLE_CONNTRACK_METRICS
+             // Update packet count and bytes count on conntrack entry.
+-            WRITE_ONCE(entry->conntrack_metadata.packets_reply_count, READ_ONCE(entry->conntrack_metadata.packets_reply_count) + 1);
+-            WRITE_ONCE(entry->conntrack_metadata.bytes_reply_count, READ_ONCE(entry->conntrack_metadata.bytes_reply_count) + p->bytes);
++            WRITE_ONCE(entry->conntrack_metadata.packets_rx_count, READ_ONCE(entry->conntrack_metadata.packets_rx_count) + 1);
++            WRITE_ONCE(entry->conntrack_metadata.bytes_rx_count, READ_ONCE(entry->conntrack_metadata.bytes_rx_count) + p->bytes);
+             // Update packet's conntract metadata.
+             __builtin_memcpy(&p->conntrack_metadata, &entry->conntrack_metadata, sizeof(struct conntrackmetadata));
+         #endif // ENABLE_CONNTRACK_METRICS
+

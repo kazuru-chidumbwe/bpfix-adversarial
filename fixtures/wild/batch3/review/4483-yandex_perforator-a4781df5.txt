@@ -1,0 +1,38 @@
+repo: yandex/perforator
+commit: a4781df52e01e89181c1d4df560db2b4be35ab91
+rank: 4483
+
+Reduce Python unwinder verifier complexity
+
+Reduce Python unwinder verifier complexity
+commit_hash:2bd06a66eb64a6a5a605bf60cf5aad9eb56a1bdc
+
+--- perforator/agent/collector/progs/unwinder/unwinder.bpf.c
+@@ -16,14 +16,16 @@
+ 
+ #endif
+ 
++#include <stddef.h>
++
+ #include "cgroups.h"
+ #include "core.h"
+ #include "dwarf.h"
+ #include "lbr.h"
+ #include "metrics.h"
+ #include "output.h"
+ #include "pidns.h"
+-#include "python/unwind.h"
++#include "python/types.h"
+ #include "php/unwind.h"
+ #include "task.h"
+ #include "thread_local.h"
+@@ -485,6 +487,8 @@ static ALWAYS_INLINE struct profiler_state* get_state() {
+     return state;
+ }
+ 
++#include "python/unwind.h"
++
+ static ALWAYS_INLINE struct profiler_config* get_config() {
+     struct profiler_config* config = map_lookup_zero(&profiler_config);
+ 
+

@@ -1,0 +1,612 @@
+repo: open-telemetry/opentelemetry-ebpf-instrumentation
+commit: 965e9ce5fb069dc611116ef289a3eac52866461d
+rank: 6278
+
+fix: add internal metrics for ring buffer writes (#3631)
+
+* fix: export ring buffer write counts
+
+add internal metrics for ring buffer write and failure counts. reporters add the supplied deltas for each bpf.map.name without keeping separate state.
+
+Signed-off-by: kingbj940429 <kingbj0429@gmail.com>
+
+* fix: count ring buffer writes in eBPF
+
+use one shared per-CPU map keyed by events, gpu_events, and log_events. count writes and failures with atomic increments in the reserve and output helpers.
+
+add map checks for the generated eBPF collections.
+
+Signed-off-by: kingbj940429 <kingbj0429@gmail.com>
+
+* docs: add ring buffer write metrics
+
+add the write and failure counters to the OBI schema and the BPF internal metrics table. include generated metric documentation with bpf.map.name.
+
+Signed-off-by: kingbj940429 <kingbj0429@gmail.com>
+
+* fix: collect ring buffer write counts
+
+read cumulative per-CPU values from the shared map in the existing BPFCollector ticker. calculate deltas in the collector and report them for events, gpu_events, and log_events.
+
+verify that the events ring buffer count increases in the internal metrics integration test.
+
+Signed-off-by: kingbj940429 <kingbj0429@gmail.com>
+
+---------
+
+Signed-off-by: kingbj940429 <kingbj0429@gmail.com>
+
+--- bpf/common/common.c
+@@ -16,6 +16,7 @@
+ 
+ #include <common/common.h>
+ #include <common/event_defs.h>
++#include <common/ringbuf_types.h>
+ 
+ #include <pid/types/pid_filter.h>
+ 
+@@ -38,3 +39,5 @@ const enum protocol_type *unused_16 __attribute__((unused));
+ const enum event_type *unused_17 __attribute__((unused));
+ const enum pid_namespace_mode *unused_18 __attribute__((unused));
+ const enum valid_pids_size *unused_19 __attribute__((unused));
++const ringbuf_write_stats_t *unused_20 __attribute__((unused));
++const enum ringbuf_id *unused_21 __attribute__((unused));
+
+--- bpf/common/large_buf_emit.h
+@@ -51,7 +51,7 @@ static __always_inline u32 large_buf_emit_chunks(tcp_large_buffer_t *large_buf,
+         u32 total_size = sizeof(tcp_large_buffer_t) + payload_size;
+         bpf_clamp_umax(total_size, k_large_buf_max_size);
+ 
+-        if (bpf_ringbuf_output(&events, large_buf, total_size, get_flags()) != 0) {
++        if (events_ringbuf_output(large_buf, total_size, get_flags()) != 0) {
+             break;
+         }
+ 
+
+--- bpf/common/ringbuf.h
+@@ -7,6 +7,7 @@
+ 
+ #include <common/event_defs.h>
+ #include <common/pin_internal.h>
++#include <common/ringbuf_metrics.h>
+ 
+ // setting here the following map definitions without pinning them to a global namespace
+ // would lead that services running both HTTP and GRPC server would duplicate
+@@ -37,3 +38,15 @@ static __always_inline long get_flags() {
+     const u64 sz = bpf_ringbuf_query(&events, BPF_RB_AVAIL_DATA);
+     return sz >= wakeup_data_bytes ? BPF_RB_FORCE_WAKEUP : BPF_RB_NO_WAKEUP;
+ }
++
++static __always_inline void *events_ringbuf_reserve(u64 size, u64 flags) {
++    void *event = bpf_ringbuf_reserve(&events, size, flags);
++    account_ringbuf_write(RINGBUF_EVENTS, !event);
++    return event;
++}
++
++static __always_inline long events_ringbuf_output(void *data, u64 size, u64 flags) {
++    const long err = bpf_ringbuf_output(&events, data, size, flags);
++    account_ringbuf_write(RINGBUF_EVENTS, err != 0);
++    return err;
++}
+
+--- bpf/common/ringbuf_metrics.h
+@@ -0,0 +1,35 @@
++// Copyright The OpenTelemetry Authors
++// SPDX-License-Identifier: Apache-2.0
++
++#pragma once
++
++#include <common/ringbuf_types.h>
++#include <common/pin_internal.h>
++
++#include <bpfcore/bpf_helpers.h>
++
++struct {
++    __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
++    __type(key, u32);
++    __type(value, ringbuf_write_stats_t);
++    __uint(max_entries, RINGBUF_COUNT);
++    __uint(pinning, OBI_PIN_INTERNAL);
++} ringbuf_write_stats_storage SEC(".maps");
++
++volatile const bool ringbuf_metrics_enabled = false;
++
++static __always_inline void account_ringbuf_write(enum ringbuf_id ringbuf, bool failed) {
++    if (!ringbuf_metrics_enabled) {
++        return;
++    }
++
++    ringbuf_write_stats_t *stats = bpf_map_lookup_elem(&ringbuf_write_stats_storage, &ringbuf);
++    if (!stats) {
++        return;
++    }
++
++    __sync_fetch_and_add(&stats->writes, 1);
++    if (failed) {
++        __sync_fetch_and_add(&stats->failures, 1);
++    }
++}
+
+--- bpf/common/ringbuf_types.h
+@@ -0,0 +1,18 @@
++// Copyright The OpenTelemetry Authors
++// SPDX-License-Identifier: Apache-2.0
++
++#pragma once
++
++#include <bpfcore/vmlinux.h>
++
++enum ringbuf_id : u32 {
++    RINGBUF_EVENTS,
++    RINGBUF_GPU_EVENTS,
++    RINGBUF_LOG_EVENTS,
++    RINGBUF_COUNT,
++};
++
++typedef struct {
++    u64 writes;
++    u64 failures;
++} ringbuf_write_stats_t;
+
+--- bpf/generictracer/dns.h
+@@ -465,7 +465,7 @@ static __always_inline u8 handle_dns(struct __sk_buff *skb,
+             .pid = conn_pid->p_info.host_pid,
+         };
+ 
+-        dns_req_t *req = bpf_ringbuf_reserve(&events, sizeof(dns_req_t), 0);
++        dns_req_t *req = events_ringbuf_reserve(sizeof(dns_req_t), 0);
+ 
+         if (req) {
+             u32 len = skb->len - dns_off;
+@@ -513,7 +513,7 @@ static __always_inline u8 handle_dns_buf(const unsigned char *buf,
+             return 0;
+         }
+ 
+-        dns_req_t *req = bpf_ringbuf_reserve(&events, sizeof(dns_req_t), 0);
++        dns_req_t *req = events_ringbuf_reserve(sizeof(dns_req_t), 0);
+         if (req) {
+             populate_dns_record(req, p_conn, orig_dport, size, qr, hdr.id, conn_pid);
+ 
+
+--- bpf/generictracer/java_tls.c
+@@ -173,7 +173,7 @@ int BPF_KPROBE_GUARDED(obi_kprobe_sys_ioctl) {
+             return 0;
+         }
+ 
+-        struct jvm_runtime_metrics_event *event = bpf_ringbuf_reserve(&events, sizeof(*event), 0);
++        struct jvm_runtime_metrics_event *event = events_ringbuf_reserve(sizeof(*event), 0);
+         if (!event) {
+             return 0;
+         }
+@@ -205,7 +205,7 @@ int BPF_KPROBE_GUARDED(obi_kprobe_sys_ioctl) {
+             return 0;
+         }
+ 
+-        struct jvm_gc_duration_event *event = bpf_ringbuf_reserve(&events, sizeof(*event), 0);
++        struct jvm_gc_duration_event *event = events_ringbuf_reserve(sizeof(*event), 0);
+         if (!event) {
+             return 0;
+         }
+
+--- bpf/generictracer/jvm.c
+@@ -107,7 +107,7 @@ static __always_inline int jvm_hotspot_mem_pool_gc(enum jvm_gc_when_type when,
+         return 0;
+     }
+ 
+-    struct jvm_mem_pool_gc_event *e = bpf_ringbuf_reserve(&events, sizeof(*e), 0);
++    struct jvm_mem_pool_gc_event *e = events_ringbuf_reserve(sizeof(*e), 0);
+     if (!e) {
+         return 0;
+     }
+
+--- bpf/generictracer/nodejs.c
+@@ -339,7 +339,7 @@ static __always_inline int handle_manual_ctx(const char *path, const u64 pid_tgi
+ // span's own override, so a root manual span would otherwise become its own
+ // parent.
+ static __always_inline int handle_node_span(const char *path, const u64 pid_tgid) {
+-    node_span_event_t *ev = bpf_ringbuf_reserve(&events, sizeof(node_span_event_t), 0);
++    node_span_event_t *ev = events_ringbuf_reserve(sizeof(node_span_event_t), 0);
+     if (!ev) {
+         return 0;
+     }
+@@ -451,7 +451,7 @@ static __always_inline int handle_runtime_metrics(const char *path, const u64 pi
+         }
+     }
+ 
+-    struct nodejs_eventloop_event *e = bpf_ringbuf_reserve(&events, sizeof(*e), 0);
++    struct nodejs_eventloop_event *e = events_ringbuf_reserve(sizeof(*e), 0);
+     if (!e) {
+         return 0;
+     }
+@@ -544,7 +544,7 @@ static __always_inline int handle_v8_metrics(const char *path, const u64 pid_tgi
+             return 0;
+         }
+ 
+-        struct nodejs_gc_event *e = bpf_ringbuf_reserve(&events, sizeof(*e), 0);
++        struct nodejs_gc_event *e = events_ringbuf_reserve(sizeof(*e), 0);
+         if (!e) {
+             return 0;
+         }
+@@ -570,7 +570,7 @@ static __always_inline int handle_v8_metrics(const char *path, const u64 pid_tgi
+             return 0;
+         }
+ 
+-        struct nodejs_heap_space_event *e = bpf_ringbuf_reserve(&events, sizeof(*e), 0);
++        struct nodejs_heap_space_event *e = events_ringbuf_reserve(sizeof(*e), 0);
+         if (!e) {
+             return 0;
+         }
+@@ -607,7 +607,7 @@ static __always_inline int handle_v8_metrics(const char *path, const u64 pid_tgi
+             return 0;
+         }
+ 
+-        struct nodejs_resource_event *e = bpf_ringbuf_reserve(&events, sizeof(*e), 0);
++        struct nodejs_resource_event *e = events_ringbuf_reserve(sizeof(*e), 0);
+         if (!e) {
+             return 0;
+         }
+
+--- bpf/generictracer/protocol_http.h
+@@ -154,7 +154,7 @@ static __always_inline void submit_http_event(http_info_t *info, pid_connection_
+ 
+     info->submitted = 1;
+     bpf_map_update_elem(&ongoing_http, pid_conn, info, BPF_ANY);
+-    http_info_t *trace = bpf_ringbuf_reserve(&events, sizeof(http_info_t), 0);
++    http_info_t *trace = events_ringbuf_reserve(sizeof(http_info_t), 0);
+     if (trace) {
+         bpf_dbg_printk("Sending trace %lx, response length %d", info, info->resp_len);
+ 
+
+--- bpf/generictracer/protocol_http2.h
+@@ -152,7 +152,7 @@ http2_poison_hpack(http2_conn_stream_t *stream, http2_grpc_request_t *info, u8 f
+ static __always_inline u8 http2_emit_hpack_event(grpc_frames_ctx_t *g_ctx,
+                                                  const frame_header_t *frame,
+                                                  u8 event_type) {
+-    http2_grpc_request_t *event = bpf_ringbuf_reserve(&events, sizeof(http2_grpc_request_t), 0);
++    http2_grpc_request_t *event = events_ringbuf_reserve(sizeof(http2_grpc_request_t), 0);
+     if (!event) {
+         return 0;
+     }
+@@ -376,7 +376,7 @@ http2_grpc_end(http2_conn_stream_t *stream, http2_grpc_request_t *prev_info, voi
+             prev_info->hpack_flags |= h2_hpack_req_unreliable | h2_hpack_resp_unreliable;
+         }
+ 
+-        http2_grpc_request_t *trace = bpf_ringbuf_reserve(&events, sizeof(*trace), 0);
++        http2_grpc_request_t *trace = events_ringbuf_reserve(sizeof(*trace), 0);
+         if (trace) {
+             bpf_probe_read(prev_info->ret_data, k_kprobes_http2_ret_buf_size, u_buf);
+             __builtin_memcpy(trace, prev_info, sizeof(http2_grpc_request_t));
+
+--- bpf/generictracer/protocol_kafka.h
+@@ -440,7 +440,7 @@ static __always_inline int kafka_send_large_buffer(tcp_req_t *req,
+         lb->len = k_kafka_hdr_message_size;
+ 
+         const u32 total_size = sizeof(tcp_large_buffer_t) + sizeof(void *);
+-        bpf_ringbuf_output(&events, lb, total_size, get_flags());
++        events_ringbuf_output(lb, total_size, get_flags());
+ 
+         max_available_bytes -= k_kafka_hdr_message_size;
+         consumed_bytes += k_kafka_hdr_message_size;
+
+--- bpf/generictracer/protocol_mysql.h
+@@ -182,7 +182,7 @@ static __always_inline int mysql_send_large_buffer(tcp_req_t *req,
+ 
+         const u32 total_size = sizeof(tcp_large_buffer_t) + sizeof(void *);
+ 
+-        bpf_ringbuf_output(&events, lb, total_size, get_flags());
++        events_ringbuf_output(lb, total_size, get_flags());
+ 
+         lb->action = k_large_buf_action_append;
+     }
+
+--- bpf/generictracer/protocol_tcp.h
+@@ -125,7 +125,7 @@ static __always_inline void finish_ongoing_tcp_req(pid_connection_info_t *pid_co
+         existing_tcp->resp_len = 0;
+ 
+         bpf_dbg_printk("Sending pending TCP trace on close: len=%d", existing_tcp->len);
+-        bpf_ringbuf_output(&events, existing_tcp, sizeof(*existing_tcp), get_flags());
++        events_ringbuf_output(existing_tcp, sizeof(*existing_tcp), get_flags());
+     }
+ 
+     cleanup_trace_info(existing_tcp, pid_conn);
+@@ -223,7 +223,7 @@ static __always_inline void failed_to_connect_event(pid_connection_info_t *pid_c
+                                                     lw_thread_t lw_thread,
+                                                     u16 orig_dport,
+                                                     u64 connect_ts) {
+-    tcp_req_t *req = bpf_ringbuf_reserve(&events, sizeof(tcp_req_t), 0);
++    tcp_req_t *req = events_ringbuf_reserve(sizeof(tcp_req_t), 0);
+     if (req) {
+         pid_info pid = {};
+         task_pid(&pid);
+@@ -369,7 +369,7 @@ static __always_inline void handle_unknown_tcp_connection(pid_connection_info_t
+             bpf_clamp_umax(bytes_len, k_tcp_res_len);
+             existing->end_monotime_ns = bpf_ktime_get_ns();
+             existing->resp_len = bytes_len;
+-            tcp_req_t *trace = bpf_ringbuf_reserve(&events, sizeof(tcp_req_t), 0);
++            tcp_req_t *trace = events_ringbuf_reserve(sizeof(tcp_req_t), 0);
+             if (trace) {
+                 bpf_dbg_printk("Sending TCP trace: existing=%lx, resp_length=%d",
+                                existing,
+
+--- bpf/generictracer/python_runtime.c
+@@ -101,7 +101,7 @@ int GUARDED_PROG(obi_uprobe_python_gc_done, struct pt_regs *, ctx) {
+         bpf_dbg_printk("python GC snapshot update failed pid=%d ns=%d", key.user_pid, key.ns);
+     }
+ 
+-    struct python_runtime_metric_event *event = bpf_ringbuf_reserve(&events, sizeof(*event), 0);
++    struct python_runtime_metric_event *event = events_ringbuf_reserve(sizeof(*event), 0);
+     if (!event) {
+         bpf_dbg_printk("python GC event reserve failed pid=%d ns=%d", key.user_pid, key.ns);
+         return 0;
+
+--- bpf/gotracer/go_grpc.c
+@@ -381,7 +381,7 @@ int GUARDED_PROG(obi_uprobe_server_handleStream_return, struct pt_regs *, ctx) {
+                    st_ptr,
+                    grpc_stream_method_ptr_pos);
+ 
+-    http_request_trace_t *trace = bpf_ringbuf_reserve(&events, sizeof(http_request_trace_t), 0);
++    http_request_trace_t *trace = events_ringbuf_reserve(sizeof(http_request_trace_t), 0);
+     if (!trace) {
+         bpf_dbg_printk("can't reserve space in the ringbuffer");
+         goto done;
+@@ -586,7 +586,7 @@ static __always_inline int grpc_connect_done(struct pt_regs *ctx, void *err) {
+         goto done;
+     }
+ 
+-    http_request_trace_t *trace = bpf_ringbuf_reserve(&events, sizeof(http_request_trace_t), 0);
++    http_request_trace_t *trace = events_ringbuf_reserve(sizeof(http_request_trace_t), 0);
+     if (!trace) {
+         bpf_dbg_printk("can't reserve space in the ringbuffer");
+         goto done;
+
+--- bpf/gotracer/go_kafka_go.c
+@@ -207,7 +207,7 @@ int GUARDED_PROG(obi_uprobe_protocol_roundtrip_ret, struct pt_regs *, ctx) {
+         bpf_dbg_printk("msg_ptr=%llx, topic_ptr=%llx", p_ptr->msg_ptr, topic_ptr);
+ 
+         if (topic_ptr) {
+-            kafka_go_req_t *trace = bpf_ringbuf_reserve(&events, sizeof(kafka_go_req_t), 0);
++            kafka_go_req_t *trace = events_ringbuf_reserve(sizeof(kafka_go_req_t), 0);
+             if (trace) {
+                 trace->type = k_event_type_go_kafka_seg;
+                 trace->op = k_kafka_api_produce;
+@@ -321,7 +321,7 @@ int GUARDED_PROG(obi_uprobe_reader_read_ret, struct pt_regs *, ctx) {
+ 
+     if (req_ptr) {
+         if (req_ptr->start_monotime_ns) {
+-            kafka_go_req_t *trace = bpf_ringbuf_reserve(&events, sizeof(kafka_go_req_t), 0);
++            kafka_go_req_t *trace = events_ringbuf_reserve(sizeof(kafka_go_req_t), 0);
+             if (trace) {
+                 __builtin_memcpy(trace, req_ptr, sizeof(kafka_go_req_t));
+                 trace->end_monotime_ns = bpf_ktime_get_ns();
+
+--- bpf/gotracer/go_mongo.c
+@@ -216,8 +216,7 @@ int GUARDED_PROG(obi_uprobe_mongo_op_execute_ret, struct pt_regs *, ctx) {
+             req->err = 0;
+         }
+ 
+-        mongo_go_client_req_t *trace =
+-            bpf_ringbuf_reserve(&events, sizeof(mongo_go_client_req_t), 0);
++        mongo_go_client_req_t *trace = events_ringbuf_reserve(sizeof(mongo_go_client_req_t), 0);
+         if (trace) {
+             bpf_dbg_printk("Sending mongo Go client go trace");
+             __builtin_memcpy(trace, req, sizeof(mongo_go_client_req_t));
+
+--- bpf/gotracer/go_nethttp.c
+@@ -604,7 +604,7 @@ static __always_inline int serve_http_returns(struct pt_regs *ctx) {
+     // Server connections have opposite order, source port is the server port
+     swap_connection_info_order(&conn);
+ 
+-    http_request_trace_t *trace = bpf_ringbuf_reserve(&events, sizeof(http_request_trace_t), 0);
++    http_request_trace_t *trace = events_ringbuf_reserve(sizeof(http_request_trace_t), 0);
+     if (!trace) {
+         bpf_dbg_printk("can't reserve space in the ringbuffer");
+         goto done;
+@@ -809,7 +809,7 @@ int GUARDED_PROG(obi_uprobe_roundTripReturn, struct pt_regs *, ctx) {
+         goto done;
+     }
+ 
+-    http_request_trace_t *trace = bpf_ringbuf_reserve(&events, sizeof(http_request_trace_t), 0);
++    http_request_trace_t *trace = events_ringbuf_reserve(sizeof(http_request_trace_t), 0);
+     if (!trace) {
+         bpf_dbg_printk("can't reserve space in the ringbuffer");
+         goto done;
+
+--- bpf/gotracer/go_redis.c
+@@ -80,7 +80,7 @@ int GUARDED_PROG(obi_uprobe_redis_process_ret, struct pt_regs *, ctx) {
+ 
+     redis_client_req_t *req = bpf_map_lookup_elem(&ongoing_redis_requests, &g_key);
+     if (req) {
+-        redis_client_req_t *trace = bpf_ringbuf_reserve(&events, sizeof(redis_client_req_t), 0);
++        redis_client_req_t *trace = events_ringbuf_reserve(sizeof(redis_client_req_t), 0);
+         if (trace) {
+             bpf_dbg_printk("Sending redis client go trace");
+             __builtin_memcpy(trace, req, sizeof(redis_client_req_t));
+
+--- bpf/gotracer/go_runtime.c
+@@ -87,7 +87,7 @@ static __always_inline void go_runtime_collect_histogram(u64 histogram_addr,
+     const u32 bucket_count = (u32)derived_bucket_count;
+ 
+     go_runtime_histogram_event_t *event =
+-        bpf_ringbuf_reserve(&events, sizeof(go_runtime_histogram_event_t), 0);
++        events_ringbuf_reserve(sizeof(go_runtime_histogram_event_t), 0);
+     if (!event) {
+         return;
+     }
+@@ -619,8 +619,7 @@ int GUARDED_PROG(obi_uprobe_go_runtime_metrics, struct pt_regs *, ctx) {
+         return 0;
+     }
+ 
+-    go_runtime_metric_event_t *event =
+-        bpf_ringbuf_reserve(&events, sizeof(go_runtime_metric_event_t), 0);
++    go_runtime_metric_event_t *event = events_ringbuf_reserve(sizeof(go_runtime_metric_event_t), 0);
+     if (!event) {
+         return 0;
+     }
+@@ -860,7 +859,7 @@ static __always_inline void emit_channel_handoff(chan_handoff_t *sender, chan_ha
+         return;
+     }
+ 
+-    channel_link_trace_t *trace = bpf_ringbuf_reserve(&events, sizeof(*trace), 0);
++    channel_link_trace_t *trace = events_ringbuf_reserve(sizeof(*trace), 0);
+     if (!trace) {
+         return;
+     }
+
+--- bpf/gotracer/go_sarama.c
+@@ -128,8 +128,7 @@ int GUARDED_PROG(obi_uprobe_sarama_broker_write, struct pt_regs *, ctx) {
+             // easy way to correlate with the response
+             if (!invocation->promise) {
+                 req.end_monotime_ns = bpf_ktime_get_ns();
+-                kafka_client_req_t *trace =
+-                    bpf_ringbuf_reserve(&events, sizeof(kafka_client_req_t), 0);
++                kafka_client_req_t *trace = events_ringbuf_reserve(sizeof(kafka_client_req_t), 0);
+                 if (trace) {
+                     bpf_dbg_printk("Sending kafka client go trace");
+ 
+@@ -172,7 +171,7 @@ int GUARDED_PROG(obi_uprobe_sarama_response_promise_handle, struct pt_regs *, ct
+ 
+         if (req) {
+             req->end_monotime_ns = bpf_ktime_get_ns();
+-            kafka_client_req_t *trace = bpf_ringbuf_reserve(&events, sizeof(kafka_client_req_t), 0);
++            kafka_client_req_t *trace = events_ringbuf_reserve(sizeof(kafka_client_req_t), 0);
+             if (trace) {
+                 bpf_dbg_printk("Sending kafka client go trace");
+ 
+
+--- bpf/gotracer/go_sdk.c
+@@ -201,7 +201,7 @@ static __always_inline void notify_go_auto_activation(u64 generation, u8 sdk) {
+         .pid = pid_from_pid_tgid(bpf_get_current_pid_tgid()),
+         .generation = generation,
+     };
+-    bpf_ringbuf_output(&events, &event, sizeof(event), get_flags());
++    events_ringbuf_output(&event, sizeof(event), get_flags());
+ }
+ 
+ static __always_inline u8 reserve_go_auto_activation_attempt(
+@@ -737,7 +737,7 @@ int GUARDED_PROG(obi_uprobe_nonRecordingSpan_End, struct pt_regs *, ctx) {
+         update_tp_parent_go(&gp_key, &span->prev_tp);
+     }
+ 
+-    bpf_ringbuf_output(&events, span, sizeof(otel_span_t), get_flags());
++    events_ringbuf_output(span, sizeof(otel_span_t), get_flags());
+     bpf_dbg_printk("submitted manual span trace");
+ 
+     bpf_map_delete_elem(&active_spans, &s_key);
+@@ -796,7 +796,7 @@ int GUARDED_PROG(obi_uprobe_auto_sdk_span_Ended, struct pt_regs *, ctx) {
+ 
+     u64 total_size = offsetof(go_auto_span_t, buf) + len;
+     bpf_clamp_umax(total_size, offsetof(go_auto_span_t, buf) + k_go_auto_span_json_max_len);
+-    bpf_ringbuf_output(&events, event, total_size, get_flags());
++    events_ringbuf_output(event, total_size, get_flags());
+ 
+     return 0;
+ }
+
+--- bpf/gotracer/go_sql.c
+@@ -336,7 +336,7 @@ static __always_inline int process_sql_return(void *goroutine_addr, u8 error, u8
+     go_obi_ctx__end(&g_key, k_obi_ctx_sql, &invocation->tp);
+     bpf_map_delete_elem(&ongoing_sql_queries, &g_key);
+ 
+-    sql_request_trace_t *trace = bpf_ringbuf_reserve(&events, sizeof(sql_request_trace_t), 0);
++    sql_request_trace_t *trace = events_ringbuf_reserve(sizeof(sql_request_trace_t), 0);
+     if (trace) {
+         task_pid(&trace->pid);
+         trace->type = k_event_type_sql_client;
+
+--- bpf/gpuevent/cuda.c
+@@ -175,7 +175,7 @@ static __always_inline void resolve_device(const u64 id, cuda_device_t *dev) {
+ }
+ 
+ static __always_inline void submit_size_event(const u8 flags, const s64 size) {
+-    cuda_size_event_t *e = bpf_ringbuf_reserve(&gpu_events, sizeof(*e), 0);
++    cuda_size_event_t *e = gpu_events_ringbuf_reserve(sizeof(*e), 0);
+     if (!e) {
+         bpf_dbg_printk("Failed to allocate ringbuf entry");
+         return;
+@@ -190,7 +190,7 @@ static __always_inline void submit_size_event(const u8 flags, const s64 size) {
+ }
+ 
+ static __always_inline void submit_call_event(const u8 flags) {
+-    cuda_call_event_t *e = bpf_ringbuf_reserve(&gpu_events, sizeof(*e), 0);
++    cuda_call_event_t *e = gpu_events_ringbuf_reserve(sizeof(*e), 0);
+     if (!e) {
+         bpf_dbg_printk("Failed to allocate ringbuf entry");
+         return;
+@@ -210,7 +210,7 @@ static __always_inline void submit_kernel_launch(const u64 func_off,
+                                                  const u32 block_x,
+                                                  const u32 block_y,
+                                                  const u32 block_z) {
+-    cuda_kernel_launch_t *e = bpf_ringbuf_reserve(&gpu_events, sizeof(*e), 0);
++    cuda_kernel_launch_t *e = gpu_events_ringbuf_reserve(sizeof(*e), 0);
+     if (!e) {
+         bpf_dbg_printk("Failed to allocate ringbuf entry");
+         return;
+@@ -251,7 +251,7 @@ static __always_inline bool suppress_driver_dup(const u64 id) {
+ // per-call metrics, whose events only carry the UUID, can be named. Only the
+ // rare introspection calls travel this way.
+ static __always_inline void submit_device_event(const u32 index, const cuda_device_info_t *info) {
+-    cuda_device_event_t *e = bpf_ringbuf_reserve(&gpu_events, sizeof(*e), 0);
++    cuda_device_event_t *e = gpu_events_ringbuf_reserve(sizeof(*e), 0);
+     if (!e) {
+         bpf_dbg_printk("Failed to allocate ringbuf entry");
+         return;
+@@ -610,7 +610,7 @@ int BPF_KPROBE_GUARDED(obi_cuda_memcpy, void *dst, void *src, size_t size, u8 ki
+ 
+     bpf_dbg_printk("=== uprobe/cudaMemcpyAsync id=%llx, kind=%d ===", id, kind);
+ 
+-    cuda_memcpy_t *e = bpf_ringbuf_reserve(&gpu_events, sizeof(*e), 0);
++    cuda_memcpy_t *e = gpu_events_ringbuf_reserve(sizeof(*e), 0);
+     if (!e) {
+         bpf_dbg_printk("Failed to allocate ringbuf entry");
+         return 0;
+
+--- bpf/gpuevent/gpu_ringbuf.h
+@@ -5,9 +5,16 @@
+ 
+ #include <bpfcore/utils.h>
+ #include <common/pin_internal.h>
++#include <common/ringbuf_metrics.h>
+ 
+ struct {
+     __uint(type, BPF_MAP_TYPE_RINGBUF);
+     __uint(max_entries, 1 << 16);
+     __uint(pinning, OBI_PIN_INTERNAL);
+ } gpu_events SEC(".maps");
++
++static __always_inline void *gpu_events_ringbuf_reserve(u64 size, u64 flags) {
++    void *event = bpf_ringbuf_reserve(&gpu_events, size, flags);
++    account_ringbuf_write(RINGBUF_GPU_EVENTS, !event);
++    return event;
++}
+
+--- bpf/logenricher/logenricher.c
+@@ -203,7 +203,7 @@ static __always_inline int __write(struct iov_iter *from,
+ 
+     u64 out_size = sizeof(log_event_t) + max(e->len, sizeof(void *));
+     bpf_clamp_umax(out_size, k_log_event_max_size);
+-    const long err = bpf_ringbuf_output(&log_events, e, out_size, log_events_flags());
++    const long err = log_events_ringbuf_output(e, out_size, log_events_flags());
+     if (err < 0) {
+         bpf_dbg_printk("logenricher: failed to write log event to ringbuf: %d", err);
+         return 0;
+
+--- bpf/logenricher/maps/log_events.h
+@@ -7,6 +7,7 @@
+ #include <bpfcore/bpf_helpers.h>
+ 
+ #include <common/pin_internal.h>
++#include <common/ringbuf_metrics.h>
+ 
+ struct {
+     __uint(type, BPF_MAP_TYPE_RINGBUF);
+@@ -18,3 +19,9 @@ static __always_inline long log_events_flags() {
+     const u64 sz = bpf_ringbuf_query(&log_events, BPF_RB_AVAIL_DATA);
+     return sz >= 4096 ? BPF_RB_FORCE_WAKEUP : BPF_RB_NO_WAKEUP;
+ }
++
++static __always_inline long log_events_ringbuf_output(void *data, u64 size, u64 flags) {
++    const long err = bpf_ringbuf_output(&log_events, data, size, flags);
++    account_ringbuf_write(RINGBUF_LOG_EVENTS, err != 0);
++    return err;
++}
+

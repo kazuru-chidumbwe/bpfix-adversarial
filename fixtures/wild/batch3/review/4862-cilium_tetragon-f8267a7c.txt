@@ -1,0 +1,39 @@
+repo: cilium/tetragon
+commit: f8267a7c9403df2a1f0668173a3fe0fab194a34a
+rank: 4862
+
+process: check kfunc availability
+
+When a user passes arg --btf, the loader will poison the
+bpf_copy_from_user_str call. Without this, verifier will reject the
+program with:
+
+opening collection 'bpf/objs/bpf_multi_uprobe_v61.o' failed: program
+generic_sleepable_preload: load program: unknown kfunc: invalid func
+unknown#233685214 (211 line(s) omitted)" metadata.namespace=""
+metadata.name=uprobe-substring
+
+Signed-off-by: Andy Strohman <astrohma@isovalent.com>
+
+--- bpf/process/user_preload.h
+@@ -79,7 +79,8 @@ preload_pt_regs_arg(struct pt_regs *ctx, struct event_config *config, int index)
+ 
+ 	switch (ty) {
+ 	case string_type:
+-		return preload_string_type(ctx, config, val, status);
++		if (bpf_ksym_exists(bpf_copy_from_user_str))
++			return preload_string_type(ctx, config, val, status);
+ 	}
+ 
+ 	return 0;
+@@ -124,7 +125,8 @@ preload_arg(struct pt_regs *ctx, struct event_config *config, int index)
+ 
+ 	switch (ty) {
+ 	case string_type:
+-		return preload_string_type(ctx, config, a, status);
++		if (bpf_ksym_exists(bpf_copy_from_user_str))
++			return preload_string_type(ctx, config, a, status);
+ 	}
+ 
+ 	return 0;
+

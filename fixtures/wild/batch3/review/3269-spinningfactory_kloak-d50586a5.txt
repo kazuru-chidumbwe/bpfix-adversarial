@@ -1,0 +1,514 @@
+repo: spinningfactory/kloak
+commit: d50586a5983253b1ca6b9c02babf44f3303f0230
+rank: 3269
+
+refactor: extract sync logic, add eBPF unit tests (#40)
+
+* refactor: extract sync logic, add eBPF unit tests
+
+Extract syncSecrets() from TLSUprobeManager into a standalone function
+that takes a BPF map, storage, and logger — making it testable without
+a full Kubernetes cluster.
+
+New tests (12 total, require Linux for BPF map creation):
+
+Sync tests (sync_test.go):
+- TestSyncSecrets_BasicSync — secret stored with correct key/value
+- TestSyncSecrets_MinLength — secrets < 8 bytes skipped
+- TestSyncSecrets_Truncation — secrets > 128 bytes truncated
+- TestSyncSecrets_HostFilter — host label stored in map value
+- TestSyncSecrets_WildcardHost — wildcard (*) sets hostLen=0
+- TestSyncSecrets_StaleEntryPruning — removed secrets pruned from map
+- TestSyncSecrets_Update — changed values updated in place
+- TestSyncSecrets_FullPrefix — 42-byte prefix stored correctly
+
+Load tests (load_test.go):
+- TestLoadObjects — all eBPF programs load and pass verifier
+- TestTailCallWiring — prog_array tail call setup works
+- TestSecretMapOperations — put/get/delete on secret_map
+- TestConnHostsMapOperations — put/get on conn_hosts LRU map
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* refactor: extract eBPF pure logic into testable C helpers
+
+Extract parse_http_host, hosts_match, clamp_write_len, and is_kloak_prefix
+from tls_uprobe.c into helpers.h with dual-target guards (#ifdef __BPF__).
+Add 23 userspace C unit tests in helpers_test.c and a test-bpf-helpers
+Makefile target. Wire into CI so tests run on every push/PR.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* Update ci.yml
+
+* fix: check Close() error returns in eBPF tests (errcheck lint)
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+---------
+
+Co-authored-by: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+--- pkg/ebpf/bpf/helpers.h
+@@ -0,0 +1,98 @@
++// helpers.h — Pure logic extracted from tls_uprobe.c for dual-target compilation.
++// Compiles as __always_inline eBPF when __BPF__ is defined (clang -target bpf),
++// and as regular userspace C otherwise (for unit testing with gcc/clang).
++
++#ifndef KLOAK_HELPERS_H
++#define KLOAK_HELPERS_H
++
++#ifdef __BPF__
++#define HELPER_INLINE static __always_inline
++#else
++#include <stdint.h>
++#include <string.h>
++typedef uint32_t __u32;
++typedef uint64_t __u64;
++#define HELPER_INLINE static inline
++#ifndef MAX_HOST_LEN
++#define MAX_HOST_LEN 32
++#endif
++#ifndef SECRET_MAX_LEN
++#define SECRET_MAX_LEN 128
++#endif
++#ifndef MAX_DATA_SIZE
++#define MAX_DATA_SIZE 256
++#endif
++#endif
++
++// Parse HTTP "Host: " header from a data buffer.
++// Scans data[0..data_len) for "Host: ", then extracts the hostname up to
++// the first ':', '\r', or '\n'. Writes into host_out (caller must zero it).
++// Returns the hostname length, or 0 if not found or empty.
++HELPER_INLINE __u32 parse_http_host(const char *data, __u32 data_len,
++                                    char *host_out, __u32 host_max_len) {
++  if (data_len > MAX_DATA_SIZE)
++    data_len = MAX_DATA_SIZE;
++
++  __u32 host_start = 0;
++  for (__u32 i = 0; i < MAX_DATA_SIZE; i++) {
++    if (i + 6 > data_len)
++      break;
++    if (data[i] == 'H' && data[i + 1] == 'o' && data[i + 2] == 's' &&
++        data[i + 3] == 't' && data[i + 4] == ':' && data[i + 5] == ' ') {
++      host_start = i + 6;
++      break;
++    }
++  }
++
++  if (host_start == 0)
++    return 0;
++
++  __u32 host_len = 0;
++  for (__u32 j = 0; j < MAX_HOST_LEN; j++) {
++    if (j >= host_max_len)
++      break;
++    __u32 idx = host_start + j;
++    if (idx >= data_len)
++      break;
++    char c = data[idx];
++    if (c == '\r' || c == '\n' || c == ':')
++      break;
++    host_out[j] = c;
++    host_len++;
++  }
++  return host_len;
++}
++
++// Compare two host buffers (each MAX_HOST_LEN = 32 bytes) as 4x uint64.
++// Returns 1 if all 32 bytes match, 0 otherwise.
++HELPER_INLINE int hosts_match(const char *a, const char *b) {
++  __u64 a0, a1, a2, a3, b0, b1, b2, b3;
++  __builtin_memcpy(&a0, a, 8);
++  __builtin_memcpy(&a1, a + 8, 8);
++  __builtin_memcpy(&a2, a + 16, 8);
++  __builtin_memcpy(&a3, a + 24, 8);
++  __builtin_memcpy(&b0, b, 8);
++  __builtin_memcpy(&b1, b + 8, 8);
++  __builtin_memcpy(&b2, b + 16, 8);
++  __builtin_memcpy(&b3, b + 24, 8);
++  return (a0 == b0 && a1 == b1 && a2 == b2 && a3 == b3) ? 1 : 0;
++}
++
++// Clamp a secret value length to [1, SECRET_MAX_LEN] using bitwise arithmetic.
++// For val_len in [1, SECRET_MAX_LEN], returns val_len unchanged.
++// val_len == 0 returns SECRET_MAX_LEN (unsigned underflow wraps).
++// val_len > SECRET_MAX_LEN wraps modulo SECRET_MAX_LEN.
++HELPER_INLINE __u32 clamp_write_len(__u32 val_len) {
++  return ((val_len - 1) & (SECRET_MAX_LEN - 1)) + 1;
++}
++
++// Check if buffer starts with the 6-byte "kloak:" prefix.
++// Returns 1 if it matches, 0 otherwise. Caller must ensure buf has >= 6 bytes.
++HELPER_INLINE int is_kloak_prefix(const char *buf) {
++  return (buf[0] == 'k' && buf[1] == 'l' && buf[2] == 'o' && buf[3] == 'a' &&
++          buf[4] == 'k' && buf[5] == ':')
++             ? 1
++             : 0;
++}
++
++#endif // KLOAK_HELPERS_H
+
+--- pkg/ebpf/bpf/helpers_test.c
+@@ -0,0 +1,230 @@
++// helpers_test.c — Userspace unit tests for eBPF helper functions.
++// Compile and run: gcc -Wall -Werror -o /tmp/helpers_test helpers_test.c && /tmp/helpers_test
++
++#include <assert.h>
++#include <stdio.h>
++#include <string.h>
++
++#include "helpers.h"
++
++static int tests_run = 0;
++static int tests_passed = 0;
++
++#define RUN_TEST(fn)                                                           \
++  do {                                                                         \
++    tests_run++;                                                               \
++    printf("  %-55s", #fn);                                                    \
++    fn();                                                                      \
++    tests_passed++;                                                            \
++    printf("PASS\n");                                                          \
++  } while (0)
++
++// ============================================================================
++// parse_http_host
++// ============================================================================
++
++static void test_parse_host_basic(void) {
++  const char *data = "GET / HTTP/1.1\r\nHost: example.com\r\n";
++  char host[MAX_HOST_LEN] = {0};
++  __u32 len = parse_http_host(data, (__u32)strlen(data), host, MAX_HOST_LEN);
++  assert(len == 11);
++  assert(memcmp(host, "example.com", 11) == 0);
++}
++
++static void test_parse_host_with_port(void) {
++  const char *data = "Host: example.com:8080\r\n";
++  char host[MAX_HOST_LEN] = {0};
++  __u32 len = parse_http_host(data, (__u32)strlen(data), host, MAX_HOST_LEN);
++  assert(len == 11);
++  assert(memcmp(host, "example.com", 11) == 0);
++}
++
++static void test_parse_host_short(void) {
++  const char *data = "Host: a.b\r\n";
++  char host[MAX_HOST_LEN] = {0};
++  __u32 len = parse_http_host(data, (__u32)strlen(data), host, MAX_HOST_LEN);
++  assert(len == 3);
++  assert(memcmp(host, "a.b", 3) == 0);
++}
++
++static void test_parse_host_missing(void) {
++  const char *data = "GET / HTTP/1.1\r\nContent-Type: text/html\r\n";
++  char host[MAX_HOST_LEN] = {0};
++  __u32 len = parse_http_host(data, (__u32)strlen(data), host, MAX_HOST_LEN);
++  assert(len == 0);
++}
++
++static void test_parse_host_near_boundary(void) {
++  // Place "Host: ab" at the end of a 256-byte buffer.
++  // "Host: " starts at 248, host value at 254.
++  char data[MAX_DATA_SIZE];
++  memset(data, 'X', sizeof(data));
++  memcpy(&data[248], "Host: ab", 8);
++  char host[MAX_HOST_LEN] = {0};
++  __u32 len = parse_http_host(data, MAX_DATA_SIZE, host, MAX_HOST_LEN);
++  assert(len == 2);
++  assert(host[0] == 'a' && host[1] == 'b');
++}
++
++static void test_parse_host_empty_value(void) {
++  const char *data = "Host: \r\n";
++  char host[MAX_HOST_LEN] = {0};
++  __u32 len = parse_http_host(data, (__u32)strlen(data), host, MAX_HOST_LEN);
++  assert(len == 0);
++}
++
++static void test_parse_host_truncated(void) {
++  // Host value longer than MAX_HOST_LEN (32) is truncated.
++  char data[256];
++  memset(data, 0, sizeof(data));
++  memcpy(data, "Host: ", 6);
++  memset(&data[6], 'a', 40); // 40 chars of 'a'
++  memcpy(&data[46], "\r\n", 2);
++  char host[MAX_HOST_LEN] = {0};
++  __u32 len = parse_http_host(data, 48, host, MAX_HOST_LEN);
++  assert(len == MAX_HOST_LEN);
++  for (int i = 0; i < MAX_HOST_LEN; i++)
++    assert(host[i] == 'a');
++}
++
++static void test_parse_host_data_len_clamped(void) {
++  // data_len > MAX_DATA_SIZE is clamped — host beyond 256 bytes not found.
++  char data[300];
++  memset(data, 'X', sizeof(data));
++  // Place "Host: ok\r\n" at byte 260, beyond MAX_DATA_SIZE.
++  memcpy(&data[260], "Host: ok\r\n", 10);
++  char host[MAX_HOST_LEN] = {0};
++  __u32 len = parse_http_host(data, 300, host, MAX_HOST_LEN);
++  assert(len == 0);
++}
++
++// ============================================================================
++// hosts_match
++// ============================================================================
++
++static void test_hosts_match_exact(void) {
++  char a[MAX_HOST_LEN] = {0};
++  char b[MAX_HOST_LEN] = {0};
++  memcpy(a, "example.com", 11);
++  memcpy(b, "example.com", 11);
++  assert(hosts_match(a, b) == 1);
++}
++
++static void test_hosts_match_differ_first(void) {
++  char a[MAX_HOST_LEN] = {0};
++  char b[MAX_HOST_LEN] = {0};
++  memcpy(a, "example.com", 11);
++  memcpy(b, "fxample.com", 11);
++  assert(hosts_match(a, b) == 0);
++}
++
++static void test_hosts_match_differ_last_byte(void) {
++  char a[MAX_HOST_LEN] = {0};
++  char b[MAX_HOST_LEN] = {0};
++  memcpy(a, "example.com", 11);
++  memcpy(b, "example.com", 11);
++  a[MAX_HOST_LEN - 1] = 'x';
++  assert(hosts_match(a, b) == 0);
++}
++
++static void test_hosts_match_both_empty(void) {
++  char a[MAX_HOST_LEN] = {0};
++  char b[MAX_HOST_LEN] = {0};
++  assert(hosts_match(a, b) == 1);
++}
++
++static void test_hosts_match_different_lengths(void) {
++  char a[MAX_HOST_LEN] = {0};
++  char b[MAX_HOST_LEN] = {0};
++  memcpy(a, "example.com", 11);
++  memcpy(b, "example.com.au", 14);
++  assert(hosts_match(a, b) == 0);
++}
++
++// ============================================================================
++// clamp_write_len
++// ============================================================================
++
++static void test_clamp_one(void) { assert(clamp_write_len(1) == 1); }
++
++static void test_clamp_max(void) { assert(clamp_write_len(128) == 128); }
++
++static void test_clamp_zero_wraps(void) {
++  // Underflow: (0-1) & 127 + 1 = 0xFFFFFFFF & 127 + 1 = 127 + 1 = 128
++  assert(clamp_write_len(0) == 128);
++}
++
++static void test_clamp_overflow_wraps(void) {
++  // (129-1) & 127 + 1 = 128 & 127 + 1 = 0 + 1 = 1
++  assert(clamp_write_len(129) == 1);
++}
++
++static void test_clamp_exhaustive(void) {
++  for (__u32 i = 1; i <= SECRET_MAX_LEN; i++) {
++    assert(clamp_write_len(i) == i);
++  }
++}
++
++// ============================================================================
++// is_kloak_prefix
++// ============================================================================
++
++static void test_prefix_valid(void) {
++  assert(is_kloak_prefix("kloak:abc") == 1);
++}
++
++static void test_prefix_wrong_colon(void) {
++  assert(is_kloak_prefix("kloak;abc") == 0);
++}
++
++static void test_prefix_uppercase(void) {
++  assert(is_kloak_prefix("Kloak:abc") == 0);
++}
++
++static void test_prefix_wrong_char(void) {
++  assert(is_kloak_prefix("kloal:abc") == 0);
++}
++
++static void test_prefix_exact_six(void) {
++  assert(is_kloak_prefix("kloak:") == 1);
++}
++
++// ============================================================================
++// main
++// ============================================================================
++
++int main(void) {
++  printf("parse_http_host:\n");
++  RUN_TEST(test_parse_host_basic);
++  RUN_TEST(test_parse_host_with_port);
++  RUN_TEST(test_parse_host_short);
++  RUN_TEST(test_parse_host_missing);
++  RUN_TEST(test_parse_host_near_boundary);
++  RUN_TEST(test_parse_host_empty_value);
++  RUN_TEST(test_parse_host_truncated);
++  RUN_TEST(test_parse_host_data_len_clamped);
++
++  printf("hosts_match:\n");
++  RUN_TEST(test_hosts_match_exact);
++  RUN_TEST(test_hosts_match_differ_first);
++  RUN_TEST(test_hosts_match_differ_last_byte);
++  RUN_TEST(test_hosts_match_both_empty);
++  RUN_TEST(test_hosts_match_different_lengths);
++
++  printf("clamp_write_len:\n");
++  RUN_TEST(test_clamp_one);
++  RUN_TEST(test_clamp_max);
++  RUN_TEST(test_clamp_zero_wraps);
++  RUN_TEST(test_clamp_overflow_wraps);
++  RUN_TEST(test_clamp_exhaustive);
++
++  printf("is_kloak_prefix:\n");
++  RUN_TEST(test_prefix_valid);
++  RUN_TEST(test_prefix_wrong_colon);
++  RUN_TEST(test_prefix_uppercase);
++  RUN_TEST(test_prefix_wrong_char);
++  RUN_TEST(test_prefix_exact_six);
++
++  printf("\n%d/%d tests passed.\n", tests_passed, tests_run);
++  return 0;
++}
+
+--- pkg/ebpf/bpf/tls_uprobe.c
+@@ -46,6 +46,8 @@
+ // OpenSSL SSL_ctrl cmd value for SSL_set_tlsext_host_name macro
+ #define SSL_CTRL_SET_TLSEXT_HOSTNAME 55
+ 
++#include "helpers.h"
++
+ // BPF Map: shadow secret prefix -> real secret value
+ struct secret_key {
+   char prefix[SECRET_KEY_LEN];
+@@ -293,39 +295,8 @@ static __always_inline void resolve_host(struct scratch_buf *scratch,
+   // Fallback: parse HTTP "Host: " header from the plaintext data.
+   // This handles Go connections (which don't call SSL_set_tlsext_host_name)
+   // and any connection where SNI wasn't captured.
+-  __u32 read_len = scratch->read_len;
+-  if (read_len > MAX_DATA_SIZE)
+-    read_len = MAX_DATA_SIZE;
+-
+-  __u32 host_start = 0;
+-  for (__u32 i = 0; i < 256; i++) {
+-    if (i + 6 > read_len)
+-      break;
+-
+-    if (scratch->data[i] == 'H' && scratch->data[i + 1] == 'o' &&
+-        scratch->data[i + 2] == 's' && scratch->data[i + 3] == 't' &&
+-        scratch->data[i + 4] == ':' && scratch->data[i + 5] == ' ') {
+-      host_start = i + 6;
+-      scratch->host_offset = host_start;
+-      break;
+-    }
+-  }
+-
+-  if (host_start == 0)
+-    return;
+-
+-  __u32 host_len = 0;
+-  for (__u32 j = 0; j < MAX_HOST_LEN; j++) {
+-    __u32 idx = host_start + j;
+-    if (idx >= read_len)
+-      break;
+-    char c = scratch->data[idx];
+-    if (c == '\r' || c == '\n' || c == ':')
+-      break;
+-    scratch->host_value[j] = c;
+-    host_len++;
+-  }
+-  scratch->host_value_len = host_len;
++  scratch->host_value_len = parse_http_host(scratch->data, scratch->read_len,
++                                            scratch->host_value, MAX_HOST_LEN);
+ }
+ 
+ // -----------------------------------------------------------------------------
+@@ -371,49 +342,39 @@ static int scan_chunk(__u32 chunk_idx, void *ctx) {
+     if (i + SECRET_KEY_LEN > read_len)
+       break;
+ 
+-    if (scratch_data->data[i] != 'k')
++    if (!is_kloak_prefix(&scratch_data->data[i]))
+       continue;
+ 
+-    if (scratch_data->data[i + 1] == 'l' &&
+-        scratch_data->data[i + 2] == 'o' &&
+-        scratch_data->data[i + 3] == 'a' &&
+-        scratch_data->data[i + 4] == 'k' &&
+-        scratch_data->data[i + 5] == ':') {
++    // 8-byte key lookup (kloak: + 2 UUID chars).
++    // Collision detection is done on the Go side at sync time.
++    struct secret_key key = {};
++    __builtin_memcpy(key.prefix, &scratch_data->data[i], SECRET_KEY_LEN);
+ 
+-      // 8-byte key lookup (kloak: + 2 UUID chars).
+-      // Collision detection is done on the Go side at sync time.
+-      struct secret_key key = {};
+-      __builtin_memcpy(key.prefix, &scratch_data->data[i], SECRET_KEY_LEN);
++    struct secret_value *val = bpf_map_lookup_elem(&secret_map, &key);
++    if (!val || val->len == 0 || val->len > SECRET_MAX_LEN)
++      continue;
+ 
+-      struct secret_value *val = bpf_map_lookup_elem(&secret_map, &key);
+-      if (!val || val->len == 0 || val->len > SECRET_MAX_LEN)
++    // Host-based filtering: compare resolved host against allowed_host
++    if (val->host_len > 0 && val->host_len < MAX_HOST_LEN) {
++      if (sctx->host_value_len == 0)
+         continue;
+ 
+-      // Host-based filtering: compare resolved host against allowed_host
+-      if (val->host_len > 0 && val->host_len < MAX_HOST_LEN) {
+-        if (sctx->host_value_len == 0)
+-          continue;
+-
+-        __u64 *host_a = (__u64 *)sctx->host_value;
+-        __u64 *host_b = (__u64 *)val->allowed_host;
+-        if (host_a[0] != host_b[0] || host_a[1] != host_b[1] ||
+-            host_a[2] != host_b[2] || host_a[3] != host_b[3])
+-          continue;
+-      }
+-
+-      // Rewrite directly to user memory
+-      __u32 safe_i = i & (MAX_DATA_SIZE - 1);
+-      char *target = (char *)(sctx->user_data_ptr + offset + safe_i);
+-
+-      // Bound write_len to [1, 128] using pure arithmetic so the verifier
+-      // can prove the range without relying on tracked register state
+-      // (which gets lost across the host comparison in bpf_loop callbacks).
+-      // val->len is already checked > 0 and <= SECRET_MAX_LEN above.
+-      __u32 write_len = ((val->len - 1) & (SECRET_MAX_LEN - 1)) + 1;
+-
+-      bpf_probe_write_user(target, val->real_secret, write_len);
+-      sctx->rewritten = 1;
++      if (!hosts_match(sctx->host_value, val->allowed_host))
++        continue;
+     }
++
++    // Rewrite directly to user memory
++    __u32 safe_i = i & (MAX_DATA_SIZE - 1);
++    char *target = (char *)(sctx->user_data_ptr + offset + safe_i);
++
++    // Bound write_len to [1, 128] using pure arithmetic so the verifier
++    // can prove the range without relying on tracked register state
++    // (which gets lost across the host comparison in bpf_loop callbacks).
++    // val->len is already checked > 0 and <= SECRET_MAX_LEN above.
++    __u32 write_len = clamp_write_len(val->len);
++
++    bpf_probe_write_user(target, val->real_secret, write_len);
++    sctx->rewritten = 1;
+   }
+   return 0;
+ }
+

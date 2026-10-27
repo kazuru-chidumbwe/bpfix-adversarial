@@ -1,0 +1,39 @@
+repo: cilium/cilium
+commit: 7e3115694f03aa24cd029baea25d9394ae3cc6ee
+rank: 4812
+
+bpf: Add missing __align_stack_8 on IPv6 structs
+
+LLVM 18 doesn't align these structs to 8 by default, and our memcpy
+implementation fails to pass the verifier when applied to these structs,
+because the verifier requires stack access to be aligned. Align all
+affected structs.
+
+Ref: 4853fb153410 ("bpf: Use __align_stack_8 on IPv6 structs")
+Fixes: 6e20ed505623 ("bpf: Add tests for LRP loopback fix")
+Signed-off-by: Maxim Mikityanskiy <maxim@isovalent.com>
+
+--- bpf/tests/skip_lb_xlate_lrp_per_packet_lb.c
+@@ -162,8 +162,8 @@ int  v6_local_backend_to_service_packetgen(struct __ctx_buff *ctx)
+ SETUP("tc", "v6_local_redirect")
+ int v6_local_backend_to_service_setup(struct __ctx_buff *ctx)
+ {
+-	union v6addr service_ip = {};
+-	union v6addr backend_ip = {};
++	union v6addr service_ip __align_stack_8 = {};
++	union v6addr backend_ip __align_stack_8 = {};
+ 
+ 	memcpy(service_ip.addr, (void *)V6_SERVICE_IP, 16);
+ 	memcpy(backend_ip.addr, (void *)V6_BACKEND_IP, 16);
+@@ -173,9 +173,8 @@ int v6_local_backend_to_service_setup(struct __ctx_buff *ctx)
+ 	lb_v6_add_backend(&service_ip, SERVICE_PORT, 1, 124, &backend_ip,
+ 			  BACKEND_PORT, IPPROTO_TCP, 0);
+ 
+-
+ 	/* Add the service in LB6_SKIP_MAP to skip service translation for request originating from the local backend */
+-	struct skip_lb6_key key = {
++	struct skip_lb6_key key __align_stack_8 = {
+ 		.netns_cookie = ENDPOINT_NETNS_COOKIE,
+ 		.port = SERVICE_PORT,
+ 	};
+

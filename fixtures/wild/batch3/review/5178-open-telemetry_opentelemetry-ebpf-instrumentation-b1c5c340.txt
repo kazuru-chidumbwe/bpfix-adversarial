@@ -1,0 +1,681 @@
+repo: open-telemetry/opentelemetry-ebpf-instrumentation
+commit: b1c5c3408542061a51e321f819f2edbcb929f908
+rank: 5178
+
+Make sk_msg HTTP/2 mutation rollback-safe (#3158)
+
+* Make HTTP/2 socket mutation rollback-safe
+
+Treat plaintext HTTP/2 sk_msg injection as a checked transaction so
+failed helpers cannot expose a partially mutated frame. Gate mutation on
+both helper availability and a loopback rollback probe, falling back to
+a verifier-safe scan-only program on unsupported kernels.
+
+Cover every mutation and rollback boundary with host fault tests and
+verify exact peer bytes plus same-connection continuity in a privileged
+test.
+
+* Keep SK_MSG verdict aligned after mutation
+
+Do not pre-apply a verdict to the original message size before extending
+an HTTP/2 frame. The push otherwise leaves a stale byte count that reruns
+the SK_MSG program from the middle of the stream.
+
+Count semantic-probe invocations so future transaction changes preserve
+one verdict evaluation for each socket write.
+
+* Simplify HTTP/2 rollback verification
+
+Use the verifier's bpf_msg_pop_data capability check at startup so OBI
+does not attach a transient SK_MSG program while loading the tracer.
+
+Keep the loopback probe as a privileged test, remove redundant
+readbacks after ordinary memory stores, and document that an uncertain
+rollback fails the application write instead of preserving the
+connection.
+
+* Remove test hooks from HTTP/2 mutation
+
+Exercise rollback failures through host helper mocks so production BPF
+contains only real helper branches. Keep the privileged probe focused on
+exact peer bytes and same-connection continuity.
+
+* Test attached HTTP/2 rollback failures
+
+Restore privileged coverage for each retryable socket-helper failure
+that can occur before the HTTP/2 frame-length commit. Each scenario
+checks byte-for-byte restoration and a successful follow-up write on the
+same peer connection.
+
+Keep fault injection inside the test fixture so the production
+transaction header remains free of test-only branches. Move its include
+ahead of the test implementations while preserving helper substitution.
+
+* Clarify HTTP/2 rollback handling
+
+Use the BPF-safe copy helper for HPACK injection and replace the raw
+three-byte frame-length literal with a named constant.
+
+Document why rollback helpers receive one retry before an uncertain
+result rejects the application write.
+
+--- bpf/tests/bpf_h2_socket_write_transaction.c
+@@ -0,0 +1,208 @@
++// Copyright The OpenTelemetry Authors
++// SPDX-License-Identifier: Apache-2.0
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++#include <bpfcore/vmlinux.h>
++#include <bpfcore/bpf_helpers.h>
++#include <bpfcore/bpf_builtins.h>
++
++#include <common/h2_defs.h>
++
++struct sk_msg_md {
++    void *data;
++    void *data_end;
++    u32 size;
++};
++
++static long test_msg_pull_data(struct sk_msg_md *msg, u32 start, u32 end, u64 flags);
++static long test_msg_push_data(struct sk_msg_md *msg, u32 start, u32 len, u64 flags);
++static long test_msg_pop_data(struct sk_msg_md *msg, u32 start, u32 len, u64 flags);
++
++#define bpf_msg_pull_data test_msg_pull_data
++#define bpf_msg_push_data test_msg_push_data
++#define bpf_msg_pop_data test_msg_pop_data
++#include <tpinjector/h2_write_transaction.h>
++#undef bpf_msg_pop_data
++#undef bpf_msg_push_data
++#undef bpf_msg_pull_data
++
++static unsigned char message[256];
++static unsigned char original[256];
++static unsigned char expected[k_h2_tp_hpack_size];
++static u32 message_len;
++static u32 pull_calls;
++static u64 failed_pull_calls;
++static bool force_push_failure;
++static u32 forced_pop_failures;
++
++enum {
++    k_preflight_pull_call = 1,
++    k_write_pull_call,
++    k_frame_pull_call,
++    k_rollback_pull_after_write_failure_call = k_frame_pull_call,
++};
++
++static long test_msg_pull_data(struct sk_msg_md *msg, u32 start, u32 end, u64 flags) {
++    (void)flags;
++    pull_calls++;
++    if (failed_pull_calls & (1ULL << pull_calls)) {
++        return -1;
++    }
++    if (start > message_len || end < start || end > message_len) {
++        return -1;
++    }
++    msg->data = message + start;
++    msg->data_end = message + end;
++    return 0;
++}
++
++static long test_msg_push_data(struct sk_msg_md *msg, u32 start, u32 len, u64 flags) {
++    (void)flags;
++    if (force_push_failure || start > message_len || len > sizeof(message) - message_len) {
++        return -1;
++    }
++    memmove(message + start + len, message + start, message_len - start);
++    memset(message + start, 0, len);
++    message_len += len;
++    msg->size = message_len;
++    msg->data = message;
++    msg->data_end = message + message_len;
++    return 0;
++}
++
++static long test_msg_pop_data(struct sk_msg_md *msg, u32 start, u32 len, u64 flags) {
++    (void)flags;
++    if (forced_pop_failures) {
++        forced_pop_failures--;
++        return -1;
++    }
++    if (start > message_len || len > message_len - start) {
++        return -1;
++    }
++    memmove(message + start, message + start + len, message_len - start - len);
++    message_len -= len;
++    msg->size = message_len;
++    msg->data = message;
++    msg->data_end = message + message_len;
++    return 0;
++}
++
++static void expect(bool condition, const char *description) {
++    if (!condition) {
++        fprintf(stderr, "FAIL: %s\n", description);
++        exit(1);
++    }
++}
++
++static struct sk_msg_md reset_message(void) {
++    enum { k_payload_len = 8 };
++
++    for (u32 i = 0; i < sizeof(message); i++) {
++        message[i] = (unsigned char)i;
++        expected[i % sizeof(expected)] = (unsigned char)(0xa0 + i);
++    }
++    message[0] = 0;
++    message[1] = 0;
++    message[2] = k_payload_len;
++    message_len = k_h2_frame_header_len + k_payload_len;
++    memcpy(original, message, message_len);
++    pull_calls = 0;
++    failed_pull_calls = 0;
++    force_push_failure = false;
++    forced_pop_failures = 0;
++
++    return (struct sk_msg_md){
++        .data = message,
++        .data_end = message + message_len,
++        .size = message_len,
++    };
++}
++
++static h2_socket_transaction_outcome_t run_transaction(struct sk_msg_md *msg) {
++    enum { k_payload_len = 8 };
++    return h2_write_socket_transaction(
++        msg, 0, k_payload_len, k_h2_frame_header_len + k_payload_len, expected);
++}
++
++static void expect_original(const char *description) {
++    expect(message_len == k_h2_frame_header_len + 8, description);
++    expect(memcmp(message, original, message_len) == 0, description);
++}
++
++static void test_commit(void) {
++    struct sk_msg_md msg = reset_message();
++    expect(run_transaction(&msg) == k_h2_socket_transaction_committed,
++           "successful transaction commits");
++    expect(message_len == k_h2_frame_header_len + 8 + k_h2_tp_hpack_size,
++           "commit grows the message once");
++    expect(h2_frame_len_bytes_are(message, 8 + k_h2_tp_hpack_size),
++           "commit publishes the new frame length");
++    expect(memcmp(message + k_h2_frame_header_len + 8, expected, sizeof(expected)) == 0,
++           "commit writes the expected HPACK field");
++}
++
++static void test_preflight_pull_failure(void) {
++    struct sk_msg_md msg = reset_message();
++    failed_pull_calls = 1ULL << k_preflight_pull_call;
++    expect(run_transaction(&msg) == k_h2_socket_transaction_no_mutation,
++           "preflight pull failure does not mutate");
++    expect_original("preflight pull failure does not mutate");
++}
++
++static void test_push_failure(void) {
++    struct sk_msg_md msg = reset_message();
++    force_push_failure = true;
++    expect(run_transaction(&msg) == k_h2_socket_transaction_no_mutation,
++           "push failure does not mutate");
++    expect_original("push failure does not mutate");
++}
++
++static void test_verified_rollback_pull_failure(u32 failed_pull_call, const char *description) {
++    struct sk_msg_md msg = reset_message();
++    failed_pull_calls = 1ULL << failed_pull_call;
++    expect(run_transaction(&msg) == k_h2_socket_transaction_rollback_verified, description);
++    expect_original(description);
++}
++
++static void test_retried_rollback_pop(void) {
++    struct sk_msg_md msg = reset_message();
++    failed_pull_calls = 1ULL << k_write_pull_call;
++    forced_pop_failures = 1;
++    expect(run_transaction(&msg) == k_h2_socket_transaction_rollback_verified,
++           "transient pop failure is retried and verified");
++    expect_original("transient pop failure is retried and verified");
++}
++
++static void test_retried_rollback_pull(void) {
++    struct sk_msg_md msg = reset_message();
++    failed_pull_calls =
++        (1ULL << k_write_pull_call) | (1ULL << k_rollback_pull_after_write_failure_call);
++    expect(run_transaction(&msg) == k_h2_socket_transaction_rollback_verified,
++           "transient rollback pull failure is retried and verified");
++    expect_original("transient rollback pull failure is retried and verified");
++}
++
++int main(void) {
++    test_commit();
++
++    test_preflight_pull_failure();
++    test_push_failure();
++
++    test_verified_rollback_pull_failure(k_write_pull_call, "post-push pull failure rolls back");
++    test_verified_rollback_pull_failure(k_frame_pull_call, "frame pull failure rolls back");
++
++    test_retried_rollback_pop();
++    test_retried_rollback_pull();
++
++    struct sk_msg_md msg = reset_message();
++    failed_pull_calls = 1ULL << k_write_pull_call;
++    forced_pop_failures = 2;
++    expect(run_transaction(&msg) == k_h2_socket_transaction_rollback_uncertain,
++           "two failed pop attempts keep rollback uncertain");
++
++    puts("OK: bpf_h2_socket_write_transaction.c");
++    return 0;
++}
+
+--- bpf/tests/testdata/h2_mutation_peer.c
+@@ -0,0 +1,134 @@
++// Copyright The OpenTelemetry Authors
++// SPDX-License-Identifier: Apache-2.0
++
++#include <bpfcore/vmlinux.h>
++#include <bpfcore/bpf_builtins.h>
++#include <bpfcore/bpf_helpers.h>
++
++#include <common/h2_defs.h>
++#include <common/pin_internal.h>
++
++static __always_inline long
++h2_test_msg_pull_data(struct sk_msg_md *msg, u32 start, u32 end, u64 flags);
++static __always_inline long
++h2_test_msg_push_data(struct sk_msg_md *msg, u32 start, u32 len, u64 flags);
++static __always_inline long
++h2_test_msg_pop_data(struct sk_msg_md *msg, u32 start, u32 len, u64 flags);
++
++#define bpf_msg_pull_data h2_test_msg_pull_data
++#define bpf_msg_push_data h2_test_msg_push_data
++#define bpf_msg_pop_data h2_test_msg_pop_data
++#include <tpinjector/h2_write_transaction.h>
++#undef bpf_msg_pop_data
++#undef bpf_msg_push_data
++#undef bpf_msg_pull_data
++
++struct {
++    __uint(type, BPF_MAP_TYPE_SOCKHASH);
++    __uint(max_entries, 1);
++    __uint(key_size, sizeof(u64));
++    __uint(value_size, sizeof(u32));
++    __uint(pinning, OBI_PIN_INTERNAL);
++} sockets SEC(".maps");
++
++struct {
++    __uint(type, BPF_MAP_TYPE_ARRAY);
++    __uint(max_entries, 1);
++    __type(key, u32);
++    __type(value, u32);
++    __uint(pinning, OBI_PIN_INTERNAL);
++} invocations SEC(".maps");
++
++struct {
++    __uint(type, BPF_MAP_TYPE_ARRAY);
++    __uint(max_entries, 1);
++    __type(key, u32);
++    __type(value, u64);
++    __uint(pinning, OBI_PIN_INTERNAL);
++} fault_mask SEC(".maps");
++
++struct h2_test_helper_calls {
++    u32 pull;
++    u32 pop;
++};
++
++struct {
++    __uint(type, BPF_MAP_TYPE_ARRAY);
++    __uint(max_entries, 1);
++    __type(key, u32);
++    __type(value, struct h2_test_helper_calls);
++    __uint(pinning, OBI_PIN_INTERNAL);
++} helper_calls SEC(".maps");
++
++static const unsigned char expected_hpack[k_h2_tp_hpack_size] =
++    "\x00\x0btraceparent\x37"
++    "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01";
++
++enum {
++    k_h2_test_push_fault_bit = 16,
++    k_h2_test_pop_fault_bit_offset = 32,
++};
++
++static __always_inline bool h2_test_fault_enabled(u32 bit) {
++    const u32 zero = 0;
++    const u64 *mask = bpf_map_lookup_elem(&fault_mask, &zero);
++    return mask && (*mask & (1ULL << bit));
++}
++
++static __always_inline struct h2_test_helper_calls *h2_test_calls(void) {
++    const u32 zero = 0;
++    return bpf_map_lookup_elem(&helper_calls, &zero);
++}
++
++static __always_inline long
++h2_test_msg_pull_data(struct sk_msg_md *msg, u32 start, u32 end, u64 flags) {
++    struct h2_test_helper_calls *calls = h2_test_calls();
++    if (calls && h2_test_fault_enabled(++calls->pull)) {
++        return -1;
++    }
++    return bpf_msg_pull_data(msg, start, end, flags);
++}
++
++static __always_inline long
++h2_test_msg_push_data(struct sk_msg_md *msg, u32 start, u32 len, u64 flags) {
++    if (h2_test_fault_enabled(k_h2_test_push_fault_bit)) {
++        return -1;
++    }
++    return bpf_msg_push_data(msg, start, len, flags);
++}
++
++static __always_inline long
++h2_test_msg_pop_data(struct sk_msg_md *msg, u32 start, u32 len, u64 flags) {
++    struct h2_test_helper_calls *calls = h2_test_calls();
++    if (calls && h2_test_fault_enabled(k_h2_test_pop_fault_bit_offset + ++calls->pop)) {
++        return -1;
++    }
++    return bpf_msg_pop_data(msg, start, len, flags);
++}
++
++// Loaded only by the privileged same-peer rollback test.
++SEC("sk_msg")
++int h2_mutation_peer(struct sk_msg_md *msg) {
++    enum { k_test_payload_len = 8 };
++
++    const u32 zero = 0;
++    struct h2_test_helper_calls *calls = bpf_map_lookup_elem(&helper_calls, &zero);
++    if (calls) {
++        calls->pull = 0;
++        calls->pop = 0;
++    }
++
++    u32 *invocation_count = bpf_map_lookup_elem(&invocations, &zero);
++    if (invocation_count) {
++        (*invocation_count)++;
++    }
++
++    const h2_socket_transaction_outcome_t outcome = h2_write_socket_transaction(
++        msg, 0, k_test_payload_len, k_h2_frame_header_len + k_test_payload_len, expected_hpack);
++    if (outcome == k_h2_socket_transaction_rollback_uncertain) {
++        return SK_DROP;
++    }
++    return SK_PASS;
++}
++
++char __license[] SEC("license") = "Dual MIT/GPL";
+
+--- bpf/tpinjector/h2_write_transaction.h
+@@ -0,0 +1,133 @@
++// Copyright The OpenTelemetry Authors
++// SPDX-License-Identifier: Apache-2.0
++
++#pragma once
++
++#include <bpfcore/vmlinux.h>
++#include <bpfcore/bpf_builtins.h>
++#include <bpfcore/bpf_helpers.h>
++
++#include <common/h2_defs.h>
++
++typedef enum h2_socket_transaction_outcome {
++    k_h2_socket_transaction_no_mutation,
++    k_h2_socket_transaction_committed,
++    k_h2_socket_transaction_rollback_verified,
++    k_h2_socket_transaction_rollback_uncertain,
++} h2_socket_transaction_outcome_t;
++
++enum { k_h2_frame_len_field_size = 3 };
++
++static __always_inline bool h2_frame_len_bytes_are(const unsigned char *data, u32 expected) {
++    return data[0] == ((expected >> 16) & 0xff) && data[1] == ((expected >> 8) & 0xff) &&
++           data[2] == (expected & 0xff);
++}
++
++static __always_inline void h2_store_frame_len(unsigned char *data, u32 len) {
++    data[0] = (len >> 16) & 0xff;
++    data[1] = (len >> 8) & 0xff;
++    data[2] = len & 0xff;
++}
++
++static __always_inline bool h2_restore_socket_message(struct sk_msg_md *msg,
++                                                      u32 original_size,
++                                                      u32 frame_offset,
++                                                      u32 payload_len,
++                                                      u32 inject_offset) {
++    // Retry once before an uncertain rollback forces the caller to reject the write.
++    bool popped = bpf_msg_pop_data(msg, inject_offset, k_h2_tp_hpack_size, 0) == 0;
++    if (!popped) {
++        popped = bpf_msg_pop_data(msg, inject_offset, k_h2_tp_hpack_size, 0) == 0;
++    }
++    if (!popped) {
++        return false;
++    }
++    if (msg->size != original_size) {
++        return false;
++    }
++
++    bool pulled =
++        bpf_msg_pull_data(msg, frame_offset, frame_offset + k_h2_frame_len_field_size, 0) == 0;
++    if (!pulled) {
++        pulled =
++            bpf_msg_pull_data(msg, frame_offset, frame_offset + k_h2_frame_len_field_size, 0) == 0;
++    }
++    if (!pulled) {
++        return false;
++    }
++
++    unsigned char *data = msg->data;
++    if (!data || (void *)data + k_h2_frame_len_field_size > msg->data_end) {
++        return false;
++    }
++
++    h2_store_frame_len(data, payload_len);
++    return h2_frame_len_bytes_are(data, payload_len);
++}
++
++// Inserts one complete HPACK field. The frame-length store is the socket-message commit point:
++// every fallible socket helper runs before it.
++static __always_inline h2_socket_transaction_outcome_t
++h2_write_socket_transaction(struct sk_msg_md *msg,
++                            u32 frame_offset,
++                            u32 payload_len,
++                            u32 inject_offset,
++                            const unsigned char *expected) {
++    const u32 original_size = msg->size;
++    if (!expected || payload_len > k_h2_default_max_frame_size - k_h2_tp_hpack_size ||
++        frame_offset > original_size || original_size - frame_offset < k_h2_frame_header_len ||
++        payload_len > original_size - frame_offset - k_h2_frame_header_len ||
++        inject_offset < frame_offset + k_h2_frame_header_len ||
++        inject_offset > frame_offset + k_h2_frame_header_len + payload_len ||
++        original_size > (u32)-1 - k_h2_tp_hpack_size) {
++        return k_h2_socket_transaction_no_mutation;
++    }
++
++    if (bpf_msg_pull_data(msg, frame_offset, frame_offset + k_h2_frame_len_field_size, 0) != 0) {
++        return k_h2_socket_transaction_no_mutation;
++    }
++    const unsigned char *frame = msg->data;
++    if (!frame || (void *)frame + k_h2_frame_len_field_size > msg->data_end ||
++        !h2_frame_len_bytes_are(frame, payload_len)) {
++        return k_h2_socket_transaction_no_mutation;
++    }
++
++    if (bpf_msg_push_data(msg, inject_offset, k_h2_tp_hpack_size, 0) != 0) {
++        return k_h2_socket_transaction_no_mutation;
++    }
++
++    if (bpf_msg_pull_data(msg, inject_offset, inject_offset + k_h2_tp_hpack_size, 0) != 0) {
++        return h2_restore_socket_message(
++                   msg, original_size, frame_offset, payload_len, inject_offset)
++                   ? k_h2_socket_transaction_rollback_verified
++                   : k_h2_socket_transaction_rollback_uncertain;
++    }
++
++    unsigned char *data = msg->data;
++    if (!data || (void *)data + k_h2_tp_hpack_size > msg->data_end) {
++        return h2_restore_socket_message(
++                   msg, original_size, frame_offset, payload_len, inject_offset)
++                   ? k_h2_socket_transaction_rollback_verified
++                   : k_h2_socket_transaction_rollback_uncertain;
++    }
++
++    bpf_memcpy(data, expected, k_h2_tp_hpack_size);
++
++    if (bpf_msg_pull_data(msg, frame_offset, frame_offset + k_h2_frame_len_field_size, 0) != 0) {
++        return h2_restore_socket_message(
++                   msg, original_size, frame_offset, payload_len, inject_offset)
++                   ? k_h2_socket_transaction_rollback_verified
++                   : k_h2_socket_transaction_rollback_uncertain;
++    }
++
++    data = msg->data;
++    if (!data || (void *)data + k_h2_frame_len_field_size > msg->data_end) {
++        return h2_restore_socket_message(
++                   msg, original_size, frame_offset, payload_len, inject_offset)
++                   ? k_h2_socket_transaction_rollback_verified
++                   : k_h2_socket_transaction_rollback_uncertain;
++    }
++
++    h2_store_frame_len(data, payload_len + k_h2_tp_hpack_size);
++    return k_h2_socket_transaction_committed;
++}
+
+--- bpf/tpinjector/tpinjector.c
+@@ -45,6 +45,7 @@
+ 
+ #include <tpinjector/h2_parse.h>
+ #include <tpinjector/inject_policy.h>
++#include <tpinjector/h2_write_transaction.h>
+ #include <tpinjector/maps/sk_h2_flags.h>
+ #include <tpinjector/maps/sk_h2_conn_flag.h>
+ #include <tpinjector/maps/sk_tp_info_pid_map.h>
+@@ -192,6 +193,7 @@ typedef struct tailcall_ctx {
+ 
+ SCRATCH_MEM(tailcall_ctx);
+ SCRATCH_MEM_SIZED(tp_str_buf, 64);
++SCRATCH_MEM_SIZED(h2_write_expected, k_h2_tp_hpack_size);
+ 
+ // Resume detect_h2 at next_pos for the next batched HEADERS frame.
+ // Bumps the per-packet frame counter, then tail-calls back into detect_h2.
+@@ -1825,14 +1827,11 @@ int obi_packet_extender_create_h2_tp(struct sk_msg_md *msg) {
+ 
+     if (have_existing) {
+         bpf_memcpy(tp_p, existing, sizeof(*tp_p));
+-        tp_p->written = 1;
+-        set_tp_info_pid(&t_ctx->e_key, tp_p);
+     } else {
+         init_tp_ctx_parent_tp(t_ctx);
+         if (!create_trace_info(t_ctx, tp_p)) {
+             return SK_PASS;
+         }
+-        tp_p->written = 1;
+         if (bpf_map_update_elem(&outgoing_trace_map, &t_ctx->e_key, tp_p, BPF_NOEXIST) != 0) {
+             existing = get_tp_info_pid(&t_ctx->e_key);
+             if (existing) {
+@@ -1847,35 +1846,6 @@ int obi_packet_extender_create_h2_tp(struct sk_msg_md *msg) {
+     return SK_PASS;
+ }
+ 
+-// Rewrites the 3-byte length field of the frame at frame_offset.
+-static __always_inline bool h2_write_frame_len(struct sk_msg_md *msg, u32 frame_offset, u32 len) {
+-    enum { k_h2_frame_len_field = 3 };
+-
+-    if (bpf_msg_pull_data(msg, frame_offset, frame_offset + k_h2_frame_len_field, 0) != 0) {
+-        return false;
+-    }
+-
+-    unsigned char *data = msg->data;
+-    if (!data || (void *)data + k_h2_frame_len_field > msg->data_end) {
+-        return false;
+-    }
+-
+-    data[0] = (len >> 16) & 0xFF;
+-    data[1] = (len >> 8) & 0xFF;
+-    data[2] = len & 0xFF;
+-
+-    return true;
+-}
+-
+-// Undoes a push whose bytes were never filled: leftover bytes are a COMPRESSION_ERROR and a
+-// restored length alone leaves a bogus frame header behind, both connection-level (RFC 7540 4.3)
+-static __always_inline void
+-h2_undo_tp_push(struct sk_msg_md *msg, u32 frame_offset, u32 inject_offset, u32 payload_len) {
+-    if (bpf_msg_pop_data(msg, inject_offset, k_h2_tp_hpack_size, 0) == 0) {
+-        h2_write_frame_len(msg, frame_offset, payload_len);
+-    }
+-}
+-
+ // k_tail_write_h2_traceparent — push k_h2_tp_hpack_size bytes of HPACK at
+ // the end of the HEADERS payload. Small targeted pulls keep writes at fixed
+ // offsets so the verifier is happy
+@@ -1902,36 +1872,27 @@ int obi_packet_extender_write_h2_tp(struct sk_msg_md *msg) {
+ 
+     const u32 inject_offset = t_ctx->h2_hpack_offset + t_ctx->h2_hpack_len;
+ 
+-    // linearize before push, as the HTTP/1 path does
+-    bpf_msg_pull_data(msg, 0, msg->size, 0);
+-
+-    // length before push: a failed push then changes nothing on the wire
+-    if (!h2_write_frame_len(msg, frame_offset, payload_len + k_h2_tp_hpack_size)) {
+-        return SK_PASS;
+-    }
+-    if (bpf_msg_push_data(msg, inject_offset, k_h2_tp_hpack_size, 0) != 0) {
+-        // a failed push leaves the message untouched, so restoring the length cannot fail
+-        h2_write_frame_len(msg, frame_offset, payload_len);
++    unsigned char *expected = h2_write_expected_mem();
++    if (!expected) {
+         return SK_PASS;
+     }
++    make_h2_tp_hpack(expected, &tp_p->tp, expected + k_h2_tp_hpack_size);
+ 
+-    // past the push the inserted bytes exist but hold no field, so every exit has to undo
+-    if (bpf_msg_pull_data(msg, inject_offset, inject_offset + k_h2_tp_hpack_size, 0) != 0) {
+-        h2_undo_tp_push(msg, frame_offset, inject_offset, payload_len);
+-        return SK_PASS;
++    const h2_socket_transaction_outcome_t outcome =
++        h2_write_socket_transaction(msg, frame_offset, payload_len, inject_offset, expected);
++    if (outcome == k_h2_socket_transaction_rollback_uncertain) {
++        bpf_d_printk("dropping message after uncertain h2 rollback [%s]", __FUNCTION__);
++        return SK_DROP;
+     }
+-
+-    unsigned char *data = msg->data;
+-    const unsigned char *end = msg->data_end;
+-    if (!data || (void *)data + k_h2_tp_hpack_size > (void *)end) {
+-        h2_undo_tp_push(msg, frame_offset, inject_offset, payload_len);
++    if (outcome != k_h2_socket_transaction_committed) {
++        h2_resume_after(msg, t_ctx, t_ctx->h2_frame_offset + k_h2_frame_header_len + payload_len);
+         return SK_PASS;
+     }
+ 
+-    make_h2_tp_hpack(data, &tp_p->tp, end);
+-
+-    bpf_msg_pull_data(msg, 0, msg->size, 0);
+-
++    tp_p->written = 1;
++    if (bpf_map_update_elem(&outgoing_trace_map, &t_ctx->e_key, tp_p, BPF_ANY) != 0) {
++        bpf_d_printk("failed to publish committed h2 traceparent [%s]", __FUNCTION__);
++    }
+     print_tp("h2: written TP to HPACK", &tp_p->tp);
+ 
+     // bpf_msg_push_data shifted bytes after inject_offset right by
+@@ -1943,3 +1904,15 @@ int obi_packet_extender_write_h2_tp(struct sk_msg_md *msg) {
+                         k_h2_tp_hpack_size);
+     return SK_PASS;
+ }
++
++// Kernels that cannot verify bpf_msg_pop_data load this program in place of the mutator.
++SEC("sk_msg")
++int obi_packet_extender_write_h2_tp_no_rollback(struct sk_msg_md *msg) {
++    tailcall_ctx *t_ctx = tailcall_ctx_mem();
++    if (!t_ctx) {
++        return SK_PASS;
++    }
++    h2_resume_after(
++        msg, t_ctx, t_ctx->h2_frame_offset + k_h2_frame_header_len + t_ctx->h2_payload_len);
++    return SK_PASS;
++}
+

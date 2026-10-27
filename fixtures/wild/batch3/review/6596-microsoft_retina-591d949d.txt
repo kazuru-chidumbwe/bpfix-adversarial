@@ -1,0 +1,74 @@
+repo: microsoft/retina
+commit: 591d949d712d4eb79b7b3e8d2ee5aed08aa266bd
+rank: 6596
+
+chore(ct): add flag to mark ct_entry connection direction is unkown (#926)
+
+# Description
+
+* add new member is_direction_unknown to conntrack_entry struct
+* set is_direction_unknown to true when the SYN packet is not captured
+
+## Related Issue
+
+#919 
+
+## Checklist
+
+- [x] I have read the [contributing
+documentation](https://retina.sh/docs/contributing).
+- [x] I signed and signed-off the commits (`git commit -S -s ...`). See
+[this
+documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification)
+on signing commits.
+- [x] I have correctly attributed the author(s) of the code.
+- [x] I have tested the changes locally.
+- [x] I have followed the project's style guidelines.
+- [x] I have updated the documentation, if necessary.
+- [x] I have added tests, if applicable.
+
+## Screenshots (if applicable) or Testing Completed
+
+Please add any relevant screenshots or GIFs to showcase the changes
+made.
+
+## Additional Notes
+
+Add any additional notes or context about the pull request here.
+
+---
+
+Please refer to the [CONTRIBUTING.md](../CONTRIBUTING.md) file for more
+information on how to contribute to this project.
+
+--- pkg/plugin/conntrack/_cprog/conntrack.c
+@@ -61,6 +61,11 @@ struct ct_entry {
+      */
+     __u8  flags_seen_tx_dir;
+     __u8  flags_seen_rx_dir;
++    /**
++     * is_direction_unknown is set to true if the direction of the connection is unknown. This can happen if the connection is created
++     * before retina deployment and the SYN packet was not captured.
++     */
++    bool is_direction_unknown;
+ };
+ 
+ struct {
+@@ -117,6 +122,7 @@ static __always_inline bool _ct_create_new_tcp_connection(struct ct_v4_key key,
+     }
+     new_value.eviction_time = now + CT_SYN_TIMEOUT;
+     new_value.flags_seen_tx_dir = flags;
++    new_value.is_direction_unknown = false;
+     new_value.traffic_direction = _ct_get_traffic_direction(observation_point);
+     bpf_map_update_elem(&retina_conntrack, &key, &new_value, BPF_ANY);
+     return true;
+@@ -174,6 +180,8 @@ static __always_inline bool _ct_handle_tcp_connection(struct packet *p, struct c
+     if (CT_CONNECTION_LIFETIME_TCP > UINT32_MAX - now) {
+         return false;
+     }
++    // Set the connection as unknown direction since we did not capture the SYN packet.
++    new_value.is_direction_unknown = true;
+     new_value.eviction_time = now + CT_CONNECTION_LIFETIME_TCP;
+     new_value.traffic_direction = _ct_get_traffic_direction(observation_point);
+     p->traffic_direction = new_value.traffic_direction;
+

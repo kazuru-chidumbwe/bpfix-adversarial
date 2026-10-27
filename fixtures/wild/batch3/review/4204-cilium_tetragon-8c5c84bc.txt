@@ -1,0 +1,524 @@
+repo: cilium/tetragon
+commit: 8c5c84bc750babe5737f458e689c8a14ca00a81c
+rank: 4204
+
+bpf: port cilium/cilium's optimized mem operations
+
+For details see
+https://github.com/cilium/cilium/commit/9c85721783447e10e359f723a1ee7d465c704ccc
+
+This is almost a byte-identical copy with the addition of a comment that
+disables clang-format so that the files stay more similar between the
+trees.
+
+The next commit adds some changes to the builtins.h file to make the
+programs load under old kernels again.
+
+Also use those mem operations everywhere we can. We have some places
+where the size is over 128, so we have to explicitly fallback to the
+compiler builtin.
+
+To get this past the v5.4 verifier, an additional change to args_off()
+was needed, which adds the offset addition to the asm instructions.
+This way the compiler cannot do things that are too clever for the
+verifier like placing the addition of the offset far away from the masking.
+
+Signed-off-by: Leonard Cohnen <leonard.cohnen@gmail.com>
+
+--- bpf/include/api.h
+@@ -284,20 +284,6 @@ static int BPF_FUNC(get_func_arg, void *ctx, __u32 n, __u64 *value);
+ static int BPF_FUNC(get_func_ret, void *ctx, __u64 *value);
+ static long BPF_FUNC(get_func_ip, void *ctx);
+ 
+-/** LLVM built-ins, mem*() routines work for constant size */
+-
+-#ifndef memset
+-# define memset(s, c, n)	__builtin_memset((s), (c), (n))
+-#endif
+-
+-#ifndef memcpy
+-# define memcpy(d, s, n)	__builtin_memcpy((d), (s), (n))
+-#endif
+-
+-#ifndef memmove
+-# define memmove(d, s, n)	__builtin_memmove((d), (s), (n))
+-#endif
+-
+ /**
+  * atomic add is support from before 4.19 on both arm and x86,
+  * x86 has other atomics support from 5.11, arm from 5.17
+
+--- bpf/include/compiler.h
+@@ -17,4 +17,12 @@
+ #define fallthrough __attribute__((fallthrough))
+ #endif
+ 
++#ifndef __throw_build_bug
++#define __throw_build_bug() __builtin_trap()
++#endif
++
++#ifndef __nobuiltin
++#define __nobuiltin(X) __attribute__((no_builtin(X)))
++#endif
++
+ #endif /* __BPF_COMPILER_H__ */
+
+--- bpf/lib/bpf_cgroup.h
+@@ -402,7 +402,7 @@ __get_cgrp_tracking_val_heap(cgroup_state state, __u32 hierarchy_id,
+ 	if (!heap)
+ 		return heap;
+ 
+-	memset(heap, 0, sizeof(struct cgroup_tracking_value));
++	__bpf_memset_builtin(heap, 0, sizeof(struct cgroup_tracking_value));
+ 	heap->state = state;
+ 	heap->hierarchy_id = hierarchy_id;
+ 	heap->level = level;
+
+--- bpf/lib/bpf_d_path.h
+@@ -6,6 +6,7 @@
+ 
+ #include "bpf_helpers.h"
+ #include "config.h"
++#include "builtins.h"
+ 
+ #define ENAMETOOLONG 36 /* File name too long */
+ 
+@@ -93,7 +94,7 @@ prepend(char **buffer, int *buflen, const char *str, int namelen)
+ 	if (*buflen < 0) // will never happen - check function comment
+ 		return -ENAMETOOLONG;
+ 	*buffer -= namelen;
+-	memcpy(*buffer, str, namelen);
++	__bpf_memcpy_builtin(*buffer, str, namelen);
+ 	return 0;
+ }
+ 
+
+--- bpf/lib/builtins.h
+@@ -0,0 +1,560 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++/* Copyright Authors of Cilium */
++
++/* clang-format off */
++
++#pragma once
++
++#include "compiler.h"
++
++#ifndef __maybe_unused
++# define __maybe_unused		__attribute__((__unused__))
++#endif
++
++#ifndef lock_xadd
++# define lock_xadd(P, V)	((void)__sync_fetch_and_add((P), (V)))
++#endif
++
++/* Unfortunately verifier forces aligned stack access while other memory
++ * do not have to be aligned (map, pkt, etc). Mark those on the /stack/
++ * for objects > 8 bytes in order to force-align such memcpy candidates
++ * when we really need them to be aligned, this is not needed for objects
++ * of size <= 8 bytes and in case of > 8 bytes /only/ when 8 byte is not
++ * the natural object alignment (e.g. __u8 foo[12]).
++ */
++#define __align_stack_8		__aligned(8)
++
++/* Memory iterators used below. */
++#define __it_bwd(x, op) ((x) -= sizeof(__u##op))
++#define __it_fwd(x, op) ((x) += sizeof(__u##op))
++
++/* Memory operators used below. */
++#define __it_set(a, op) (*(__u##op *)__it_bwd(a, op)) = 0
++#define __it_xor(a, b, r, op) (r) |= (*(__u##op *)__it_bwd(a, op)) ^ (*(__u##op *)__it_bwd(b, op))
++#define __it_mob(a, b, op) (*(__u##op *)__it_bwd(a, op)) = (*(__u##op *)__it_bwd(b, op))
++#define __it_mof(a, b, op)				\
++	do {						\
++		*(__u##op *)a = *(__u##op *)b;		\
++		__it_fwd(a, op); __it_fwd(b, op);	\
++	} while (0)
++
++FUNC_INLINE __maybe_unused void
++__bpf_memset_builtin(void *d, __u8 c, __u64 len)
++{
++	/* Everything non-zero or non-const (currently unsupported) as c
++	 * gets handled here.
++	 */
++	__builtin_memset(d, c, len);
++}
++
++FUNC_INLINE void __bpf_memzero(void *d, __u64 len)
++{
++	if (!__builtin_constant_p(len))
++		__throw_build_bug();
++
++	d += len;
++
++	if (len > 1 && len % 2 == 1) {
++		__it_set(d, 8);
++		len -= 1;
++	}
++
++	switch (len) {
++	case 128:          __it_set(d, 64); fallthrough;
++	case 120: jmp_120: __it_set(d, 64); fallthrough;
++	case 112: jmp_112: __it_set(d, 64); fallthrough;
++	case 104: jmp_104: __it_set(d, 64); fallthrough;
++	case  96: jmp_96:  __it_set(d, 64); fallthrough;
++	case  88: jmp_88:  __it_set(d, 64); fallthrough;
++	case  80: jmp_80:  __it_set(d, 64); fallthrough;
++	case  72: jmp_72:  __it_set(d, 64); fallthrough;
++	case  64: jmp_64:  __it_set(d, 64); fallthrough;
++	case  56: jmp_56:  __it_set(d, 64); fallthrough;
++	case  48: jmp_48:  __it_set(d, 64); fallthrough;
++	case  40: jmp_40:  __it_set(d, 64); fallthrough;
++	case  32: jmp_32:  __it_set(d, 64); fallthrough;
++	case  24: jmp_24:  __it_set(d, 64); fallthrough;
++	case  16: jmp_16:  __it_set(d, 64); fallthrough;
++	case   8: jmp_8:   __it_set(d, 64);
++		break;
++
++	case 126: __it_set(d, 16); __it_set(d, 32); goto jmp_120;
++	case 118: __it_set(d, 16); __it_set(d, 32); goto jmp_112;
++	case 110: __it_set(d, 16); __it_set(d, 32); goto jmp_104;
++	case 102: __it_set(d, 16); __it_set(d, 32); goto jmp_96;
++	case  94: __it_set(d, 16); __it_set(d, 32); goto jmp_88;
++	case  86: __it_set(d, 16); __it_set(d, 32); goto jmp_80;
++	case  78: __it_set(d, 16); __it_set(d, 32); goto jmp_72;
++	case  70: __it_set(d, 16); __it_set(d, 32); goto jmp_64;
++	case  62: __it_set(d, 16); __it_set(d, 32); goto jmp_56;
++	case  54: __it_set(d, 16); __it_set(d, 32); goto jmp_48;
++	case  46: __it_set(d, 16); __it_set(d, 32); goto jmp_40;
++	case  38: __it_set(d, 16); __it_set(d, 32); goto jmp_32;
++	case  30: __it_set(d, 16); __it_set(d, 32); goto jmp_24;
++	case  22: __it_set(d, 16); __it_set(d, 32); goto jmp_16;
++	case  14: __it_set(d, 16); __it_set(d, 32); goto jmp_8;
++	case   6: __it_set(d, 16); __it_set(d, 32);
++		break;
++
++	case 124: __it_set(d, 32); goto jmp_120;
++	case 116: __it_set(d, 32); goto jmp_112;
++	case 108: __it_set(d, 32); goto jmp_104;
++	case 100: __it_set(d, 32); goto jmp_96;
++	case  92: __it_set(d, 32); goto jmp_88;
++	case  84: __it_set(d, 32); goto jmp_80;
++	case  76: __it_set(d, 32); goto jmp_72;
++	case  68: __it_set(d, 32); goto jmp_64;
++	case  60: __it_set(d, 32); goto jmp_56;
++	case  52: __it_set(d, 32); goto jmp_48;
++	case  44: __it_set(d, 32); goto jmp_40;
++	case  36: __it_set(d, 32); goto jmp_32;
++	case  28: __it_set(d, 32); goto jmp_24;
++	case  20: __it_set(d, 32); goto jmp_16;
++	case  12: __it_set(d, 32); goto jmp_8;
++	case   4: __it_set(d, 32);
++		break;
++
++	case 122: __it_set(d, 16); goto jmp_120;
++	case 114: __it_set(d, 16); goto jmp_112;
++	case 106: __it_set(d, 16); goto jmp_104;
++	case  98: __it_set(d, 16); goto jmp_96;
++	case  90: __it_set(d, 16); goto jmp_88;
++	case  82: __it_set(d, 16); goto jmp_80;
++	case  74: __it_set(d, 16); goto jmp_72;
++	case  66: __it_set(d, 16); goto jmp_64;
++	case  58: __it_set(d, 16); goto jmp_56;
++	case  50: __it_set(d, 16); goto jmp_48;
++	case  42: __it_set(d, 16); goto jmp_40;
++	case  34: __it_set(d, 16); goto jmp_32;
++	case  26: __it_set(d, 16); goto jmp_24;
++	case  18: __it_set(d, 16); goto jmp_16;
++	case  10: __it_set(d, 16); goto jmp_8;
++	case   2: __it_set(d, 16);
++		break;
++
++	case  1: __it_set(d, 8);
++		break;
++
++	default:
++		/* __builtin_memset() is crappy slow since it cannot
++		 * make any assumptions about alignment & underlying
++		 * efficient unaligned access on the target we're
++		 * running.
++		 */
++		__throw_build_bug();
++	}
++}
++
++FUNC_INLINE __maybe_unused void
++__bpf_no_builtin_memset(void *d __maybe_unused, __u8 c __maybe_unused,
++			__u64 len __maybe_unused)
++{
++	__throw_build_bug();
++}
++
++/* Redirect any direct use in our code to throw an error. */
++#define __builtin_memset	__bpf_no_builtin_memset
++
++FUNC_INLINE __nobuiltin("memset") void memset(void *d, int c,
++							 __u64 len)
++{
++	if (__builtin_constant_p(len) && __builtin_constant_p(c) && c == 0)
++		__bpf_memzero(d, len);
++	else
++		__bpf_memset_builtin(d, (__u8)c, len);
++}
++
++FUNC_INLINE __maybe_unused void
++__bpf_memcpy_builtin(void *d, const void *s, __u64 len)
++{
++	/* Explicit opt-in for __builtin_memcpy(). */
++	__builtin_memcpy(d, s, len);
++}
++
++FUNC_INLINE void __bpf_memcpy(void *d, const void *s, __u64 len)
++{
++	if (!__builtin_constant_p(len))
++		__throw_build_bug();
++
++	d += len;
++	s += len;
++
++	if (len > 1 && len % 2 == 1) {
++		__it_mob(d, s, 8);
++		len -= 1;
++	}
++
++	switch (len) {
++	case 128:          __it_mob(d, s, 64); fallthrough;
++	case 120: jmp_120: __it_mob(d, s, 64); fallthrough;
++	case 112: jmp_112: __it_mob(d, s, 64); fallthrough;
++	case 104: jmp_104: __it_mob(d, s, 64); fallthrough;
++	case  96: jmp_96:  __it_mob(d, s, 64); fallthrough;
++	case  88: jmp_88:  __it_mob(d, s, 64); fallthrough;
++	case  80: jmp_80:  __it_mob(d, s, 64); fallthrough;
++	case  72: jmp_72:  __it_mob(d, s, 64); fallthrough;
++	case  64: jmp_64:  __it_mob(d, s, 64); fallthrough;
++	case  56: jmp_56:  __it_mob(d, s, 64); fallthrough;
++	case  48: jmp_48:  __it_mob(d, s, 64); fallthrough;
++	case  40: jmp_40:  __it_mob(d, s, 64); fallthrough;
++	case  32: jmp_32:  __it_mob(d, s, 64); fallthrough;
++	case  24: jmp_24:  __it_mob(d, s, 64); fallthrough;
++	case  16: jmp_16:  __it_mob(d, s, 64); fallthrough;
++	case   8: jmp_8:   __it_mob(d, s, 64);
++		break;
++
++	case 126: __it_mob(d, s, 16); __it_mob(d, s, 32); goto jmp_120;
++	case 118: __it_mob(d, s, 16); __it_mob(d, s, 32); goto jmp_112;
++	case 110: __it_mob(d, s, 16); __it_mob(d, s, 32); goto jmp_104;
++	case 102: __it_mob(d, s, 16); __it_mob(d, s, 32); goto jmp_96;
++	case  94: __it_mob(d, s, 16); __it_mob(d, s, 32); goto jmp_88;
++	case  86: __it_mob(d, s, 16); __it_mob(d, s, 32); goto jmp_80;
++	case  78: __it_mob(d, s, 16); __it_mob(d, s, 32); goto jmp_72;
++	case  70: __it_mob(d, s, 16); __it_mob(d, s, 32); goto jmp_64;
++	case  62: __it_mob(d, s, 16); __it_mob(d, s, 32); goto jmp_56;
++	case  54: __it_mob(d, s, 16); __it_mob(d, s, 32); goto jmp_48;
++	case  46: __it_mob(d, s, 16); __it_mob(d, s, 32); goto jmp_40;
++	case  38: __it_mob(d, s, 16); __it_mob(d, s, 32); goto jmp_32;
++	case  30: __it_mob(d, s, 16); __it_mob(d, s, 32); goto jmp_24;
++	case  22: __it_mob(d, s, 16); __it_mob(d, s, 32); goto jmp_16;
++	case  14: __it_mob(d, s, 16); __it_mob(d, s, 32); goto jmp_8;
++	case   6: __it_mob(d, s, 16); __it_mob(d, s, 32);
++		break;
++
++	case 124: __it_mob(d, s, 32); goto jmp_120;
++	case 116: __it_mob(d, s, 32); goto jmp_112;
++	case 108: __it_mob(d, s, 32); goto jmp_104;
++	case 100: __it_mob(d, s, 32); goto jmp_96;
++	case  92: __it_mob(d, s, 32); goto jmp_88;
++	case  84: __it_mob(d, s, 32); goto jmp_80;
++	case  76: __it_mob(d, s, 32); goto jmp_72;
++	case  68: __it_mob(d, s, 32); goto jmp_64;
++	case  60: __it_mob(d, s, 32); goto jmp_56;
++	case  52: __it_mob(d, s, 32); goto jmp_48;
++	case  44: __it_mob(d, s, 32); goto jmp_40;
++	case  36: __it_mob(d, s, 32); goto jmp_32;
++	case  28: __it_mob(d, s, 32); goto jmp_24;
++	case  20: __it_mob(d, s, 32); goto jmp_16;
++	case  12: __it_mob(d, s, 32); goto jmp_8;
++	case   4: __it_mob(d, s, 32);
++		break;
++
++	case 122: __it_mob(d, s, 16); goto jmp_120;
++	case 114: __it_mob(d, s, 16); goto jmp_112;
++	case 106: __it_mob(d, s, 16); goto jmp_104;
++	case  98: __it_mob(d, s, 16); goto jmp_96;
++	case  90: __it_mob(d, s, 16); goto jmp_88;
++	case  82: __it_mob(d, s, 16); goto jmp_80;
++	case  74: __it_mob(d, s, 16); goto jmp_72;
++	case  66: __it_mob(d, s, 16); goto jmp_64;
++	case  58: __it_mob(d, s, 16); goto jmp_56;
++	case  50: __it_mob(d, s, 16); goto jmp_48;
++	case  42: __it_mob(d, s, 16); goto jmp_40;
++	case  34: __it_mob(d, s, 16); goto jmp_32;
++	case  26: __it_mob(d, s, 16); goto jmp_24;
++	case  18: __it_mob(d, s, 16); goto jmp_16;
++	case  10: __it_mob(d, s, 16); goto jmp_8;
++	case   2: __it_mob(d, s, 16);
++		break;
++
++	case  1: __it_mob(d, s, 8);
++		break;
++
++	default:
++		/* __builtin_memcpy() is crappy slow since it cannot
++		 * make any assumptions about alignment & underlying
++		 * efficient unaligned access on the target we're
++		 * running.
++		 */
++		__throw_build_bug();
++	}
++}
++
++FUNC_INLINE __maybe_unused void
++__bpf_no_builtin_memcpy(void *d __maybe_unused, const void *s __maybe_unused,
++			__u64 len __maybe_unused)
++{
++	__throw_build_bug();
++}
++
++/* Redirect any direct use in our code to throw an error. */
++#define __builtin_memcpy	__bpf_no_builtin_memcpy
++
++FUNC_INLINE __nobuiltin("memcpy") void memcpy(void *d, const void *s,
++							 __u64 len)
++{
++	return __bpf_memcpy(d, s, len);
++}
++
++FUNC_INLINE __maybe_unused __u64
++__bpf_memcmp_builtin(const void *x, const void *y, __u64 len)
++{
++	/* Explicit opt-in for __builtin_memcmp(). We use the bcmp builtin
++	 * here for two reasons: i) we only need to know equal or non-equal
++	 * similar as in __bpf_memcmp(), and ii) if __bpf_memcmp() ends up
++	 * selecting __bpf_memcmp_builtin(), clang generats a memcmp loop.
++	 * That is, (*) -> __bpf_memcmp() -> __bpf_memcmp_builtin() ->
++	 * __builtin_memcmp() -> memcmp() -> (*), meaning it will end up
++	 * selecting our memcmp() from here. Remapping to __builtin_bcmp()
++	 * breaks this loop and resolves both needs at once.
++	 */
++	return __builtin_bcmp(x, y, len);
++}
++
++FUNC_INLINE __u64 __bpf_memcmp(const void *x, const void *y,
++			       __u64 len)
++{
++	__u64 r = 0;
++
++	if (!__builtin_constant_p(len))
++		__throw_build_bug();
++
++	x += len;
++	y += len;
++
++	if (len > 1 && len % 2 == 1) {
++		__it_xor(x, y, r, 8);
++		len -= 1;
++	}
++
++	switch (len) {
++	case 128:          __it_xor(x, y, r, 64); fallthrough;
++	case 120: jmp_120: __it_xor(x, y, r, 64); fallthrough;
++	case 112: jmp_112: __it_xor(x, y, r, 64); fallthrough;
++	case 104: jmp_104: __it_xor(x, y, r, 64); fallthrough;
++	case  96: jmp_96:  __it_xor(x, y, r, 64); fallthrough;
++	case  88: jmp_88:  __it_xor(x, y, r, 64); fallthrough;
++	case  80: jmp_80:  __it_xor(x, y, r, 64); fallthrough;
++	case  72: jmp_72:  __it_xor(x, y, r, 64); fallthrough;
++	case  64: jmp_64:  __it_xor(x, y, r, 64); fallthrough;
++	case  56: jmp_56:  __it_xor(x, y, r, 64); fallthrough;
++	case  48: jmp_48:  __it_xor(x, y, r, 64); fallthrough;
++	case  40: jmp_40:  __it_xor(x, y, r, 64); fallthrough;
++	case  32: jmp_32:  __it_xor(x, y, r, 64); fallthrough;
++	case  24: jmp_24:  __it_xor(x, y, r, 64); fallthrough;
++	case  16: jmp_16:  __it_xor(x, y, r, 64); fallth
+[truncated]
+
+--- bpf/lib/process.h
+@@ -348,7 +348,7 @@ binary_reset(struct binary *b)
+ 	//
+ 	// Do not zero the ->mb_bitset however, so that it can be inherited if exec() is called.
+ 	// This depends on ->mb_bitset being the last part of the struct.
+-	memset(b, 0, offsetof(struct binary, mb_bitset));
++	__bpf_memset_builtin(b, 0, offsetof(struct binary, mb_bitset));
+ }
+ 
+ // The execve_map_value is tracked by the TGID of the thread group
+@@ -515,7 +515,7 @@ FUNC_INLINE struct execve_map_value *execve_map_get(__u32 pid)
+ 		if (!value)
+ 			return 0;
+ 
+-		memset(value, 0, sizeof(struct execve_map_value));
++		__bpf_memset_builtin(value, 0, sizeof(struct execve_map_value));
+ 		err = map_update_elem(&execve_map, &pid, value, 0);
+ 		if (!err) {
+ 			STATS_INC(execve_map_stats, COUNT);
+
+--- bpf/process/bpf_fork.c
+@@ -57,8 +57,8 @@ BPF_KPROBE(event_wake_up_new_task, struct task_struct *task)
+ 	curr->key.pid = tgid;
+ 	curr->key.ktime = tg_get_ktime();
+ 	curr->nspid = get_task_pid_vnr_by_task(task);
+-	memcpy(&curr->bin, &parent->bin, sizeof(curr->bin));
+-	memcpy(&curr->args, &parent->args, sizeof(curr->args));
++	__bpf_memcpy_builtin(&curr->bin, &parent->bin, sizeof(curr->bin));
++	__bpf_memcpy_builtin(&curr->args, &parent->args, sizeof(curr->args));
+ 	curr->pkey = parent->key;
+ 
+ 	/* Store the thread leader capabilities so we can check later
+
+--- bpf/process/bpf_process_event.h
+@@ -373,7 +373,7 @@ __event_get_cgroup_info(struct task_struct *task, struct msg_k8s *kube)
+ 	__u32 flags = 0;
+ 
+ 	/* Clear cgroup info at the beginning, so if we return early we do not pass previous data */
+-	memset(kube, 0, sizeof(struct msg_k8s));
++	__bpf_memset_builtin(kube, 0, sizeof(struct msg_k8s));
+ 
+ 	conf = map_lookup_elem(&tg_conf_map, &zero);
+ 	if (conf) {
+@@ -502,7 +502,7 @@ FUNC_INLINE void update_parents_map(struct msg_execve_event *event, struct execv
+ 			// use current binary as parent binary if exec events is not preceded
+ 			// by clone, i.e. exec call was invoked in the same process.
+ 			if (!(event->process.flags & EVENT_CLONE)) {
+-				memcpy(bin, &curr->bin, sizeof(curr->bin));
++				__bpf_memcpy_builtin(bin, &curr->bin, sizeof(curr->bin));
+ 				with_errmetrics(map_update_elem, &tg_parents_bin, &curr->key.pid, bin, BPF_ANY);
+ 			} else {
+ 				struct execve_map_value *parent = event_find_parent();
+
+--- bpf/process/bpf_rate.h
+@@ -65,7 +65,7 @@ FUNC_INLINE void send_throttle(void *ctx, struct msg_k8s *kube, __u64 time)
+ 	msg->common.op = MSG_OP_THROTTLE;
+ 	msg->common.flags = 0;
+ 
+-	__builtin_memcpy(&msg->kube, kube, sizeof(*kube));
++	__bpf_memcpy_builtin(&msg->kube, kube, sizeof(*kube));
+ 
+ 	event_output_metric(ctx, MSG_OP_THROTTLE, msg, size);
+ }
+
+--- bpf/process/types/basic.h
+@@ -230,9 +230,12 @@ FUNC_INLINE int return_error(int *s, int err)
+ FUNC_INLINE char *
+ args_off(struct msg_generic_kprobe *e, unsigned long off)
+ {
++	char *args = e->args;
++
+ 	asm volatile("%[off] &= 0x3fff;\n"
+-		     : [off] "+r"(off));
+-	return e->args + (off & 0x3fff);
++		     "%[args] += %[off];\n"
++		     : [args] "+r"(args), [off] "+r"(off));
++	return args;
+ }
+ 
+ /* Error writer for use when pointer *s is lost to stack and can not
+@@ -2163,7 +2166,7 @@ FUNC_INLINE int match_binaries(__u32 key, struct execve_map_value *current, stru
+ 			prefix_key = (struct string_prefix_lpm_trie *)map_lookup_elem(&string_maps_heap, &zero);
+ 			if (!prefix_key)
+ 				return 0;
+-			memset(prefix_key, 0, sizeof(*prefix_key));
++			__bpf_memset_builtin(prefix_key, 0, sizeof(*prefix_key));
+ 			prefix_key->prefixlen = bin->path_length * 8; // prefixlen is in bits
+ 			if (probe_read(prefix_key->data, bin->path_length & (STRING_PREFIX_MAX_LENGTH - 1), bin->path) < 0)
+ 				return 0;
+

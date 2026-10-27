@@ -1,0 +1,32 @@
+repo: cilium/cilium
+commit: a36a4c93ff923448317042f221feb7c299c6fae7
+rank: 3556
+
+bpf: Reduce SNAT_COLLISION_RETRIES to 32
+
+Analyzing the test results collected with commit ac5198fa9a3a ("bpf: Add
+unit tests for SNAT port allocation"), it can be noticed that the
+current port allocation algorithm doesn't use more than 20-ish retries.
+If a port wasn't found within the first ~25 iterations, the chance of
+finding it on further retries is close to 0.
+
+Reduce the maximum number of retries from 128 to 32 to fail faster and
+reduce verification complexity, while not sacrificing performance of the
+algorithm.
+
+For now, SNAT_SIGNAL_THRES is kept at SNAT_COLLISION_RETRIES/2.
+
+Ref: https://github.com/cilium/cilium/pull/37145
+Signed-off-by: Maxim Mikityanskiy <maxim@isovalent.com>
+
+--- bpf/node_config.h
+@@ -140,7 +140,7 @@ DEFINE_IPV6(HOST_IP, 0xbe, 0xef, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0xa, 0x
+ #endif /* ENABLE_IPV6 */
+ 
+ #ifdef ENABLE_NODEPORT
+-#define SNAT_COLLISION_RETRIES 128
++#define SNAT_COLLISION_RETRIES 32
+ #endif
+ 
+ #define EGRESS_POLICY_MAP test_cilium_egress_gw_policy_v4
+

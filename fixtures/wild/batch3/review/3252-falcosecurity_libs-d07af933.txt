@@ -1,0 +1,48 @@
+repo: falcosecurity/libs
+commit: d07af933927e95f2675f2d859ad77b0c0650dc45
+rank: 3252
+
+fix(driver/bpf): fix sys_open_e on aarch64
+
+On RHEL8 with clang-20, the verifier complains about unbounded values
+for R2 (the read size).
+
+After lots of (fruitless) experimenting with argument constraining, it
+became apparent how the current implementation in the case of ia32
+syscall will actually read 32 bits into the 64-bit value to be returned.
+For some reason this makes clang 20 generate code with lots of spilling
+just to preserve the other 32 bits (or so it seems).
+
+Just use a different (scoped) variable of the appropriate type for each
+of the two execution branches, which is what _READ_USER() actually does.
+
+Signed-off-by: Gerlando Falauto <gerlando.falauto@sysdig.com>
+
+--- driver/bpf/plumbing_helpers.h
+@@ -356,20 +356,14 @@ static __always_inline unsigned long bpf_syscall_get_argument_from_ctx(void *ctx
+ }
+ 
+ static __always_inline unsigned long bpf_syscall_get_socketcall_arg(void *ctx, int idx) {
+-	unsigned long arg = 0;
+-	unsigned long args_pointer = 0;
+-
+-	args_pointer = bpf_syscall_get_argument_from_ctx(ctx, 1);
++	unsigned long args_pointer = bpf_syscall_get_argument_from_ctx(ctx, 1);
+ 	if(bpf_in_ia32_syscall()) {
+-		bpf_probe_read_user(&arg,
+-		                    sizeof(uint32_t),
+-		                    (void *)(args_pointer + (idx * sizeof(uint32_t))));
++		uint32_t *ptr = (uint32_t *)args_pointer;
++		return _READ_USER(ptr[idx]);
+ 	} else {
+-		bpf_probe_read_user(&arg,
+-		                    sizeof(unsigned long),
+-		                    (void *)(args_pointer + (idx * sizeof(unsigned long))));
++		unsigned long *ptr = (unsigned long *)args_pointer;
++		return _READ_USER(ptr[idx]);
+ 	}
+-	return arg;
+ }
+ 
+ static __always_inline unsigned long bpf_syscall_get_argument(struct filler_data *data, int idx) {
+

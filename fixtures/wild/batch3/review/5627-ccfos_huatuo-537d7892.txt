@@ -1,0 +1,120 @@
+repo: ccfos/huatuo
+commit: 537d7892fb2f3e5f8ec1cba39d72374633de6f75
+rank: 5627
+
+refactor(profiler): unify Value field in profiler_event_base_t
+
+Move the 'value' field from mem_event_t-specific location to the common
+profiler_event_base_t, making it truly universal across all profiler types.
+
+Changes:
+
+BPF side:
+- Add s64 value to profiler_event_base_t
+- Set base.value = 1 in CPU profiler (each sample counts as 1)
+- Set base.value in Memory profilers (page/byte deltas)
+- Remove duplicate Value field from mem_event_t
+- Update all field accesses to use base.value
+
+Go side:
+- Add Value int64 to ProfilerEventBase struct
+- Remove Value field from memEvent struct
+- Update getValue callbacks to use base.Value via pointer conversion
+- Add unsafe import to CPU and Memory profiler files
+
+Benefits:
+- Truly unified event structure across all profilers
+- Simpler code: Value is always in the same location
+- Reduced duplication: no need for separate value handling
+- Memory layout verified: 40/72/48 bytes (base/cpu/mem)
+
+This completes the unification of common fields across profiler types.
+All events now share the exact same base structure with consistent
+field offsets for unified processing.
+
+--- bpf/include/bpf_profiler.h
+@@ -16,6 +16,7 @@ struct profiler_event_base_t {
+ 	char comm[COMPAT_TASK_COMM_LEN];
+ 	int kernstack;
+ 	int userstack;
++	s64 value;  // CPU: always 1 (sample count), Memory: page/byte delta
+ };
+ 
+ #endif /* __BPF_PROFILER_H__ */
+
+--- bpf/native_cpu_profiler.c
+@@ -203,6 +203,7 @@ int perf_event_sw_cpu_clock(struct pt_regs *ctx)
+ 
+ 	event->base.userstack = bpf_get_stackid(ctx, stack_map, USER_STACKID_FLAGS);
+ 	event->base.kernstack = bpf_get_stackid(ctx, stack_map, KERN_STACKID_FLAGS);
++	event->base.value = 1;  // CPU: each event counts as 1 sample
+ 
+ 	if (event->base.userstack < 0 && event->base.kernstack < 0) {
+ 		bpf_dbg_msg(ctx, native_cpu_dbg, "user and kernel stack missed");
+
+--- bpf/native_physical_alloc.c
+@@ -27,7 +27,6 @@ struct mem_event_t {
+ 	 * Kept here for a shared event layout.
+ 	 */
+ 	u32 stack_map_sel;
+-	s64 value; /* pages (always +1 for native_physical_alloc) */
+ };
+ 
+ struct {
+@@ -172,7 +171,7 @@ int BPF_KPROBE(trace_page_alloc, struct page *page,
+ 		return 0;
+ 
+ 	/* One page per event, convert to bytes in user space */
+-	event->value = 1;
++	event->base.value = 1;
+ 
+ 	__sync_fetch_and_add(sample_count_ptr, 1);
+ 
+
+--- bpf/native_physical_usage.c
+@@ -52,7 +52,6 @@ struct mem_event_t {
+ 	 * Alloc events set this to current parity; free events reuse alloc-time selector.
+ 	 */
+ 	u32 stack_map_sel;
+-	s64 value; /* pages delta: +1 on alloc, -1 on free */
+ };
+ 
+ struct {
+@@ -195,7 +194,7 @@ int BPF_KPROBE(trace_page_alloc, struct page *page,
+ 	if (event->base.userstack < 0 && event->base.kernstack < 0)
+ 		return 0;
+ 
+-	event->value = 1;
++	event->base.value = 1;
+ 
+ 	struct stack_info_t stack_info = {};
+ 	stack_info.base.pid = event->base.pid;
+@@ -281,7 +280,7 @@ int BPF_KPROBE(trace_page_free, struct page *page, bool compound)
+ 			 sizeof(event->base.comm));
+ 
+ 	/* Free: negative page delta */
+-	event->value = -1;
++	event->base.value = -1;
+ 
+ 	bpf_map_delete_elem(&page_to_stackid, &page_addr);
+ 
+
+--- bpf/native_virtual_alloc.c
+@@ -26,7 +26,6 @@ struct mem_event_t {
+ 	 * Kept here for a shared event layout.
+ 	 */
+ 	u32 stack_map_sel;
+-	s64 value; /* bytes for native_virtual_alloc */
+ };
+ 
+ struct {
+@@ -170,7 +169,7 @@ int BPF_KPROBE(trace_mmap, struct file *file, unsigned long addr,
+ 	if (event->base.userstack < 0 && event->base.kernstack < 0)
+ 		return 0;
+ 
+-	event->value = (s64)len;
++	event->base.value = (s64)len;
+ 
+ 	__sync_fetch_and_add(sample_count_ptr, 1);
+ 
+

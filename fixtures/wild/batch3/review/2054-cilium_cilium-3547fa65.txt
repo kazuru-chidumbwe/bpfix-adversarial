@@ -1,0 +1,72 @@
+repo: cilium/cilium
+commit: 3547fa654528e7d7e5df642c3af98706cf75e498
+rank: 2054
+
+bpf: loader: make AUX per-CPU offset branch-free via power-of-two sizing
+
+AUX() bounded the per-CPU offset with a runtime compare-and-clamp
+(`if offset > _aux_max_off`) after a multiply. The verifier can fold
+the clamp fine, but it can't propagate a bound through the multiply
+itself (`stride * cpuid` stays unbounded even with one exact operand),
+so this relied entirely on the clamp branch to stay safe. For now it is
+good, given we're using 1 AUX() at most in each codepath, but if we introduce
+new AUX() variables in the same codepaths this leads to doubling the
+verifier complexity to verify the program.
+
+Therefore, this commit rounds both `possible_cpus()` and the aux
+section's per-CPU `stride` up to the next power of two, and replace the
+multiply+clamp with a mask + shift operation. AND/SHL by a constant are
+tracked exactly by the verifier, so the offset is provably bounded with
+no branch and no multiply.
+
+This should give us a lot of advantage in terms of verifier complexity
+when using multiple AUX() calls/variables in the same BPF program,
+as the verifier can now reason about the offset of each AUX() independently,
+without needing to branch on the previous one.
+However, the major tradeoff is the memory. Padding `both possible_cpus()`
+and the stride to their next power of two can cost up to ~2x ``.data.aux`
+in the worst case (e.g. a struct total just above a power-of-two boundary,
+or CPU counts like 96/48/24 rounding up).
+
+I've evaluated an alternative solution, which consists in computing once
+per-BPF program/function the offset wrt the current CPU, and pass it down
+to each inner inlined function needing to use AUX(). Using a new helper
+`AUX_AT(offset, name)` would work still with less benefits in terms of
+verifier complexity (depending on where in the code it is computed first),
+but requires a lot of code changes and to propagate the offset wherever
+AUX() is used. This solution would not lead to memory waste though.
+
+Signed-off-by: Simone Magnani <simone.magnani@isovalent.com>
+
+--- bpf/lib/auxvars.h
+@@ -9,15 +9,18 @@
+ #define DEFINE_AUX(typ, name) \
+ 	__section(".data.aux") typ __aux_##name;
+ 
+-volatile const __section(".rodata.aux") __u64 _aux_stride;
+-volatile const __section(".rodata.aux") __u64 _aux_max_off;
++volatile const __section(".rodata.aux") __u64 _aux_cpu_mask;
++volatile const __section(".rodata.aux") __u64 _aux_stride_shift;
+ 
+-#define AUX(name) ({ \
+-	__u32 cpuid = get_smp_processor_id(); \
+-	void *aux_addr = (void *)&__aux_##name; \
+-	__u64 offset = (_aux_stride * cpuid); \
+-	if (offset > _aux_max_off) \
+-		offset = _aux_max_off; \
+-	aux_addr += offset; \
+-	(__typeof__(__aux_##name) *)(aux_addr); \
+-})
++/*
++ * The AUX macro is used to access per-CPU auxiliary variables. It calculates
++ * the address of the variable for the current CPU by adding an offset based on
++ * the CPU ID and a stride shift value.
++ *
++ * Once the minimum kernel version supported is v6.6, let's replace this and
++ * switch back to the previous implementation to avoid the memory overhead.
++ * (see https://github.com/cilium/cilium/issues/48301)
++ */
++#define AUX(name) \
++	((__typeof__(__aux_##name) *)((void *)&__aux_##name + \
++	 ((get_smp_processor_id() & _aux_cpu_mask) << _aux_stride_shift)))
+

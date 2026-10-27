@@ -1,0 +1,37 @@
+repo: aya-rs/aya
+commit: adf16e2102d94e46630572c6d18d10893697106c
+rank: 6296
+
+test: Reproduce relocation bug
+
+Users have reported issues with programs failing the verifier when they
+are attempting to read or write to variables that the compiler places in
+the .bss section. Add a test that places variables in each section and
+exercises read and write operations on them.
+
+Signed-off-by: Dave Tucker <dave@dtucker.co.uk>
+
+--- test/integration-test/bpf/variables_reloc.bpf.c
+@@ -0,0 +1,21 @@
++// clang-format off
++#include <vmlinux.h>
++#include <bpf/bpf_helpers.h>
++// clang-format on
++
++volatile unsigned int key1 = 0;       // .bss
++volatile unsigned int key2 = 1;       // .data
++volatile const unsigned int key3 = 2; // .rodata
++
++SEC("xdp")
++int variables_reloc(struct xdp_md *ctx) {
++  if (key1 == 0 && key2 != 1 && key3 != 2) {
++    key1 += 1;
++    key2 += 1;
++    return XDP_DROP;
++  } else {
++    return XDP_PASS;
++  }
++}
++
++char _license[] SEC("license") = "GPL";
+

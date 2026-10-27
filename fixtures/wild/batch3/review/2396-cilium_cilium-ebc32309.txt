@@ -1,0 +1,36 @@
+repo: cilium/cilium
+commit: ebc32309be74b59186fd9119b1d8275e8bbab00e
+rank: 2396
+
+bpf: nodeport: fix a potential complexity issue
+
+Since 4ffb0befe8 ("bpf: nodeport: improve checks for !defined(IS_BPF_OVERLAY)")
+the nodeport_extract_dsr_v6() function is compiled in if IS_BPF_XDP
+is on and DSR_ENCAP_MODE != DSR_ENCAP_GENEVE. On older kernels (e.g.,
+5.15) this can lead to a verifier complexity breakout when
+DSR_ENCAP_MODE is DSR_ENCAP_IPIP, so exclude the latter in the check.
+
+Also, mirror this change for the IPv4 case.
+
+Signed-off-by: Anton Protopopov <a.s.protopopov@gmail.com>
+
+--- bpf/lib/nodeport.h
+@@ -1517,7 +1517,7 @@ static __always_inline int nodeport_lb6(struct __ctx_buff *ctx,
+ #ifdef ENABLE_DSR
+ #if (defined(IS_BPF_OVERLAY) && DSR_ENCAP_MODE == DSR_ENCAP_GENEVE) || \
+     ((defined(IS_BPF_XDP) || defined(IS_BPF_HOST) || defined(IS_BPF_WIREGUARD)) && \
+-		DSR_ENCAP_MODE != DSR_ENCAP_GENEVE)
++		(DSR_ENCAP_MODE != DSR_ENCAP_GENEVE && DSR_ENCAP_MODE != DSR_ENCAP_IPIP))
+ 		if (is_svc_proto) {
+ 			ret = nodeport_extract_dsr_v6(ctx, ip6, &tuple, l4_off,
+ 						      &key.address,
+@@ -2889,7 +2889,7 @@ static __always_inline int nodeport_lb4(struct __ctx_buff *ctx,
+ #ifdef ENABLE_DSR
+ #if (defined(IS_BPF_OVERLAY) && DSR_ENCAP_MODE == DSR_ENCAP_GENEVE) || \
+     ((defined(IS_BPF_XDP) || defined(IS_BPF_HOST) || defined(IS_BPF_WIREGUARD)) && \
+-		DSR_ENCAP_MODE != DSR_ENCAP_GENEVE)
++		(DSR_ENCAP_MODE != DSR_ENCAP_GENEVE && DSR_ENCAP_MODE != DSR_ENCAP_IPIP))
+ 		if (is_svc_proto) {
+ 			/* Check if packet has embedded DSR info, or belongs to
+ 			 * an established DSR connection:
+

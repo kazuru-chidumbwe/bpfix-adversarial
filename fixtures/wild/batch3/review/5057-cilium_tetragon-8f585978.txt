@@ -1,0 +1,244 @@
+repo: cilium/tetragon
+commit: 8f585978d97cc90494161b669229ef3b78c92484
+rank: 5057
+
+tetragon: Move generic_process_filter to generic functions
+
+Moving generic_process_filter to generic functions and changing it to
+use maps directly.
+
+Passing map pointer through argument might end up storing and loading
+it to/from heap which makes it scalar value and breaks verifier.
+
+Signed-off-by: Jiri Olsa <jolsa@kernel.org>
+
+--- bpf/process/bpf_generic_kprobe.c
+@@ -12,7 +12,6 @@
+ #include "retprobe_map.h"
+ #include "types/operations.h"
+ #include "types/basic.h"
+-#include "pfilter.h"
+ #include "policy_filter.h"
+ 
+ char _license[] __attribute__((section("license"), used)) = "Dual BSD/GPL";
+@@ -97,8 +96,7 @@ generic_kprobe_process_filter(void *ctx)
+ {
+ 	int ret;
+ 
+-	ret = generic_process_filter((struct bpf_map_def *)&process_call_heap,
+-				     (struct bpf_map_def *)&filter_map);
++	ret = generic_process_filter();
+ 	if (ret == PFILTER_CONTINUE)
+ 		tail_call(ctx, &kprobe_calls, TAIL_CALL_FILTER);
+ 	else if (ret == PFILTER_ACCEPT)
+
+--- bpf/process/bpf_generic_lsm_core.c
+@@ -67,8 +67,7 @@ generic_lsm_process_filter(void *ctx)
+ {
+ 	int ret;
+ 
+-	ret = generic_process_filter((struct bpf_map_def *)&process_call_heap,
+-				     (struct bpf_map_def *)&filter_map);
++	ret = generic_process_filter();
+ 	if (ret == PFILTER_CONTINUE)
+ 		tail_call(ctx, &lsm_calls, TAIL_CALL_FILTER);
+ 	else if (ret == PFILTER_ACCEPT)
+
+--- bpf/process/bpf_generic_tracepoint.c
+@@ -13,7 +13,6 @@
+ #include "retprobe_map.h"
+ #include "types/operations.h"
+ #include "types/basic.h"
+-#include "pfilter.h"
+ #include "policy_filter.h"
+ #include "syscall64.h"
+ 
+@@ -228,8 +227,7 @@ generic_tracepoint_filter(void *ctx)
+ {
+ 	int ret;
+ 
+-	ret = generic_process_filter((struct bpf_map_def *)&process_call_heap,
+-				     (struct bpf_map_def *)&filter_map);
++	ret = generic_process_filter();
+ 	if (ret == PFILTER_CONTINUE)
+ 		tail_call(ctx, &tp_calls, TAIL_CALL_FILTER);
+ 	else if (ret == PFILTER_ACCEPT)
+
+--- bpf/process/bpf_generic_uprobe.c
+@@ -12,7 +12,6 @@
+ #include "retprobe_map.h"
+ #include "types/operations.h"
+ #include "types/basic.h"
+-#include "pfilter.h"
+ 
+ char _license[] __attribute__((section("license"), used)) = "Dual BSD/GPL";
+ 
+@@ -71,8 +70,7 @@ generic_uprobe_process_filter(void *ctx)
+ {
+ 	int ret;
+ 
+-	ret = generic_process_filter((struct bpf_map_def *)&process_call_heap,
+-				     (struct bpf_map_def *)&filter_map);
++	ret = generic_process_filter();
+ 	if (ret == PFILTER_CONTINUE)
+ 		tail_call(ctx, &uprobe_calls, TAIL_CALL_FILTER);
+ 	else if (ret == PFILTER_ACCEPT)
+
+--- bpf/process/generic_calls.h
+@@ -546,4 +546,70 @@ FUNC_INLINE int generic_retkprobe(void *ctx, struct bpf_map_def *calls, unsigned
+ 	tail_call(ctx, calls, TAIL_CALL_ARGS);
+ 	return 1;
+ }
++
++// generic_process_filter performs first pass filtering based on pid/nspid.
++// We keep a list of selectors that pass.
++//
++// if filter check was successful, it will return PFILTER_ACCEPT and properly
++// set the values of:
++//    current->pid
++//    current->ktime
++// for the memory located at index 0 of @msg_heap assuming the value follows the
++// msg_generic_hdr structure.
++FUNC_INLINE int generic_process_filter(void)
++{
++	struct execve_map_value *enter;
++	struct msg_generic_kprobe *msg;
++	struct msg_execve_key *current;
++	struct msg_selector_data *sel;
++	int curr, zero = 0;
++	bool walker = 0;
++	__u32 ppid;
++
++	msg = map_lookup_elem(&process_call_heap, &zero);
++	if (!msg)
++		return 0;
++
++	enter = event_find_curr(&ppid, &walker);
++	if (enter) {
++		int selectors, pass;
++		__u32 *f = map_lookup_elem(&filter_map, &msg->idx);
++
++		if (!f)
++			return PFILTER_ERROR;
++
++		sel = &msg->sel;
++		current = &msg->current;
++
++		curr = sel->curr;
++		if (curr > MAX_SELECTORS)
++			return process_filter_done(sel, enter, current);
++
++		selectors = f[0];
++		/* If no selectors accept process */
++		if (!selectors) {
++			sel->pass = true;
++			return process_filter_done(sel, enter, current);
++		}
++
++		/* If we get here with reference to uninitialized selector drop */
++		if (selectors <= curr)
++			return process_filter_done(sel, enter, current);
++
++		pass = selector_process_filter(f, curr, enter, msg);
++		if (pass) {
++			/* Verify lost that msg is not null here so recheck */
++			asm volatile("%[curr] &= 0x1f;\n"
++				     : [curr] "+r"(curr));
++			sel->active[curr] = true;
++			sel->active[SELECTORS_ACTIVE] = true;
++			sel->pass |= true;
++		}
++		sel->curr++;
++		if (sel->curr > selectors)
++			return process_filter_done(sel, enter, current);
++		return PFILTER_CONTINUE; /* will iterate to the next selector */
++	}
++	return PFILTER_CURR_NOT_FOUND;
++}
+ #endif /* __GENERIC_CALLS_H__ */
+
+--- bpf/process/pfilter.h
+@@ -2,8 +2,7 @@
+ #define __PFILTER_H__
+ 
+ /**
+- * Process filters
+- * see generic_process_filter below
++ * Process filters (see generic_process_filter)
+  */
+ 
+ #define FIND_PIDSET(value, isns)                                          \
+@@ -540,72 +539,4 @@ process_filter_done(struct msg_selector_data *sel,
+ 		return PFILTER_ACCEPT;
+ 	return PFILTER_REJECT;
+ }
+-
+-// generic_process_filter performs first pass filtering based on pid/nspid.
+-// We keep a list of selectors that pass.
+-//
+-// if filter check was successful, it will return PFILTER_ACCEPT and properly
+-// set the values of:
+-//    current->pid
+-//    current->ktime
+-// for the memory located at index 0 of @msg_heap assuming the value follows the
+-// msg_generic_hdr structure.
+-FUNC_INLINE int
+-generic_process_filter(struct bpf_map_def *heap, struct bpf_map_def *fmap)
+-{
+-	struct execve_map_value *enter;
+-	struct msg_generic_kprobe *msg;
+-	struct msg_execve_key *current;
+-	struct msg_selector_data *sel;
+-	int curr, zero = 0;
+-	bool walker = 0;
+-	__u32 ppid;
+-
+-	msg = map_lookup_elem(heap, &zero);
+-	if (!msg)
+-		return 0;
+-
+-	enter = event_find_curr(&ppid, &walker);
+-	if (enter) {
+-		int selectors, pass;
+-		__u32 *f = map_lookup_elem(fmap, &msg->idx);
+-
+-		if (!f)
+-			return PFILTER_ERROR;
+-
+-		sel = &msg->sel;
+-		current = &msg->current;
+-
+-		curr = sel->curr;
+-		if (curr > MAX_SELECTORS)
+-			return process_filter_done(sel, enter, current);
+-
+-		selectors = f[0];
+-		/* If no selectors accept process */
+-		if (!selectors) {
+-			sel->pass = true;
+-			return process_filter_done(sel, enter, current);
+-		}
+-
+-		/* If we get here with reference to uninitialized selector drop */
+-		if (selectors <= curr)
+-			return process_filter_done(sel, enter, current);
+-
+-		pass = selector_process_filter(f, curr, enter, msg);
+-		if (pass) {
+-			/* Verify lost that msg is not null here so recheck */
+-			asm volatile("%[curr] &= 0x1f;\n"
+-				     : [curr] "+r"(curr));
+-			sel->active[curr] = true;
+-			sel->active[SELECTORS_ACTIVE] = true;
+-			sel->pass |= true;
+-		}
+-		sel->curr++;
+-		if (sel->curr > selectors)
+-			return process_filter_done(sel, enter, current);
+-		return PFILTER_CONTINUE; /* will iterate to the next selector */
+-	}
+-	return PFILTER_CURR_NOT_FOUND;
+-}
+-
+ #endif /* __PFILTER_H__ */
+

@@ -1,0 +1,205 @@
+repo: cilium/tetragon
+commit: 37365e40a0f3854af18a660aa85811441491d8db
+rank: 2166
+
+tetragon: Switch generic_actions to use maps directly
+
+Switching generic_actions to use maps directly.
+
+Passing map pointer through argument might end up storing and loading
+it to/from heap which makes it scalar value and breaks verifier.
+
+Keeping tail call map, because it's convenient in following changes.
+
+Signed-off-by: Jiri Olsa <jolsa@kernel.org>
+
+--- bpf/process/bpf_generic_kprobe.c
+@@ -130,7 +130,7 @@ generic_kprobe_filter_arg(void *ctx)
+ __attribute__((section("kprobe"), used)) int
+ generic_kprobe_actions(void *ctx)
+ {
+-	generic_actions(ctx, &maps);
++	generic_actions(ctx, (struct bpf_map_def *)&kprobe_calls);
+ 	return 0;
+ }
+ 
+
+--- bpf/process/bpf_generic_lsm_core.c
+@@ -97,7 +97,7 @@ generic_lsm_filter_arg(void *ctx)
+ __attribute__((section("lsm"), used)) int
+ generic_lsm_actions(void *ctx)
+ {
+-	bool postit = generic_actions(ctx, &maps);
++	bool postit = generic_actions(ctx, (struct bpf_map_def *)&lsm_calls);
+ 
+ 	struct msg_generic_kprobe *e;
+ 	int zero = 0;
+
+--- bpf/process/bpf_generic_retkprobe.c
+@@ -43,12 +43,6 @@ struct {
+ #define MAIN "kprobe/generic_retkprobe"
+ #endif
+ 
+-static struct generic_maps maps = {
+-	.heap = (struct bpf_map_def *)&process_call_heap,
+-	.calls = (struct bpf_map_def *)&retkprobe_calls,
+-	.filter = (struct bpf_map_def *)&filter_map,
+-};
+-
+ __attribute__((section((MAIN)), used)) int
+ BPF_KRETPROBE(generic_retkprobe_event, unsigned long ret)
+ {
+@@ -143,7 +137,7 @@ BPF_KRETPROBE(generic_retkprobe_event, unsigned long ret)
+ 	e->func_id = config->func_id;
+ 	e->common.size = size;
+ 
+-	tail_call(ctx, &retkprobe_calls, TAIL_CALL_ARGS);
++	tail_call(ctx, (struct bpf_map_def *)&retkprobe_calls, TAIL_CALL_ARGS);
+ 	return 1;
+ }
+ 
+@@ -160,7 +154,7 @@ BPF_KRETPROBE(generic_retkprobe_filter_arg)
+ __attribute__((section("kprobe"), used)) int
+ BPF_KRETPROBE(generic_retkprobe_actions)
+ {
+-	generic_actions(ctx, &maps);
++	generic_actions(ctx, (struct bpf_map_def *)&retkprobe_calls);
+ 	return 0;
+ }
+ 
+
+--- bpf/process/bpf_generic_tracepoint.c
+@@ -41,12 +41,6 @@ struct {
+ #include "generic_maps.h"
+ #include "generic_calls.h"
+ 
+-static struct generic_maps maps = {
+-	.heap = (struct bpf_map_def *)&process_call_heap,
+-	.calls = (struct bpf_map_def *)&tp_calls,
+-	.filter = (struct bpf_map_def *)&filter_map,
+-};
+-
+ struct generic_tracepoint_event_arg {
+ 	/* common header */
+ 	__u16 common_type;
+@@ -259,7 +253,7 @@ generic_tracepoint_arg(void *ctx)
+ __attribute__((section("tracepoint"), used)) int
+ generic_tracepoint_actions(void *ctx)
+ {
+-	generic_actions(ctx, &maps);
++	generic_actions(ctx, (struct bpf_map_def *)&tp_calls);
+ 	return 0;
+ }
+ 
+
+--- bpf/process/bpf_generic_uprobe.c
+@@ -103,7 +103,7 @@ generic_uprobe_filter_arg(void *ctx)
+ __attribute__((section("uprobe"), used)) int
+ generic_uprobe_actions(void *ctx)
+ {
+-	generic_actions(ctx, &maps);
++	generic_actions(ctx, (struct bpf_map_def *)&uprobe_calls);
+ 	return 0;
+ }
+ 
+
+--- bpf/process/generic_calls.h
+@@ -217,10 +217,8 @@ generic_process_event_and_setup(struct pt_regs *ctx, struct bpf_map_def *tailcal
+ }
+ 
+ FUNC_LOCAL __u32
+-do_action(void *ctx, __u32 i, struct selector_action *actions,
+-	  struct generic_maps *maps, bool *post)
++do_action(void *ctx, __u32 i, struct selector_action *actions, bool *post)
+ {
+-	struct bpf_map_def *override_tasks = maps->override;
+ 	int signal __maybe_unused = FGS_SIGKILL;
+ 	int action = actions->act[i];
+ 	struct msg_generic_kprobe *e;
+@@ -233,7 +231,7 @@ do_action(void *ctx, __u32 i, struct selector_action *actions,
+ 	int zero = 0;
+ 	__u64 id;
+ 
+-	e = map_lookup_elem(maps->heap, &zero);
++	e = map_lookup_elem(&process_call_heap, &zero);
+ 	if (!e)
+ 		return 0;
+ 
+@@ -297,18 +295,16 @@ do_action(void *ctx, __u32 i, struct selector_action *actions,
+ 		error = actions->act[++i];
+ 		id = get_current_pid_tgid();
+ 
+-		if (!override_tasks)
+-			break;
+ 		/*
+ 		 * TODO: this should not happen, it means that the override
+ 		 * program was not executed for some reason, we should do
+ 		 * warning in here
+ 		 */
+-		error_p = map_lookup_elem(override_tasks, &id);
++		error_p = map_lookup_elem(&override_tasks, &id);
+ 		if (error_p)
+ 			*error_p = error;
+ 		else
+-			map_update_elem(override_tasks, &id, &error, BPF_ANY);
++			map_update_elem(&override_tasks, &id, &error, BPF_ANY);
+ 		break;
+ 	case ACTION_GETURL:
+ 	case ACTION_DNSLOOKUP:
+@@ -348,7 +344,7 @@ has_action(struct selector_action *actions, __u32 idx)
+ 
+ /* Currently supporting 2 actions for selector. */
+ FUNC_INLINE bool
+-do_actions(void *ctx, struct selector_action *actions, struct generic_maps *maps)
++do_actions(void *ctx, struct selector_action *actions)
+ {
+ 	bool post = true;
+ 	__u32 l, i = 0;
+@@ -359,14 +355,14 @@ do_actions(void *ctx, struct selector_action *actions, struct generic_maps *maps
+ 	for (l = 0; l < MAX_ACTIONS; l++) {
+ 		if (!has_action(actions, i))
+ 			break;
+-		i = do_action(ctx, i, actions, maps, &post);
++		i = do_action(ctx, i, actions, &post);
+ 	}
+ 
+ 	return post;
+ }
+ 
+ FUNC_INLINE long
+-generic_actions(void *ctx, struct generic_maps *maps)
++generic_actions(void *ctx, struct bpf_map_def *calls)
+ {
+ 	struct selector_arg_filters *arg;
+ 	struct selector_action *actions;
+@@ -375,15 +371,15 @@ generic_actions(void *ctx, struct generic_maps *maps)
+ 	bool postit;
+ 	__u8 *f;
+ 
+-	e = map_lookup_elem(maps->heap, &zero);
++	e = map_lookup_elem(&process_call_heap, &zero);
+ 	if (!e)
+ 		return 0;
+ 
+ 	pass = e->pass;
+ 	if (pass <= 1)
+ 		return 0;
+ 
+-	f = map_lookup_elem(maps->filter, &e->idx);
++	f = map_lookup_elem(&filter_map, &e->idx);
+ 	if (!f)
+ 		return 0;
+ 
+@@ -398,9 +394,9 @@ generic_actions(void *ctx, struct generic_maps *maps)
+ 		     :);
+ 	actions = (struct selector_action *)&f[actoff];
+ 
+-	postit = do_actions(ctx, actions, maps);
++	postit = do_actions(ctx, actions);
+ 	if (postit)
+-		tail_call(ctx, maps->calls, TAIL_CALL_SEND);
++		tail_call(ctx, calls, TAIL_CALL_SEND);
+ 	return postit;
+ }
+ 
+

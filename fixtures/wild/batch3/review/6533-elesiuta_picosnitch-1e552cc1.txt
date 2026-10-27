@@ -1,0 +1,28 @@
+repo: elesiuta/picosnitch
+commit: 1e552cc194db29afd58871c655613821f2889860
+rank: 6533
+
+fix: capture-path correctness and robustness (bpf, monitor, secondary)
+
+- read real_parent for ancestry; copy the DNS hostname with probe_read_user_str;
+  DNS tid map is an LRU hash
+- verify the /proc/pid/exe inode against the event before trusting the readlink;
+  thread mod_cnt through the sha256 reads for correct cache invalidation
+- LRU-bound the domain/inode caches, errors="replace" on /proc reads so a
+  non-UTF-8 comm can't abort a drain batch, gate optional hooks on kallsyms
+  symbol presence
+- cap live-feed subscribers and drop slow ones without stalling the publisher
+
+--- src/picosnitch/bpf/picosnitch.bpf.c
+@@ -135,7 +135,9 @@ static __always_inline __u32 read_netns(struct sock *sk) {
+ 
+ // Maps
+ struct {
+-    __uint(type, BPF_MAP_TYPE_HASH);
++    // LRU so a flood of in-flight getaddrinfo (dns_entry with no matching dns_return) evicts
++    // old tids instead of rejecting new inserts once full
++    __uint(type, BPF_MAP_TYPE_LRU_HASH);
+     __uint(max_entries, 10240);
+     __type(key, __u32);
+     __type(value, struct dns_val_t);
+

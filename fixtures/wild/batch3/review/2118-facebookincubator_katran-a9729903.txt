@@ -1,0 +1,134 @@
+repo: facebookincubator/katran
+commit: a9729903e08abd5bffd94abf3bfde5141b25ba34
+rank: 2118
+
+katran/decap: count TPR packets carrying server id 0 (tc), via tc_tpr_stats_v2
+
+Summary:
+Adds `tpr_sid_zero` to the **tc** decap path: a count of TPR packets whose
+option is present but carries server id 0. Scoped to tc only — nothing under
+`katran/decap/bpf/` or `XdpDecapStructs.h` is touched.
+
+## Why a new bpf map
+
+A pinned BPF map cannot be widened in place. `bpf_map__reuse_fd` accepts the
+old, narrower map and the verifier then rejects the program with `-EACCES` for
+writing past the end of the value, which is fatal at load. That is what
+crash-looped 9 origin proxygen tiers when `struct decap_tpr_stats` grew a field.
+
+So the counter goes into a successor map holding all the tc TPR counters:
+
+- `struct decap_tpr_stats_v2` = `tpr_misrouted`, `tpr_total`, `tpr_sid_zero`
+- `tc_tpr_stats_v2`, a percpu array with the same key and size as the original
+- `tcdecapstats` looks up and writes `tc_tpr_stats_v2` only
+- the poller and `tc_tpr_stats_attacher` pin and read `tc_tpr_stats_v2`
+
+v2 ships with every field it will need. If it shipped narrower and were widened
+later, the next rollout would hit the identical `-EACCES` crash on v2's own pin.
+
+`tc_tpr_stats` is left defined and still in `mapsToPin`, so the existing pin
+keeps resolving across the rollout. It is no longer written, so it holds its
+last values. A follow-up removes the map, `struct decap_tpr_stats`, and the pin
+entry once v2 is everywhere.
+
+## No equivalent change for xdp decap
+
+The xdp decap path keeps its TPR counters as fields inside `decap_counters`
+rather than in a separate map, so adding the counter there would mean widening
+that map. It is deliberately not done, because **xdp decap is not activated on
+any slb/olb job**: no ti config calls `add_dsr_xdp`, every revproxy job runs the
+poller in `ProgAttachHook::TC` mode via `add_dsr_tc` (which appends
+`--tc_bpf_decap`), and ODS shows zero entities publishing `*.xdpdecap.*`
+counters against 6 keys for `tcdecap`. Adding it there would be untestable churn
+on a path origin does not use.
+
+## tpr_total now counts every TPR packet
+
+The option lookup moves above the host-server-id gate. Previously `tpr_total`
+only counted when this host had a non-zero server id, so it was unusable as a
+denominator exactly when the server id is 0. Now a packet counts as TPR
+whenever the option is present, and `tpr_sid_zero` is the subset carrying 0.
+Misrouting comparison still happens inside the gate, unchanged.
+
+## New poller-owned aggregate type
+
+`getDecapStats()` and `aggregateDecapStats_` previously used
+`::katran::decap_stats`, which is simultaneously the userspace mirror of the
+**xdp** `decap_counters` bpf map. That conflated two roles: any counter the
+poller wants to publish had to exist in an xdp map layout, even a tc-only one.
+
+This introduces `decap_agg_stats`, owned by the poller (same pattern as the
+existing `decap_kde_stats`), and uses it for `getDecapStats`,
+`getTcDecapTprStats` and `aggregateDecapStats_`. `tpr_sid_zero` lives on that
+type, so it needs no change to any xdp map or mirror.
+
+It also removes a mis-gating: an earlier revision keyed the publish path off
+`tcDecapTprStatsEnabled()`, which means "the tc TPR map was found", not "we are
+in tc mode". On a tc tier without the map that would have published a confident
+`tpr_sid_zero = 0`. With the counter in the aggregate, `tpr_sid_zero` is
+published exactly like `tpr_total` and `tpr_misrouted`, with no mode branching.
+
+Reviewed By: tagrawal03, avasylev
+
+Differential Revision: D118210120
+
+fbshipit-source-id: cd2aa27f9ef5f11eb948d434df0db7ea5b393f5f
+
+--- katran/decap/tc_bpf/tc_decap_stats.bpf.c
+@@ -42,15 +42,28 @@ __attribute__((__always_inline__)) static inline void validate_tpr_server_id(
+     void* data_end,
+     bool is_ipv6,
+     struct __sk_buff* skb,
+-    struct decap_tpr_stats* data_stats) {
++    struct decap_tpr_stats_v2* data_stats) {
+   struct packet_description pckt = {};
+   if (!parse_tcp(data, data_end, is_ipv6, &pckt)) {
+     return;
+   }
+   // only check for TCP non SYN packets
+   if (!(pckt.flags & F_SYN_SET)) {
+-    // lookup server id from tpr header option and compare against server_id on
+-    // this host (if available)
++    // Parsed before the host-server-id gate below: inside it, tpr_sid_zero
++    // would read 0 exactly when this host's own server id is 0.
++    __u32 server_id = 0;
++    __u32 sid_err = TPR_SID_ERR_NONE;
++    tcp_hdr_opt_lookup_server_id_skb(skb, is_ipv6, &server_id, &sid_err);
++    // the option is present, so this is a TPR packet whether or not it carries
++    // a usable server id. sid_err is NONE when a server id was read, ZERO when
++    // the option carried 0, NO_OPT when there was no option at all.
++    if (sid_err != TPR_SID_ERR_NO_OPT) {
++      data_stats->tpr_total += 1;
++      if (sid_err == TPR_SID_ERR_ZERO) {
++        data_stats->tpr_sid_zero += 1;
++      }
++    }
++    // compare the server id against the server_id on this host (if available).
+     // there might be two different server ids from packets to different
+     // processes during hotswap, so we check both
+     __u32 s_key_0 = 0;
+@@ -60,11 +73,7 @@ __attribute__((__always_inline__)) static inline void validate_tpr_server_id(
+     __u32* server_id_1 = bpf_map_lookup_elem(&tpr_server_ids, &s_key_1);
+     bool server_id_1_found = (server_id_1 && *server_id_1 > 0);
+     if (server_id_0_found || server_id_1_found) {
+-      __u32 server_id = 0;
+-      __u32 sid_err = TPR_SID_ERR_NONE;
+-      tcp_hdr_opt_lookup_server_id_skb(skb, is_ipv6, &server_id, &sid_err);
+       if (server_id > 0) {
+-        data_stats->tpr_total += 1;
+         if ((!server_id_0_found || (*server_id_0 != server_id)) &&
+             (!server_id_1_found || (*server_id_1 != server_id))) {
+           data_stats->tpr_misrouted += 1;
+@@ -134,9 +143,9 @@ __attribute__((__always_inline__)) static inline int process_packet(
+     void* data_end,
+     bool is_ipv6,
+     struct __sk_buff* skb) {
+-  struct decap_tpr_stats* data_stats;
++  struct decap_tpr_stats_v2* data_stats;
+   __u32 key = 0;
+-  data_stats = bpf_map_lookup_elem(&tc_tpr_stats, &key);
++  data_stats = bpf_map_lookup_elem(&tc_tpr_stats_v2, &key);
+   if (!data_stats) {
+     return TC_ACT_UNSPEC;
+   }
+

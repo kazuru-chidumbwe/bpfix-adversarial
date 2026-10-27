@@ -1,0 +1,23 @@
+repo: cilium/cilium
+commit: 489da3e3f924e782c7fb73a21bc40226d3500898
+rank: 3180
+
+bpf: align ipv6_ct_tuple
+
+The ipv6_ct_tuple struct is a packed struct. Adding more vars on the
+stack can easily cause verifier failures due to misaligned access in
+the ipv6_addr_copy directly below.
+
+Signed-off-by: Fabian Fischer <fabian.fischer@isovalent.com>
+
+--- bpf/lib/conntrack.h
+@@ -1091,7 +1091,7 @@ static __always_inline int ct_create6(const void *map_main, const void *map_rela
+ 
+ 	if (map_related != NULL) {
+ 		/* Create an ICMPv6 entry to relate errors */
+-		struct ipv6_ct_tuple icmp_tuple = {
++		struct ipv6_ct_tuple icmp_tuple __align_stack_8 = {
+ 			.nexthdr = IPPROTO_ICMPV6,
+ 			.sport = 0,
+ 			.dport = 0,
+

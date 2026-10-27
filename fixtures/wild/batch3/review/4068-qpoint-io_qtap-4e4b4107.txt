@@ -1,0 +1,44 @@
+repo: qpoint-io/qtap
+commit: 4e4b41072721784656ac0e7a08eba14709ade040
+rank: 4068
+
+fix: reduce BPF verifier complexity for kernel 6.x (#249)
+
+- Mark process_data as __noinline to prevent inlining at each call site
+- Reduce LOOP_LIMIT from 100 to 64 to decrease verifier path explosion
+
+Fixes BPF program loading on kernel 6.14+ where the verifier hits the
+1M instruction complexity limit when tracing all possible paths.
+
+--- bpf/tap/common.bpf.h
+@@ -27,7 +27,7 @@
+ #include "net.bpf.h"
+ 
+ // This keeps instruction count below BPF's limit of 4096 per probe
+-#define LOOP_LIMIT    100
++#define LOOP_LIMIT    64
+ #define LOOP_LIMIT_SM 25
+ 
+ // Check if BPF_UPROBE is not defined
+
+--- bpf/tap/socket.bpf.c
+@@ -628,7 +628,7 @@ static void init_conn(struct socket_ctx *ctx, enum DIRECTION direction, const st
+ }
+ 
+ // common data handler for multiple syscall probes
+-static void process_data(struct socket_ctx *ctx, enum DIRECTION direction, const struct data_args *args, ssize_t bytes, bool ssl) {
++static __noinline void process_data(struct socket_ctx *ctx, enum DIRECTION direction, const struct data_args *args, ssize_t bytes, bool ssl) {
+ 	// nothing to do if the buffer is null
+ 	if ((void *)args->buf == NULL) {
+ 		return;
+
+--- bpf/tap/socket.bpf.h
+@@ -133,6 +133,6 @@ static __always_inline enum SOCKET_TYPE determine_socket_type(int protocol, int
+ 	return sock_type;
+ }
+ 
+-static __always_inline void process_data(struct socket_ctx *ctx, enum DIRECTION direction, const struct data_args *args, ssize_t bytes, bool ssl);
++static __noinline void process_data(struct socket_ctx *ctx, enum DIRECTION direction, const struct data_args *args, ssize_t bytes, bool ssl);
+ 
+ static void process_close(struct socket_ctx *ctx);
+

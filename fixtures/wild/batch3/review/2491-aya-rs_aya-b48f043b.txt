@@ -1,0 +1,89 @@
+repo: aya-rs/aya
+commit: b48f043b81f782c89e76f1cdb640cc8d006fddc3
+rank: 2491
+
+aya-obj: fix flexible array relocations
+
+CO-RE bounds checking compared the requested array element index with
+the parent struct's member count. This rejected nonzero indices in
+trailing zero-length arrays and could accept an access to a non-final
+zero-length array by coincidence.
+
+Use the containing member's position to identify flexible arrays in
+both local and target layouts. Retain bounds checking for fixed-size
+arrays and non-final zero-length arrays.
+
+Exercise compiler-emitted CO-RE relocations across different source
+and target layouts, checking the offset produced by the running BPF
+program. Reject invalid local accesses and verify field-existence
+relocations return false for elements outside target array bounds.
+Seed the output map so zero-valued results require program execution.
+
+Fixes: #1662
+Co-authored-by: Matteo Porta <matteo.porta@sysdig.com>
+
+--- test/integration-test/bpf/flex_array_reloc.bpf.c
+@@ -0,0 +1,13 @@
++#include "reloc.h"
++
++struct relocated_flex_array {
++#ifdef TARGET
++  __u64 padding;
++#endif
++  __u64 args[0];
++};
++
++SEC("uprobe") int program(void *ctx) {
++  return set_output(
++      bpf_core_field_offset(struct relocated_flex_array, args[2]));
++}
+
+--- test/integration-test/bpf/nonfinal_zero_array_reloc.bpf.c
+@@ -0,0 +1,11 @@
++#include "reloc.h"
++
++struct relocated_nonfinal_zero_array {
++  __u64 args[0];
++  __u64 tail;
++};
++
++SEC("uprobe") int program(void *ctx) {
++  return set_output(
++      bpf_core_field_offset(struct relocated_nonfinal_zero_array, args[1]));
++}
+
+--- test/integration-test/bpf/target_fixed_array_reloc.bpf.c
+@@ -0,0 +1,14 @@
++#include "reloc.h"
++
++struct relocated_target_fixed_array {
++#ifdef TARGET
++  __u64 args[1];
++#else
++  __u64 args[2];
++#endif
++};
++
++SEC("uprobe") int program(void *ctx) {
++  return set_output(
++      bpf_core_field_exists(struct relocated_target_fixed_array, args[1]));
++}
+
+--- test/integration-test/bpf/target_nonfinal_zero_array_reloc.bpf.c
+@@ -0,0 +1,15 @@
++#include "reloc.h"
++
++struct relocated_target_nonfinal_zero_array {
++#ifdef TARGET
++  __u64 args[0];
++#else
++  __u64 args[2];
++#endif
++  __u64 tail;
++};
++
++SEC("uprobe") int program(void *ctx) {
++  return set_output(bpf_core_field_exists(
++      struct relocated_target_nonfinal_zero_array, args[1]));
++}
+

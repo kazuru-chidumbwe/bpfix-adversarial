@@ -1,0 +1,313 @@
+repo: alibaba/loongcollector
+commit: 448cb79b7eedca73a4f5d7742403073d2fe5b1da
+rank: 4753
+
+feat: Add AgentSight input plugin with local input messages delta (#2579)
+
+* feat: Add new configuration options for Agentsight plugin
+
+- Introduced `mAgentsightSplitModelEvents` to control logging of separate model request and response events.
+- Added `mAgentsightDetailedMessage` to toggle detailed logging of system instructions and tool definitions.
+- Updated configuration parsing to handle new options in `SecurityOptions::Init`.
+- Enhanced documentation to reflect changes in logging behavior based on new configuration settings.
+
+* refactor: Update Agentsight configuration options and logging behavior
+
+- Replaced `mAgentsightSplitModelEvents` with `mAgentsightStreamModeFormat` to control logging format for model events.
+- Replaced `mAgentsightDetailedMessage` with `mAgentsightAutoMessageTrim` to manage output of system instructions and tool definitions.
+- Updated configuration parsing in `SecurityOptions::Init` to reflect new options.
+- Enhanced documentation to clarify the impact of new settings on logging behavior.
+
+* modify doc
+
+* docs(input_agentsight): refine field docs and add split samples
+
+Clarify delta, hash, and system_instructions by meaning instead of
+derivation rules. Add merged and StreamModeFormat true request/response
+examples with delta and hash fields.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* feat(agentsight): enhance session state management and input message delta computation
+
+- Introduced new fields in AgentsightLlmEmitOptions for inputMessagesDelta and stepId.
+- Implemented LRU caching for session input states and turn step counters to manage state efficiently.
+- Added ComputeInputMessagesDelta function to derive message deltas based on previous session states.
+- Updated logging behavior to include step IDs and improved handling of input message serialization.
+- Enhanced unit tests to cover new delta computation logic and session state management.
+
+This update improves the efficiency of message handling and state management in the Agentsight plugin.
+
+* refactor(agentsight): normalize message structure for hashing and update related functions
+
+- Introduced NormalizeMessageForHash to retain only 'role' and 'parts' in message objects for hashing.
+- Updated SerializeJsonArrayRangeForHash and HashJsonArrayRange to utilize the new normalization logic.
+- Adjusted unit tests to reflect changes in message structure and ensure proper delta computation.
+- Enhanced documentation to clarify the normalization process for input messages.
+
+This refactor improves the consistency of message handling in the Agentsight plugin, ensuring that only relevant fields are considered for hashing.
+
+* style(ebpf): apply clang-format to agentsight code
+
+Reformat AgentsightMessageUtil and related Config/unittest files to
+match project clang-format rules; no behavioral changes.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* test(agentsight): update unit test for ComputeInputMessagesDelta to reflect new delta format
+
+Modified the unit test for ComputeInputMessagesDelta to assert the expected output format after recent changes in message handling. This ensures that the test accurately verifies the delta computation logic with the updated message structure.
+
+* refactor(agentsight): slim manager and unify LRU
+
+Drop dead code and legacy config keys. Centralize LRU hashing in
+HashUtil, align ebpf config naming, and extend manager LRU unit
+tests. Add agentsight_e2e for delta baseline verify and Hermes
+trigger; update input_agentsight docs.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* fix(agentsight): use role-only H_out for delta replay
+
+H_out replay must match when response parts differ from the next
+request (e.g. tool_call id). Hash output state with role-only
+normalization while H_in stays role+parts. Align E2E delta verify
+with split format and session-scoped SLS fetch (marker resolves id
+only); document H_out in input_agentsight and E2E_VERIFY.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* style(agentsight): clang-format AgentsightMessageUtil.cpp
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* feat(agentsight): delta schema, step id and sequence
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* chore(agentsight): drop local e2e run_scripts from branch
+
+Remove run_scripts/agentsight_e2e artifacts so the PR diff vs main
+matches the intended agentsight delta scope only.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* fix(unittest): guard unistd.h for Windows LogFileReaderUnittest
+
+MSVC reports fatal error C1083 because unistd.h is not available on
+Windows. Include windows.h under _WIN32 and map sleep() to Sleep() so
+second-based delays compile in LogFileReaderUnittest.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* fix(unittest): revert windows.h include breaking MSVC build
+
+Including windows.h before Unittest.h conflicts with Winsock2.h on
+MSVC. Revert to the pre-39f38c3f header layout that passed Windows CI.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* style(unittest): clang-format LogFileReaderUnittest.cpp
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* fix(unittest): make LogFileReaderUnittest portable after merge
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* fix(unittest): friend WholeFileOverwrite tests in LogFileReader
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+---------
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+--- core/ebpf/Config.h
+@@ -66,6 +66,10 @@ class SecurityOptions {
+     std::vector<std::string> mAgentsightHttps;
+     /// HTTP 明文流量目标（端口、IP、IP:端口 或域名）。
+     std::vector<std::string> mAgentsightHttp;
++    /// When true, emit separate `gen_ai.model.request` and `gen_ai.model.response` logs per LLM call.
++    bool mAgentsightEventStreamFormat = true;
++    /// When true, omit system instructions, tool definitions, and full input messages (per dedup).
++    bool mAgentsightMessageDeltaOnly = true;
+ };
+ 
+ ///////////////////// Process Level Config /////////////////////
+
+--- core/ebpf/plugin/agentsight/AgentsightEvents.h
+@@ -55,6 +55,9 @@ class AgentsightLlmRecord : public CommonEvent {
+     std::string mModel;
+     std::string mFinishReason;
+     std::string mRequestMessagesJson;
++    // Incremental ("latest round") input messages: system messages dropped and only the
++    // messages from the last `user` message onward are kept. Maps to AgentsightLLMData.input_message_delta.
++    std::string mInputMessageDeltaJson;
+     std::string mResponseMessagesJson;
+     std::string mToolDefinitionsJson;
+ };
+
+--- core/ebpf/plugin/agentsight/AgentsightManager.h
+@@ -22,8 +22,10 @@
+ 
+ #include "agentsight.h"
+ #include "collection_pipeline/queue/QueueKey.h"
++#include "common/LRUCache.h"
+ #include "ebpf/EBPFAdapter.h"
+ #include "ebpf/plugin/AbstractManager.h"
++#include "ebpf/plugin/agentsight/AgentsightMessageUtil.h"
+ #include "monitor/metric_models/ReentrantMetricsRecord.h"
+ 
+ namespace logtail::ebpf {
+@@ -34,7 +36,8 @@ class AgentsightManager : public AbstractManager {
+     AgentsightManager(const std::shared_ptr<ProcessCacheManager>& processCacheManager,
+                       const std::shared_ptr<EBPFAdapter>& eBPFAdapter,
+                       moodycamel::BlockingConcurrentQueue<std::shared_ptr<CommonEvent>>& queue,
+-                      EventPool* pool);
++                      EventPool* pool,
++                      size_t sessionInputCacheMaxSize = kMaxSessionInputStates);
+ 
+     static std::shared_ptr<AgentsightManager>
+     Create(const std::shared_ptr<ProcessCacheManager>& processCacheManager,
+@@ -78,6 +81,14 @@ class AgentsightManager : public AbstractManager {
+         mPushLogFailedTotal = std::move(pushLogFailedTotal);
+     }
+ 
++#ifdef APSARA_UNIT_TEST_MAIN
++    size_t GetSessionInputCacheSizeForTest() const { return mSessionInputCache.size(); }
++
++    bool SessionInputCacheContainsForTest(const std::string& sessionKey) const {
++        return mSessionInputCache.contains(sessionKey);
++    }
++#endif
++
+ protected:
+     int update(const std::variant<SecurityOptions*, ObserverNetworkOption*>& options) override;
+     int resume(const std::variant<SecurityOptions*, ObserverNetworkOption*>& options) override;
+@@ -90,6 +101,9 @@ class AgentsightManager : public AbstractManager {
+     int DrainReadsLocked();
+     void LogAgentSightError(const char* what);
+     void releaseMetricRefs();
++    void clearSessionInputState();
++
++    static constexpr size_t kMaxSessionInputStates = 4096;
+ 
+     std::string mConfigName;
+     const CollectionPipelineContext* mPipelineCtx{nullptr};
+@@ -101,10 +115,14 @@ class AgentsightManager : public AbstractManager {
+     // EBPFServer's per-plugin mMtx do so before calling in (Enable/Disable/Suspend); the poller takes
+     // shared_lock(mMtx) then this mutex. OnLlmCallback must not lock this (runs under handle_read).
+     std::mutex mLibMutex;
++    /// `session_id` (or `turn.id` fallback) -> delta/dedup and per-turn step/sequence counters.
++    lru11::Cache<std::string, AgentsightSessionInputState, std::mutex> mSessionInputCache;
+ 
+     AgentsightHandle* mHandle = nullptr;
+     int mEventFd = -1;
+     bool mRunning = false;
++    bool mEventStreamFormat = true;
++    bool mMessageDeltaOnly = true;
+ 
+     CounterPtr mLossKernelEventsTotal;
+     CounterPtr mPushLogFailedTotal;
+
+--- core/ebpf/plugin/agentsight/AgentsightMessageUtil.h
+@@ -0,0 +1,97 @@
++// Copyright 2026 iLogtail Authors
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//     http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++#pragma once
++
++#include <cstddef>
++
++#include <string>
++
++namespace logtail::ebpf {
++
++/// Cached per `gen_ai.session.id` (see `ResolveSessionStateKey`): last completed LLM round for delta/dedup
++/// and per-turn `gen_ai.step.id` sequencing.
++struct AgentsightSessionInputState {
++    size_t messageCount = 0;
++    std::string messagesHash;
++    size_t outputMessageCount = 0;
++    std::string outputMessagesHash;
++    std::string systemInstructionsHash;
++    std::string toolDefinitionsHash;
++    std::string lastTurnId;
++    size_t nextStepNumber = 1;
++    /// Per-turn monotonic sequence for split-mode `gen_ai.event.sequence` (each emitted log row).
++    size_t nextEventSequence = 1;
++};
++
++/// Delta/dedup LRU key: `session_id`, or `turn.id` when session is absent.
++std::string ResolveSessionStateKey(const std::string& sessionId, const std::string& turnId);
++
++/// `{turn.id}:s{N}` (e.g. `278a5a71…:s2`); empty when `turnId` is empty.
++std::string FormatGenAiStepId(const std::string& turnId, size_t stepNumber);
++
++size_t CountJsonArrayElements(const std::string& messagesJson);
++
++std::string SerializeJsonArrayPrefix(const std::string& messagesJson, size_t prefixCount);
++
++/// Sub-array `[startIndex, startIndex + elementCount)` in message order.
++std::string SerializeJsonArrayRange(const std::string& messagesJson, size_t startIndex, size_t elementCount);
++
++/// Sub-array `[startIndex, end)` through the last element.
++std::string SerializeJsonArraySuffix(const std::string& messagesJson, size_t startIndex);
++
++/// SHA-256 of prefix messages after keeping only each message's `role` and `parts` (H_in).
++std::string HashJsonArrayPrefix(const std::string& fullMessagesJson, size_t prefixCount);
++
++/// SHA-256 of `[startIndex, startIndex + elementCount)` with the same role+parts normalization as H_in.
++std::string HashJsonArrayRange(const std::string& fullMessagesJson, size_t startIndex, size_t elementCount);
++
++/// SHA-256 of prefix messages after keeping only each message's `role` (H_out replay).
++std::string HashJsonArrayPrefixForOutput(const std::string& fullMessagesJson, size_t prefixCount);
++
++std::string ExtractSystemInstructionsJson(const std::string& requestMessagesJson);
++
++/// SHA-256 (hex) of `ExtractSystemInstructionsJson` output.
++std::string ComputeSystemInstructionsHash(const std::string& requestMessagesJson);
++
++/// SHA-256 (hex) of the raw tool-definitions JSON string.
++std::string ComputeToolDefinitionsHash(const std::string& toolDefinitionsJson);
++
++/// Builds `gen_ai.response.finish_reasons` as a JSON string array, e.g. `["stop"]`.
++/// Collects `finish_reason` from each object in `responseMessagesJson`; uses
++/// `fallbackFinishReason` when the array is empty or unparsable.
++std::string FormatFinishReasonsJson(const std::string& responseMessagesJson, const std::string& fallbackFinishReason);
++
++/// H_in over the full `gen_ai.input.messages` array (role+parts normalization per message).
++std::string ComputeInputMessagesHash(const std::string& fullMessagesJson);
++
++/// Derives `gen_ai.input.messages_delta` locally (does not use AgentSight FFI delta).
++/// `previousState` stores the last round's **request** (`messageCount` / `messagesHash`) and
++/// **response** (`outputMessageCount` / `outputMessagesHash`). When `cur`'s first `messageCount`
++/// messages match `messagesHash` (H_in: role+parts-only per message), skip `outputMessageCount` messages only if
++/// `hash(cur[N_in:N_in+N_out]) == outputMessagesHash`; otherwise delta starts at `N_in`.
++/// H_in uses role+parts normalization; H_out uses role-only normalization. System messages are omitted from delta.
++std::string ComputeInputMessagesDelta(const std::string& fullMessagesJson,
++                                      const AgentsightSessionInputState* previousState);
++
++void UpdateSessionOutputState(const std::string& responseMessagesJson, AgentsightSessionInputState& state);
++
++/// After each emit: `messageCount` / `messagesHash` cover **request** messages only; response
++/// replay state is stored in `outputMessageCount` / `outputMessagesHash`.
++void CommitSessionStateAfterEmit(const std::string& requestMessagesJson,
++                                 const std::string& responseMessagesJson,
++                                 const std::string& toolDefinitionsJson,
++                                 AgentsightSessionInputState& state);
++
++} // namespace logtail::ebpf
+

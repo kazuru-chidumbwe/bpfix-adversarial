@@ -1,0 +1,81 @@
+repo: netobserv/netobserv-ebpf-agent
+commit: 0f29e6943fbd70404cad47454bcc0923bde30c45
+rank: 4224
+
+feat: support multiple DNS tracking ports via comma-separated list (#994)
+
+Update DNS_TRACKING_PORT to accept comma-separated port values while
+maintaining backward compatibility with single port configuration.
+
+Changes:
+- Add support for up to 8 DNS ports (MAX_DNS_PORTS)
+- Replace single dns_port with dns_ports array in eBPF config
+- Remove hardcoded port 53 check in track_dns_packet()
+- Add is_dns_port() helper with bounded loop for eBPF verifier
+- Update config to parse DNS_TRACKING_PORT as comma-separated string
+- Update documentation with multi-port usage examples
+
+Examples:
+- DNS_TRACKING_PORT=53 (single port, backward compatible)
+- DNS_TRACKING_PORT=53,5353,8053 (multiple ports)
+
+Co-authored-by: Claude Sonnet 4.5 <noreply@anthropic.com>
+
+--- bpf/configs.h
+@@ -1,15 +1,17 @@
+-
+ #ifndef __CONFIGS_H__
+ #define __CONFIGS_H__
+ 
++#define MAX_DNS_PORTS 8
++
+ // Constant definitions, to be overridden by the invoker
+ volatile const u32 sampling = 0;
+ volatile const u8 has_filter_sampling = 0;
+ volatile const u8 trace_messages = 0;
+ volatile const u8 enable_rtt = 0;
+ volatile const u8 enable_dns_tracking = 0;
+ volatile const u8 enable_filtering = 0;
+-volatile const u16 dns_port = 0;
++volatile const u16 dns_ports[MAX_DNS_PORTS] = {0};
++volatile const u8 dns_ports_count = 0;
+ volatile const u8 enable_network_events_monitoring = 0;
+ volatile const u8 network_events_monitoring_groupid = 0;
+ volatile const u8 enable_pkt_translation_tracking = 0;
+
+--- bpf/dns_tracker.h
+@@ -6,7 +6,6 @@
+ #define __DNS_TRACKER_H__
+ #include "utils.h"
+ 
+-#define DNS_DEFAULT_PORT 53
+ #define DNS_QR_FLAG 0x8000
+ #define UDP_MAXMSG 512
+ 
+@@ -65,11 +64,23 @@ static __always_inline u8 calc_dns_header_offset(pkt_info *pkt, void *data_end)
+     return len;
+ }
+ 
++static __always_inline bool is_dns_port(u16 port) {
++    // Bounded loop for eBPF verifier
++    for (u8 i = 0; i < MAX_DNS_PORTS; i++) {
++        if (i >= dns_ports_count) {
++            break;
++        }
++        if (port == dns_ports[i]) {
++            return true;
++        }
++    }
++    return false;
++}
++
+ static __always_inline int track_dns_packet(struct __sk_buff *skb, pkt_info *pkt) {
+     void *data_end = (void *)(long)skb->data_end;
+     int ret = 0;
+-    if (pkt->id->dst_port == dns_port || pkt->id->src_port == dns_port ||
+-        pkt->id->dst_port == DNS_DEFAULT_PORT || pkt->id->src_port == DNS_DEFAULT_PORT) {
++    if (is_dns_port(pkt->id->dst_port) || is_dns_port(pkt->id->src_port)) {
+         dns_flow_id dns_req;
+         __builtin_memset(&dns_req, 0, sizeof(dns_req));
+ 
+

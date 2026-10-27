@@ -1,0 +1,48 @@
+repo: projectcalico/calico
+commit: a46bdf4e23b224e414da9a57842505b5e7385fad
+rank: 3868
+
+felix/bpf-gpl: fix always-true log guard in forward_or_drop epilogue (#13217)
+
+The epilogue guard compared CALI_LOG_LEVEL_INFO with itself, so the
+timing/diagnostics block ran unconditionally: production (no_log)
+builds paid a bpf_ktime_get_ns() helper call at every program exit
+with profiling disabled. Fix the comparison to CALI_LOG_LEVEL and
+hoist the bpf_skb_change_type(PACKET_HOST) call for VXLAN-to-host
+packets out of the diagnostics block - it is functional dataplane
+work that must keep running regardless of log level or profiling.
+
+Verifier cost note (TestVerifierStats): +1.6% verified_insns. The old
+unconditional helper call aided verifier state pruning at the epilogue;
+the corrected runtime branch on PROFILING forks states across the 9
+inline copies of forward_or_drop. Accepted: ample verifier headroom,
+and de-inlining forward_or_drop (next step) shares the instruction
+range across call sites, which restores pruning.
+
+Co-authored-by: Claude Fable 5 <noreply@anthropic.com>
+
+--- felix/bpf-gpl/fib_co_re.h
+@@ -581,7 +581,11 @@ static CALI_BPF_INLINE int forward_or_drop(struct cali_tc_ctx *ctx)
+ 	rc = TC_ACT_SHOT;
+ 
+ allow:
+-	if (CALI_LOG_LEVEL_INFO >= CALI_LOG_LEVEL_INFO || PROFILING) {
++	if (CALI_F_VXLAN && CALI_F_TO_HOST && rc != TC_ACT_SHOT) {
++		bpf_skb_change_type(ctx->skb, PACKET_HOST);
++	}
++
++	if (CALI_LOG_LEVEL >= CALI_LOG_LEVEL_INFO || PROFILING) {
+ 		__u64 prog_end_time = bpf_ktime_get_ns();
+ 
+ 		if (PROFILING) {
+@@ -595,9 +599,6 @@ static CALI_BPF_INLINE int forward_or_drop(struct cali_tc_ctx *ctx)
+ 			CALI_INFO("Final result=DENY (%d). Program execution time: %lluns",
+ 					ctx->state->fwd.reason, prog_end_time-state->prog_start_time);
+ 		} else {
+-			if (CALI_F_VXLAN && CALI_F_TO_HOST) {
+-				bpf_skb_change_type(ctx->skb, PACKET_HOST);
+-			}
+ 			CALI_INFO("Final result=ALLOW rc %d. Program execution time: %lluns",
+ 					rc, prog_end_time-state->prog_start_time);
+ 		}
+

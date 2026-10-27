@@ -1,0 +1,186 @@
+repo: DataDog/datadog-agent
+commit: 4ac35953e914dec0ae881cbe9856e70f5ec14ede
+rank: 6593
+
+feat(cws): Use task_storage map for capabilities_contexts (#58472)
+
+### What does this PR do?
+
+Back `capabilities_contexts` with a task storage map when `use_syscall_task_storage` is enabled, the same way as the `syscalls` map. The LRU hash map is kept as the fallback on kernels without task storage support.
+
+Accesses go through new `get_capabilities_context` / `new_capabilities_context` / `delete_capabilities_context` helpers, and the cleanup on thread exit becomes a no-op with task storage since the storage is freed along with the thread.
+
+### Motivation
+
+`capabilities_contexts` only carries per-thread state between the capability hooks of the current thread (override_creds depth, checked capability, pending host user namespace capability) and is never read from user space, which makes it a natural fit for task storage:
+- a context can't be inherited by a thread reusing the tid
+- a context can't be evicted under pressure anymore. With the LRU, losing an entry drops the `override_creds` depth, so capability checks made under overridden credentials end up attributed to the process.
+
+### Describe how you validated your changes
+
+Built all the prebuilt eBPF variants (with and without task storage). The verifier and the behavior are covered by the capabilities functional tests run in CI.
+
+Co-authored-by: sylvain.baubeau <sylvain.baubeau@datadoghq.com>
+
+--- pkg/security/ebpf/c/include/helpers/caps.h
+@@ -61,6 +61,44 @@ static __attribute__((always_inline)) void flush_capabilities_usage(void *ctx, u
+     bpf_map_delete_elem(&capabilities_usage, &key);
+ }
+ 
++// capabilities contexts are only ever accessed by the thread they belong to, tid is the one of the current thread
++static __attribute__((always_inline)) struct capabilities_context_t *get_capabilities_context(u32 tid) {
++#if USE_SYSCALL_TASK_STORAGE == 1
++    u64 use_syscall_task_storage;
++    LOAD_CONSTANT("use_syscall_task_storage", use_syscall_task_storage);
++    if (use_syscall_task_storage) { // deadcode elimination will remove one of these branches
++        return (struct capabilities_context_t *)bpf_task_storage_get(&capabilities_contexts, bpf_get_current_task_btf(), NULL, 0);
++    }
++#endif
++    return (struct capabilities_context_t *)bpf_map_lookup_elem(&capabilities_contexts, &tid);
++}
++
++// new_capabilities_context must only be called when the current thread has no context yet: the task storage
++// variant doesn't overwrite an existing context
++static __attribute__((always_inline)) void new_capabilities_context(u32 tid, struct capabilities_context_t *context) {
++#if USE_SYSCALL_TASK_STORAGE == 1
++    u64 use_syscall_task_storage;
++    LOAD_CONSTANT("use_syscall_task_storage", use_syscall_task_storage);
++    if (use_syscall_task_storage) { // deadcode elimination will remove one of these branches
++        bpf_task_storage_get(&capabilities_contexts, bpf_get_current_task_btf(), context, BPF_LOCAL_STORAGE_GET_F_CREATE);
++        return;
++    }
++#endif
++    bpf_map_update_elem(&capabilities_contexts, &tid, context, BPF_ANY);
++}
++
++static __attribute__((always_inline)) void delete_capabilities_context(u32 tid) {
++#if USE_SYSCALL_TASK_STORAGE == 1
++    u64 use_syscall_task_storage;
++    LOAD_CONSTANT("use_syscall_task_storage", use_syscall_task_storage);
++    if (use_syscall_task_storage) { // deadcode elimination will remove one of these branches
++        bpf_task_storage_delete(&capabilities_contexts, bpf_get_current_task_btf());
++        return;
++    }
++#endif
++    bpf_map_delete_elem(&capabilities_contexts, &tid);
++}
++
+ // tids are reused: a leftover override depth would silently suppress the next thread's tracking
+ static __attribute__((always_inline)) void cleanup_capabilities_context(u32 tid) {
+     u64 capabilities_monitoring_enabled = 0;
+@@ -69,6 +107,14 @@ static __attribute__((always_inline)) void cleanup_capabilities_context(u32 tid)
+         return;
+     }
+ 
++#if USE_SYSCALL_TASK_STORAGE == 1
++    u64 use_syscall_task_storage;
++    LOAD_CONSTANT("use_syscall_task_storage", use_syscall_task_storage);
++    if (use_syscall_task_storage) { // deadcode elimination will remove one of these branches
++        // the task storage is freed along with the task
++        return;
++    }
++#endif
+     bpf_map_delete_elem(&capabilities_contexts, &tid);
+ }
+ 
+
+--- pkg/security/ebpf/c/include/hooks/caps.h
+@@ -46,13 +46,13 @@ int hook_override_creds(ctx_t *ctx) {
+     u64 tgid_tid = bpf_get_current_pid_tgid();
+     u32 tid = (u32)tgid_tid;
+ 
+-    struct capabilities_context_t *cap_context = bpf_map_lookup_elem(&capabilities_contexts, &tid);
++    struct capabilities_context_t *cap_context = get_capabilities_context(tid);
+     if (!cap_context) {
+         struct capabilities_context_t new_context = {
+             .cap_as_mask = 0, // No capabilities checked yet
+             .override_creds_depth = 1, // We are entering an override_creds context
+         };
+-        bpf_map_update_elem(&capabilities_contexts, &tid, &new_context, BPF_ANY);
++        new_capabilities_context(tid, &new_context);
+     } else {
+         cap_context->override_creds_depth++;
+     }
+@@ -65,7 +65,7 @@ int hook_revert_creds(ctx_t *ctx) {
+     u64 tgid_tid = bpf_get_current_pid_tgid();
+     u32 tid = (u32)tgid_tid;
+ 
+-    struct capabilities_context_t *cap_context = bpf_map_lookup_elem(&capabilities_contexts, &tid);
++    struct capabilities_context_t *cap_context = get_capabilities_context(tid);
+     if (!cap_context) {
+         // unexpected but we handle it gracefully
+         return 0;
+@@ -75,7 +75,7 @@ int hook_revert_creds(ctx_t *ctx) {
+         cap_context->override_creds_depth--;
+         if (cap_context->override_creds_depth == 0) {
+             // If we reached zero, we can remove the context
+-            bpf_map_delete_elem(&capabilities_contexts, &tid);
++            delete_capabilities_context(tid);
+         }
+     }
+ 
+@@ -94,14 +94,14 @@ static __attribute__((always_inline)) int collect_host_userns_cap(u64 cap) {
+     u64 tgid_tid = bpf_get_current_pid_tgid();
+     u32 tid = (u32)tgid_tid;
+ 
+-    struct capabilities_context_t *cap_context = bpf_map_lookup_elem(&capabilities_contexts, &tid);
++    struct capabilities_context_t *cap_context = get_capabilities_context(tid);
+     if (cap_context) {
+         cap_context->host_userns_cap_as_mask = 1ULL << cap;
+     } else {
+         struct capabilities_context_t new_context = {
+             .host_userns_cap_as_mask = 1ULL << cap,
+         };
+-        bpf_map_update_elem(&capabilities_contexts, &tid, &new_context, BPF_ANY);
++        new_capabilities_context(tid, &new_context);
+     }
+ 
+     return 0;
+@@ -121,7 +121,7 @@ HOOK_ENTRY("security_capable")
+ int hook_security_capable(ctx_t *ctx) {
+     u64 tgid_tid = bpf_get_current_pid_tgid();
+     u32 tid = (u32)tgid_tid;
+-    struct capabilities_context_t *cap_context = bpf_map_lookup_elem(&capabilities_contexts, &tid);
++    struct capabilities_context_t *cap_context = get_capabilities_context(tid);
+ 
+     // clear before any early return: this program can be skipped while the return still runs, and a
+     // collected capability left behind would be attributed to the next check of that capability
+@@ -207,7 +207,7 @@ int hook_security_capable(ctx_t *ctx) {
+             .cap_as_mask = cap_as_mask,
+             .host_userns_check = host_userns_cap_as_mask,
+         };
+-        bpf_map_update_elem(&capabilities_contexts, &tid, &new_context, BPF_ANY);
++        new_capabilities_context(tid, &new_context);
+     }
+ 
+     return 0;
+@@ -217,7 +217,7 @@ HOOK_EXIT("security_capable")
+ int rethook_security_capable(ctx_t *ctx) {
+     u64 tgid_tid = bpf_get_current_pid_tgid();
+     u32 tid = (u32)tgid_tid;
+-    struct capabilities_context_t *cap_context = bpf_map_lookup_elem(&capabilities_contexts, &tid);
++    struct capabilities_context_t *cap_context = get_capabilities_context(tid);
+     if (!cap_context) {
+         // unexpected, we should have a context at this point since we created one in hook_security_capable
+         return 0;
+@@ -238,7 +238,7 @@ int rethook_security_capable(ctx_t *ctx) {
+     // a pending capability has to outlive this call, for the check against the current task's credentials
+     if (override_creds_depth == 0 && cap_context->host_userns_cap_as_mask == 0) {
+         // delete the context now to prevent a previous cap from being picked up by an another call to security_capable
+-        bpf_map_delete_elem(&capabilities_contexts, &tid);
++        delete_capabilities_context(tid);
+     } else {
+         // reset the caps in case of override_creds or a pending host_userns cap
+         cap_context->cap_as_mask = 0;
+
+--- pkg/security/ebpf/c/include/maps.h
+@@ -111,7 +111,7 @@ BPF_LRU_MAP(memfd_tracking, struct memfd_key_t, u32, 1024)
+ BPF_LRU_MAP_FLAGS(tasks_in_coredump, u64, u8, 64, BPF_F_NO_COMMON_LRU)
+ BPF_LRU_MAP_FLAGS(syscalls, u64, struct syscall_cache_t, 1, BPF_F_NO_COMMON_LRU) // max entries will be overridden at runtime. Will be changed to BPF_TASK_STORAGE_MAP if USE_SYSCALL_TASK_STORAGE is set to 1 at runtime
+ BPF_LRU_MAP_FLAGS(pathnames, struct path_key_t, struct path_leaf_t, 1, BPF_F_NO_COMMON_LRU) // max entries will be overridden at runtime
+-BPF_LRU_MAP_FLAGS(capabilities_contexts, u32, struct capabilities_context_t, 1, BPF_F_NO_COMMON_LRU) // max entries will be overridden at runtime
++BPF_LRU_MAP_FLAGS(capabilities_contexts, u32, struct capabilities_context_t, 1, BPF_F_NO_COMMON_LRU) // max entries will be overridden at runtime. Will be changed to BPF_TASK_STORAGE_MAP if USE_SYSCALL_TASK_STORAGE is set to 1 at runtime
+ BPF_LRU_MAP_FLAGS(open_samples, struct process_path_key_t, struct sample_entry_t, 1, BPF_F_NO_COMMON_LRU) // max entries will be overridden at runtime
+ BPF_LRU_MAP_FLAGS(pid_path_keys, u32, struct path_key_t, 1, BPF_F_NO_COMMON_LRU) // max entries will be overridden at runtime
+ BPF_LRU_MAP_FLAGS(bind_samples, struct bind_connect_sample_key_t, struct sample_entry_t, 1, BPF_F_NO_COMMON_LRU) // max entries will be overridden at runtime
+

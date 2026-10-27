@@ -1,0 +1,56 @@
+repo: cilium/tetragon
+commit: df7540426871a101fda222a98c8d584d6dbbae74
+rank: 5277
+
+bpf: keep reverse-copy bounds visible to verifier
+
+The v61 bpf_loop callback loses the scalar bound stored in its callback
+context on older verifiers. Reuse the existing bounded loop and inline
+its helper so the source index remains bounded without specialized
+callbacks.
+
+veristat results for generic_rawtp_filter_arg:
+
+Kernel          Result   Insns      States        Peak
+---             ---        ---         ---         ---
+6.1             before   40246        3116        2565
+bpf-next (7.2+) before  966293       33030       84267
+---             ---        ---         ---         ---
+6.1             after    42807(+6%)   3502(+12%)  2818(+10%)
+bpf-next (7.2+) after   735755(-24%) 19686(-40%)  4286(-95%)
+
+We trade a little bit more complexity on 6.1 for a big decrease in
+complexity for bpf-next, we reduce the number of instruction by 25%
+while greatly decreasing the number of states.
+
+Signed-off-by: Mahe Tardy <mahe.tardy@gmail.com>
+
+--- bpf/process/types/basic.h
+@@ -797,7 +797,7 @@ struct copy_reverse_data {
+ 	uint mask;
+ };
+ 
+-FUNC_LOCAL int do_copy_reverse(uint i, struct copy_reverse_data *data)
++FUNC_INLINE int do_copy_reverse(uint i, struct copy_reverse_data *data)
+ {
+ 	uint len = data->len, offset = data->offset, mask = data->mask;
+ 
+@@ -834,17 +834,13 @@ FUNC_INLINE void __copy_reverse(__u8 *dest, uint len, __u8 *src, uint offset, ui
+ 				return;
+ 		}
+ 	} else {
+-#ifndef __V61_BPF_PROG
+ #ifndef __LARGE_BPF_PROG
+ #pragma unroll
+ #endif
+ 		for (i = 0; i < (STRING_POSTFIX_MAX_MATCH_LENGTH - 1); i++) {
+ 			if (do_copy_reverse(i, &data))
+ 				return;
+ 		}
+-#else
+-		loop(STRING_POSTFIX_MAX_MATCH_LENGTH - 1, do_copy_reverse, &data, 0);
+-#endif /* __V61_BPF_PROG */
+ 	}
+ }
+ 
+

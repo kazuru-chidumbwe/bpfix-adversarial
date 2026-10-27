@@ -1,0 +1,94 @@
+repo: DataDog/datadog-agent
+commit: 5ae2539df9ee1cf8dce27edc2768ae61801d73e9
+rank: 6176
+
+feat(cws): Use task_storage map for dentry_resolver_inputs (#58496)
+
+### What does this PR do?
+
+Back `dentry_resolver_inputs` with a task storage map when `use_syscall_task_storage` is enabled, the same way as the `syscalls` map. The LRU map is kept as the fallback on kernels without task storage support.
+
+### Motivation
+
+`dentry_resolver_inputs` carries the dentry resolver input from the cgroup write hook to the dentry resolver tail calls of the same thread, and is never read from user space. Its entries are never deleted, and the map only has 256 entries, so an input can be evicted in the middle of a resolution when many threads write to cgroups at the same time. With task storage, inputs are freed along with the thread and can't be evicted.
+
+### Describe how you validated your changes
+
+Built all the prebuilt eBPF variants (with and without task storage). The verifier and the cgroup write resolution are covered by the functional tests run in CI.
+
+Co-authored-by: sylvain.baubeau <sylvain.baubeau@datadoghq.com>
+
+--- pkg/security/ebpf/c/include/helpers/dentry_resolver.h
+@@ -101,10 +101,34 @@ static int __attribute__((always_inline)) select_dr_key(enum TAIL_CALL_PROG_TYPE
+     }
+ }
+ 
+-// cache_syscall checks the event policy in order to see if the syscall struct can be cached
++// cache_dentry_resolver_input caches the dentry resolver input of the current thread
+ static void __attribute__((always_inline)) cache_dentry_resolver_input(struct dentry_resolver_input_t *input) {
++#if USE_SYSCALL_TASK_STORAGE == 1
++    u64 use_syscall_task_storage;
++    LOAD_CONSTANT("use_syscall_task_storage", use_syscall_task_storage);
++    if (use_syscall_task_storage) { // deadcode elimination will remove one of these branches
++        struct task_struct *task = (struct task_struct *)bpf_get_current_task_btf();
++        // bpf_task_storage_get doesn't overwrite an existing value
++        bpf_task_storage_delete(&dentry_resolver_inputs, task);
++        bpf_task_storage_get(&dentry_resolver_inputs, task, input, BPF_LOCAL_STORAGE_GET_F_CREATE);
++        return;
++    }
++#endif
+     u64 pid_tgid = bpf_get_current_pid_tgid();
+     bpf_map_update_elem(&dentry_resolver_inputs, &pid_tgid, input, BPF_ANY);
+ }
+ 
++// get_dentry_resolver_input returns the dentry resolver input cached for the current thread
++static struct dentry_resolver_input_t *__attribute__((always_inline)) get_dentry_resolver_input() {
++#if USE_SYSCALL_TASK_STORAGE == 1
++    u64 use_syscall_task_storage;
++    LOAD_CONSTANT("use_syscall_task_storage", use_syscall_task_storage);
++    if (use_syscall_task_storage) { // deadcode elimination will remove one of these branches
++        return (struct dentry_resolver_input_t *)bpf_task_storage_get(&dentry_resolver_inputs, bpf_get_current_task_btf(), NULL, 0);
++    }
++#endif
++    u64 pid_tgid = bpf_get_current_pid_tgid();
++    return (struct dentry_resolver_input_t *)bpf_map_lookup_elem(&dentry_resolver_inputs, &pid_tgid);
++}
++
+ #endif
+
+--- pkg/security/ebpf/c/include/hooks/dentry_resolver.h
+@@ -190,8 +190,8 @@ static void __attribute__((always_inline)) dentry_resolver_kern(void *ctx, enum
+    dentry_resolver_kern_recursive(ctx, prog_type, &syscall->resolver);
+ }
+ 
+-static __always_inline struct dentry_resolver_input_t *peek_task_resolver_inputs(u64 pid_tgid, u64 event_type) {
+-    struct dentry_resolver_input_t *inputs = (struct dentry_resolver_input_t *)bpf_map_lookup_elem(&dentry_resolver_inputs, &pid_tgid);
++static __always_inline struct dentry_resolver_input_t *peek_resolver_inputs(u64 event_type) {
++    struct dentry_resolver_input_t *inputs = get_dentry_resolver_input();
+     if (!inputs) {
+         return NULL;
+     }
+@@ -201,11 +201,6 @@ static __always_inline struct dentry_resolver_input_t *peek_task_resolver_inputs
+     return NULL;
+ }
+ 
+-static __always_inline struct dentry_resolver_input_t *peek_resolver_inputs(u64 event_type) {
+-    u64 key = bpf_get_current_pid_tgid();
+-    return peek_task_resolver_inputs(key, event_type);
+-}
+-
+ static __always_inline void dentry_resolver_kern_no_syscall(void *ctx, enum TAIL_CALL_PROG_TYPE prog_type) {
+     struct dentry_resolver_input_t *inputs = peek_resolver_inputs(EVENT_ANY);
+     if (!inputs)
+
+--- pkg/security/ebpf/c/include/maps.h
+@@ -100,7 +100,7 @@ BPF_LRU_MAP(syscall_monitor, struct syscall_monitor_key_t, struct syscall_monito
+ BPF_LRU_MAP(syscall_table, struct syscall_table_key_t, u8, 50)
+ BPF_LRU_MAP(kill_list, u32, u32, 32)
+ BPF_LRU_MAP(user_sessions, struct user_session_key_t, struct user_session_t, 1024)
+-BPF_LRU_MAP(dentry_resolver_inputs, u64, struct dentry_resolver_input_t, 256)
++BPF_LRU_MAP(dentry_resolver_inputs, u64, struct dentry_resolver_input_t, 256) // will be changed to BPF_TASK_STORAGE_MAP if USE_SYSCALL_TASK_STORAGE is set to 1 at runtime
+ BPF_LRU_MAP(ns_flow_to_network_stats, struct namespaced_flow_t, struct network_stats_t, 4096) // TODO: size should be updated dynamically with "nf_conntrack_max"
+ BPF_LRU_MAP(sock_meta, void *, struct sock_meta_t, 4096);
+ BPF_LRU_MAP(dns_responses_sent_to_userspace, u16, struct dns_responses_sent_to_userspace_lru_entry_t, 1024)
+

@@ -1,0 +1,52 @@
+repo: facebookincubator/katran
+commit: 7932010983516c586a892451eba0242f6f76534c
+rank: 4278
+
+Guard common/bpf include with __has_include for OSS build
+
+Summary:
+Fixes https://github.com/facebookincubator/katran/issues/260. D99357415 replaced two local macro defines in
+katran/lib/bpf/balancer_consts.h with `#include
+"common/bpf/bpf_net_helpers.h"`, an internal-only fbcode header that
+is never exported to the public katran OSS mirror. Public clones
+building via build_katran.sh fail to compile balancer.bpf.c /
+healthchecking.bpf.c (missing-file error), but the OSS build script
+redirects the BPF build step's stderr to /dev/null, so the failure
+is silent and produces truncated 400-byte stub .bpf.o files instead
+of a build error.
+
+Verified (grep across katran/lib/bpf and katran/decap, all includers
+of balancer_consts.h) that BE_ETH_P_IP / BE_ETH_P_IPV6 are the only
+two symbols this public include path actually needs from
+bpf_net_helpers.h; other symbols it provides (ETH_ALEN, ipv6 helpers,
+etc.) are either unused here or resolve independently via a direct
+linux/if_ether.h include in the same translation units. Restoring
+the two defines with their original values (8 / 56710, identical to
+what bpf_net_helpers.h currently supplies) is a no-op for internal
+fbcode builds (the //common/bpf:bpf_net_helpers BUCK dep becomes
+unused but harmless) and fixes the public OSS build.
+
+___
+
+Differential Revision: D114403255
+
+fbshipit-source-id: ed5dc48764ba8b5e0484fa6993b2f3999d01fbe6
+
+--- katran/lib/bpf/balancer_consts.h
+@@ -20,7 +20,15 @@
+  * This file contains definition of all balancer specific constants
+  */
+ 
++#if __has_include("common/bpf/bpf_net_helpers.h")
+ #include "common/bpf/bpf_net_helpers.h"
++#else
++// OSS build: common/bpf is internal-only and not mirrored. katran needs just
++// these two: we dont want to do htons for each packet, so this is ETH_P_IPV6
++// and ETH_P_IP in be format.
++#define BE_ETH_P_IP 8
++#define BE_ETH_P_IPV6 56710
++#endif
+ 
+ // GUE variant 1 using first four bits of inner packet as a pseudo header
+ // we are using last two of this four bits to distinct v4 vs v6. see RFC for
+

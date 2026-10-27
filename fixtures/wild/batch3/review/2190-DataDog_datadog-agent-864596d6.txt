@@ -1,0 +1,624 @@
+repo: DataDog/datadog-agent
+commit: 864596d6c119c61ec5b99315aaf1c88084706204
+rank: 2190
+
+dyninst: implement swiss map index expression lookup in BPF (#49209)
+
+### What does this PR do?
+
+Implement map index expressions (`m[key]`) for Go swisstable maps (Go 1.24+) with base type and string keys up to 512 bytes. The lookup is performed entirely in BPF using the existing sm_loop bytecode interpreter.
+
+The implementation decomposes the lookup into 5 sm_loop opcodes:
+-  SWISS_MAP_SETUP      - reads bytecode params, copies key data, inits hash
+-  SWISS_MAP_AESENC     - one software AESENC round; replays via PC
+-  SWISS_MAP_HASH_FINISH - AES/wyhash phase transitions and finalization
+-  SWISS_MAP_PROBE      - reads ctrl word, computes H2/empty match bitsets
+-  SWISS_MAP_CHECK_SLOT - checks one H2-matching slot against the literal key
+
+The AES hash supports all Go runtime length tiers:
+  - 1-16 bytes:  1-lane (seed scramble + 3 self-keyed rounds)
+  - 17-32 bytes: 2-lane with overlapping window
+  - 33-64 bytes: 4-lane with seed preparation
+  - 65-128 bytes: 8-lane with seed preparation
+  - 129+ bytes:  8-lane with 128-byte block loop
+
+Key BPF verifier constraints addressed:
+  - No nested bpf_loop: all iteration via PC replay in sm_loop
+  - Lane array access bounded via `& 0x70` byte-offset masking
+  - Stack usage minimized by storing temporaries in stack_machine_t
+  - AES/wyhash share storage via union in hash_scratch
+  - Global noinline functions isolate verification complexity
+
+Also includes:
+  - Config-scoped issue tags (`issue:KIND@config`) for version-specific test expectations (hmap vs swisstable)
+  - DWARF extraction of runtime.useAeshash/aeskeysched/hashkey addresses
+  - Loader support for hash secret initialization
+  - Wyhash fallback for non-AES systems (arm64, older amd64)
+  - Integration tests covering all key length tiers with large maps
+  - IR, compiler, and loader changes for the 5 new opcodes
+
+### Motivation
+
+Map lookup are handy.
+
+### Describe how you validated your changes
+
+There's reasonable end-to-end testing.
+
+### Additional Notes
+
+Fixes https://datadoghq.atlassian.net/browse/DEBUG-5413
+Part of https://datadoghq.atlassian.net/browse/DEBUG-4047
+
+Co-authored-by: andrew.werner <andrew.werner@datadoghq.com>
+
+--- pkg/dyninst/ebpf/context.h
+@@ -10,6 +10,20 @@
+ 
+ typedef uint32_t type_t;
+ 
++// Parameters for swiss_map_check_slot, packed for 2-arg global function.
++// Defined here (rather than stack_machine.h) so it can be embedded in
++// swiss_map_state to avoid a large stack local in sm_loop.
++typedef struct swiss_map_slot_params {
++  target_ptr_t key_addr;
++  target_ptr_t val_addr;
++  buf_offset_t key_data_off;
++  buf_offset_t result_offset;
++  uint32_t val_byte_size;
++  uint16_t key_data_len;
++  uint8_t key_byte_size;
++  uint8_t is_string_key;
++} swiss_map_slot_params_t;
++
+ typedef struct frame_data {
+   uint16_t stack_idx;
+   uint64_t cfa;
+@@ -96,6 +110,68 @@ typedef struct stack_machine {
+   resolved_go_any_type_t resolved_0, resolved_1;
+   buf_offset_t buf_offset_0, buf_offset_1;
+   di_data_item_header_t di_0;
++
++  // Swiss map hash scratch space for AES computation.
++  struct {
++    uint8_t state[16];        // current AESENC/AESE target (active lane)
++    uint8_t unscrambled[16];  // original seed state before scramble / custom rk
++    uint8_t tmp[16];          // scratch for SubBytes+ShiftRows
++    uint8_t lanes[8][16];     // 8 AES lanes for parallel hashing
++    uint8_t seeds[8][16];     // 8 scrambled seeds
++  } hash_scratch;
++
++  // Swiss map lookup state, persisted across sm_loop iterations.
++  // Written by SM_OP_SWISS_MAP_SETUP, read by subsequent opcodes.
++  struct {
++    // Probe state.
++    target_ptr_t groups_data_ptr;
++    uint64_t length_mask;
++    target_ptr_t group_addr;
++    uint64_t h2_matches;
++    uint64_t empty_matches;
++    uint64_t probe_offset;
++    uint64_t probe_index;
++
++    // Result/key locations in scratch buffer.
++    buf_offset_t key_data_off;
++    buf_offset_t result_offset;
++    uint32_t val_byte_size;
++    uint32_t expr_status_idx;
++    uint16_t key_data_len;
++
++    // Layout parameters (from bytecode).
++    uint16_t slot_size;
++    uint16_t group_byte_size;
++    uint8_t h2;
++    uint8_t ctrl_offset;
++    uint8_t slots_offset;
++    uint8_t key_in_slot_offset;
++    uint16_t val_in_slot_offset;
++    uint8_t key_byte_size;
++    uint8_t is_string_key;
++
++    // Hash computation state.
++    uint8_t hash_phase;
++    uint8_t aes_rounds_left;  // rounds remaining for current AESENC target
++    uint8_t use_aes;
++    uint8_t aes_self_keyed;
++    uint8_t aes_rk_offset;    // offset into g_swiss_aeskeysched
++    uint8_t aes_skip_mc;      // skip MixColumns for current round (arm64 final rounds)
++    uint8_t aes_final_skip_mc; // last round of current batch should skip MC
++    uint8_t aes_rk_no_advance; // don't advance aes_rk_offset between rounds
++
++    // Multi-lane hash state.
++    uint8_t num_lanes;         // total lanes for current hash tier (1,2,4,8)
++    uint8_t current_lane;      // index of lane currently being processed
++    uint8_t hash_key_len;      // cached key length (clamped to <=255 for uint8)
++    uint16_t hash_key_len_full; // full key length (up to 512)
++    uint16_t block_offset;     // byte offset into key data for 129+ block loop
++    uint16_t blocks_remaining; // number of 128-byte blocks left to process
++
++    // Slot check params — stored here to avoid a 40-byte stack local
++    // in sm_loop's CHECK_SLOT case (reduces combined stack usage).
++    swiss_map_slot_params_t slot_params;
++  } swiss_map_state;
+ } stack_machine_t;
+ 
+ struct {
+
+--- pkg/dyninst/ebpf/program.h
+@@ -83,4 +83,13 @@ struct {
+ 
+ volatile const uint32_t num_go_runtime_types = 0;
+ 
++// Swiss map hash support: addresses of runtime hash globals.
++// These are read from userspace via bpf_probe_read_user at probe time.
++volatile const uint64_t VARIABLE_runtime_dot_useAeshash = 0;
++volatile const uint64_t VARIABLE_runtime_dot_aeskeysched = 0;
++
++// Target binary architecture. Determines which AES instruction semantics
++// (x86 AESENC vs arm64 AESE+AESMC) the BPF hash emulation uses.
++volatile const uint32_t is_arm64 = 0;
++
+ #endif // __PROGRAM_H__
+
+--- pkg/dyninst/ebpf/stack_machine.h
+@@ -11,6 +11,7 @@
+ #include "program.h"
+ #include "queue.h"
+ #include "chased_pointers_trie.h"
++#include "swiss_map_hash.h"
+ 
+ // Expression status values. Each expression gets EXPR_STATUS_BITS bits in the
+ // expression status array at the start of event root data.
+@@ -185,6 +186,16 @@ sm_read_program_uint8(stack_machine_t* sm) {
+   return param;
+ }
+ 
++// Peek at a uint16 at an arbitrary bytecode offset without advancing PC.
++static inline __attribute__((always_inline)) uint16_t
++sm_read_program_uint16_at(stack_machine_t* sm, uint32_t offset) {
++  uint32_t zero = 0;
++  uint8_t* data = bpf_map_lookup_elem(&stack_machine_code, &zero);
++  if (!data) return 0;
++  if (offset >= stack_machine_code_len - 1) return 0;
++  return read_uint16(&data[offset]);
++}
++
+ static inline __attribute__((always_inline)) uint16_t
+ sm_read_program_uint16(stack_machine_t* sm) {
+   uint32_t zero = 0;
+@@ -761,6 +772,1106 @@ sm_cmp_eq_bytes(scratch_buf_t* buf, buf_offset_t lhs, buf_offset_t rhs,
+   return ctx.equal;
+ }
+ 
++// ---------------------------------------------------------------------------
++// Swiss map lookup: O(1) hash-based key lookup in Go swisstable maps.
++// See pkg/dyninst/irgen/go_swiss_maps.md for the algorithm specification.
++// ---------------------------------------------------------------------------
++
++// Per-process hash secrets, memoized on first use. These never change after
++// runtime.alginit() so we read them once from the traced process and cache
++// them in globals for the lifetime of the BPF program.
++// Swiss hash state packed into a uint64 to avoid a small variable at
++// the end of BSS where the compiler's 8-byte load would exceed the
++// map value size. Bit 0 = initialized, bit 1 = use_aes.
++static uint64_t g_swiss_hash_flags = 0;
++#define SWISS_HASH_FLAG_INITIALIZED 1
++#define SWISS_HASH_FLAG_USE_AES     2
++// aeskeysched: 128 bytes of AES round keys.
++static uint8_t g_swiss_aeskeysched[128] = {};
++
++// Initialize the hash secret globals by reading from the traced process.
++// Returns true on success.
++static __always_inline bool swiss_hash_ensure_initialized(void) {
++  if (g_swiss_hash_flags & SWISS_HASH_FLAG_INITIALIZED) return true;
++
++  if (VARIABLE_runtime_dot_useAeshash == 0) {
++    LOG(2, "swiss_hash: hash secret addresses not available");
++    return false;
++  }
++
++  uint8_t use_aes = 0;
++  if (bpf_probe_read_user(&use_aes, 1,
++                           (void*)VARIABLE_runtime_dot_useAeshash) != 0) {
++    LOG(2, "swiss_hash: failed to read useAeshash");
++    return false;
++  }
++
++  if (use_aes) {
++    g_swiss_hash_flags |= SWISS_HASH_FLAG_USE_AES;
++    if (bpf_probe_read_user(g_swiss_aeskeysched, 128,
++                             (void*)VARIABLE_runtime_dot_aeskeysched) != 0) {
++      LOG(2, "swiss_hash: failed to read aeskeysched");
++      return false;
++    }
++  }
++  // Note: wyhash fallback (use_aes == false) is not supported. The hash_finish
++  // function will report OOB for map index expressions on such systems.
++
++  g_swiss_hash_flags |= SWISS_HASH_FLAG_INITIALIZED;
++  return true;
++}
++
++// ---------------------------------------------------------------------------
++// Swiss map lookup — decomposed into sm_loop opcodes.
++// See SM_OP_SWISS_MAP_SETUP through SM_OP_SWISS_MAP_CHECK_SLOT.
++// ---------------------------------------------------------------------------
++
++// swiss_map_slot_params_t is defined in context.h.
++
++// Check a single slot for a key match. Global noinline — verified separately.
++// Returns: 1 = found, 0 = no match, -1 = error.
++__attribute__((noinline)) int
++swiss_map_check_slot(scratch_buf_t* buf, swiss_map_slot_params_t* p) {
++  if (!buf || !p) return -1;
++
++  buf_offset_t kd_off = p->key_data_off;
++  if (!scratch_buf_bounds_check(&kd_off, 516)) return -1;
++  const uint8_t* lit_key = (const uint8_t*)&(*buf)[kd_off];
++
++  if (p->is_string_key) {
++    uint8_t str_header[16];
++    if (bpf_probe_read_user(str_header, 16, (void*)p->key_addr) != 0) return 0;
++    target_ptr_t str_ptr = *(target_ptr_t*)&str_header[0];
++    uint64_t str_len = *(uint64_t*)&str_header[8];
++
++    // Quick length check.
++    uint32_t lit_len = *(uint32_t*)lit_key;
++    if (str_len != lit_len) return 0;
++
++    // Read and compare string bytes (up to 512 bytes).
++    // When lit_len == 0 (empty string key), both lengths match and there
++    // are no bytes to compare — skip straight to the value read below.
++    if (lit_len > 0) {
++      uint32_t cmp_len = lit_len;
++      if (cmp_len > SWISS_MAP_MAX_STR_KEY_LEN) cmp_len = SWISS_MAP_MAX_STR_KEY_LEN;
++      buf_offset_t tmp_off = kd_off + p->key_data_len;
++      if (!scratch_buf_dereference(buf, tmp_off, cmp_len, str_ptr)) return 0;
++      const uint8_t* lit_bytes = lit_key + 4;
++      for (uint32_t i = 0; i < cmp_len && i < SWISS_MAP_MAX_STR_KEY_LEN; i++) {
++        buf_offset_t off = tmp_off + i;
++        if (!scratch_buf_bounds_check(&off, 1)) return 0;
++        if ((*buf)[off] != lit_bytes[i]) return 0;
++      }
++    }
++  } else {
++    uint8_t slot_key[8] = {};
++    uint8_t ksz = p->key_byte_size;
++    if (ksz > 8) ksz = 8;
++    if (bpf_probe_read_user(slot_key, ksz, (void*)p->key_addr) != 0) return 0;
++    for (uint8_t i = 0; i < ksz && i < 8; i++) {
++      if (slot_key[i] != lit_key[i]) return 0;
++    }
++  }
++
++  // Key matched — read value.
++  if (!scratch_buf_dereference(buf, p->result_offset,
++                               p->val_byte_size, p->val_addr)) {
++    return -1;
++  }
++  return 1;
++}
++
++// ---------------------------------------------------------------------------
++// sm_swiss_map_setup: global noinline function for SM_OP_SWISS_MAP_SETUP.
++// Reads bytecode params, copies key data, reads map header, computes hash
++// (wyhash inline or AES state initialization), determines groups/length_mask,
++// and stores all probe state in sm->swiss_map_state.
++//
++// Returns:
++//   1 = success, probe state ready (AES rounds still needed if use_aes)
++//   2 = success, hash done, probe state ready (wyhash path; skip AESENC+HASH_FINISH)
++//   0 = key not found (nil map or null table — OOB written)
++//  -1 = error
++// ---------------------------------------------------------------------------
++__attribute__((noinline)) int
++sm_swiss_map_setup(scratch_buf_t* buf, stack_machine_t* sm) {
++  if (!buf || !sm) return -1;
++
++  // Read bytecode parameters directly into swiss_map_state to minimize
++  // stack usage (BPF combined stack limit is 512 bytes).
++  #define ST sm->swiss_map_state
++  ST.is_string_key = sm_read_program_uint8(sm);
++  ST.key_byte_size = sm_read_program_uint8(sm);
++  ST.val_byte_size = sm_read_program_uint32(sm);
++  uint8_t seed_offset = sm_read_program_uint8(sm);
++  uint8_t dir_ptr_offset = sm_read_program_uint8(sm);
++  uint8_t dir_len_offset = sm_read_program_uint8(sm);
++  uint8_t global_shift_offset = sm_read_program_uint8(sm);
++  ST.ctrl_offset = sm_read_program_uint8(sm);
++  ST.slots_offset = sm_read_program_uint8(sm);
++  ST.slot_size = sm_read_program_uint16(sm);
++  ST.key_in_slot_offset = sm_read_program_uint8(sm);
++  ST.val_in_slot_offset = sm_read_program_uint16(sm);
++  uint8_t table_groups_field_offset = sm_read_program_uint8(sm);
++  uint8_t groups_data_field_offset = sm_read_program_uint8(sm);
++  uint8_t groups_len_mask_field_offset = sm_read_program_uint8(sm);
++  ST.group_byte_size = sm_read_program_uint16(sm);
++  uint32_t header_byte_size = sm_read_program_uint32(sm);
++  ST.expr_status_idx = sm_read_program_uint32(sm);
++  uint16_t key_data_len = sm_read_program_uint16(sm);
++
++  // Max key data: 4 (length prefix) + 512 (string) = 516 for strings,
++  // or 8 for base types.
++  if (key_data_len > 516) key_data_len = 516;
++  barrier_var(key_data_len);
++
++  // Key data goes after the map header in the scratch buffer. The header
++  // size is encoded in the bytecode (HeaderByteSize).
++  ST.key_data_off = sm->offset + header_byte_size;
++  sm->pc += key_data_len;
++  ST.key_data_len = key_data_len;
++  ST.result_offset = sm->offset;
++  ST.probe_index = 0;
++
++  // Read map header fields from scratch buffer.
++  buf_offset_t base = sm->offset;
++
++  buf_offset_t seed_off = base + seed_offset;
++  if (!scratch_buf_bounds_check(&seed_off, 8)) return -1;
++  uint64_t seed = *(uint64_t*)&(*buf)[seed_off];
++
++  buf_offset_t dir_ptr_off = base + dir_ptr_offset;
++  if (!scratch_buf_bounds_check(&dir_ptr_off, 8)) return -1;
++  target_ptr_t dir_ptr = *(target_ptr_t*)&(*buf)[dir_ptr_off];
++
++  buf_offset_t dir_len_off = base + dir_len_offset;
++  if (!scratch_buf_bounds_check(&dir_len_off, 8)) return -1;
++  int64_t dir_len = *(int64_t*)&(*buf)[dir_len_off];
++
++  // Nil map check.
++  if (dir_ptr == 0) {
++    LOG(4, "swiss_map_setup: nil map");
++    if (ST.expr_status_idx != EXPR_STATUS_IDX_NONE) {
++      expr_status_write(buf, sm->expr_results_offset, ST.expr_status_idx,
++                        EXPR_STATUS_OOB);
++    }
++    scratch_buf_set_len(buf, sm->expr_results_end_offset);
++    return 0;
++  }
++
++  // Ensure hash secrets are initialized.
++  if (!swiss_hash_ensure_initialized()) {
++    scratch_buf_set_len(buf, sm->expr_results_end_offset);
++    return -1;
++  }
++  ST.use_aes = (g_swiss_hash_flags & SWISS_HASH_FLAG_USE_AES) ? 1 : 0;
++
++  // Hash computation is deferred to HASH_FINISH (PHASE_INIT) so that
++  // the caller can copy key data to scratch buf first (the key data
++  // destination must not overlap the map header at sm->offset).
++  // Store seed in hash_scratch.state[0:8] for HASH_FINISH to use.
++  *(uint64_t*)&sm->hash_scratch.state[0] = seed;
++
++
++  ST.groups_data_ptr = dir_ptr;
++  ST.length_mask = (uint64_t)dir_len;
++  ST.hash_phase = SWISS_HASH_PHASE_INIT;
++  ST.aes_rounds_left = 0;
++  #undef ST
++
++  // Pack field offsets for HASH_FINISH's table lookup.
++  sm->value_0 = ((uint64_t)global_shift_offset) |
++                ((uint64_t)table_groups_field_offset << 8) |
++                ((uint64_t)groups_data_field_offset << 16) |
++                ((uint64_t)groups_len_mask_field_offset << 24);
++  sm->buf_offset_0 = base;
++
++  return 1; // proceed to AESENC (which will be a no-op) then HASH_FINISH
++}
++
++// ---------------------------------------------------------------------------
++// sm_swiss_map_hash_finish: global noinline function for SM_OP_SWISS_MAP_HASH_FINISH.
++// Handles AES hash phase transitions and final hash extraction.
++//
++// Returns:
++//   2 = need more AESENC rounds (caller should sm->pc -= 2)
++//   0 = hash done, probe state set
++//  -1 = error
++//  -2 = key not found (null table; OOB already written)
++// ---------------------------------------------------------------------------
++__attribute__((noinline)) int
++sm_swiss_map_hash_finish(scratch_buf_t* buf, stack_machine_t* sm) {
++  if (!buf || !sm) return -1;
++
++  uint8_t* state = sm->hash_scratch.state;
++  uint8_t phase = sm->swiss_map_state.hash_phase;
++
++  if (phase == SWISS_HASH_PHASE_INIT) {
++    // Key data has been copied to scratch. Now read it and init hash.
++    uint64_t seed = *(uint64_t*)&state[0]; // stored by SETUP
++
++    buf_offset_t kd_off = sm->swiss_map_state.key_data_off;
++    if (!scratch_buf_bounds_check(&kd_off, 516)) return -1;
++    const uint8_t* key_data = (const uint8_t*)&(*buf)[kd_off];
++
++    const uint8_t* hash_key_data = key_data;
++    uint32_t hash_key_len = (uint32_t)sm->swiss_map_state.key_byte_size;
++    if (sm->swiss_map_state.is_string_key) {
++      hash_key_len = *(uint32_t*)key_data;
++      hash_key_data = key_data + 4;
++    }
++    if (hash_key_len > SWISS_MAP_MAX_STR_KEY_LEN)
++      hash_key_len = SWISS_MAP_MAX_STR_KEY_LEN;
++    barrier_var(hash_key_len);
++    sm->swiss_map_state.hash_key_len_full = (uint16_t)hash_key_len;
++
++    if (!sm->swiss_map_state.use_aes) {
++      // The Go runtime falls back to wyhash on systems without AES hardware
++      // support. We do not implement the wyhash path because we have no way
++      // to test it — virtually all amd64 and arm64 production hardware has
++      // AES. Report the expression as OOB so the caller sees a clean
++      // "unavailable" rather
+[truncated]
+
+--- pkg/dyninst/ebpf/swiss_map_hash.h
+@@ -0,0 +1,136 @@
++// Unless explicitly stated otherwise all files in this repository are licensed
++// under the Apache License Version 2.0.
++// This product includes software developed at Datadog (https://www.datadoghq.com/).
++// Copyright 2016-present Datadog, Inc.
++
++#ifndef __SWISS_MAP_HASH_H__
++#define __SWISS_MAP_HASH_H__
++
++// Swiss map hash utilities for BPF. The actual hash computation is driven by
++// SM_OP_SWISS_MAP_SETUP (wyhash path) and SM_OP_SWISS_MAP_AESENC +
++// SM_OP_SWISS_MAP_HASH_FINISH (AES path). This file provides constants,
++// the AES S-box, and helper functions used by those opcodes.
++//
++// See pkg/dyninst/irgen/go_swiss_maps.md for the algorithm specifications.
++
++#include "types.h"
++
++#define SWISS_MAP_MAX_STR_KEY_LEN 512
++
++// Hash phase enum for the AES multi-step hash computation.
++// SETUP initializes the phase; HASH_FINISH handles transitions.
++//
++// The Go runtime's aeshashbody has length tiers:
++//   0:       1 lane, extra self-keyed round
++//   1-16:    1 lane  (X0)
++//   17-32:   2 lanes (X0, X1)
++//   33-64:   4 lanes (X0-X3)
++//   65-128:  8 lanes (X0-X7)
++//   129+:    8 lanes, loop over 128-byte blocks
++//
++// Each tier prepares N seeds from unscrambled XOR aeskeysched[16*i], then
++// loads N data chunks, XORs with seeds, and does 3 self-keyed AESENC rounds.
++// The results are XOR-folded down to one 16-byte value.
++enum swiss_map_hash_phase {
++  // Initial phase: key data has been copied, hash computation not yet started.
++  SWISS_HASH_PHASE_INIT = 0,
++  // memhash32/64: extract hash after 3 keyed AESENC rounds.
++  SWISS_HASH_PHASE_DIRECT_DONE,
++  // After initial 1-round self-keyed seed scramble.
++  SWISS_HASH_PHASE_SEED_SCRAMBLE_DONE,
++  // len==0 case: after extra self-keyed round.
++  SWISS_HASH_PHASE_FINAL_EXTRA,
++
++  // --- 1-16 byte path ---
++  SWISS_HASH_PHASE_SINGLE_LANE_DONE,
++
++  // --- 17-32 byte path (2 lanes) ---
++  SWISS_HASH_PHASE_LANE0_DONE,  // lane0 rounds done, need seed1 + lane1
++  SWISS_HASH_PHASE_SEED1_DONE,  // seed1 scrambled, do data1 rounds
++  SWISS_HASH_PHASE_LANE1_DONE,  // both lanes done, XOR-fold
++
++  // --- 33-64 byte path (4 lanes) ---
++  // Uses multi-lane seed prep and data rounds.
++  // After seed scramble: prepare seeds 1-3 one at a time via AESENC.
++  SWISS_HASH_PHASE_MULTI_SEED_PREP,  // preparing next seed
++  SWISS_HASH_PHASE_MULTI_DATA_ROUNDS, // doing 3 self-keyed rounds on current lane
++  SWISS_HASH_PHASE_MULTI_DONE,       // all lanes done, XOR-fold and finalize
++
++  // --- 129+ byte path (8 lanes, block loop) ---
++  // After all 8 seeds prepared and initial data loaded:
++  SWISS_HASH_PHASE_BLOCK_SELF_ROUNDS, // 1 self-keyed round on all 8 lanes
++  SWISS_HASH_PHASE_BLOCK_DATA_ROUND,  // 1 data-keyed round on current lane
++  SWISS_HASH_PHASE_BLOCK_ADVANCE,     // advance to next block or finish
++  SWISS_HASH_PHASE_BLOCK_FINAL_ROUNDS, // 3 final self-keyed rounds on all lanes
++};
++
++// Number of AES lanes (matches Go runtime's use of XMM0-XMM7).
++#define SWISS_MAP_MAX_AES_LANES 8
++
++// Lane/seed access helpers. Mask the BYTE OFFSET with & 0x70 so the
++// BPF verifier sees range [0, 112] regardless of compiler reordering.
++// 0x70 = 7 * 16, matching lanes[0..7] each 16 bytes.
++static __always_inline uint8_t* _lane_ptr(uint8_t lanes[][16], uint8_t idx) {
++  return (uint8_t*)((char*)lanes + (((uint32_t)idx * 16) & 0x70));
++}
++static __always_inline uint8_t* _seed_ptr(uint8_t seeds[][16], uint8_t idx) {
++  return (uint8_t*)((char*)seeds + (((uint32_t)idx * 16) & 0x70));
++}
++
++#define LANE_WRITE(hs, idx, src) copy16(_lane_ptr((hs).lanes, idx), src)
++#define LANE_READ(hs, idx, dst)  copy16(dst, _lane_ptr((hs).lanes, idx))
++#define LANE_XOR(hs, idx, src)   xor16(_lane_ptr((hs).lanes, idx), src)
++#define SEED_WRITE(hs, idx, src) copy16(_seed_ptr((hs).seeds, idx), src)
++#define SEED_READ(hs, idx, dst)  copy16(dst, _seed_ptr((hs).seeds, idx))
++
++#define LANE_IDX(x) ((uint32_t)(x) & 7u)
++
++// ---------------------------------------------------------------------------
++// AES S-box (FIPS 197, Section 5.1.1)
++// ---------------------------------------------------------------------------
++
++// clang-format off
++static const uint8_t aes_sbox[256] = {
++  0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76,
++  0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0,0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0,
++  0xb7,0xfd,0x93,0x26,0x36,0x3f,0xf7,0xcc,0x34,0xa5,0xe5,0xf1,0x71,0xd8,0x31,0x15,
++  0x04,0xc7,0x23,0xc3,0x18,0x96,0x05,0x9a,0x07,0x12,0x80,0xe2,0xeb,0x27,0xb2,0x75,
++  0x09,0x83,0x2c,0x1a,0x1b,0x6e,0x5a,0xa0,0x52,0x3b,0xd6,0xb3,0x29,0xe3,0x2f,0x84,
++  0x53,0xd1,0x00,0xed,0x20,0xfc,0xb1,0x5b,0x6a,0xcb,0xbe,0x39,0x4a,0x4c,0x58,0xcf,
++  0xd0,0xef,0xaa,0xfb,0x43,0x4d,0x33,0x85,0x45,0xf9,0x02,0x7f,0x50,0x3c,0x9f,0xa8,
++  0x51,0xa3,0x40,0x8f,0x92,0x9d,0x38,0xf5,0xbc,0xb6,0xda,0x21,0x10,0xff,0xf3,0xd2,
++  0xcd,0x0c,0x13,0xec,0x5f,0x97,0x44,0x17,0xc4,0xa7,0x7e,0x3d,0x64,0x5d,0x19,0x73,
++  0x60,0x81,0x4f,0xdc,0x22,0x2a,0x90,0x88,0x46,0xee,0xb8,0x14,0xde,0x5e,0x0b,0xdb,
++  0xe0,0x32,0x3a,0x0a,0x49,0x06,0x24,0x5c,0xc2,0xd3,0xac,0x62,0x91,0x95,0xe4,0x79,
++  0xe7,0xc8,0x37,0x6d,0x8d,0xd5,0x4e,0xa9,0x6c,0x56,0xf4,0xea,0x65,0x7a,0xae,0x08,
++  0xba,0x78,0x25,0x2e,0x1c,0xa6,0xb4,0xc6,0xe8,0xdd,0x74,0x1f,0x4b,0xbd,0x8b,0x8a,
++  0x70,0x3e,0xb5,0x66,0x48,0x03,0xf6,0x0e,0x61,0x35,0x57,0xb9,0x86,0xc1,0x1d,0x9e,
++  0xe1,0xf8,0x98,0x11,0x69,0xd9,0x8e,0x94,0x9b,0x1e,0x87,0xe9,0xce,0x55,0x28,0xdf,
++  0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68,0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16,
++};
++// clang-format on
++
++// ---------------------------------------------------------------------------
++// AES helpers
++// ---------------------------------------------------------------------------
++
++static __always_inline uint8_t xtime(uint8_t b) {
++  return (uint8_t)((b << 1) ^ (((b >> 7) & 1) * 0x1b));
++}
++
++static __always_inline void xor16(uint8_t dst[16], const uint8_t src[16]) {
++  *(uint64_t*)&dst[0] ^= *(const uint64_t*)&src[0];
++  *(uint64_t*)&dst[8] ^= *(const uint64_t*)&src[8];
++}
++
++static __always_inline void copy16(uint8_t dst[16], const uint8_t src[16]) {
++  *(uint64_t*)&dst[0] = *(const uint64_t*)&src[0];
++  *(uint64_t*)&dst[8] = *(const uint64_t*)&src[8];
++}
++
++static __always_inline void zero16(uint8_t dst[16]) {
++  *(uint64_t*)&dst[0] = 0;
++  *(uint64_t*)&dst[8] = 0;
++}
++
++#endif // __SWISS_MAP_HASH_H__
+
+--- pkg/dyninst/ebpf/types.h
+@@ -109,6 +109,12 @@ typedef enum sm_opcode {
+   SM_OP_CONDITION_BEGIN = 30,
+   SM_OP_CALL_DICT_RESOLVED = 31,
+   SM_OP_EXPR_SLICE_BOUNDS_CHECK = 32,
++  // Swiss map lookup opcodes (decomposed for verifier budget).
++  SM_OP_SWISS_MAP_SETUP = 33,
++  SM_OP_SWISS_MAP_AESENC = 34,
++  SM_OP_SWISS_MAP_HASH_FINISH = 35,
++  SM_OP_SWISS_MAP_PROBE = 36,
++  SM_OP_SWISS_MAP_CHECK_SLOT = 37,
+ } sm_opcode_t;
+ 
+ #ifdef DYNINST_DEBUG
+@@ -180,6 +186,16 @@ static const char* op_code_name(sm_opcode_t op_code) {
+     return "CALL_DICT_RESOLVED";
+   case SM_OP_EXPR_SLICE_BOUNDS_CHECK:
+     return "EXPR_SLICE_BOUNDS_CHECK";
++  case SM_OP_SWISS_MAP_SETUP:
++    return "SWISS_MAP_SETUP";
++  case SM_OP_SWISS_MAP_AESENC:
++    return "SWISS_MAP_AESENC";
++  case SM_OP_SWISS_MAP_HASH_FINISH:
++    return "SWISS_MAP_HASH_FINISH";
++  case SM_OP_SWISS_MAP_PROBE:
++    return "SWISS_MAP_PROBE";
++  case SM_OP_SWISS_MAP_CHECK_SLOT:
++    return "SWISS_MAP_CHECK_SLOT";
+   default:
+     break;
+   }
+

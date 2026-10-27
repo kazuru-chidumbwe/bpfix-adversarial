@@ -1,0 +1,105 @@
+repo: open-telemetry/opentelemetry-ebpf-instrumentation
+commit: 5849542e4c025ec000b1831522803cd8e8a5e947
+rank: 3267
+
+fix(bpf): write packet-end bounds checks in the form old verifiers mark exactly (#3375)
+
+* fix(rdns): bound packet reads with `ptr + size > data_end`
+
+Signed-off-by: Giuseppe Ognibene <giuseppe.ognibene@coralogix.com>
+
+* fix(tpinjector): bound packet reads with `ptr + size > data_end`
+
+Signed-off-by: Giuseppe Ognibene <giuseppe.ognibene@coralogix.com>
+
+---------
+
+Signed-off-by: Giuseppe Ognibene <giuseppe.ognibene@coralogix.com>
+
+--- bpf/common/tc_common.h
+@@ -19,7 +19,7 @@ const u32 INVALID_POS = 0xffffffff;
+ static __always_inline unsigned char *
+ memchar(unsigned char *haystack, char needle, const unsigned char *end, u32 size) {
+     for (u32 i = 0; i < size; ++i) {
+-        if (&haystack[i] >= end) {
++        if (&haystack[i] + 1 > end) {
+             break;
+         }
+ 
+@@ -47,7 +47,7 @@ static __always_inline u32 memchar_pos(unsigned char *haystack,
+     for (u32 i = 0; i < size; ++i) {
+         unsigned char *ptr = haystack + i;
+ 
+-        if (ptr + 1 >= end) {
++        if (ptr + 2 > end) { // `>` not `>=`: pre-5.16 verifiers mark `>=` one byte short
+             break;
+         } else if (ptr && *ptr == needle) {
+             return i;
+
+--- bpf/rdns/rdns_xdp.c
+@@ -220,7 +220,7 @@ static __always_inline __u32 validate_qsection(struct xdp_md *ctx, const unsigne
+ 
+     // try at most 16 sections
+     for (__u8 i = 0; i < 16; ++i) {
+-        if ((void *)data >= ctx_xdp_data_end(ctx)) {
++        if ((void *)(data + 1) > ctx_xdp_data_end(ctx)) {
+             return 0;
+         }
+ 
+@@ -232,7 +232,7 @@ static __always_inline __u32 validate_qsection(struct xdp_md *ctx, const unsigne
+         if (len == 0) {
+             size += sizeof(__u32); // account for QTYPE and QCLASS
+ 
+-            if ((void *)(data + sizeof(__u32)) < ctx_xdp_data_end(ctx)) {
++            if ((void *)(data + sizeof(__u32) + 1) <= ctx_xdp_data_end(ctx)) {
+                 return size;
+             } else {
+                 return 0;
+@@ -386,7 +386,7 @@ int dns_response_tracker(struct xdp_md *ctx) {
+         return XDP_PASS;
+     }
+ 
+-    if ((void *)udp + UDP_HDR_SIZE + DNS_HDR_SIZE >= ctx_xdp_data_end(ctx)) {
++    if ((void *)udp + UDP_HDR_SIZE + DNS_HDR_SIZE + 1 > ctx_xdp_data_end(ctx)) {
+         return XDP_PASS;
+     }
+ 
+
+--- bpf/tpinjector/tpinjector.c
+@@ -702,7 +702,7 @@ static __always_inline bool fill_msg_buffers(struct sk_msg_md *msg,
+         return false;
+     }
+ 
+-    if (!msg->data || msg->data >= msg->data_end) {
++    if (!msg->data || msg->data + 1 > msg->data_end) {
+         invalidate_msg_buffers(e_key);
+         return false;
+     }
+@@ -946,7 +946,7 @@ extend_and_write_tp(struct sk_msg_md *msg, u32 offset, const tp_info_t *tp) {
+ 
+     unsigned char *ptr = msg->data + offset;
+ 
+-    if ((void *)ptr + TP_SIZE >= msg->data_end) {
++    if ((void *)ptr + TP_SIZE + 1 > msg->data_end) {
+         bpf_d_printk("not enough space [%s]", __FUNCTION__);
+         return false;
+     }
+@@ -1317,7 +1317,7 @@ int obi_packet_extender_find_existing_tp(struct sk_msg_md *msg) {
+     const unsigned char *e = msg->data_end;
+     unsigned char *ptr = b + (niter * k_max_chunk_size);
+ 
+-    if (ptr >= e) {
++    if (ptr + 1 > e) {
+         return SK_PASS;
+     }
+ 
+@@ -1330,7 +1330,7 @@ int obi_packet_extender_find_existing_tp(struct sk_msg_md *msg) {
+     }
+ 
+     for (u32 i = 0; i < data_size; ++i) {
+-        if ((ptr + TP_SIZE >= e) || is_eoh(ptr)) {
++        if ((ptr + TP_SIZE + 1 > e) || is_eoh(ptr)) {
+             bpf_tail_call_static(msg, &extender_jump_table, k_tail_create_tp);
+             break;
+         }
+

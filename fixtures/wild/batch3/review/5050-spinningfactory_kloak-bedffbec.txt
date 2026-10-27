@@ -1,0 +1,382 @@
+repo: spinningfactory/kloak
+commit: bedffbec8bcfb302c45f7189739235993e9d91fb
+rank: 5050
+
+feat: add OpenSSL 3.0-3.1 support (3-hop H extraction chain) (#141)
+
+* feat: add OpenSSL 3.0-3.1 support (3-hop H extraction chain)
+
+OpenSSL 3.0-3.1 uses a simpler pointer chain to reach the GHASH key:
+SSL* → enc_write_ctx → algctx → H (3 hops, no record layer). OpenSSL
+3.2+ uses SSL* → wrl → enc_ctx → algctx → H (4 hops via OSSL_RECORD_LAYER).
+
+The 3-hop chain is signaled by WRLToEncCtx=0 in the offset table.
+SSLToWRL then stores the enc_write_ctx offset instead. BPF checks
+wrl_to_enc_ctx > 0 to choose the chain variant. The last two hops
+(enc_ctx→algctx→H) are identical.
+
+This unblocks Debian 12 (bookworm) containers which ship OpenSSL 3.0.x,
+including the openclaw Node.js image (OpenSSL 3.0.19).
+
+Known offsets (verified via pahole, identical on aarch64 and x86_64):
+  3.0-3.1: enc_write_ctx=2168, enc_ctx_to_algctx=168, algctx_to_h=328
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: key xor_pending by tgid for cross-thread visibility (Node.js/libuv)
+
+xor_pending was keyed by pid_tgid (thread-specific). Node.js/libuv
+encrypts via SSL_write on one thread but writes to the socket on the
+event loop thread — different pid, same tgid. The kprobe on tcp_sendmsg
+never found the uprobe's xor_pending entry because the thread IDs
+differed.
+
+Fix: key by tgid (process ID, upper 32 bits of pid_tgid). All threads
+in the same process share tgid, so the kprobe finds the entry regardless
+of which thread does the socket write.
+
+This is safe because xor_pending is created and consumed within the same
+synchronous call chain (SSL_write → encrypt → socket write → kprobe).
+No concurrent interleaving is possible:
+- Node.js: single-threaded event loop
+- Go: goroutine locked to OS thread during syscall, Conn.out.Mutex held
+- Multi-threaded OpenSSL: different connections have different tokens
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* test: add OpenSSL version dimension to cipher suite E2E tests
+
+Run cipher suite tests against two client images to cover both H
+extraction chains:
+- curlimages/curl (Alpine, OpenSSL 3.5.x) → 4-hop chain
+- debian:bookworm-slim (OpenSSL 3.0.x) → 3-hop chain
+
+Test structure: TestCipherSuites/4hop/TLS13_AES256_GCM, etc.
+
+The Debian client installs curl at runtime (apt-get in the container
+command), with a longer readiness timeout to account for this.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* feat: support memory BIO apps (Node.js) with multi-segment TLS records
+
+Node.js and other memory BIO apps encrypt into memory buffers, not
+sockets. The encrypted data reaches the kernel via writev, producing
+multiple TCP segments per TLS record. This breaks the assumption that
+tc_egress can see the full record in one skb.
+
+Changes:
+- Per-tgid tls_offset_config (HASH map) with global fallback (key=0),
+  allowing different OpenSSL versions per process on the same node
+- Version detection: prefer higher/more-specific version string,
+  try main executable before shared libs (catches Node.js bundled OpenSSL)
+- memory_bio flag in xor_pending: conditional write_seq and xor_pending
+  deletion based on whether fd resolution succeeded (socket vs memory BIO)
+- Multi-segment TLS records: remove bpf_skb_pull_data linearization,
+  add tc_tag_pending map for deferred GHASH tag patching across segments
+- SSLToVersion=72 for OpenSSL 3.5.x (ssl_connection_st.version offset)
+- Fix xor_pending re-lookup using &tgid instead of &pid_tgid (line 2039)
+
+Tested on EKS with: Node.js/OpenSSL 3.5.5 (openclaw → Gemini API),
+curl/OpenSSL 3.5 (Alpine, 4-hop), curl/OpenSSL 3.0 (Debian, 3-hop),
+Go crypto/tls (pg-consumer → PostgreSQL).
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: xor_pending TTL, SSLToVersion sentinel, numeric version compare, test curl wait
+
+1. xor_pending TTL: for memory BIO apps, delete stale entries older than
+   2s to bound kprobe overhead. The encrypt→writev gap is typically <10ms.
+
+2. SSLToVersion sentinel: change from 0 to 0xFFFFFFFF so offset 0 is
+   usable. OpenSSL 3.0 ssl_st.version is at offset 0 (verified via
+   pahole). Enables correct nonce_len detection for 3.0/3.1.
+
+3. versionBetter: numeric comparison via strconv.Atoi instead of
+   lexicographic, handling future versions like 3.10 > 3.9 correctly.
+
+4. E2E cipher test: wait for curl to be installed in Debian containers
+   before starting uprobe readiness checks, eliminating "curl: not found"
+   noise in CI logs.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+---------
+
+Co-authored-by: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+--- pkg/ebpf/bpf/tls_uprobe.c
+@@ -460,8 +460,10 @@ struct xor_pending_val {
+   struct xor_patch patches[XOR_MAX_PATCHES];
+   __u8  active;
+   __u8  chain_type;         // 0=OpenSSL/BoringSSL, CHAIN_GO_TLS=Go crypto/tls
+-  __u8  _pad[2];
++  __u8  memory_bio;         // 1=fd resolution failed (memory BIO app like Node.js)
++  __u8  _pad[1];
+   __u32 plaintext_len;      // SSL_write data length (for TLS version detection in tc)
++  __u64 created_at;         // bpf_ktime_get_ns() — for TTL-based cleanup (memory BIO)
+ };
+ 
+ // Per-thread pending XOR patches, keyed by pid_tgid.
+@@ -471,7 +473,7 @@ struct {
+   __uint(type, BPF_MAP_TYPE_HASH);
+   __uint(max_entries, 4096);
+ 
+-  __type(key, __u64);  // pid_tgid
++  __type(key, __u32);  // tgid (process ID) — cross-thread visible for libuv/Node.js
+   __type(value, struct xor_pending_val);
+ } xor_pending SEC(".maps");
+ 
+@@ -485,12 +487,14 @@ struct tls_offsets {
+   __u32 wrl_to_enc_ctx;     // wrl* + off → EVP_CIPHER_CTX* (pointer deref)
+   __u32 enc_ctx_to_algctx;  // enc_ctx* + off → algctx/PROV_GCM_CTX* (pointer deref)
+   __u32 algctx_to_h;        // algctx* + off → H (16 bytes, direct read)
+-  __u32 ssl_to_version;     // SSL_CONNECTION* + off → int version (direct read, 0=unknown)
++  __u32 ssl_to_version;     // SSL_CONNECTION* + off → int version (0xFFFFFFFF=unknown)
+ };
+ 
++// Keyed by TGID (per-process), allowing different OpenSSL versions to coexist
++// on the same node (e.g., Node.js with statically linked 3.5 + curl with system 3.0).
+ struct {
+-  __uint(type, BPF_MAP_TYPE_ARRAY);
+-  __uint(max_entries, 1);
++  __uint(type, BPF_MAP_TYPE_HASH);
++  __uint(max_entries, 4096);
+   __type(key, __u32);
+   __type(value, struct tls_offsets);
+ } tls_offset_config SEC(".maps");
+@@ -582,6 +586,9 @@ struct ghash_work {
+   __u32 ghash_ct_blocks;       // total ciphertext blocks
+   // h_powers_cache moved to separate h_power_entries per-CPU array map
+   __u32 ghash_h_power_val;      // power value for h_power_step callback
++  // Connection key + pkt_seq for deferred tag patching (multi-segment records).
++  struct tc_dest_key ghash_conn_key;
++  __u32 ghash_pkt_seq;           // TCP seq of this segment (for tag offset calc)
+ };
+ 
+ struct {
+@@ -622,6 +629,22 @@ struct {
+   __type(value, struct tc_pending_val);
+ } tc_pending SEC(".maps");
+ 
++// Deferred GHASH tag delta for TLS records that span multiple TCP segments.
++// When the ciphertext is patched in segment 1 but the auth tag is in a later
++// segment, the precomputed tag correction is stored here and applied when the
++// segment containing the tag arrives.
++struct tc_tag_val {
++  __u8  tag_delta[16];    // precomputed GHASH correction: new_tag = old_tag ^ delta
++  __u32 tag_tcp_seq;      // TCP seq number of the byte where the auth tag starts
++};
++
++struct {
++  __uint(type, BPF_MAP_TYPE_LRU_HASH);
++  __uint(max_entries, 4096);
++  __type(key, struct tc_dest_key);
++  __type(value, struct tc_tag_val);
++} tc_tag_pending SEC(".maps");
++
+ // =============================================================================
+ 
+ // Check if a dns_ip_map entry has expired based on its TTL.
+@@ -1444,17 +1467,34 @@ int bpf_h_extract(void *ctx) {
+   if (!ssl_ptr)
+     return 0;
+ 
+-  struct tls_offsets *offsets = bpf_map_lookup_elem(&tls_offset_config, &zero);
+-  if (!offsets || offsets->ssl_to_wrl == 0)
+-    return 0;
++  __u32 h_tgid = (__u32)(bpf_get_current_pid_tgid() >> 32);
++  struct tls_offsets *offsets = bpf_map_lookup_elem(&tls_offset_config, &h_tgid);
++  if (!offsets || offsets->ssl_to_wrl == 0) {
++    // Fallback: try global default (key=0) for short-lived processes whose
++    // per-tgid entry wasn't pushed in time by the controller.
++    __u32 fallback = 0;
++    offsets = bpf_map_lookup_elem(&tls_offset_config, &fallback);
++    if (!offsets || offsets->ssl_to_wrl == 0)
++      return 0;
++  }
+ 
+-  // 4-step pointer chase: SSL* → wrl* → enc_ctx* → algctx* → H
++  // Pointer chase: 4-hop (3.2+) or 3-hop (3.0-3.1).
++  // wrl_to_enc_ctx == 0 signals 3-hop (ssl_to_wrl stores enc_write_ctx).
+   __u64 wrl_ptr = 0;
+-  if (bpf_probe_read_user(&wrl_ptr, 8, (void *)(ssl_ptr + offsets->ssl_to_wrl)) < 0 || !wrl_ptr)
+-    return 0;
+-  __u64 ptr = wrl_ptr;
+-  if (bpf_probe_read_user(&ptr, 8, (void *)(ptr + offsets->wrl_to_enc_ctx)) < 0 || !ptr)
+-    return 0;
++  __u64 ptr = 0;
++  if (offsets->wrl_to_enc_ctx > 0) {
++    // 4-hop: SSL → wrl → enc_ctx
++    if (bpf_probe_read_user(&wrl_ptr, 8, (void *)(ssl_ptr + offsets->ssl_to_wrl)) < 0 || !wrl_ptr)
++      return 0;
++    ptr = wrl_ptr;
++    if (bpf_probe_read_user(&ptr, 8, (void *)(ptr + offsets->wrl_to_enc_ctx)) < 0 || !ptr)
++      return 0;
++  } else {
++    // 3-hop: SSL → enc_write_ctx
++    if (bpf_probe_read_user(&ptr, 8, (void *)(ssl_ptr + offsets->ssl_to_wrl)) < 0 || !ptr)
++      return 0;
++  }
++  // Common tail: enc_ctx → algctx → H
+   if (bpf_probe_read_user(&ptr, 8, (void *)(ptr + offsets->enc_ctx_to_algctx)) < 0 || !ptr)
+     return 0;
+ 
+@@ -1518,6 +1558,8 @@ int bpf_xor_path(void *ctx) {
+     wi->staged_pending.active = 1;
+     wi->staged_pending.chain_type = sd->chain_type;
+     wi->staged_pending.plaintext_len = sd->total_data_len;
++    wi->staged_pending.memory_bio = (sd->xor_fd == 0) ? 1 : 0;
++    wi->staged_pending.created_at = bpf_ktime_get_ns();
+   }
+ 
+   dbg_inc(DBG_XOR_PATH_ENTERED);
+@@ -1605,17 +1647,17 @@ int bpf_xor_path(void *ctx) {
+     bpf_tail_call(ctx, &prog_array, 1); // Tail-call back to xor_path.
+   }
+ 
+-  // All matches processed. Store patches in xor_pending keyed by pid_tgid.
+-  // The tcp_sendmsg kprobe will bridge this to tc_pending with the per-connection
+-  // (dst_ip, src_port) key that tc egress can look up from the packet headers.
+-  __u64 pid_tgid = bpf_get_current_pid_tgid();
++  // All matches processed. Store patches in xor_pending keyed by tgid (process ID).
++  // Uses tgid instead of pid_tgid so the tcp_sendmsg kprobe can find it even if
++  // the socket write happens on a different thread (e.g., Node.js/libuv).
++  __u32 store_tgid = (__u32)(bpf_get_current_pid_tgid() >> 32);
+ 
+   struct ghash_work *wf = bpf_map_lookup_elem(&ghash_scratch, &zero);
+   if (!wf || wf->staged_pending.patch_count == 0)
+     return 0;
+ 
+   // ssl_ptr, tgid, active already set during mi=0 initialization.
+-  bpf_map_update_elem(&xor_pending, &pid_tgid, &wf->staged_pending, BPF_ANY);
++  bpf_map_update_elem(&xor_pending, &store_tgid, &wf->staged_pending, BPF_ANY);
+   // bpf_printk("kloak [1-UPROBE] pid=%u patches=%u", (__u32)pid_tgid, wf->staged_pending.patch_count);
+ 
+   dbg_inc(DBG_XOR_DELTA_DONE);
+@@ -1839,11 +1881,26 @@ static int ghash_patch_iter(__u32 p, void *_unused) {
+ SEC("kprobe/tcp_sendmsg")
+ int bpf_kprobe_tcp_sendmsg(void *ctx) {
+   __u64 pid_tgid = bpf_get_current_pid_tgid();
++  __u32 tgid = (__u32)(pid_tgid >> 32);
+ 
+-  struct xor_pending_val *pending = bpf_map_lookup_elem(&xor_pending, &pid_tgid);
++  struct xor_pending_val *pending = bpf_map_lookup_elem(&xor_pending, &tgid);
+   if (!pending || pending->patch_count == 0)
+     return 0;
+ 
++  // TTL cleanup: for memory BIO apps, xor_pending persists across tcp_sendmsg
++  // calls. Delete stale entries older than 2 seconds to bound kprobe overhead.
++  // 2s is generous — the encrypt→writev gap is typically <10ms.
++  if (pending->memory_bio &&
++      bpf_ktime_get_ns() - pending->created_at > 2000000000ULL) {
++    bpf_map_delete_elem(&xor_pending, &tgid);
++    return 0;
++  }
++
++#ifdef KLOAK_DEBUG
++  bpf_printk("kloak [2-KPROBE] FOUND xor_pending tgid=%u patches=%u ssl=%llx",
++             tgid, pending->patch_count, pending->ssl_ptr);
++#endif
++
+   // Read source port from struct sock (first argument of tcp_sendmsg).
+   // tcp_sendmsg(struct sock *sk, struct msghdr *msg, size_t size)
+   void *sk;
+@@ -1879,11 +1936,10 @@ int bpf_kprobe_tcp_sendmsg(void *ctx) {
+   // Save values from xor_pending before helper calls invalidate the pointer.
+   __u32 zero = 0;
+ 
+-  pending = bpf_map_lookup_elem(&xor_pending, &pid_tgid);
++  pending = bpf_map_lookup_elem(&xor_pending, &tgid);
+   if (!pending) return 0;
+ 
+   __u64 ssl_ptr = pending->ssl_ptr;
+-  __u32 tgid = (__u32)(pid_tgid >> 32);
+   __u32 plaintext_len = pending->plaintext_len;
+   __u8 chain = pending->chain_type;
+ 
+@@ -1963,19 +2019,58 @@ int bpf_kprobe_tcp_sendmsg(void *ctx) {
+       bpf_probe_read_user(&go_tls_ver, 2, (void *)(ssl_ptr + go_off->conn_vers_off));
+     new_conn.nonce_len = (go_tls_ver >= 0x0304) ? 0 : 8;
+   } else {
+-    // OpenSSL/BoringSSL: 4-hop pointer chain from SSL* to H.
+-    struct tls_offsets *offsets = bpf_map_lookup_elem(&tls_offset_config, &zero);
+-    if (!offsets || offsets->ssl_to_wrl == 0)
+-      return 0;
++    // OpenSSL/BoringSSL pointer chain from SSL* to H.
++    // 4-hop (3.2+): SSL → wrl → enc_ctx → algctx → H
++    // 3-hop (3.0-3.1): SSL → enc_write_ctx → algctx → H
++    // wrl_to_enc_ctx == 0 signals 3-hop mode (ssl_to_wrl stores enc_write_ctx).
++    struct tls_offsets *offsets = bpf_map_lookup_elem(&tls_offset_config, &tgid);
++    if (!offsets || offsets->ssl_to_wrl == 0) {
++      __u32 fallback = 0;
++      offsets = bpf_map_lookup_elem(&tls_offset_config, &fallback);
++      if (!offsets || offsets->ssl_to_wrl == 0) {
++#ifdef KLOAK_DEBUG
++        bpf_printk("kloak [2-KPROBE] H-fail: no offsets");
++#endif
++        return 0;
++      }
++    }
+ 
+     __u64 ptr = 0;
+-    if (bpf_probe_read_user(&ptr, 8, (void *)(ssl_ptr + offsets->ssl_to_wrl)) < 0 || !ptr)
+-      return 0;
+-    wrl_val = ptr;
+-    if (bpf_probe_read_user(&ptr, 8, (void *)(ptr + offsets->wrl_to_enc_ctx)) < 0 || !ptr)
+-      return 0;
+-    if (bpf_probe_read_user(&ptr, 8, (void *)(ptr + offsets->enc_ctx_to_algctx)) < 0 || !ptr)
++    if (offsets->wrl_to_enc_ctx > 0) {
++      // 4-hop: SSL → wrl → enc_ctx
++      if (bpf_probe_read_user(&ptr, 8, (void *)(ssl_ptr + offsets->ssl_to_wrl)) < 0 || !ptr) {
++#ifdef KLOAK_DEBUG
++        bpf_printk("kloak [2-KPROBE] H-fail: 4hop wrl null ssl=%llx off=%u", ssl_ptr, offsets->ssl_to_wrl);
++#endif
++        return 0;
++      }
++      wrl_val = ptr;
++      if (bpf_probe_read_user(&ptr, 8, (void *)(ptr + offsets->wrl_to_enc_ctx)) < 0 || !ptr) {
++#ifdef KLOAK_DEBUG
++        bpf_printk("kloak [2-KPROBE] H-fail: 4hop enc_ctx null wrl=%llx off=%u", wrl_val, offsets->wrl_to_enc_ctx);
++#endif
++        return 0;
++      }
++    } else {
++      // 3-hop: SSL → enc_write_ctx (ssl_to_wrl stores enc_write_ctx offset)
++      if (bpf_probe_read_user(&ptr, 8, (void *)(ssl_ptr + offsets->ssl_to_wrl)) < 0 || !ptr) {
++#ifdef KLOAK_DEBUG
++        __u32 ver = 0;
++        bpf_probe_read_user(&ver, 4, (void *)ssl_ptr); // version at offset 0
++        __u64 wbio = 0;
++        bpf_probe_read_user(&wbio, 8, (void *)(ssl_ptr + 24)); // wbio at offset 24 (Debian 3.0)
++        bpf_printk("kloak [2-KPROBE] H-fail: enc_write_ctx null ssl=%llx off=%u ver=0x%x wbio=%llx", ssl_ptr, offsets->ssl_to_wrl, ver, wbio);
++#endif
++        return 0;
++      }
++    }
++    // Common tail: enc_ctx → algctx → H
++    if (bpf_probe_read_user(&ptr, 8, (void *)(ptr + offsets->enc_ctx_to_algctx)) < 0 || !ptr) {
++#ifdef KLOAK_DEBUG
++      bpf_printk("kloak [2-KPROBE] H-fail: algctx null");
++#endif
+       return 0;
++    }
+     if (bpf_probe_read_user(new_conn.ghash_h, 16, (void *)(ptr + offsets->algctx_to_h)) < 0)
+       return 0;
+ 
+@@ -1989,8 +2084,9 @@ int bpf_kprobe_tcp_sendmsg(void *ctx) {
+     new_conn.wrl_ptr = wrl_val;
+ 
+     // Read SSL_CONNECTION.version for nonce_len determination.
+-    // ssl_to_version=0 means the offset is unknown → fall back to heuristic.
+-    if (offsets->ssl_to_version > 0) {
++    // ssl_to_version=0xFFFFFFFF means unknown → fall back to heuristic.
++    // Offset 0 is valid (OpenSSL 3.0 ssl_st.version is at offset 0).
++    if (offsets->ssl_to_version != 0xFFFFFFFF) {
+       __u32 ssl_ver = 0;
+       bpf_probe_read_user(&ssl_ver, 4, (void *)(ssl_ptr + offsets->ssl_to_version));
+       // OpenSSL stores version as int: TLS1_3_VERSION=0x0304, TLS1_2_VERSION=0x0303
+@@ -2015,7 +2111,7 @@ int bpf_kprobe_tcp_sendmsg(void *ctx) {
+   struct ghash_work *w = bpf_map_lookup_e
+[truncated]
+

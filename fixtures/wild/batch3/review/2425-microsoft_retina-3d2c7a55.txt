@@ -1,0 +1,165 @@
+repo: microsoft/retina
+commit: 3d2c7a55f8c0388df271453f5fc7b166c2f275be
+rank: 2425
+
+fix: optimize DropReason eBPF map lookups (#730)
+
+# Description
+
+For all eBPF program in the DropReason plugin (except `inet_csk_accept`
+which has issue we need to investigate
+https://github.com/microsoft/retina/issues/715):
+- only make ebpf map calls when necessary
+- omit setting some packet fields to 0 right after `memset` is called on
+the entire struct
+
+**Details**:
+Previously, we did a map lookup regardless of whether the input `retVal`
+indicated a drop. Now, only for drops.
+We also skip a map delete when there wasn't a earlier kprobe that saved
+the corresponding PID.
+
+## Checklist
+
+- [x] I have read the [contributing
+documentation](https://retina.sh/docs/contributing).
+- [x] I signed and signed-off the commits (`git commit -S -s ...`). See
+[this
+documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification)
+on signing commits.
+- [x] I have correctly attributed the author(s) of the code.
+- [x] I have tested the changes locally.
+- [x] I have followed the project's style guidelines.
+- [x] I have updated the documentation, if necessary.
+- [x] I have added tests, if applicable.
+
+Signed-off-by: Igor Klemenski <igor.klemenski@microsoft.com>
+
+--- pkg/plugin/dropreason/_cprog/drop_reason.c
+@@ -249,9 +249,6 @@ int BPF_KPROBE(nf_hook_slow, struct sk_buff *skb, struct nf_hook_state *state)
+ 
+     struct packet p;
+     __builtin_memset(&p, 0, sizeof(p));
+-
+-    p.in_filtermap = false;
+-    p.skb_len = 0;
+     get_packet_from_skb(&p, skb);
+ 
+     __u64 pid_tgid = bpf_get_current_pid_tgid();
+@@ -271,26 +268,25 @@ int BPF_KRETPROBE(nf_hook_slow_ret, int retVal)
+ {
+     __u64 pid_tgid = bpf_get_current_pid_tgid();
+     __u32 pid = pid_tgid >> 32;
+-    struct packet *p = bpf_map_lookup_elem(&drop_pids, &pid);
+-    bpf_map_delete_elem(&drop_pids, &pid);
+ 
+-    if (!p)
++    if (retVal >= 0)
+     {
++        bpf_map_delete_elem(&drop_pids, &pid);
+         return 0;
+     }
+ 
+-    if (retVal >= 0)
++    struct packet *p = bpf_map_lookup_elem(&drop_pids, &pid);
++    if (!p)
+     {
+         return 0;
+     }
+ 
++    bpf_map_delete_elem(&drop_pids, &pid);
++
+     update_metrics_map(ctx, IPTABLE_RULE_DROP, 0, p);
+     return 0;
+ }
+ 
+-// static __always_inline int
+-// exit_tcp_connect(struct pt_regs *ctx, int ret)
+-
+ /*
+ This function checks the return value of tcp_v4_connect and
+  update the metrics map accordingly.
+@@ -309,9 +305,6 @@ int BPF_KRETPROBE(tcp_v4_connect_ret, int retVal)
+     struct packet p;
+     __builtin_memset(&p, 0, sizeof(p));
+ 
+-    p.in_filtermap = false;
+-    p.skb_len = 0;
+-
+     update_metrics_map(ctx, TCP_CONNECT_BASIC, retVal, &p);
+     return 0;
+ }
+@@ -387,9 +380,6 @@ int BPF_KPROBE(nf_nat_inet_fn, void *priv, struct sk_buff *skb, const struct nf_
+ 
+     struct packet p;
+     __builtin_memset(&p, 0, sizeof(p));
+-
+-    p.in_filtermap = false;
+-    p.skb_len = 0;
+     get_packet_from_skb(&p, skb);
+ 
+     __u64 pid_tgid = bpf_get_current_pid_tgid();
+@@ -403,17 +393,21 @@ int BPF_KRETPROBE(nf_nat_inet_fn_ret, int retVal)
+ {
+     __u64 pid_tgid = bpf_get_current_pid_tgid();
+     __u32 pid = pid_tgid >> 32;
+-    struct packet *p = bpf_map_lookup_elem(&natdrop_pids, &pid);
+-    bpf_map_delete_elem(&natdrop_pids, &pid);
+ 
+-    if (!p)
++    if (retVal != NF_DROP)
++    {
++        bpf_map_delete_elem(&natdrop_pids, &pid);
+         return 0;
++    }
+ 
+-    if (retVal != NF_DROP)
++    struct packet *p = bpf_map_lookup_elem(&natdrop_pids, &pid);
++    if (!p)
+     {
+         return 0;
+     }
+ 
++    bpf_map_delete_elem(&natdrop_pids, &pid);
++
+     update_metrics_map(ctx, IPTABLE_NAT_DROP, 0, p);
+     return 0;
+ }
+@@ -432,9 +426,6 @@ int BPF_KPROBE(nf_conntrack_confirm, struct sk_buff *skb)
+ 
+     struct packet p;
+     __builtin_memset(&p, 0, sizeof(p));
+-
+-    p.in_filtermap = false;
+-    p.skb_len = 0;
+     get_packet_from_skb(&p, skb);
+ 
+     __u64 pid_tgid = bpf_get_current_pid_tgid();
+@@ -448,17 +439,21 @@ int BPF_KRETPROBE(nf_conntrack_confirm_ret, int retVal)
+ {
+     __u64 pid_tgid = bpf_get_current_pid_tgid();
+     __u32 pid = pid_tgid >> 32;
++    
++    if (retVal != NF_DROP)
++    {
++        bpf_map_delete_elem(&natdrop_pids, &pid);
++        return 0;
++    }
++    
+     struct packet *p = bpf_map_lookup_elem(&natdrop_pids, &pid);
+-    bpf_map_delete_elem(&natdrop_pids, &pid);
+-
+     if (!p)
+-        return 0;
+-
+-    if (retVal != NF_DROP)
+     {
+         return 0;
+     }
+ 
++    bpf_map_delete_elem(&natdrop_pids, &pid);
++
+     update_metrics_map(ctx, CONNTRACK_ADD_DROP, retVal, p);
+     return 0;
+ }
+

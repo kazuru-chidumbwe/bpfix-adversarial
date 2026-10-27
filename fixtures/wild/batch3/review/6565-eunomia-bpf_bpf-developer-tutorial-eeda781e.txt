@@ -1,0 +1,410 @@
+repo: eunomia-bpf/bpf-developer-tutorial
+commit: eeda781e4f4ae7c475eb5168886ab44453fae09a
+rank: 6565
+
+add verify userspace program
+
+--- src/38-btf-uprobe/test-verify/minimal/uprobe.bpf.c
+@@ -0,0 +1,13 @@
++#define BPF_NO_GLOBAL_DATA
++#include <vmlinux.h>
++#include <bpf/bpf_helpers.h>
++#include <bpf/bpf_tracing.h>
++
++SEC("uprobe/./victim:target_func")
++int do_uprobe_trace(struct pt_regs *ctx)
++{
++	bpf_printk("target_func called.\n");
++	return 0;
++}
++
++char LICENSE[] SEC("license") = "GPL";
+\ No newline at end of file
+
+--- src/38-btf-uprobe/test-verify/verify-failed-no-btf/uprobe.bpf.c
+@@ -0,0 +1,32 @@
++#define BPF_NO_GLOBAL_DATA
++// #define BPF_NO_PRESERVE_ACCESS_INDEX
++#include <vmlinux.h>
++#include <bpf/bpf_helpers.h>
++#include <bpf/bpf_tracing.h>
++
++#ifndef BPF_NO_PRESERVE_ACCESS_INDEX
++#pragma clang attribute push (__attribute__((preserve_access_index)), apply_to = record)
++#endif
++
++struct data {
++        int a;
++        int c;
++        int d;
++};
++
++#ifndef BPF_NO_PRESERVE_ACCESS_INDEX
++#pragma clang attribute pop
++#endif
++
++
++SEC("uprobe/examples/btf-base:add_test")
++int BPF_UPROBE(add_test, struct data *d)
++{
++	int a = 0, c = 0;
++	bpf_probe_read_user(&a, sizeof(a), &d->a);
++	bpf_probe_read_user(&c, sizeof(c), &d->c);
++	bpf_printk("add_test(&d) %d + %d = %d\n", a, c,  a + c);
++	return a + c;
++}
++
++char LICENSE[] SEC("license") = "Dual BSD/GPL";
+
+--- src/38-btf-uprobe/test-verify/verify-failed-no-btf/uprobe_failed.bpf.c
+@@ -0,0 +1,32 @@
++#define BPF_NO_GLOBAL_DATA
++// #define BPF_NO_PRESERVE_ACCESS_INDEX
++#include <vmlinux.h>
++#include <bpf/bpf_helpers.h>
++#include <bpf/bpf_tracing.h>
++
++#ifndef BPF_NO_PRESERVE_ACCESS_INDEX
++#pragma clang attribute push (__attribute__((preserve_access_index)), apply_to = record)
++#endif
++
++struct data {
++        int a;
++        int e;
++        int d;
++};
++
++#ifndef BPF_NO_PRESERVE_ACCESS_INDEX
++#pragma clang attribute pop
++#endif
++
++
++SEC("uprobe/examples/btf-base:add_test")
++int BPF_UPROBE(add_test, struct data *d)
++{
++	int a = 0, e = 0;
++	bpf_probe_read_user(&a, sizeof(a), &d->a);
++	bpf_probe_read_user(&e, sizeof(e), &d->e);
++	bpf_printk("add_test(&d) %d + %d = %d\n", a, e,  a + e);
++	return a + e;
++}
++
++char LICENSE[] SEC("license") = "Dual BSD/GPL";
+
+--- src/38-btf-uprobe/test-verify/verify-memory-access/uprobe.bpf.c
+@@ -0,0 +1,47 @@
++#define BPF_NO_GLOBAL_DATA
++// #define BPF_NO_PRESERVE_ACCESS_INDEX
++#include <vmlinux.h>
++#include <bpf/bpf_helpers.h>
++#include <bpf/bpf_core_read.h>
++#include <bpf/bpf_tracing.h>
++
++#ifndef BPF_NO_PRESERVE_ACCESS_INDEX
++#pragma clang attribute push (__attribute__((preserve_access_index)), apply_to = record)
++#endif
++
++
++struct deep_memory_block {
++    int a;
++    char b[10];
++};
++
++struct inner_memory_block {
++    int a;
++    char b[10];
++    struct deep_memory_block *deep;
++};
++
++struct data {
++        int a;
++        int b;
++        int c;
++        int d;
++        // represent a pointer to a memory block
++        struct inner_memory_block *inner;
++};
++
++#ifndef BPF_NO_PRESERVE_ACCESS_INDEX
++#pragma clang attribute pop
++#endif
++
++SEC("uprobe/examples/btf-base:add_test")
++int BPF_UPROBE(add_test, struct data *d)
++{
++	int inner_deep_a = BPF_CORE_READ_USER(d, inner, deep, a);
++	bpf_printk("inner_deep_a = %d\n", inner_deep_a);
++	char* inner_deep_b = BPF_CORE_READ_USER(d, inner, deep, b);
++	bpf_printk("inner_deep_b[9] = %c\n", inner_deep_b[9]);
++	return 0;
++}
++
++char LICENSE[] SEC("license") = "Dual BSD/GPL";
+
+--- src/38-btf-uprobe/test-verify/verify-memory-access/uprobe_failed.bpf.c
+@@ -0,0 +1,48 @@
++#define BPF_NO_GLOBAL_DATA
++// #define BPF_NO_PRESERVE_ACCESS_INDEX
++#include <vmlinux.h>
++#include <bpf/bpf_helpers.h>
++#include <bpf/bpf_core_read.h>
++#include <bpf/bpf_tracing.h>
++
++#ifndef BPF_NO_PRESERVE_ACCESS_INDEX
++#pragma clang attribute push (__attribute__((preserve_access_index)), apply_to = record)
++#endif
++
++
++struct deep_memory_block {
++    int a;
++    char b[10];
++};
++
++struct inner_memory_block {
++    int a;
++    char b[10];
++    struct deep_memory_block *deep;
++};
++
++struct data {
++        int a;
++        int b;
++        int c;
++        int d;
++        // represent a pointer to a memory block
++        struct inner_memory_block *inner;
++};
++
++#ifndef BPF_NO_PRESERVE_ACCESS_INDEX
++#pragma clang attribute pop
++#endif
++
++SEC("uprobe/examples/btf-base:add_test")
++int BPF_UPROBE(add_test, struct data *d)
++{
++	int inner_deep_a = BPF_CORE_READ_USER(d, inner, deep, a);
++	bpf_printk("inner_deep_a = %d\n", inner_deep_a);
++	char* inner_deep_b = BPF_CORE_READ_USER(d, inner, deep, b);
++	// memory access out of bounds
++	bpf_printk("inner_deep_b[11] = %c\n", inner_deep_b[100]);
++	return 0;
++}
++
++char LICENSE[] SEC("license") = "Dual BSD/GPL";
+
+--- src/38-btf-uprobe/test-verify/verify-resource-allocation/ufunc.bpf.h
+@@ -0,0 +1,98 @@
++/* SPDX-License-Identifier: MIT
++ *
++ * Copyright (c) 2022, eunomia-bpf org
++ * All rights reserved.
++ */
++#ifndef UFUNC_HELPER_H
++#define UFUNC_HELPER_H
++
++typedef unsigned long long uint64_t;
++typedef long long int64_t;
++typedef int int32_t;
++// global context not support
++// uint64_t context;
++
++union arg_val {
++	uint64_t uint64;
++	int64_t int64;
++	int32_t int32;
++	double double_val;
++	void *ptr;
++};
++
++struct arg_list {
++	uint64_t args[6];
++};
++
++#define UFUNC_HELPER_ID_DISPATCHER 1000
++#define UFUNC_HELPER_ID_FIND_ID 1001
++
++static const uint64_t (*ufunc_call)(uint64_t id, uint64_t arg_list) = (void *)
++	UFUNC_HELPER_ID_DISPATCHER;
++static const uint64_t (*ufunc_find_func_id)(const char *func_name) = (void *)
++	UFUNC_HELPER_ID_FIND_ID;
++
++// func: function id
++#define UFUNC_CALL_0(func)                                                     \
++	({                                                                     \
++		struct arg_list argn = { 0 };                                  \
++		ufunc_call(func, (uint64_t) & argn);                           \
++	})
++
++// func: function id
++#define UFUNC_CALL_1(func, arg1)                                               \
++	({                                                                     \
++		struct arg_list argn = { 0 };                                  \
++		argn.args[0] = (uint64_t)arg1;                                 \
++		ufunc_call(func, (uint64_t) & argn);                           \
++	})
++
++// func: function id
++#define UFUNC_CALL_2(func, arg1, arg2)                                         \
++	({                                                                     \
++		struct arg_list argn = { 0 };                                  \
++		argn.args[0] = (uint64_t)arg1;                                 \
++		argn.args[1] = (uint64_t)arg2;                                 \
++		ufunc_call(func, (uint64_t) & argn);                           \
++	})
++
++// func: function id
++#define UFUNC_CALL_3(func, arg1, arg2, arg3)                                   \
++	({                                                                     \
++		struct arg_list argn = { 0 };                                  \
++		argn.args[0] = (uint64_t)arg1;                                 \
++		argn.args[1] = (uint64_t)arg2;                                 \
++		argn.args[2] = (uint64_t)arg3;                                 \
++		ufunc_call(func, (uint64_t) & argn);                           \
++	})
++
++// func: function name
++#define UFUNC_CALL_NAME_0(func_name)                                           \
++	({                                                                     \
++		char funcname[] = func_name;                                   \
++		uint64_t func_id = ufunc_find_func_id(funcname);               \
++		UFUNC_CALL_0(func_id);                                         \
++	})
++
++#define UFUNC_CALL_NAME_1(func_name, arg1)                                     \
++	({                                                                     \
++		char funcname[] = func_name;                                   \
++		uint64_t func_id = ufunc_find_func_id(funcname);               \
++		UFUNC_CALL_1(func_id, arg1);                                   \
++	})
++
++#define UFUNC_CALL_NAME_2(func_name, arg1, arg2)                               \
++	({                                                                     \
++		char funcname[] = func_name;                                   \
++		uint64_t func_id = ufunc_find_func_id(funcname);               \
++		UFUNC_CALL_2(func_id, arg1, arg2);                             \
++	})
++
++#define UFUNC_CALL_NAME_3(func_name, arg1, arg2, arg3)                         \
++	({                                                                     \
++		char funcname[] = func_name;                                   \
++		uint64_t func_id = ufunc_find_func_id(funcname);               \
++		UFUNC_CALL_3(func_id, arg1, arg2, arg3);                       \
++	})
++
++#endif
+\ No newline at end of file
+
+--- src/38-btf-uprobe/test-verify/verify-resource-allocation/uprobe.bpf.c
+@@ -0,0 +1,57 @@
++#define BPF_NO_GLOBAL_DATA
++// #define BPF_NO_PRESERVE_ACCESS_INDEX
++#include <vmlinux.h>
++#include <bpf/bpf_helpers.h>
++#include <bpf/bpf_core_read.h>
++#include <bpf/bpf_tracing.h>
++
++#ifndef BPF_NO_PRESERVE_ACCESS_INDEX
++#pragma clang attribute push (__attribute__((preserve_access_index)), apply_to = record)
++#endif
++
++
++struct deep_memory_block {
++    int a;
++    char b[10];
++};
++
++struct inner_memory_block {
++    int a;
++    char b[10];
++    struct deep_memory_block *deep;
++};
++
++struct data {
++        int a;
++        int b;
++        int c;
++        int d;
++        // represent a pointer to a memory block
++        struct inner_memory_block *inner;
++};
++
++#ifndef BPF_NO_PRESERVE_ACCESS_INDEX
++#pragma clang attribute pop
++#endif
++
++#ifdef KERNEL_VERIFY_PROTO
++extern struct data* my_alloc_data(void) __ksym;
++extern void my_free_data(struct data *d) __ksym;
++#else
++#define my_alloc_data() ((struct data*)UFUNC_CALL_NAME_0("my_alloc_data"))
++#define my_free_data(d) UFUNC_CALL_NAME_1("my_free_data", d)
++#endif
++
++SEC("uprobe/examples/btf-base:add_test")
++int BPF_UPROBE(add_test, struct data *d)
++{
++	struct data *alloced = my_alloc_data();
++    if (alloced == NULL) {
++        bpf_printk("Failed to allocate data\n");
++        return 0;
++    }
++	my_free_data(alloced);
++	return 0;
++}
++
++char LICENSE[] SEC("license") = "Dual BSD/GPL";
+
+--- src/38-btf-uprobe/test-verify/verify-resource-allocation/uprobe_failed.bpf.c
+@@ -0,0 +1,51 @@
++#define BPF_NO_GLOBAL_DATA
++// #define BPF_NO_PRESERVE_ACCESS_INDEX
++#include <vmlinux.h>
++#include <bpf/bpf_helpers.h>
++#include <bpf/bpf_core_read.h>
++#include <bpf/bpf_tracing.h>
++
++#ifndef BPF_NO_PRESERVE_ACCESS_INDEX
++#pragma clang attribute push (__attribute__((preserve_access_index)), apply_to = record)
++#endif
++
++
++struct deep_memory_block {
++    int a;
++    char b[10];
++};
++
++struct inner_memory_block {
++    int a;
++    char b[10];
++    struct deep_memory_block *deep;
++};
++
++struct data {
++        int a;
++        int b;
++        int c;
++        int d;
++        // represent a pointer to a memory block
++        struct inner_memory_block *inner;
++};
++
++#ifndef BPF_NO_PRESERVE_ACCESS_INDEX
++#pragma clang attribute pop
++#endif
++
++extern struct data* my_alloc_data(void) __ksym;
++extern void my_free_data(struct data *d) __ksym;
++
++SEC("uprobe/examples/btf-base:add_test")
++int BPF_UPROBE(add_test, struct data *d)
++{
++	struct data *alloced = my_alloc_data();
++    if (alloced == NULL) {
++        bpf_printk("Failed to allocate data\n");
++        return 0;
++    }
++	return 0;
++}
++
++char LICENSE[] SEC("license") = "Dual BSD/GPL";
+

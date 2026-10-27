@@ -1,0 +1,389 @@
+repo: DataDog/datadog-agent
+commit: 6ea347c4814c43c1b232043c9dd1127f2058288a
+rank: 5805
+
+[noisy_neighbor] Add Per-cgroup PMU + more tracepoint signals (default off) (#50350)
+
+### What does this PR do?
+
+Adds per-cgroup victim-detection signals to the `noisy_neighbor` eBPF check.
+
+**PMU counters** — each gated by `noisy_neighbor.pmu_metrics.<name>`, all default **`false`**:
+`cycles`, `instructions`, `cache_misses`, `cache_references`, `itlb_misses`, `branch_misses`, `cpu_migrations`.
+
+**Tracepoint counters** — always on, cheap:
+`wakeups`, `softirq_ns`, `block_io_requests`.
+
+Plus a PMU multiplexing scaling correction so deltas under hardware-counter contention recover the true count via `enabled/running` (the standard `tools/perf/Documentation/perf-stat.txt` formula).
+
+Also: `noisyNeighborModule.Close()` waits for in-flight `/check` handlers via a `sync.WaitGroup` before tearing down the BPF manager (was previously vulnerable to `mgr.Stop(CleanAll)` invalidating maps mid-iteration).
+
+
+**How it works**
+
+*Probe setup.* For each PMU event enabled by config, system-probe calls `perf_event_open` once per CPU and inserts the resulting fd into a dedicated BPF perf-event-array map (`cycles_pmu`, `instructions_pmu`, etc., one map per event). The eBPF program reads the current per-CPU counter value at runtime via `bpf_perf_event_read_value(&<event>_pmu, BPF_F_CURRENT_CPU, …)`. `cpu_migrations` uses `PERF_TYPE_SOFTWARE`, `itlb_misses` uses `PERF_TYPE_HW_CACHE` with a bit-packed `(cache, op, result)` config, and the remaining events are `PERF_TYPE_HARDWARE` enum values. Disabling an event in config skips its `perf_event_open` entirely — the map stays empty, the eBPF read returns `-ENOENT`, and that event's deltas are dropped (no overhead, no emission).
+
+*Per-cgroup sampling.* Hardware PMU counters are monotonic — each is an odometer for some event (cycles elapsed, instructions retired, cache misses observed, etc.). To get a "how much happened during this window" number, you read the odometer at both ends of the window and subtract. We do that on every context switch. When the kernel switches a task **off** CPU, the BPF program reads each enabled counter's current value, subtracts the value it recorded when this same task was last switched **on**, and adds the difference into a per-cgroup running total (a BPF hash map keyed by cgroup id whose entries accumulate the per-metric counts). When a task is switched **on**, the BPF program reads the current counter values and stashes them in per-task BPF storage (a kernel-managed key-value store attached to the `task_struct`, auto-freed on task exit) as that task's new baseline — so the next switch-off can compute its delta against it. Net effect: every counter increment that happens while a task is on CPU is attributed to exactly that task's cgroup. The always-on tracepoint counters (`wakeups`, `softirq_ns`, `block_io_requests`) skip the stamp/delta dance — each kernel tracepoint hit increments the corresponding per-cgroup counter directly.
+
+Userspace: every 10 s the agent-side `noisy_neighbor` check hits the system-probe `/check` endpoint over a Unix socket, which iterates the per-cgroup hash map, atomically flushes each entry, and returns the accumulated counts. The check maps each cgroup id to a `container_id` via the cgroup tagger and emits the counts as Datadog metrics tagged by container.
+
+*PMU multiplexing correction.* CPUs expose only a fixed number of programmable PMU counters per core (often 4–8). When userspace opens more events than there are counters, the kernel time-slices them: each event runs on real hardware for only a fraction of the wall window and reports zero for the rest. The kernel surfaces this via two fields the read helper returns alongside the counter — `enabled` (wall time the event was scheduled to run) and `running` (actual time it had a hardware counter). A raw counter delta therefore under-reports by `running/enabled`, and we recover the true count via `scaled_delta = raw_delta × enabled_delta / running_delta` — the standard `tools/perf/Documentation/perf-stat.txt` formula. If `running_delta == 0` (the event was paused for the entire window), the sample carries no information and we return 0 rather than divide. Scaling is applied per event independently, so an event that wasn't multiplexed pays no correction cost. ([docs from linux perf tool on this](https://perfwiki.github.io/main/tutorial/#multiplexing-and-scaling-events))
+
+### Motivation
+
+Expanding the signal set to surface stronger discriminators for the noisy-neighbor victim-detection use case. Why each metric is in the set:
+
+| Metric | Why it's useful for NN detection | Literature |
+|---|---|---|
+| `branch_misses` | Front-end pressure indicator. Normalized per instruction, branch-misprediction rate rises when a noisy co-tenant brings competing code paths that evict the victim's BTB/branch-predictor state. Discriminates by workload class — tight predictable loops keep predictor state warm and stay flat, while memory-traversing workloads (e.g. STREAM) show a large jump under contention. Useful where CPI saturates because OoO absorbs the stalls. | Kambadur SC'12, DeepDive, ProteanCode |
+| `cache_references` | Companion to `cache_misses`. Lets the backend compute cache hit-rate `1 − miss/ref`, which is more informative than raw misses when miss-count is already at floor (memory-bound workloads where every load misses). Normalizing to working-set size makes the signal comparable across workloads with different cache footprints. | VM Survey, IntelMBA (LLC miss ratio) |
+| `cache_misses` | `PERF_COUNT_HW_CACHE_MISSES` — typically last-level cache misses on modern CPUs. Most-cited cache-contention signal in the literature: a co-tenant evicting the victim's cache lines drives miss-count up. The canonical "noisy neighbor stomping on my cache" signal. Pair with `cache_references` and `instructions` to disambiguate "working set grew" from "co-tenant evicting us". Can floor for memory-bound workloads — useful but not sufficient alone. | Lias, PARTIES, OSML, Caladan, Pythia |
+| `itlb_misses` | Instruction-TLB pressure. Rises when co-tenant code execution pollutes shared TLB structures, forcing the victim to re-walk page tables for its own instruction fetches. Lias found `iTLB-loads` to be the single most discriminating PMU counter on `img-dnn`; surfaces a contention class the data-side LLC signal misses. | Lias, iBench |
+| `cycles` / `instructions` | CPI (`cycles/instructions`) is the most-cited single signal in the entire NN literature — rises under almost all microarchitectural contention (LLC, MemBW, SMT, even some I/O stalls). Acts as numerator/denominator for CPI and as denominator for every per-instruction rate (branch-miss rate, LLC-miss rate, iTLB rate) that strips out throughput variation. Known weakness: out-of-order execution can absorb stalls so CPI may stay flat for OoO-friendly workloads — keep as broad indicator, not sole alert. | CPI² (EuroSys'13), PANDA, DeepDive, C-Koordinator, Lias, Heracles |
+| `cpu_migrations` | Direct scheduler-disruption signal. A busy host's load-balancer thrashes tasks across runqueues, so per-cgroup migration count jumps when the system is overcommitted — without needing a PMU slot. Cheaper proxy for the same shape Volpert ICPE'25 captures with PSL/PSP. Moves with system load rather than workload character, so it's an overcommit indicator more than a sensitivity indicator. | Lias |
+| `wakeups` | Scheduling-frequency / runqueue-depth proxy. UFO (NSDI'24) shows wakeup/scheduling frequency tracks P99 latency without any app instrumentation, which is exactly the position an external observability vendor sits in. Caveat: tight CPU-loop workloads don't block much, so this concentrates in the host root cgroup and short-lived tasks — most useful as a host-overcommit indicator. | UFO NSDI'24, Lias, Reconciling |
+| `softirq_ns` | Per-cgroup softirq time. Iron (NSDI'18) showed the kernel charges network/timer softirq processing to whichever cgroup happens to be on-CPU, not to the cgroup whose packets are being handled — causing up to 6× slowdown that's invisible in standard cgroup CPU accounting. Surfacing softirq time per cgroup fixes that attribution blind spot for network-heavy noisy neighbors. | Iron NSDI'18 |
+| `block_io_requests` | Per-cgroup block-I/O request rate. Storage contention from a noisy co-tenant (page reclaim, log churn, fio-style workloads) doesn't show up in CPU or cache signals at all — this is the I/O-dimension counterpart. Same pattern Volpert ICPE'24 uses for OCI runtime isolation analysis. | Volpert ICPE'24 OCI, DC-Store |
+
+### Describe how you validated your changes
+
+Validated in a local kind cluster and deployed to a staging cluster:
+- [Dashboard](https://ddstaging.datadoghq.com/dashboard/68k-c5q-vvj/noisy-neighbor-victim-detection-v3?fromUser=true&refresh_mode=paused&tpl_var_kube_node%5B0%5D=ip-10-114-3-76.ec2.internal&tpl_var_pod_name%5B0%5D=cpu%2A&tpl_var_pod_name%5B1%5D=ephemera%2A&from_ts=1778538501104&to_ts=1778538801104&live=false) showing all PMU metrics for ephemera + cpuburn test
+
+
+### Additional Notes
+
+- `ebpf_types_linux.go` is hand-edited; `verify_generated_files` will fail until regenerated in a clang/kernel-headers environment.
+
+
+
+
+
+Co-authored-by: daniel.tafoya <daniel.tafoya@datadoghq.com>
+
+--- pkg/collector/corechecks/ebpf/c/runtime/noisy-neighbor-kern-user.h
+@@ -8,6 +8,39 @@ typedef struct {
+     __u64 event_count;
+     __u64 preemption_count;
+     __u64 pid_count;
++    __u64 sum_cycles;
++    __u64 sum_instructions;
++    __u64 sum_cache_misses;
++    __u64 sum_itlb_misses;
++    __u64 sum_softirq_ns;
++    __u64 block_io_requests;
++    __u64 sum_branch_misses;
++    __u64 sum_cpu_migrations;
++    __u64 wakeup_count;
++    __u64 sum_cache_references;
+ } cgroup_agg_stats_t;
+ 
++// Per-PMU-event stamp: counter value plus enabled/running times.
++// enabled and running are needed to scale counter deltas back up when the
++// kernel time-multiplexes a hardware counter onto fewer physical counters
++// than there are configured events. Without scaling, multiplexed events
++// under-report by a factor of running/enabled. See bpf_perf_event_read_value
++// docs and tools/perf/Documentation/perf-stat.txt for the standard formula
++// scaled = counter * enabled / running.
++typedef struct {
++    __u64 counter;
++    __u64 enabled;
++    __u64 running;
++} pmu_event_stamp_t;
++
++typedef struct {
++    pmu_event_stamp_t cycles;
++    pmu_event_stamp_t instructions;
++    pmu_event_stamp_t cache_misses;
++    pmu_event_stamp_t itlb_misses;
++    pmu_event_stamp_t branch_misses;
++    pmu_event_stamp_t cpu_migrations;
++    pmu_event_stamp_t cache_references;
++} task_pmu_stamp_t;
++
+ #endif
+
+--- pkg/collector/corechecks/ebpf/c/runtime/noisy-neighbor-kern.c
+@@ -12,8 +12,25 @@
+ 
+ BPF_TASK_STORAGE_MAP(runq_enqueued, u64)
+ 
++BPF_TASK_STORAGE_MAP(task_oncpu_pmu, task_pmu_stamp_t)
++
+ BPF_PERCPU_HASH_MAP(cgroup_agg_stats, __u64, cgroup_agg_stats_t, MAX_TASK_ENTRIES)
+ 
++// Per-CPU perf event arrays for hardware counters. Populated from user space
++// at probe init; if a CPU's slot is unset, the read helper returns -ENOENT
++// and the corresponding deltas are skipped.
++BPF_PERF_EVENT_ARRAY_MAP(cycles_pmu, u32)
++BPF_PERF_EVENT_ARRAY_MAP(instructions_pmu, u32)
++BPF_PERF_EVENT_ARRAY_MAP(cache_misses_pmu, u32)
++BPF_PERF_EVENT_ARRAY_MAP(itlb_misses_pmu, u32)
++BPF_PERF_EVENT_ARRAY_MAP(branch_misses_pmu, u32)
++BPF_PERF_EVENT_ARRAY_MAP(cpu_migrations_pmu, u32)
++BPF_PERF_EVENT_ARRAY_MAP(cache_references_pmu, u32)
++
++// Per-CPU softirq entry timestamp. Single-slot percpu array; softirq runs in
++// non-preemptible context so per-CPU storage is sufficient.
++BPF_PERCPU_ARRAY_MAP(softirq_start_ns, __u64, 1)
++
+ void bpf_rcu_read_lock(void) __ksym;
+ void bpf_rcu_read_unlock(void) __ksym;
+ extern void *bpf_rdonly_cast(const void *obj, __u32 btf_id) __ksym __weak;
+@@ -61,6 +78,128 @@ static __always_inline int enqueue_timestamp(struct task_struct *task) {
+     return 0;
+ }
+ 
++// scaled_pmu_delta computes (val.counter - stamp.counter) scaled by
++// enabled/running to undo any time-multiplexing the kernel applied to the
++// underlying hardware counter. When enabled == running (no multiplexing),
++// the result equals the raw delta. When the event was paused for the
++// entire window (running_delta == 0), returns 0 — the sample carries no
++// usable information.
++static __always_inline u64 scaled_pmu_delta(struct bpf_perf_event_value *val, pmu_event_stamp_t *stamp) {
++    u64 raw = val->counter - stamp->counter;
++    u64 enabled_delta = val->enabled - stamp->enabled;
++    u64 running_delta = val->running - stamp->running;
++    if (running_delta == 0) {
++        return 0;
++    }
++    if (enabled_delta == running_delta) {
++        return raw;
++    }
++    // Compute as raw + raw*(enabled-running)/running rather than
++    // raw*enabled/running to keep the multiplication operands small in
++    // the common multiplexing case (enabled-running << running). This
++    // reduces — but does not eliminate — u64 overflow risk on very long
++    // sched windows.
++    u64 missing = enabled_delta - running_delta;
++    return raw + (raw * missing) / running_delta;
++}
++
++// pmu_sample_t holds one sample of every PMU event we track, along with
++// per-event ok flags marking which reads succeeded. A failed read leaves
++// the bpf_perf_event_value buffer at zero; the ok flag prevents that zero
++// from being used as a stamp baseline (which would produce a huge bogus
++// delta on the next sched_switch) or as an accumulator input.
++//
++// Every counter is gated independently: cycles can be on while instructions
++// is off, etc. (CPI, if needed, is computed dashboard-side from the raw
++// counters.) When a userspace toggle disables a perf event, that event's
++// perf-event-array map stays empty, the read returns -ENOENT, the ok flag
++// stays false, and accumulation skips that counter only.
++typedef struct {
++    struct bpf_perf_event_value cycles;
++    struct bpf_perf_event_value instructions;
++    struct bpf_perf_event_value cache_misses;
++    struct bpf_perf_event_value itlb_misses;
++    struct bpf_perf_event_value branch_misses;
++    struct bpf_perf_event_value cpu_migrations;
++    struct bpf_perf_event_value cache_references;
++    bool cycles_ok;
++    bool instructions_ok;
++    bool cache_misses_ok;
++    bool itlb_ok;
++    bool branch_misses_ok;
++    bool cpu_migrations_ok;
++    bool cache_references_ok;
++} pmu_sample_t;
++
++static __always_inline void pmu_sample_all(pmu_sample_t *s) {
++    s->cycles_ok = bpf_perf_event_read_value(&cycles_pmu, BPF_F_CURRENT_CPU, &s->cycles, sizeof(s->cycles)) == 0;
++    s->instructions_ok = bpf_perf_event_read_value(&instructions_pmu, BPF_F_CURRENT_CPU, &s->instructions, sizeof(s->instructions)) == 0;
++    s->cache_misses_ok = bpf_perf_event_read_value(&cache_misses_pmu, BPF_F_CURRENT_CPU, &s->cache_misses, sizeof(s->cache_misses)) == 0;
++    s->itlb_ok = bpf_perf_event_read_value(&itlb_misses_pmu, BPF_F_CURRENT_CPU, &s->itlb_misses, sizeof(s->itlb_misses)) == 0;
++    s->branch_misses_ok = bpf_perf_event_read_value(&branch_misses_pmu, BPF_F_CURRENT_CPU, &s->branch_misses, sizeof(s->branch_misses)) == 0;
++    s->cpu_migrations_ok = bpf_perf_event_read_value(&cpu_migrations_pmu, BPF_F_CURRENT_CPU, &s->cpu_migrations, sizeof(s->cpu_migrations)) == 0;
++    s->cache_references_ok = bpf_perf_event_read_value(&cache_references_pmu, BPF_F_CURRENT_CPU, &s->cache_references, sizeof(s->cache_references)) == 0;
++}
++
++static __always_inline bool pmu_any_ok(pmu_sample_t *s) {
++    return s->cycles_ok || s->instructions_ok || s->cache_misses_ok || s->itlb_ok ||
++           s->branch_misses_ok || s->cpu_migrations_ok || s->cache_references_ok;
++}
++
++static __always_inline void pmu_stamp_event(pmu_event_stamp_t *slot, struct bpf_perf_event_value *val) {
++    slot->counter = val->counter;
++    slot->enabled = val->enabled;
++    slot->running = val->running;
++}
++
++static __always_inline void pmu_stamp_from_sample(task_pmu_stamp_t *stamp, pmu_sample_t *s) {
++    if (s->cycles_ok) {
++        pmu_stamp_event(&stamp->cycles, &s->cycles);
++    }
++    if (s->instructions_ok) {
++        pmu_stamp_event(&stamp->instructions, &s->instructions);
++    }
++    if (s->cache_misses_ok) {
++        pmu_stamp_event(&stamp->cache_misses, &s->cache_misses);
++    }
++    if (s->itlb_ok) {
++        pmu_stamp_event(&stamp->itlb_misses, &s->itlb_misses);
++    }
++    if (s->branch_misses_ok) {
++        pmu_stamp_event(&stamp->branch_misses, &s->branch_misses);
++    }
++    if (s->cpu_migrations_ok) {
++        pmu_stamp_event(&stamp->cpu_migrations, &s->cpu_migrations);
++    }
++    if (s->cache_references_ok) {
++        pmu_stamp_event(&stamp->cache_references, &s->cache_references);
++    }
++}
++
++static __always_inline void pmu_accum_to_stats(cgroup_agg_stats_t *stats, task_pmu_stamp_t *stamp, pmu_sample_t *s) {
++    if (s->cycles_ok) {
++        stats->sum_cycles += scaled_pmu_delta(&s->cycles, &stamp->cycles);
++    }
++    if (s->instructions_ok) {
++        stats->sum_instructions += scaled_pmu_delta(&s->instructions, &stamp->instructions);
++    }
++    if (s->cache_misses_ok) {
++        stats->sum_cache_misses += scaled_pmu_delta(&s->cache_misses, &stamp->cache_misses);
++    }
++    if (s->itlb_ok) {
++        stats->sum_itlb_misses += scaled_pmu_delta(&s->itlb_misses, &stamp->itlb_misses);
++    }
++    if (s->branch_misses_ok) {
++        stats->sum_branch_misses += scaled_pmu_delta(&s->branch_misses, &stamp->branch_misses);
++    }
++    if (s->cpu_migrations_ok) {
++        stats->sum_cpu_migrations += scaled_pmu_delta(&s->cpu_migrations, &stamp->cpu_migrations);
++    }
++    if (s->cache_references_ok) {
++        stats->sum_cache_references += scaled_pmu_delta(&s->cache_references, &stamp->cache_references);
++    }
++}
++
+ static __always_inline cgroup_agg_stats_t *get_or_create_cgroup_stats(u64 cgroup_id) {
+     cgroup_agg_stats_t *stats = bpf_map_lookup_elem(&cgroup_agg_stats, &cgroup_id);
+     if (!stats) {
+@@ -71,16 +210,50 @@ static __always_inline cgroup_agg_stats_t *get_or_create_cgroup_stats(u64 cgroup
+     return stats;
+ }
+ 
++// task_cgroup_stats returns the cgroup aggregate stats entry for the given
++// task, creating it on first observation. Returns NULL if the map insert fails.
++static __always_inline cgroup_agg_stats_t *task_cgroup_stats(struct task_struct *task) {
++    u64 cgroup_id = get_task_cgroup_id(task);
++    return get_or_create_cgroup_stats(cgroup_id);
++}
++
++// current_cgroup_stats returns the cgroup aggregate stats entry for the
++// currently-running task. Returns NULL if the current task pointer can't be
++// resolved or if the map insert fails.
++static __always_inline cgroup_agg_stats_t *current_cgroup_stats(void) {
++    struct task_struct *task = bpf_get_current_task_btf();
++    if (!task) {
++        return NULL;
++    }
++    return task_cgroup_stats(task);
++}
++
++// count_wakeup increments the per-cgroup wakeup counter for the given task.
++// Called only from the genuine wakeup tracepoints — not from the sched_switch
++// re-enqueue path (which is a preemption-driven re-enqueue, not a wakeup).
++static __always_inline void count_wakeup(struct task_struct *task) {
++    cgroup_agg_stats_t *stats = task_cgroup_stats(task);
++    if (stats) {
++        stats->wakeup_count += 1;
++    }
++}
++
++// handle_wakeup is the shared body of tp_sched_wakeup and tp_sched_wakeup_new.
++// Both tracepoints carry the same (task) shape and need the same accounting:
++// count the wakeup, then stamp the enqueue timestamp.
++static __always_inline int handle_wakeup(struct task_struct *task) {
++    count_wakeup(task);
++    return enqueue_timestamp(task);
++}
++
+ SEC("tp_btf/sched_wakeup")
+ int tp_sched_wakeup(u64 *ctx) {
+-    struct task_struct *task = (void *)ctx[0];
+-    return enqueue_timestamp(task);
++    return handle_wakeup((struct task_struct *)ctx[0]);
+ }
+ 
+ SEC("tp_btf/sched_wakeup_new")
+ int tp_sched_wakeup_new(u64 *ctx) {
+-    struct task_struct *task = (void *)ctx[0];
+-    return enqueue_timestamp(task);
++    return handle_wakeup((struct task_struct *)ctx[0]);
+ }
+ 
+ SEC("tp_btf/sched_switch")
+@@ -91,13 +264,28 @@ int tp_sched_switch(u64 *ctx) {
+     u32 prev_pid = prev->pid;
+     u32 next_pid = next->pid;
+ 
++    // Sample PMU counters once. Each read is independent — if iTLB events
++    // aren't supported but cycles are, only iTLB deltas are skipped.
++    pmu_sample_t pmu = {};
++    pmu_sample_all(&pmu);
++    bool pmu_ok = pmu_any_ok(&pmu);
++
++    if (pmu_ok && prev_pid) {
++        task_pmu_stamp_t *stamp = bpf_task_storage_get(&task_oncpu_pmu, prev, NULL, 0);
++        if (stamp) {
++            cgroup_agg_stats_t *stats = task_cgroup_stats(prev);
++            if (stats) {
++                pmu_accum_to_stats(stats, stamp, &pmu);
++            }
++        }
++    }
++
+     if (prev->__state == TASK_RUNNING) {
+         enqueue_timestamp(prev);
+     }
+ 
+     if (preempted && prev_pid) {
+-        u64 prev_cgroup_id = get_task_cgroup_id(prev);
+-        cgroup_agg_stats_t *stats = get_or_create_cgroup_stats(prev_cgroup_id);
++        cgroup_agg_stats_t *stats = task_cgroup_stats(prev);
+         if (stats) {
+             stats->preemption_count += 1;
+         }
+@@ -107,6 +295,14 @@ int tp_sched_switch(u64 *ctx) {
+         return 0;
+     }
+ 
++    if (pmu_ok) {
++        task_pmu_stamp_t zero = {};
++        task_pmu_stamp_t *stamp = bpf_task_storage_get(&task_oncpu_pmu, next, &zero, BPF_LOCAL_STORAGE_GET_F_CREATE);
++        if (stamp) {
++            pmu_stamp_from_sample(stamp, &pmu);
++        }
++    }
++
+     u64 *tsp = bpf_task_storage_get(&runq_enqueued, next, NULL, 0);
+     if (!tsp) {
+         return 0;
+@@ -115,8 +311,7 @@ int tp_sched_switch(u64 *ctx) {
+     u64 runq_lat = bpf_ktime_get_ns() - *tsp;
+     bpf_task_storage_delete(&runq_enqueued, next);
+ 
+-    u64 cgroup_id = get_task_cgroup_id(next);
+-    cgroup_agg_stats_t *stats = get_or_create_cgroup_stats(cgroup_id);
++    cgroup_agg_stats_t *stats = task_cgroup_stats(next);
+     if (stats) {
+         stats->sum_latencies_ns += runq_lat;
+         stats->event_count += 1;
+@@ -126,4 +321,49 @@ int tp_sched_switch(u64 *ctx) {
+     return 0;
+ }
+ 
++// Softirq accounting: stamp the entry timestamp per CPU; on exit, attribute
++// the elapsed nanoseconds to the cgroup of whatever task was running on this
++// CPU when the softirq fired. For irq-tail softirq processing, this charges
++// time back to the interrupted task's cgroup (the victim — exactly what we
++// want). For ksoftirqd-driven softirqs, it charges to the ksoftirqd cgroup
++// (typically root); a known limitation we accept for the prototype.
++SEC("tp_btf/softirq_entry")
++int tp_softirq_entry(u64 *ctx) {
++    u32 zero = 0;
++    u64 *slot = bpf_map_lookup_elem(&softirq_start_ns, &zero);
++    if (
+[truncated]
+

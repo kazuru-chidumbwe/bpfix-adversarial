@@ -1,0 +1,305 @@
+repo: DataDog/datadog-agent
+commit: aa5e91bc0ea8c122cb359e2b0d0bfbbcb6b0e669
+rank: 3029
+
+[CWS] Add io_uring socket/splice/ftruncate hooks + tests (#52494)
+
+### What does this PR do?
+
+Closes the three gaps where CWS observed the syscall but emitted no event when issued through io_uring, by adding the missing eBPF hooks (plus tests, and a SKILL.md to automate future io_uring coverage audits):
+
+- **IORING_OP_SOCKET**: `io_socket` hooks; domain/type/protocol read via BTF-resolved `LOAD_CONSTANT` offsets on `struct io_socket`
+- **IORING_OP_SPLICE**: `io_splice` hooks, reusing the get_pipe_info path. We have to hook on `io_issue_sqe` instead because `io_splice` is inlined in some kernel versions.
+- **IORING_OP_FTRUNCATE**: `io_ftruncate` hooks, reusing `do_truncate` (observed as an open+O_TRUNC event; requires kernel 6.9+)
+
+### Motivation
+
+Improve io_uring coverage: these opcodes were observed on the syscall path but produced no event via io_uring.
+
+### Describe how you validated your changes
+
+Functional tests on a 6.8 kernel: `TestSpliceEvent/io_uring` and `TestSocketEvent/socket-af-inet-tcp-io-uring` pass; controls (`TestOpen/io_uring`, `TestAcceptEvent/...io-uring`) still pass. `TestOpen/io_uring_ftruncate` skips below 6.9 and still needs verification on a 6.9+ kernel.
+
+### Additional Notes
+
+Co-authored-by: dd-octo-sts[bot] <200755185+dd-octo-sts[bot]@users.noreply.github.com>
+Co-authored-by: daniel.mercier <daniel.mercier@datadoghq.com>
+
+--- pkg/security/ebpf/c/include/constants/offsets/filesystem.h
+@@ -580,6 +580,12 @@ static __attribute__((always_inline)) u64 get_iokiocb_ctx_offset() {
+     return iokiocb_ctx_offset;
+ }
+ 
++static __attribute__((always_inline)) u64 get_iokiocb_opcode_offset() {
++    u64 iokiocb_opcode_offset;
++    LOAD_CONSTANT("iokiocb_opcode_offset", iokiocb_opcode_offset);
++    return iokiocb_opcode_offset;
++}
++
+ static __attribute__((always_inline)) u64 get_getattr2() {
+     u64 getattr2;
+     LOAD_CONSTANT("getattr2", getattr2);
+
+--- pkg/security/ebpf/c/include/constants/offsets/network.h
+@@ -41,6 +41,24 @@ __attribute__((always_inline)) struct sock* get_sock_from_socket(struct socket *
+     return sk;
+ }
+ 
++__attribute__((always_inline)) u64 get_io_socket_domain_offset() {
++    u64 offset;
++    LOAD_CONSTANT("io_socket_domain_offset", offset);
++    return offset;
++}
++
++__attribute__((always_inline)) u64 get_io_socket_type_offset() {
++    u64 offset;
++    LOAD_CONSTANT("io_socket_type_offset", offset);
++    return offset;
++}
++
++__attribute__((always_inline)) u64 get_io_socket_protocol_offset() {
++    u64 offset;
++    LOAD_CONSTANT("io_socket_protocol_offset", offset);
++    return offset;
++}
++
+ __attribute__((always_inline)) u64 get_flowi4_saddr_offset() {
+     u64 flowi4_saddr_offset;
+     LOAD_CONSTANT("flowi4_saddr_offset", flowi4_saddr_offset);
+
+--- pkg/security/ebpf/c/include/hooks/network/socket.h
+@@ -1,7 +1,10 @@
+ #ifndef _HOOKS_SOCKET_H_
+ #define _HOOKS_SOCKET_H_
+ 
+-static long __attribute__((always_inline)) trace__sys_socket(void *ctx, u8 async, u16 domain, u16 type, u16 protocol) {
++#include "constants/offsets/network.h"
++#include "helpers/iouring.h"
++
++static long __attribute__((always_inline)) trace__sys_socket(void *ctx, u16 domain, u16 type, u16 protocol, u64 pid_tgid) {
+     if (is_discarded_by_pid()) {
+         return 0;
+     }
+@@ -10,11 +13,12 @@ static long __attribute__((always_inline)) trace__sys_socket(void *ctx, u8 async
+     struct syscall_cache_t syscall = {
+         .type = EVENT_SOCKET,
+         .policy = policy,
+-        .async = async,
++        .async = pid_tgid ? ASYNC_SYSCALL : SYNC_SYSCALL,
+         .socket = {
+             .domain = domain,
+             .type = type,
+             .protocol = protocol,
++            .pid_tgid = pid_tgid,
+         }
+     };
+ 
+@@ -39,12 +43,18 @@ static int __attribute__((always_inline)) sys_socket_ret(void *ctx, int retval)
+ 
+     struct socket_event_t event = {
+         .syscall.retval = retval,
++        .event.flags = syscall->async ? EVENT_FLAGS_ASYNC : 0,
+         .domain = syscall->socket.domain,
+         .type = syscall->socket.type,
+         .protocol = syscall->socket.protocol,
+     };
+ 
+-    struct proc_cache_t *entry = fill_process_context(&event.process);
++    struct proc_cache_t *entry;
++    if (syscall->socket.pid_tgid != 0) {
++        entry = fill_process_context_with_pid_tgid(&event.process, syscall->socket.pid_tgid);
++    } else {
++        entry = fill_process_context(&event.process);
++    }
+     fill_cgroup_context(entry, &event.cgroup);
+     fill_span_context(&event.span);
+ 
+@@ -56,14 +66,35 @@ HOOK_SYSCALL_ENTRY3(socket, int, domain, int, type, int, protocol) {
+     // Mask out SOCK_CLOEXEC / SOCK_NONBLOCK flags to get just the socket type
+     // (SOCK_STREAM=1, SOCK_DGRAM=2, ... fit in 4 bits)
+     u16 socket_type = (u16)type & 0x0F;
+-    return trace__sys_socket(ctx, SYNC_SYSCALL, (u16)domain, socket_type, (u16)protocol);
++    return trace__sys_socket(ctx, (u16)domain, socket_type, (u16)protocol, 0);
+ }
+ 
+ HOOK_SYSCALL_EXIT(socket) {
+     int retval = SYSCALL_PARMRET(ctx);
+     return sys_socket_ret(ctx, retval);
+ }
+ 
++// io_socket (IORING_OP_SOCKET, kernel 5.19+).
++HOOK_ENTRY("io_socket")
++int hook_io_socket(ctx_t *ctx) {
++    void *raw_req = (void *)CTX_PARM1(ctx);
++
++    int domain = 0, type = 0, protocol = 0;
++    bpf_probe_read(&domain, sizeof(domain), raw_req + get_io_socket_domain_offset());
++    bpf_probe_read(&type, sizeof(type), raw_req + get_io_socket_type_offset());
++    bpf_probe_read(&protocol, sizeof(protocol), raw_req + get_io_socket_protocol_offset());
++
++    u64 pid_tgid = get_pid_tgid_from_iouring(raw_req);
++    // Mask out SOCK_CLOEXEC / SOCK_NONBLOCK (same as above)
++    u16 socket_type = (u16)type & 0x0F;
++    return trace__sys_socket(ctx, (u16)domain, socket_type, (u16)protocol, pid_tgid);
++}
++
++HOOK_EXIT("io_socket")
++int rethook_io_socket(ctx_t *ctx) {
++    return sys_socket_ret(ctx, (int)CTX_PARMRET(ctx));
++}
++
+ TAIL_CALL_TRACEPOINT_FNC(handle_sys_socket_exit, struct tracepoint_raw_syscalls_sys_exit_t *args) {
+     return sys_socket_ret(args, args->ret);
+ }
+@@ -98,4 +129,4 @@ static int hook_sock_release(struct bpf_sock *ctx)
+     return 1;
+ }
+ 
+-#endif
+\ No newline at end of file
++#endif
+
+--- pkg/security/ebpf/c/include/hooks/open.h
+@@ -221,6 +221,17 @@ int hook_io_openat2(ctx_t *ctx) {
+     return trace_io_openat(ctx);
+ }
+ 
++// io_ftruncate (IORING_OP_FTRUNCATE, kernel 6.9+) calls do_ftruncate -> do_truncate, which
++// is already hooked (hook_do_truncate). As with the ftruncate syscall, we model it as an
++// open with O_TRUNC and let the do_truncate hook resolve the path from the file.
++HOOK_ENTRY("io_ftruncate")
++int hook_io_ftruncate(ctx_t *ctx) {
++    void *raw_req = (void *)CTX_PARM1(ctx);
++    u64 pid_tgid = get_pid_tgid_from_iouring(raw_req);
++    int flags = O_CREAT | O_WRONLY | O_TRUNC;
++    return trace__sys_openat2(ctx, NULL, flags, 0, pid_tgid);
++}
++
+ // used by both tail call callback and directly for tracepoints
+ int __attribute__((always_inline)) _sys_open_ret(void *ctx, struct syscall_cache_t *syscall) {
+     if (IS_UNHANDLED_ERROR(syscall->retval)) {
+@@ -315,6 +326,16 @@ HOOK_SYSCALL_COMPAT_EXIT(ftruncate) {
+     return sys_open_ret(ctx);
+ }
+ 
++HOOK_EXIT("io_ftruncate")
++int rethook_io_ftruncate(ctx_t *ctx) {
++    struct syscall_cache_t *syscall = pop_syscall(EVENT_OPEN);
++    if (!syscall || !syscall->open.dentry) {
++        return 0;
++    }
++    syscall->retval = CTX_PARMRET(ctx);
++    return _sys_open_ret(ctx, syscall);
++}
++
+ HOOK_SYSCALL_COMPAT_EXIT(open) {
+     return sys_open_ret(ctx);
+ }
+
+--- pkg/security/ebpf/c/include/hooks/splice.h
+@@ -1,14 +1,17 @@
+ #ifndef _HOOKS_SPLICE_H_
+ #define _HOOKS_SPLICE_H_
+ 
++#include <uapi/linux/io_uring.h>
++
+ #include "constants/offsets/splice.h"
+ #include "constants/syscall_macro.h"
+ #include "helpers/approvers.h"
+ #include "helpers/discarders.h"
+ #include "helpers/filesystem.h"
++#include "helpers/iouring.h"
+ #include "helpers/syscalls.h"
+ 
+-HOOK_SYSCALL_ENTRY0(splice) {
++int __attribute__((always_inline)) sys_splice(void *ctx, u64 pid_tgid) {
+     if (is_discarded_by_pid()) {
+         return 0;
+     }
+@@ -17,12 +20,33 @@ HOOK_SYSCALL_ENTRY0(splice) {
+     struct syscall_cache_t syscall = {
+         .type = EVENT_SPLICE,
+         .policy = policy,
++        .async = pid_tgid ? ASYNC_SYSCALL : SYNC_SYSCALL,
++        .splice = {
++            .pid_tgid = pid_tgid,
++        },
+     };
+ 
+     cache_syscall_update_cgroup(ctx, &syscall);
+     return 0;
+ }
+ 
++HOOK_SYSCALL_ENTRY0(splice) {
++    return sys_splice(ctx, 0);
++}
++
++// io_splice is a static function that the compiler may inline into its sole caller
++// (io_issue_sqe). Hook io_issue_sqe instead and filter by opcode == IORING_OP_SPLICE.
++HOOK_ENTRY("io_issue_sqe")
++int hook_io_issue_sqe(ctx_t *ctx) {
++    void *raw_req = (void *)CTX_PARM1(ctx);
++    u8 opcode;
++    int ret = bpf_probe_read(&opcode, sizeof(opcode), raw_req + get_iokiocb_opcode_offset());
++    if (ret < 0 || opcode != IORING_OP_SPLICE) {
++        return 0;
++    }
++    return sys_splice(ctx, get_pid_tgid_from_iouring(raw_req));
++}
++
+ HOOK_ENTRY("get_pipe_info")
+ int hook_get_pipe_info(ctx_t *ctx) {
+     struct syscall_cache_t *syscall = peek_syscall(EVENT_SPLICE);
+@@ -98,13 +122,19 @@ int __attribute__((always_inline)) sys_splice_ret(void *ctx, int retval) {
+ 
+     struct splice_event_t event = {
+         .syscall.retval = retval,
++        .event.flags = syscall->async ? EVENT_FLAGS_ASYNC : 0,
+         .file = syscall->splice.file,
+         .pipe_entry_flag = syscall->splice.pipe_entry_flag,
+         .pipe_exit_flag = syscall->splice.pipe_exit_flag,
+     };
+     fill_file(syscall->splice.dentry, &event.file);
+ 
+-    struct proc_cache_t *entry = fill_process_context(&event.process);
++    struct proc_cache_t *entry;
++    if (syscall->splice.pid_tgid != 0) {
++        entry = fill_process_context_with_pid_tgid(&event.process, syscall->splice.pid_tgid);
++    } else {
++        entry = fill_process_context(&event.process);
++    }
+     fill_cgroup_context(entry, &event.cgroup);
+     fill_span_context(&event.span);
+ 
+@@ -117,6 +147,12 @@ HOOK_SYSCALL_EXIT(splice) {
+     return sys_splice_ret(ctx, (int)SYSCALL_PARMRET(ctx));
+ }
+ 
++HOOK_EXIT("io_issue_sqe")
++int rethook_io_issue_sqe(ctx_t *ctx) {
++    // pop_syscall inside sys_splice_ret returns NULL if no splice entry was cached
++    return sys_splice_ret(ctx, (int)CTX_PARMRET(ctx));
++}
++
+ TAIL_CALL_TRACEPOINT_FNC(handle_sys_splice_exit, struct tracepoint_raw_syscalls_sys_exit_t *args) {
+     return sys_splice_ret(args, args->ret);
+ }
+
+--- pkg/security/ebpf/c/include/structs/syscalls.h
+@@ -225,6 +225,7 @@ struct syscall_cache_t {
+             u32 file_found;
+             u32 pipe_entry_flag;
+             u32 pipe_exit_flag;
++            u64 pid_tgid;
+         } splice;
+ 
+         struct {
+@@ -253,6 +254,7 @@ struct syscall_cache_t {
+             u16 domain;
+             u16 type;
+             u16 protocol;
++            u64 pid_tgid;
+         } socket;
+ 
+         struct {
+

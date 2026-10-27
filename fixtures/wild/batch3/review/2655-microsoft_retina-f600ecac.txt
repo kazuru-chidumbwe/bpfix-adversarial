@@ -1,0 +1,59 @@
+repo: microsoft/retina
+commit: f600ecac4ea17b396696f248caf0e740c517ce6a
+rank: 2655
+
+fix(ct): correctly pass reverse key for deletion from conntrack map (#892)
+
+# Description
+
+We wrongly pass `key` reference to `_ct_should_report_packet` when the
+connection is found based on the `reverse_key`, this `key` is then
+removed as part of GC when the connection timed out or if it is a TCP
+connection and FIN or RST flags are set.
+
+This PR fixes the issue by passing the correct key reference which is
+`reverse_key`
+
+## Related Issue
+
+#807 
+
+## Checklist
+
+- [x] I have read the [contributing
+documentation](https://retina.sh/docs/contributing).
+- [x] I signed and signed-off the commits (`git commit -S -s ...`). See
+[this
+documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification)
+on signing commits.
+- [x] I have correctly attributed the author(s) of the code.
+- [x] I have tested the changes locally.
+- [x] I have followed the project's style guidelines.
+- [x] I have updated the documentation, if necessary.
+- [x] I have added tests, if applicable.
+
+## Screenshots (if applicable) or Testing Completed
+
+Please add any relevant screenshots or GIFs to showcase the changes
+made.
+
+## Additional Notes
+
+Add any additional notes or context about the pull request here.
+
+---
+
+Please refer to the [CONTRIBUTING.md](../CONTRIBUTING.md) file for more
+information on how to contribute to this project.
+
+--- pkg/plugin/conntrack/_cprog/conntrack.c
+@@ -315,7 +315,7 @@ static __always_inline __attribute__((unused)) bool ct_process_packet(struct pac
+         // Update the packet accordingly.
+         p->is_reply = true;
+         p->traffic_direction = entry->traffic_direction;
+-        return _ct_should_report_packet(entry, p->flags, CT_PACKET_DIR_RX, &key);
++        return _ct_should_report_packet(entry, p->flags, CT_PACKET_DIR_RX, &reverse_key);
+     }
+ 
+     // If the connection is still not found, the connection is new.
+

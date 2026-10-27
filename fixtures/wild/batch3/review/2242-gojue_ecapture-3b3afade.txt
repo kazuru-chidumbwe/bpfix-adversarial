@@ -1,0 +1,1048 @@
+repo: gojue/ecapture
+commit: 3b3afade85a2201f8d08134f3a0b77145a320902
+rank: 2242
+
+refactor(kern): deduplicate headers, unify style, translate comments (#970)
+
+- Create kern/include/tls_constants.h: shared TLS constants
+- Create kern/include/openssl_masterkey_common.h: shared struct/maps/helper
+- Deduplicate tc.h: extract trace_sendmsg() helper
+- Remove ~20 unused uid/pid variable declarations
+- Translate all Chinese comments to English
+- Unify naming conventions (kZero, invalidFD, etc.)
+- Upgrade __inline to __always_inline for BPF helpers
+- Add #pragma once, SPDX headers, copyright to missing files
+- Fix MAX_DATA_SIZE_OPENSSL macro parentheses
+No protected files modified. Verified: make all on aarch64.
+
+--- kern/boringssl_const.h
+@@ -1,5 +1,5 @@
+-#ifndef ECAPTURE_BORINGSSL_CONST_H
+-#define ECAPTURE_BORINGSSL_CONST_H
++// SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause
++#pragma once
+ 
+ /////////////////////////////////////////// DON'T REMOVE THIS CODE BLOCK. //////////////////////////////////////////
+ // SSL_MAX_MD_SIZE is size of the largest hash function used in TLS, SHA-384.
+@@ -25,11 +25,12 @@
+   uint8_t server_traffic_secret_0_[SSL_MAX_MD_SIZE] = {0};
+   uint8_t expected_client_finished_[SSL_MAX_MD_SIZE] = {0};
+   */
+-// boringssl中的 TLS 1.3 密钥是 private属性，无法直接offset计算。
+-// 所以，计算private前面的属性地址，再手动相加。
+-// private 前面的属性是max_version ，offset是30
+-// private 第一个属性是size_t hash_len_，内存对齐后，offset就是32
+-// secret的offset即 32 + sizeof(size_t) ，即 40 。其他的累加 SSL_MAX_MD_SIZE长度即可。
++// In BoringSSL, TLS 1.3 keys are private fields, so direct offsetof
++// calculation is not possible.  Compute the offset by finding the address
++// of the field preceding the private section (max_version at offset 30),
++// then the first private field (size_t hash_len_) sits at offset 32 after
++// alignment. secret_ is at 32 + sizeof(size_t) = 40, and subsequent
++// fields are at SSL_MAX_MD_SIZE increments.
+ 
+ 
+ //   uint16_t max_version = 0;
+@@ -59,5 +60,3 @@
+ #define SSL_HANDSHAKE_EXPECTED_CLIENT_FINISHED_ SSL_HANDSHAKE_SECRET_+SSL_MAX_MD_SIZE*6
+ 
+ ///////////////////////////  END   ///////////////////////////
+-
+-#endif
+\ No newline at end of file
+
+--- kern/boringssl_masterkey.h
+@@ -13,14 +13,10 @@
+ // limitations under the License.
+ 
+ #include "ecapture.h"
++#include "include/tls_constants.h"
+ 
+ // https://wiki.openssl.org/index.php/TLS1.3
+-// 仅openssl/boringssl 1.1.1 后才支持 TLS 1.3 协议
+-
+-// boringssl 1.1.1 版本相关的常量
+-#define SSL3_RANDOM_SIZE 32
+-#define MASTER_SECRET_MAX_LEN 48
+-#define EVP_MAX_MD_SIZE 64
++// Only BoringSSL >= 1.1.1 supports TLS 1.3
+ 
+ // tls13_state is the internal state for the TLS 1.3 handshake.
+ // values depend on enum client_hs_state_t
+@@ -58,7 +54,7 @@ struct mastersecret_bssl_t {
+ // ssl/internal.h line 2653   SSL3_STATE
+ struct ssl3_state_st {
+     u64 read_sequence;
+-    //  确保BORINGSSL的state_st 中client_random 的偏移量是48
++    // Ensure BoringSSL state_st client_random offset is at 48
+     u64 write_sequence;
+     unsigned char server_random[SSL3_RANDOM_SIZE];
+     unsigned char client_random[SSL3_RANDOM_SIZE];
+@@ -97,9 +93,6 @@ struct ssl3_handshake_st {
+     s32 tls13_state;
+ };
+ 
+-#define TLS1_1_VERSION 0x0302
+-#define TLS1_2_VERSION 0x0303
+-#define TLS1_3_VERSION 0x0304
+ 
+ /////////////////////////BPF MAPS ////////////////////////////////
+ 
+@@ -126,7 +119,8 @@ struct {
+ } bpf_context_gen SEC(".maps");
+ 
+ /////////////////////////COMMON FUNCTIONS ////////////////////////////////
+-// 这个函数用来规避512字节栈空间限制，通过在堆上创建内存的方式，避开限制
++// Allocate a mastersecret_bssl_t on the BPF "heap" to work around
++// the 512-byte stack limit.
+ static __always_inline struct mastersecret_bssl_t *make_event() {
+     u32 key_gen = 0;
+     struct mastersecret_bssl_t *bpf_ctx = bpf_map_lookup_elem(&bpf_context_gen, &key_gen);
+@@ -170,8 +164,6 @@ SEC("uprobe/SSL_write_key")
+ int probe_ssl_master_key(struct pt_regs *ctx) {
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+ 
+     if (!passes_filter(ctx)) {
+         return 0;
+@@ -267,7 +259,7 @@ int probe_ssl_master_key(struct pt_regs *ctx) {
+     debug_bpf_printk("client_version:%d, state:%d, tls13_state:%d\n", client_version, ssl3_hs_state.state,
+         ssl3_hs_state.tls13_state);
+     debug_bpf_printk("TLS version :%d, hash_len:%d, \n", mastersecret->version, hash_len);
+-    // 判断当前tls链接状态
++    // Determine current TLS connection state
+     // handshake->handshake_finalized = hs_st_addr + BSSL__SSL_HANDSHAKE_HINTS +
+     s32 all_bool;
+     u64 *hs_ptr_ab = (u64 *)(ssl_hs_st_addr + BSSL__SSL_HANDSHAKE_HINTS + 8);
+
+--- kern/common.h
+@@ -36,14 +36,14 @@
+  * OpenSSL : SSL3_RT_MAX_PLAIN_LENGTH (16384). These functions will only accept a value in the range 512 - SSL3_RT_MAX_PLAIN_LENGTH.
+  * https://docs.openssl.org/1.1.1/man3/SSL_CTX_set_split_send_fragment/#description
+  */
+-#define MAX_DATA_SIZE_OPENSSL 1024 * 16
++#define MAX_DATA_SIZE_OPENSSL (1024 * 16)
+ #define MAX_DATA_SIZE_MYSQL 256
+ #define MAX_DATA_SIZE_POSTGRES 256
+ #define MAX_DATA_SIZE_BASH 256
+ #define MAX_DATA_SIZE_ZSH 256
+ 
+ // enum_server_command, via
+-// https://dev.mysql.com/doc/internals/en/com-query.html COM_QUERT command 03
++// https://dev.mysql.com/doc/internals/en/com-query.html COM_QUERY command 03
+ #define COM_QUERY 3
+ 
+ #define AF_INET 2
+
+--- kern/ecapture.h
+@@ -90,11 +90,11 @@ struct ipv6hdr {
+ #include "common.h"
+ 
+ 
+-static __inline bool filter_rejects(u32 pid, u32 uid) {
++static __always_inline bool filter_rejects(u32 pid, u32 uid) {
+     if (less52 == 1) {
+         return false;
+     }
+-    // if target_ppid is 0 then we target all pids
++    // if target_pid is 0 then we target all pids
+     if (target_pid != 0 && target_pid != pid) {
+         return true;
+     }
+@@ -104,9 +104,9 @@ static __inline bool filter_rejects(u32 pid, u32 uid) {
+     return false;
+ }
+ 
+-// 是否通过过滤要求
++// Check whether the current process passes the PID/UID filter.
+ static __always_inline bool passes_filter(struct pt_regs *ctx) {
+-    // 先判断内核版本是不是小于等于 5.2
++    // On kernels <= 5.2, .rodata is not supported; skip filtering.
+     if (less52 == 1) {
+         return true;
+     }
+
+--- kern/gnutls.h
+@@ -66,17 +66,16 @@ struct {
+  * General helper functions
+  ***********************************************************/
+ 
+-static __inline struct ssl_data_event_t* create_ssl_data_event(u64 current_pid_tgid) {
+-    u32 kZero = 0;
+-    struct ssl_data_event_t* event = bpf_map_lookup_elem(&data_buffer_heap, &kZero);
++static __always_inline struct ssl_data_event_t* create_ssl_data_event(u64 current_pid_tgid) {
++    u32 zero = 0;
++    struct ssl_data_event_t* event = bpf_map_lookup_elem(&data_buffer_heap, &zero);
+     if (event == NULL) {
+         return NULL;
+     }
+ 
+-    const u32 kMask32b = 0xffffffff;
+     event->timestamp_ns = bpf_ktime_get_ns();
+     event->pid = current_pid_tgid >> 32;
+-    event->tid = current_pid_tgid & kMask32b;
++    event->tid = current_pid_tgid & 0xffffffff;
+ 
+     return event;
+ }
+@@ -119,8 +118,6 @@ SEC("uprobe/gnutls_record_send")
+ int probe_entry_SSL_write(struct pt_regs* ctx) {
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+     debug_bpf_printk("gnutls uprobe/gnutls_record_send pid :%d\n", pid);
+ 
+     if (!passes_filter(ctx)) {
+@@ -136,8 +133,6 @@ SEC("uretprobe/gnutls_record_send")
+ int probe_ret_SSL_write(struct pt_regs* ctx) {
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+     debug_bpf_printk("gnutls uretprobe/gnutls_record_send pid :%d\n", pid);
+ 
+     if (!passes_filter(ctx)) {
+@@ -161,8 +156,6 @@ SEC("uprobe/gnutls_record_recv")
+ int probe_entry_SSL_read(struct pt_regs* ctx) {
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+     debug_bpf_printk("gnutls uprobe/gnutls_record_recv pid :%d\n", pid);
+ 
+     if (!passes_filter(ctx)) {
+@@ -178,8 +171,6 @@ SEC("uretprobe/gnutls_record_recv")
+ int probe_ret_SSL_read(struct pt_regs* ctx) {
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+     debug_bpf_printk("gnutls uretprobe/gnutls_record_recv pid :%d\n", pid);
+ 
+     if (!passes_filter(ctx)) {
+
+--- kern/gnutls_masterkey.h
+@@ -146,7 +146,8 @@ struct {
+ } bpf_context_gen SEC(".maps");
+ 
+ /////////////////////////COMMON FUNCTIONS ////////////////////////////////
+-// 这个函数用来规避512字节栈空间限制，通过在堆上创建内存的方式，避开限制
++// Allocate a gnutls_mastersecret_st on the BPF "heap" to work around
++// the 512-byte stack limit.
+ static __always_inline struct gnutls_mastersecret_st *make_event() {
+     u32 key_gen = 0;
+     struct gnutls_mastersecret_st *bpf_ctx = bpf_map_lookup_elem(&bpf_context_gen, &key_gen);
+@@ -161,8 +162,6 @@ SEC("uprobe/gnutls_handshake")
+ int uprobe_gnutls_master_key(struct pt_regs *ctx) {
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+ 
+     if (!passes_filter(ctx)) {
+         return 0;
+@@ -177,8 +176,6 @@ SEC("uretprobe/gnutls_handshake")
+ int uretprobe_gnutls_master_key(struct pt_regs *ctx) {
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+ 
+     if (!passes_filter(ctx)) {
+         return 0;
+
+--- kern/go_argument.h
+@@ -12,8 +12,8 @@
+ // See the License for the specific language governing permissions and
+ // limitations under the License.
+ 
+-#ifndef ECAPTURE_GOTLS_H
+-#define ECAPTURE_GOTLS_H
++// SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause
++#pragma once
+ 
+ // true: 1.5 or older
+ // false: newer
+@@ -71,7 +71,7 @@
+ 
+ #endif
+ 
+-void* go_get_argument_by_reg(struct pt_regs *ctx, int index) {
++static __always_inline void* go_get_argument_by_reg(struct pt_regs *ctx, int index) {
+     switch (index) {
+         case 1:
+             return (void*)GO_PARAM1(ctx);
+@@ -94,17 +94,15 @@ void* go_get_argument_by_reg(struct pt_regs *ctx, int index) {
+     }
+ }
+ 
+-void* go_get_argument_by_stack(struct pt_regs *ctx, int index) {
++static __always_inline void* go_get_argument_by_stack(struct pt_regs *ctx, int index) {
+     void* ptr = 0;
+-    bpf_probe_read(&ptr, sizeof(ptr), (void *)(PT_REGS_SP(ctx)+(index*8)));
++    bpf_probe_read(&ptr, sizeof(ptr), (void *)(PT_REGS_SP(ctx) + (index * 8)));
+     return ptr;
+ }
+ 
+-void* go_get_argument(struct pt_regs *ctx,bool is_register_abi, int index) {
++static __always_inline void* go_get_argument(struct pt_regs *ctx, bool is_register_abi, int index) {
+     if (is_register_abi) {
+         return go_get_argument_by_reg(ctx, index);
+     }
+     return go_get_argument_by_stack(ctx, index);
+ }
+-
+-#endif
+\ No newline at end of file
+
+--- kern/include/openssl_masterkey_common.h
+@@ -0,0 +1,68 @@
++// SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause
++// Copyright 2022 CFC4N <cfc4n.cs@gmail.com>. All Rights Reserved.
++//
++// Common struct, BPF maps, and helpers shared by all OpenSSL masterkey probes
++// (openssl_masterkey.h, openssl_masterkey_3.0.h, openssl_masterkey_3.2.h).
++
++#pragma once
++
++#include "tls_constants.h"
++
++struct mastersecret_t {
++    /* TLS 1.2 or older */
++    s32 version;
++    u8 client_random[SSL3_RANDOM_SIZE];
++    u8 master_key[MASTER_SECRET_MAX_LEN];
++
++    /* TLS 1.3 */
++    u32 cipher_id;
++    u8 early_secret[EVP_MAX_MD_SIZE];
++    u8 handshake_secret[EVP_MAX_MD_SIZE];
++    u8 handshake_traffic_hash[EVP_MAX_MD_SIZE];
++    u8 client_app_traffic_secret[EVP_MAX_MD_SIZE];
++    u8 server_app_traffic_secret[EVP_MAX_MD_SIZE];
++    u8 exporter_master_secret[EVP_MAX_MD_SIZE];
++};
++
++/***********************************************************
++ * BPF Maps
++ ***********************************************************/
++
++struct {
++    __uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
++    __uint(key_size, sizeof(u32));
++    __uint(value_size, sizeof(u32));
++    __uint(max_entries, 1024);
++} mastersecret_events SEC(".maps");
++
++struct {
++    __uint(type, BPF_MAP_TYPE_LRU_HASH);
++    __type(key, u64);
++    __type(value, struct mastersecret_t);
++    __uint(max_entries, 2048);
++} bpf_context SEC(".maps");
++
++struct {
++    __uint(type, BPF_MAP_TYPE_ARRAY);
++    __type(key, u32);
++    __type(value, struct mastersecret_t);
++    __uint(max_entries, 1);
++} bpf_context_gen SEC(".maps");
++
++/***********************************************************
++ * Common helpers
++ ***********************************************************/
++
++// Allocate a mastersecret_t on the BPF "heap" to work around the 512-byte
++// stack limit.  Returns NULL on failure.
++static __always_inline struct mastersecret_t *make_event(void) {
++    u32 key_gen = 0;
++    struct mastersecret_t *bpf_ctx =
++        bpf_map_lookup_elem(&bpf_context_gen, &key_gen);
++    if (!bpf_ctx)
++        return 0;
++    u64 id = bpf_get_current_pid_tgid();
++    bpf_map_update_elem(&bpf_context, &id, bpf_ctx, BPF_ANY);
++    return bpf_map_lookup_elem(&bpf_context, &id);
++}
++
+
+--- kern/include/tls_constants.h
+@@ -0,0 +1,17 @@
++// SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause
++// Copyright 2022 CFC4N <cfc4n.cs@gmail.com>. All Rights Reserved.
++//
++// Shared TLS constants used by OpenSSL / BoringSSL / GnuTLS masterkey probes.
++
++#pragma once
++
++/* TLS random and secret sizes */
++#define SSL3_RANDOM_SIZE 32
++#define MASTER_SECRET_MAX_LEN 48
++#define EVP_MAX_MD_SIZE 64
++
++/* TLS version numbers (RFC 8446) */
++#define TLS1_1_VERSION 0x0302
++#define TLS1_2_VERSION 0x0303
++#define TLS1_3_VERSION 0x0304
++
+
+--- kern/mysqld_kern.c
+@@ -63,8 +63,6 @@ int mysql56_query(struct pt_regs *ctx) {
+ 
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+ 
+     if (!passes_filter(ctx)) {
+         return 0;
+@@ -81,7 +79,7 @@ int mysql56_query(struct pt_regs *ctx) {
+     data.timestamp = bpf_ktime_get_ns();
+     data.retval = -1;
+     len = (len < MAX_DATA_SIZE_MYSQL ? (len & (MAX_DATA_SIZE_MYSQL - 1)) : MAX_DATA_SIZE_MYSQL);
+-    data.len = len;  // only process id
++    data.len = len;
+     bpf_get_current_comm(&data.comm, sizeof(data.comm));
+ 
+     bpf_probe_read_user(&data.query, len, (void *)PT_REGS_PARM3(ctx));
+@@ -109,8 +107,6 @@ int mysql56_query_return(struct pt_regs *ctx) {
+ 
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+ 
+     if (!passes_filter(ctx)) {
+         return 0;
+@@ -180,8 +176,6 @@ int mysql57_query(struct pt_regs *ctx) {
+ 
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+ 
+     if (!passes_filter(ctx)) {
+         return 0;
+@@ -217,8 +211,6 @@ SEC("uretprobe/dispatch_command_57")
+ int mysql57_query_return(struct pt_regs *ctx) {
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+ 
+     if (!passes_filter(ctx)) {
+         return 0;
+
+--- kern/nspr_kern.c
+@@ -65,17 +65,16 @@ struct {
+  * General helper functions
+  ***********************************************************/
+ 
+-static __inline struct ssl_data_event_t* create_ssl_data_event(u64 current_pid_tgid) {
+-    u32 kZero = 0;
+-    struct ssl_data_event_t* event = bpf_map_lookup_elem(&data_buffer_heap, &kZero);
++static __always_inline struct ssl_data_event_t* create_ssl_data_event(u64 current_pid_tgid) {
++    u32 zero = 0;
++    struct ssl_data_event_t* event = bpf_map_lookup_elem(&data_buffer_heap, &zero);
+     if (event == NULL) {
+         return NULL;
+     }
+ 
+-    const u32 kMask32b = 0xffffffff;
+     event->timestamp_ns = bpf_ktime_get_ns();
+     event->pid = current_pid_tgid >> 32;
+-    event->tid = current_pid_tgid & kMask32b;
++    event->tid = current_pid_tgid & 0xffffffff;
+     return event;
+ }
+ 
+@@ -115,8 +114,6 @@ SEC("uprobe/PR_Write")
+ int probe_entry_SSL_write(struct pt_regs* ctx) {
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+     debug_bpf_printk("nspr uprobe/PR_Write pid :%d\n", pid);
+ 
+     if (!passes_filter(ctx)) {
+@@ -132,8 +129,6 @@ SEC("uretprobe/PR_Write")
+ int probe_ret_SSL_write(struct pt_regs* ctx) {
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+     debug_bpf_printk("nspr uretprobe/PR_Write pid :%d\n", pid);
+ 
+     if (!passes_filter(ctx)) {
+@@ -158,8 +153,6 @@ SEC("uprobe/PR_Read")
+ int probe_entry_SSL_read(struct pt_regs* ctx) {
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+     debug_bpf_printk("nspr uprobe/PR_Read pid :%d\n", pid);
+ 
+     if (!passes_filter(ctx)) {
+@@ -175,8 +168,6 @@ SEC("uretprobe/PR_Read")
+ int probe_ret_SSL_read(struct pt_regs* ctx) {
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+     debug_bpf_printk("nspr uretprobe/PR_Read pid :%d\n", pid);
+ 
+     if (!passes_filter(ctx)) {
+
+--- kern/openssl.h
+@@ -22,8 +22,8 @@
+ 
+ enum ssl_data_event_type { kSSLRead, kSSLWrite };
+ 
+-const u32 invalidFD = 0;
+-const u32 defaultBioType = 0;
++#define INVALID_FD 0
++#define DEFAULT_BIO_TYPE 0
+ 
+ struct ssl_data_event_t {
+     enum ssl_data_event_type type;
+@@ -138,21 +138,20 @@ struct {
+  * General helper functions
+  ***********************************************************/
+ 
+-static __inline struct ssl_data_event_t* create_ssl_data_event(
++static __always_inline struct ssl_data_event_t* create_ssl_data_event(
+     u64 current_pid_tgid) {
+-    u32 kZero = 0;
++    u32 zero = 0;
+     struct ssl_data_event_t* event =
+-        bpf_map_lookup_elem(&data_buffer_heap, &kZero);
++        bpf_map_lookup_elem(&data_buffer_heap, &zero);
+     if (event == NULL) {
+         return NULL;
+     }
+ 
+-    const u32 kMask32b = 0xffffffff;
+     event->timestamp_ns = bpf_ktime_get_ns();
+     event->pid = current_pid_tgid >> 32;
+-    event->tid = current_pid_tgid & kMask32b;
+-    event->fd = invalidFD;
+-    event->bio_type = defaultBioType;
++    event->tid = current_pid_tgid & 0xffffffff;
++    event->fd = INVALID_FD;
++    event->bio_type = DEFAULT_BIO_TYPE;
+ 
+     return event;
+ }
+@@ -204,7 +203,7 @@ static u32 process_BIO_type(u64 ssl_bio_addr) {
+         debug_bpf_printk(
+             "(OPENSSL) process_BIO_type: bpf_probe_read ssl_bio_method_ptr failed, ret: %d\n",
+             ret);
+-        return defaultBioType;
++        return DEFAULT_BIO_TYPE;
+     }
+ 
+     // get ssl->bio->method->type
+@@ -215,7 +214,7 @@ static u32 process_BIO_type(u64 ssl_bio_addr) {
+         debug_bpf_printk(
+             "(OPENSSL) process_BIO_type: bpf_probe_read ssl_bio_method_type_ptr failed, ret: %d\n",
+             ret);
+-        return defaultBioType;
++        return DEFAULT_BIO_TYPE;
+     }
+ 
+     debug_bpf_printk("openssl process_BIO_type bio_type: %d\n", bio_type);
+@@ -265,7 +264,7 @@ static int process_SSL_bio(void *ssl, int bio_offset, u32 *fd, u32 *bio_type) {
+     return 0;
+ }
+ 
+-static __inline int probe_entry_SSL(struct pt_regs* ctx, void *map, int bio_offset) {
++static __always_inline int probe_entry_SSL(struct pt_regs* ctx, void *map, int bio_offset) {
+     if (!passes_filter(ctx)) {
+         return 0;
+     }
+@@ -298,12 +297,11 @@ static __inline int probe_entry_SSL(struct pt_regs* ctx, void *map, int bio_offs
+     active_ssl_buf_t.buf = buf;
+     active_ssl_buf_t.bio_type = bio_type;
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+-    u32 pid = current_pid_tgid >> 32;
+     bpf_map_update_elem(map, &current_pid_tgid, &active_ssl_buf_t, BPF_ANY);
+     return 0;
+ }
+ 
+-static __inline int probe_ret_SSL(struct pt_regs* ctx, void *map, enum ssl_data_event_type type) {
++static __always_inline int probe_ret_SSL(struct pt_regs* ctx, void *map, enum ssl_data_event_type type) {
+     if (!passes_filter(ctx)) {
+         return 0;
+     }
+@@ -351,13 +349,13 @@ int probe_ret_SSL_read(struct pt_regs* ctx) {
+ }
+ 
+ 
+-static __inline struct tcp_fd_info *find_fd_info(struct pt_regs *regs) {
++static __always_inline struct tcp_fd_info *find_fd_info(struct pt_regs *regs) {
+     u64 pid_tgid = bpf_get_current_pid_tgid();
+ 
+     return bpf_map_lookup_elem(&tcp_fd_infos, &pid_tgid);
+ }
+ 
+-static __inline struct tcp_fd_info *lookup_and_delete_fd_info(struct pt_regs *regs) {
++static __always_inline struct tcp_fd_info *lookup_and_delete_fd_info(struct pt_regs *regs) {
+     struct tcp_fd_info *fd_info;
+     u64 pid_tgid;
+ 
+@@ -392,11 +390,9 @@ int probe_inet_stream_connect(struct pt_regs* ctx) {
+     return 0;
+ }
+ 
+-static __inline int kretprobe_connect(struct pt_regs *ctx, int fd, struct sock *sk, const bool active) {
++static __always_inline int kretprobe_connect(struct pt_regs *ctx, int fd, struct sock *sk, const bool active) {
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+     u16 address_family = 0;
+     unsigned __int128 saddr;
+     unsigned __int128 daddr;
+@@ -530,10 +526,6 @@ int probe_tcp_v4_destroy_sock(struct pt_regs* ctx) {
+ // int SSL_set_wfd(SSL *s, int fd)
+ SEC("uprobe/SSL_set_fd")
+ int probe_SSL_set_fd(struct pt_regs* ctx) {
+-    u64 current_pid_tgid = bpf_get_current_pid_tgid();
+-    u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+ 
+     u64 ssl_addr = (u64)PT_REGS_PARM1(ctx);
+     u64 fd = (u64)PT_REGS_PARM2(ctx);
+
+--- kern/openssl_masterkey.h
+@@ -13,77 +13,18 @@
+ // limitations under the License.
+ 
+ #include "ecapture.h"
++#include "include/openssl_masterkey_common.h"
+ 
+ // https://wiki.openssl.org/index.php/TLS1.3
+-// 仅openssl 1.1.1 后才支持 TLS 1.3 协议
+-
+-// openssl 1.1.1.X 版本相关的常量
+-#define SSL3_RANDOM_SIZE 32
+-#define MASTER_SECRET_MAX_LEN 48
+-#define EVP_MAX_MD_SIZE 64
+-
+-struct mastersecret_t {
+-    // TLS 1.2 or older
+-    s32 version;
+-    u8 client_random[SSL3_RANDOM_SIZE];
+-    u8 master_key[MASTER_SECRET_MAX_LEN];
+-
+-    // TLS 1.3
+-    u32 cipher_id;
+-    u8 early_secret[EVP_MAX_MD_SIZE];
+-    u8 handshake_secret[EVP_MAX_MD_SIZE];
+-    u8 handshake_traffic_hash[EVP_MAX_MD_SIZE];
+-    u8 client_app_traffic_secret[EVP_MAX_MD_SIZE];
+-    u8 server_app_traffic_secret[EVP_MAX_MD_SIZE];
+-    u8 exporter_master_secret[EVP_MAX_MD_SIZE];
+-};
+-
+-#define TLS1_1_VERSION 0x0302
+-#define TLS1_2_VERSION 0x0303
+-#define TLS1_3_VERSION 0x0304
+-
+-/////////////////////////BPF MAPS ////////////////////////////////
+-
+-// bpf map
+-struct {
+-    __uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
+-    __uint(key_size, sizeof(u32));
+-    __uint(value_size, sizeof(u32));
+-    __uint(max_entries, 1024);
+-} mastersecret_events SEC(".maps");
+-
+-struct {
+-    __uint(type, BPF_MAP_TYPE_LRU_HASH);
+-    __type(key, u64);
+-    __type(value, struct mastersecret_t);
+-    __uint(max_entries, 2048);
+-} bpf_context SEC(".maps");
+-
+-struct {
+-    __uint(type, BPF_MAP_TYPE_ARRAY);
+-    __type(key, u32);
+-    __type(value, struct mastersecret_t);
+-    __uint(max_entries, 1);
+-} bpf_context_gen SEC(".maps");
+-
+-/////////////////////////COMMON FUNCTIONS ////////////////////////////////
+-// 这个函数用来规避512字节栈空间限制，通过在堆上创建内存的方式，避开限制
+-static __always_inline struct mastersecret_t *make_event() {
+-    u32 key_gen = 0;
+-    struct mastersecret_t *bpf_ctx = bpf_map_lookup_elem(&bpf_context_gen, &key_gen);
+-    if (!bpf_ctx) return 0;
+-    u64 id = bpf_get_current_pid_tgid();
+-    bpf_map_update_elem(&bpf_context, &id, bpf_ctx, BPF_ANY);
+-    return bpf_map_lookup_elem(&bpf_context, &id);
+-}
++// Only OpenSSL >= 1.1.1 supports TLS 1.3
+ 
+-/////////////////////////BPF FUNCTIONS ////////////////////////////////
++/***********************************************************
++ * BPF probe function (OpenSSL 1.x)
++ ***********************************************************/
+ SEC("uprobe/SSL_write_key")
+ int probe_ssl_master_key(struct pt_regs *ctx) {
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+ 
+     if (!passes_filter(ctx)) {
+         return 0;
+@@ -110,7 +51,7 @@ int probe_ssl_master_key(struct pt_regs *ctx) {
+         debug_bpf_printk("bpf_probe_read tls_version failed, ret :%d\n", ret);
+         return 0;
+     }
+-    mastersecret->version = version;  // int version;
++    mastersecret->version = version;
+     debug_bpf_printk("TLS version :%d\n", mastersecret->version);
+ 
+     // Get ssl3_state_st pointer
+
+--- kern/openssl_masterkey_3.0.h
+@@ -13,77 +13,18 @@
+ // limitations under the License.
+ 
+ #include "ecapture.h"
++#include "include/openssl_masterkey_common.h"
+ 
+ // https://wiki.openssl.org/index.php/TLS1.3
+-// 仅openssl 1.1.1 后才支持 TLS 1.3 协议
+-
+-// openssl 1.1.1.X 版本相关的常量
+-#define SSL3_RANDOM_SIZE 32
+-#define MASTER_SECRET_MAX_LEN 48
+-#define EVP_MAX_MD_SIZE 64
+-
+-struct mastersecret_t {
+-    // TLS 1.2 or older
+-    s32 version;
+-    u8 client_random[SSL3_RANDOM_SIZE];
+-    u8 master_key[MASTER_SECRET_MAX_LEN];
+-
+-    // TLS 1.3
+-    u32 cipher_id;
+-    u8 early_secret[EVP_MAX_MD_SIZE];
+-    u8 handshake_secret[EVP_MAX_MD_SIZE];
+-    u8 handshake_traffic_hash[EVP_MAX_MD_SIZE];
+-    u8 client_app_traffic_secret[EVP_MAX_MD_SIZE];
+-    u8 server_app_traffic_secret[EVP_MAX_MD_SIZE];
+-    u8 exporter_master_secret[EVP_MAX_MD_SIZE];
+-};
+-
+-#define TLS1_1_VERSION 0x0302
+-#define TLS1_2_VERSION 0x0303
+-#define TLS1_3_VERSION 0x0304
+-
+-/////////////////////////BPF MAPS ////////////////////////////////
+-
+-// bpf map
+-struct {
+-    __uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
+-    __uint(key_size, sizeof(u32));
+-    __uint(value_size, sizeof(u32));
+-    __uint(max_entries, 1024);
+-} mastersecret_events SEC(".maps");
+-
+-struct {
+-    __uint(type, BPF_MAP_TYPE_LRU_HASH);
+-    __type(key, u64);
+-    __type(value, struct mastersecret_t);
+-    __uint(max_entries, 2048);
+-} bpf_context SEC(".maps");
+-
+-struct {
+-    __uint(type, BPF_MAP_TYPE_ARRAY);
+-    __type(key, u32);
+-    __type(value, struct mastersecret_t);
+-    __uint(max_entries, 1);
+-} bpf_context_gen SEC(".maps");
+-
+-/////////////////////////COMMON FUNCTIONS ////////////////////////////////
+-// 这个函数用来规避512字节栈空间限制，通过在堆上创建内存的方式，避开限制
+-static __always_inline struct mastersecret_t *make_event() {
+-    u32 key_gen = 0;
+-    struct mastersecret_t *bpf_ctx = bpf_map_lookup_elem(&bpf_context_gen, &key_gen);
+-    if (!bpf_ctx) return 0;
+-    u64 id = bpf_get_current_pid_tgid();
+-    bpf_map_update_elem(&bpf_context, &id, bpf_ctx, BPF_ANY);
+-    return bpf_map_lookup_elem(&bpf_context, &id);
+-}
++// Only OpenSSL >= 1.1.1 supports TLS 1.3
+ 
+-/////////////////////////BPF FUNCTIONS ////////////////////////////////
++/***********************************************************
++ * BPF probe function (OpenSSL 3.0.x / 3.1.x)
++ ***********************************************************/
+ SEC("uprobe/SSL_write_key")
+ int probe_ssl_master_key(struct pt_regs *ctx) {
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+ 
+     if (!passes_filter(ctx)) {
+         return 0;
+@@ -108,7 +49,7 @@ int probe_ssl_master_key(struct pt_regs *ctx) {
+         debug_bpf_printk("bpf_probe_read tls_version failed, ret :%d\n", ret);
+         return 0;
+     }
+-    mastersecret->version = version;  // int version;
++    mastersecret->version = version;
+     debug_bpf_printk("TLS version :%d\n", mastersecret->version);
+ 
+     u64 *ssl_client_random_ptr = (u64 *)(ssl_st_ptr + SSL_ST_S3_CLIENT_RANDOM);
+
+--- kern/openssl_masterkey_3.2.h
+@@ -13,81 +13,22 @@
+ // limitations under the License.
+ 
+ #include "ecapture.h"
++#include "include/openssl_masterkey_common.h"
+ 
+ // https://wiki.openssl.org/index.php/TLS1.3
+-// 仅openssl 1.1.1 后才支持 TLS 1.3 协议
+-
+-// openssl 1.1.1.X 版本相关的常量
+-#define SSL3_RANDOM_SIZE 32
+-#define MASTER_SECRET_MAX_LEN 48
+-#define EVP_MAX_MD_SIZE 64
+-
+-struct mastersecret_t {
+-    // TLS 1.2 or older
+-    s32 version;
+-    u8 client_random[SSL3_RANDOM_SIZE];
+-    u8 master_key[MASTER_SECRET_MAX_LEN];
+-
+-    // TLS 1.3
+-    u32 cipher_id;
+-    u8 early_secret[EVP_MAX_MD_SIZE];
+-    u8 handshake_secret[EVP_MAX_MD_SIZE];
+-    u8 handshake_traffic_hash[EVP_MAX_MD_SIZE];
+-    u8 client_app_traffic_secret[EVP_MAX_MD_SIZE];
+-    u8 server_app_traffic_secret[EVP_MAX_MD_SIZE];
+-    u8 exporter_master_secret[EVP_MAX_MD_SIZE];
+-};
+-
+-#define TLS1_1_VERSION 0x0302
+-#define TLS1_2_VERSION 0x0303
+-#define TLS1_3_VERSION 0x0304
++// Only OpenSSL >= 1.1.1 supports TLS 1.3
+ 
+ #define SSL_TYPE_SSL_CONNECTION 0
+ #define SSL_TYPE_QUIC_CONNECTION 1
+ #define SSL_TYPE_QUIC_XSO 2
+ 
+-/////////////////////////BPF MAPS ////////////////////////////////
+-
+-// bpf map
+-struct {
+-    __uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
+-    __uint(key_size, sizeof(u32));
+-    __uint(value_size, sizeof(u32));
+-    __uint(max_entries, 1024);
+-} mastersecret_events SEC(".maps");
+-
+-struct {
+-    __uint(type, BPF_MAP_TYPE_LRU_HASH);
+-    __type(key, u64);
+-    __type(value, struct mastersecret_t);
+-    __uint(max_entries, 2048);
+-} bpf_context SEC(".maps");
+-
+-struct {
+-    __uint(type, BPF_MAP_TYPE_ARRAY);
+-    __type(key, u32);
+-    __type(value, struct mastersecret_t);
+-    __uint(max_entries, 1);
+-} bpf_context_gen SEC(".maps");
+-
+-/////////////////////////COMMON FUNCTIONS ////////////////////////////////
+-// 这个函数用来规避512字节栈空间限制，通过在堆上创建内存的方式，避开限制
+-static __always_inline struct mastersecret_t *make_event() {
+-    u32 key_gen = 0;
+-    struct mastersecret_t *bpf_ctx = bpf_map_lookup_elem(&bpf_context_gen, &key_gen);
+-    if (!bpf_ctx) return 0;
+-    u64 id = bpf_get_current_pid_tgid();
+-    bpf_map_update_elem(&bpf_context, &id, bpf_ctx, BPF_ANY);
+-    return bpf_map_lookup_elem(&bpf_context, &id);
+-}
+-
+-/////////////////////////BPF FUNCTIONS ////////////////////////////////
++/***********************************************************
++ * BPF probe function (OpenSSL 3.2+)
++ ***********************************************************/
+ SEC("uprobe/SSL_write_key")
+ int probe_ssl_master_key(struct pt_regs *ctx) {
+     u64 current_pid_tgid = bpf_get_current_pid_tgid();
+     u32 pid = current_pid_tgid >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+ 
+     if (!passes_filter(ctx)) {
+         return 0;
+@@ -102,10 +43,9 @@ int probe_ssl_master_key(struct pt_regs *ctx) {
+         debug_bpf_printk("mastersecret is null\n");
+         return 0;
+     }
+-    // TODO 检查 ssl->type, 参考 ssl/ssl_local.h的 SSL_CONNECTION_FROM_SSL_int 宏
++    // TODO: check ssl->type, see ssl/ssl_local.h SSL_CONNECTION_FROM_SSL_int macro
+     int type = 0;
+     if (type == SSL_TYPE_QUIC_CONNECTION) {
+-        // 重新获取 ssl->tls 的地址作为 SSL_CONNECTION的地址
+         // Reget the address of the ssl->tls as the address of the SSL_CONNECTION
+         debug_bpf_printk("unsupported type: SSL_CONNECTION, coming soon.\n");
+         return 0;
+@@ -120,7 +60,7 @@ int probe_ssl_master_key(struct pt_regs *ctx) {
+         debug_bpf_printk("bpf_probe_read tls_version failed, ret :%d\n", ret);
+         return 0;
+     }
+-    mastersecret->version = version;  // int version;
++    mastersecret->version = version;
+     debug_bpf_printk("TLS version :%d\n", mastersecret->version);
+ 
+     u64 *ssl_client_random_ptr = (u64 *)(ssl_st_ptr + SSL_CONNECTION_ST_S3_CLIENT_RANDOM);
+
+--- kern/tc.h
+@@ -90,9 +90,9 @@ static __always_inline void get_proc_cmdline(struct task_struct *task, char *cmd
+ }
+ 
+ static __always_inline struct skb_data_event_t *make_skb_data_event() {
+-    u32 kZero = 0;
++    u32 zero = 0;
+     struct skb_data_event_t *event =
+-        bpf_map_lookup_elem(&skb_data_buffer_heap, &kZero);
++        bpf_map_lookup_elem(&skb_data_buffer_heap, &zero);
+     if (event == NULL) {
+         return NULL;
+     }
+@@ -282,8 +282,10 @@ int ingress_cls_func(struct __sk_buff *skb) {
+     return capture_packets(skb, true);
+ };
+ 
+-SEC("kprobe/tcp_sendmsg")
+-int tcp_sendmsg(struct pt_regs *ctx){
++// Shared helper for tcp_sendmsg / udp_sendmsg kprobes.
++// Extracts the 5-tuple from the socket and stores the PID/UID context in
++// network_map so that TC classifier can correlate packets to processes.
++static __always_inline int trace_sendmsg(struct pt_regs *ctx, u32 protocol) {
+     u32 pid = bpf_get_current_pid_tgid() >> 32;
+     u64 current_uid_gid = bpf_get_current_uid_gid();
+     u32 uid = current_uid_gid;
+@@ -303,7 +305,7 @@ int tcp_sendmsg(struct pt_regs *ctx){
+         bpf_probe_read(&src_ip6, sizeof(src_ip6), &sk->__sk_common.skc_v6_rcv_saddr);
+         bpf_probe_read(&dst_ip6, sizeof(dst_ip6), &sk->__sk_common.skc_v6_daddr);
+ 
+-        conn_id.protocol = IPPROTO_TCP;
++        conn_id.protocol = protocol;
+         conn_id.src_port = lport;
+         conn_id.dst_port = bpf_ntohs(dport);
+         __builtin_memcpy(conn_id.src_ip6, src_ip6, sizeof(src_ip6));
+@@ -315,7 +317,7 @@ int tcp_sendmsg(struct pt_regs *ctx){
+         bpf_probe_read(&src_ip4, sizeof(src_ip4), &sk->__sk_common.skc_rcv_saddr);
+         bpf_probe_read(&dst_ip4, sizeof(dst_ip4), &sk->__sk_common.skc_daddr);
+ 
+-        conn_id.protocol = IPPROTO_TCP;
++        conn_id.protocol = protocol;
+         conn_id.src_port = lport;
+         conn_id.src_ip4 = src_ip4;
+         conn_id.dst_port = bpf_ntohs(dport);
+@@ -327,57 +329,17 @@ int tcp_sendmsg(struct pt_regs *ctx){
+     net_ctx.uid = uid;
+     bpf_get_current_comm(&net_ctx.comm, sizeof(net_ctx.comm));
+ 
+-    debug_bpf_printk("tcp_sendmsg pid : %d, comm :%s\n", net_ctx.pid, net_ctx.comm);
++    debug_bpf_printk("trace_sendmsg pid: %d, comm: %s\n", net_ctx.pid, net_ctx.comm);
+     bpf_map_update_elem(&network_map, &conn_id, &net_ctx, BPF_ANY);
+     return 0;
++}
++
++SEC("kprobe/tcp_sendmsg")
++int tcp_sendmsg(struct pt_regs *ctx) {
++    return trace_sendmsg(ctx, IPPROTO_TCP);
+ };
+ 
+ SEC("kprobe/udp_sendmsg")
+-int udp_sendmsg(struct pt_regs *ctx){
+-    u32 pid = bpf_get_current_pid_tgid() >> 32;
+-    u64 current_uid_gid = bpf_get_current_uid_gid();
+-    u32 uid = current_uid_gid;
+-    struct sock *sk = (struct sock *)PT_REGS_PARM1(ctx);
+-    if (sk == NULL) {
+-        return 0;
+-    }
+-
+-    u16 family, lport, dport;
+-    struct net_id_t conn_id = {0};
+-    bpf_probe_read(&family, sizeof(family), &sk->__sk_common.skc_family);
+-
+-    if (family == AF_INET6) {
+-        u32 src_ip6[4], dst_ip6[4];
+-        bpf_probe_read(&lport, sizeof(lport), &sk->__sk_common.skc_num);
+-        bpf_probe_read(&dport, sizeof(dport), &sk->__sk_common.skc_dport);
+-        bpf_probe_read(&src_ip6, sizeof(src_ip6), &sk->__sk_common.skc_v6_rcv_saddr);
+-        bpf_probe_read(&dst_ip6, sizeof(dst_ip6), &sk->__sk_common.skc_v6_daddr);
+-
+-        conn_id.protocol = IPPROTO_UDP;
+-        conn_id.src_port = lport;
+-        conn_id.dst_port = bpf_ntohs(dport);
+-        __builtin_memcpy(conn_id.src_ip6, src_ip6, sizeof(src_ip6));
+-        __builtin_memcpy(conn_id.dst_ip6, dst_ip6, sizeof(dst_ip6));
+-    } else if (family == AF_INET) {
+-        u32 src_ip4, dst_ip4;
+-        bpf_probe_read(&lport, sizeof(lport), &sk->__sk_common.skc_num);
+-        bpf_probe_read(&dport, sizeof(dport), &sk->__sk_common.skc_dport);
+-        bpf_probe_read(&src_ip4, sizeof(src_ip4), &sk->__sk_common.skc_rcv_saddr);
+-        bpf_probe_read(&dst_ip4, sizeof(dst_ip4), &sk->__sk_common.skc_daddr);
+-
+-        conn_id.protocol = IPPROTO_UDP;
+-        conn_id.src_port = lport;
+-        conn_id.src_ip4 = src_ip4;
+-        conn_id.dst_port = bpf_ntohs(dport);
+-        conn_id.dst_ip4 = dst_ip4;
+-    }
+-
+-    struct net_ctx_t net_ctx;
+-    net_ctx.pid = pid;
+-    net_ctx.uid = uid;
+-    bpf_get_current_comm(&net_ctx.comm, sizeof(net_ctx.comm));
+-
+-    debug_bpf_printk("udp_sendmsg pid: %d, comm: %s\n", net_ctx.pid, net_ctx.comm);
+-    bpf_map_update_elem(&network_map, &conn_id, &net_ctx, BPF_ANY);
+-    return 0;
++int udp_sendmsg(struct pt_regs *ctx) {
++    return trace_sendmsg(ctx, IPPROTO_UDP);
+ };
+
+--- kern/zsh_kern.c
+@@ -1,3 +1,17 @@
++// Copyright 2022 CFC4N <cfc4n.cs@gmail.com>. All Rights Reserved.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//   http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
+ #include "ecapture.h"
+ 
+ struct event {
+

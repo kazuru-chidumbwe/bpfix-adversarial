@@ -1,0 +1,40 @@
+repo: DataDog/datadog-agent
+commit: 7faa46c86bbdf7f5c8d52ec86bce9239f217a12b
+rank: 5528
+
+[USM] Support Node.js TLS monitoring when nodejs with libnode.so (#45393)
+
+### What does this PR do?
+Adds support for Node.js TLS monitoring when Node.js is installed via package managers (e.g., apt install nodejs on Ubuntu). In this configuration, SSL symbols are bundled in libnode.so rather than statically linked in the  node binary.                                                                                                                                                                                                                          
+                                                                                                                                                                                                                                        Changes:                                                                                                                                                                                                                              
+  - Add libnode to LibsetCrypto in `libset.go` to track libnode.so opens                                                                                                                                                                  
+  - Add eBPF pattern matching for ibnode (the 6 characters before .so in libnode.so) in probes.h                                                                                                                                        
+  - Add AttachToSharedLibraries rule for libnode.so in `nodejs.go`                                                                                                                                                                        
+  - Add test TestNodeJSTLSWithLibnode using Ubuntu 22.04 container with apt-installed Node.js                                                                                                                                           
+
+### Motivation
+Node.js installed via official Docker images (e.g., node:latest) has SSL symbols statically linked in the node binary. However, Node.js installed via system package managers on Ubuntu has SSL symbols in libnode.so instead. 
+Without this fix, USM cannot monitor TLS traffic for apt-installed Node.js because the uprobe attacher only looks for SSL symbols in the node binary.
+
+### Describe how you validated your changes
+1. Verified that `nm -D /usr/bin/node` shows no SSL symbols in Ubuntu's apt-installed Node.js binary                                                                                                                                    
+2. Verified that `nm -D /lib/*/libnode.so.*` shows SSL symbols (SSL_read, SSL_write, SSL_do_handshake) as defined (T) in libnode.so                                                                                                     
+3. Ran TestNodeJSTLSWithLibnode without the fix - test fails with "path is blocked" (cannot attach to SSL functions)                                                                                                                  
+4. Ran TestNodeJSTLSWithLibnode with the fix - test passes, TLS traffic is captured
+
+### Additional Notes
+
+
+Co-authored-by: daniel.lavie <daniel.lavie@datadoghq.com>
+
+--- pkg/network/ebpf/c/shared-libraries/probes.h
+@@ -84,7 +84,7 @@ static __always_inline void push_event_if_relevant(void *ctx, lib_path_t *path,
+     u64 crypto_libset_enabled = 0;
+     LOAD_CONSTANT("crypto_libset_enabled", crypto_libset_enabled);
+ 
+-    if (crypto_libset_enabled && (match6chars(0, 'l', 'i', 'b', 's', 's', 'l') || match6chars(0, 'c', 'r', 'y', 'p', 't', 'o') || match6chars(0, 'g', 'n', 'u', 't', 'l', 's'))) {
++    if (crypto_libset_enabled && (match6chars(0, 'l', 'i', 'b', 's', 's', 'l') || match6chars(0, 'c', 'r', 'y', 'p', 't', 'o') || match6chars(0, 'g', 'n', 'u', 't', 'l', 's') || match6chars(0, 'i', 'b', 'n', 'o', 'd', 'e'))) {
+         if (ringbuffers_enabled) {
+             bpf_ringbuf_output_with_telemetry(&crypto_shared_libraries, path, sizeof(lib_path_t), 0);
+         } else {
+

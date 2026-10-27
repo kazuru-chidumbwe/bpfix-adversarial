@@ -1,0 +1,30 @@
+repo: cilium/cilium
+commit: caf84595d9cb34db3c6084e5cce40c6c78083e3b
+rank: 3435
+
+bpf: Force passing ctx to mock_fib_lookup
+
+Clang 18 optimizes out passing the unused parameter, and the verifier is
+unhappy about it:
+
+; ret = fib_lookup(ctx, &fib_params->l, sizeof(fib_params->l), 0);
+311: (85) call pc+598
+arg#0 expected pointer to ctx, but got PTR
+Caller passes invalid args into func#1
+
+("but got PTR" is a bug in displaying the error message, it is a scalar
+in fact.)
+
+Signed-off-by: Maxim Mikityanskiy <maxim@isovalent.com>
+
+--- bpf/tests/tc_nodeport_lb4_nat_lb.c
+@@ -83,7 +83,7 @@ struct {
+ 
+ #define fib_lookup mock_fib_lookup
+ 
+-long mock_fib_lookup(__maybe_unused struct __ctx_buff *ctx, struct bpf_fib_lookup *params,
++long mock_fib_lookup(__maybe_unused struct __ctx_buff * volatile ctx, struct bpf_fib_lookup *params,
+ 		     __maybe_unused int plen, __maybe_unused __u32 flags)
+ {
+ 	__u32 key = 0;
+

@@ -1,0 +1,939 @@
+repo: spinningfactory/kloak
+commit: a4d94f871d4c526c2df9b4d186059390a491da3a
+rank: 4453
+
+feat(ebpf): only rewrite host-scoped secrets on connections whose SNI is the host (#329)
+
+* feat(ebpf): only rewrite host-scoped secrets on connections whose SNI is the host
+
+A secret restricted with getkloak.io/hosts was rewritten on any connection
+whose destination IP came from a trusted DNS answer for the host. CDNs and
+cloud load balancers serve many tenants on the same IPs and route by SNI, so
+a compromised pod could connect to a verified IP of the host with another
+tenant's SNI and have the real value delivered to that tenant.
+
+The data plane now also requires the connection's first ClientHello to name
+the host:
+
+- tls_parse_sni (helpers.h) extracts the SNI from a ClientHello. It returns
+  ECH, truncated and malformed results instead of a host, rejects bytes
+  outside lowercase LDH/'.'/'_' (an embedded NUL could otherwise compare
+  equal to a zero-padded host), and only trusts a server_name once every
+  extension header was seen. Tested against real ClientHellos from Go,
+  Node, Bun (both with X25519MLKEM768) and Python/OpenSSL.
+- A second tcp_sendmsg kprobe parses the first handshake record of each
+  connection into sni_state (keyed by struct sock *). The
+  sock/inet_sock_set_state tracepoint clears it on SYN_SENT and CLOSE so a
+  reused socket never inherits an old SNI. A later valid ClientHello
+  (HelloRetryRequest) naming another host or carrying ECH marks the
+  connection as mismatched.
+- The bridge kprobe drops patches for hostname-restricted secrets unless the
+  socket's SNI matches. Refused patches are removed from tc_pending rather
+  than zeroed, because tc treats secret_len 0 as a full-length patch.
+  xor_pending is left untouched, so a memory-BIO write refused on another
+  connection's tcp_sendmsg is still bridged on its own socket.
+- Refusals are reported on secret_binding_events (new reason, SNI status and
+  SNI fields) and logged as "SNI check violation".
+  --sni-check=enforce|audit (Helm controller.ebpf.sniCheck, default enforce)
+  works like --secret-binding.
+- secrets.ParseHost lowercases the host and strips a trailing dot, matching
+  the SNI normalization.
+
+Matching is exact: the raw TLS demos now connect to the full Service name
+(via the downward API) instead of the short one, and the Python raw TLS demo
+takes a TLS_SERVER_NAME override that the new TestEBPFSNIFiltering e2e test
+uses to send a mismatched SNI to a DNS-verified destination.
+
+Closes #328
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01B4rSwvzA4btMhju5wM6cxS
+
+* fix(ebpf): satisfy golangci-lint on the SNI check
+
+Pass the 88-byte secretBindingEvent by pointer (gocritic hugeParam) and
+check or explicitly drop Close errors in the SNI capture test (errcheck).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01B4rSwvzA4btMhju5wM6cxS
+
+---------
+
+Co-authored-by: Claude <noreply@anthropic.com>
+
+--- pkg/ebpf/bpf/helpers.h
+@@ -395,6 +395,192 @@ HELPER_INLINE int tls_appdata_reclen_match(__u32 rec_len, __u32 pt_len,
+   return 0;
+ }
+ 
++// ============================================================================
++// TLS ClientHello SNI extraction (SNI check, spinningfactory/kloak#328)
++//
++// A secret restricted to a hostname is only rewritten on a connection whose
++// first ClientHello named that host, so a shared front end (CDN, cloud load
++// balancer) cannot route the real value to another tenant. The ClientHello is
++// sent in the clear; tls_parse_sni reads it from the first bytes of a
++// tcp_sendmsg buffer copied into a TLS_SNI_BUF_LEN scratch buffer.
++// ============================================================================
++
++// Copy size for the ClientHello prefix. Post-quantum key shares
++// (X25519MLKEM768) push ClientHellos to ~1.2-1.8 KB, and server_name may come
++// after key_share. Must be a power of two: offsets are masked with it for the
++// verifier.
++#define TLS_SNI_BUF_LEN 2048
++#define TLS_SNI_BUF_MASK (TLS_SNI_BUF_LEN - 1)
++// Extensions walked before giving up. Real ClientHellos carry ~10-20.
++#define TLS_SNI_MAX_EXTS 32
++
++#define TLS_HS_CLIENT_HELLO 0x01
++#define TLS_EXT_SERVER_NAME 0x0000
++#define TLS_EXT_ECH 0xfe0d
++
++// tls_parse_sni results. SNI_STATUS_NONE is the zero value, so a zeroed
++// sni_state entry reads as "no ClientHello seen yet".
++#define SNI_STATUS_NONE 0       // no ClientHello seen on this connection
++#define SNI_STATUS_SEEN 1       // ClientHello with a valid host_name
++#define SNI_STATUS_ABSENT 2     // ClientHello without server_name
++#define SNI_STATUS_ECH 3        // encrypted ClientHello: the outer SNI is not the real host
++#define SNI_STATUS_TRUNCATED 4  // server_name not within the copied bytes
++#define SNI_STATUS_MALFORMED 5  // lengths inconsistent or host_name invalid
++#define SNI_STATUS_MISMATCH 6   // a later ClientHello (HelloRetryRequest) named another host
++#define SNI_NOT_CLIENT_HELLO 0xFF // buffer does not start with a ClientHello
++
++// sni_idx masks a buffer offset. The empty asm hides the value from the
++// compiler: it can often prove off < TLS_SNI_BUF_LEN from an earlier
++// `off + k > len` check and drop the mask, but the verifier loses that link
++// once the register is spilled, and rejects the access.
++HELPER_INLINE __u32 sni_idx(__u32 off) {
++#ifdef __BPF__
++  asm volatile("" : "+r"(off));
++#endif
++  return off & TLS_SNI_BUF_MASK;
++}
++
++HELPER_INLINE __u32 sni_rd16(const __u8 *b, __u32 off) {
++  return ((__u32)b[sni_idx(off)] << 8) | (__u32)b[sni_idx(off + 1)];
++}
++
++// A host_name byte the SNI check accepts: lowercase LDH, '.', '_'.
++// Rejecting everything else (notably NUL) keeps a host such as
++// "api.example.com\0evil" from comparing equal to a zero-padded
++// "api.example.com" in hosts_match.
++HELPER_INLINE int sni_host_char_ok(__u8 c) {
++  return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' ||
++         c == '.' || c == '_';
++}
++
++// tls_parse_sni parses the TLS record at buf[0..len) as a ClientHello and, on
++// SNI_STATUS_SEEN, writes the lowercased host_name without a trailing dot to
++// host_out (MAX_HOST_LEN bytes, zeroed by the caller) and its length to
++// *host_len. Returns SNI_NOT_CLIENT_HELLO when the buffer does not start with
++// a handshake record carrying a ClientHello, otherwise an SNI_STATUS_* value.
++// An ECH extension wins over a readable server_name: with ECH the outer SNI
++// is the front end's public name, not the host the request is for.
++HELPER_INLINE __u32 tls_parse_sni(const __u8 *buf, __u32 len, char *host_out,
++                                  __u32 *host_len) {
++  *host_len = 0;
++  if (len > TLS_SNI_BUF_LEN)
++    len = TLS_SNI_BUF_LEN;
++  // Record header (5) + handshake header (4).
++  if (len < 9)
++    return SNI_NOT_CLIENT_HELLO;
++  if (buf[0] != TLS_CT_HANDSHAKE || buf[1] != 0x03 ||
++      buf[5] != TLS_HS_CLIENT_HELLO)
++    return SNI_NOT_CLIENT_HELLO;
++
++  __u32 rec_end = 5 + sni_rd16(buf, 3);
++  __u32 hs_end = 9 + (((__u32)buf[6] << 16) | sni_rd16(buf, 7));
++  // A ClientHello fragmented across records is legal but never seen in
++  // practice; refuse rather than reassemble.
++  if (hs_end > rec_end)
++    return SNI_STATUS_MALFORMED;
++
++  // client_version (2) + random (32).
++  __u32 off = 9 + 2 + 32;
++  // session_id
++  if (off + 1 > len)
++    return SNI_STATUS_TRUNCATED;
++  off += 1 + buf[sni_idx(off)];
++  // cipher_suites
++  if (off + 2 > len)
++    return SNI_STATUS_TRUNCATED;
++  off += 2 + sni_rd16(buf, off);
++  // compression_methods
++  if (off + 1 > len)
++    return SNI_STATUS_TRUNCATED;
++  off += 1 + buf[sni_idx(off)];
++  if (off > hs_end)
++    return SNI_STATUS_MALFORMED;
++  if (off == hs_end)
++    return SNI_STATUS_ABSENT; // no extensions at all
++  if (off + 2 > len)
++    return SNI_STATUS_TRUNCATED;
++  __u32 ext_end = off + 2 + sni_rd16(buf, off);
++  if (ext_end != hs_end)
++    return SNI_STATUS_MALFORMED;
++  off += 2;
++
++  int ech = 0;
++  int found = 0;
++  int truncated = 0;
++  __u32 n = 0, name_off = 0;
++  for (__u32 i = 0; i < TLS_SNI_MAX_EXTS; i++) {
++    if (off >= ext_end)
++      break;
++    if (off + 4 > ext_end)
++      return SNI_STATUS_MALFORMED;
++    if (off + 4 > len) {
++      truncated = 1;
++      break;
++    }
++    __u32 type = sni_rd16(buf, off);
++    __u32 elen = sni_rd16(buf, off + 2);
++    off += 4;
++    if (off + elen > ext_end)
++      return SNI_STATUS_MALFORMED;
++
++    if (type == TLS_EXT_ECH)
++      ech = 1;
++
++    if (type == TLS_EXT_SERVER_NAME) {
++      // A second server_name extension is illegal (RFC 8446 §4.2).
++      if (found)
++        return SNI_STATUS_MALFORMED;
++      if (off + elen > len) {
++        truncated = 1;
++        break;
++      }
++      // ServerNameList: list_len (2), name_type (1), name_len (2), name.
++      // Only a single host_name entry is accepted.
++      if (elen < 5 || sni_rd16(buf, off) != elen - 2 ||
++          buf[sni_idx(off + 2)] != 0)
++        return SNI_STATUS_MALFORMED;
++      n = sni_rd16(buf, off + 3);
++      if (n == 0 || n + 5 != elen || n >= MAX_HOST_LEN)
++        return SNI_STATUS_MALFORMED;
++      // Copied after the walk: a copy loop nested in this one multiplies the
++      // paths the BPF verifier explores past its instruction budget.
++      name_off = off + 5;
++      found = 1;
++    }
++    off += elen;
++  }
++
++  if (ech)
++    return SNI_STATUS_ECH;
++  // ECH may sit after the copied bytes or past the walk limit: only trust
++  // a server_name when every extension was seen.
++  if (truncated)
++    return SNI_STATUS_TRUNCATED;
++  if (off < ext_end)
++    return SNI_STATUS_MALFORMED; // more than TLS_SNI_MAX_EXTS extensions
++  if (!found)
++    return SNI_STATUS_ABSENT;
++
++  for (__u32 j = 0; j < MAX_HOST_LEN; j++) {
++    if (j >= n)
++      break;
++    __u8 c = buf[sni_idx(name_off + j)];
++    if (c >= 'A' && c <= 'Z')
++      c = c - 'A' + 'a';
++    if (!sni_host_char_ok(c))
++      return SNI_STATUS_MALFORMED;
++    host_out[j & (MAX_HOST_LEN - 1)] = (char)c;
++  }
++  if (host_out[(n - 1) & (MAX_HOST_LEN - 1)] == '.') {
++    host_out[(n - 1) & (MAX_HOST_LEN - 1)] = 0;
++    n--;
++  }
++  if (n == 0)
++    return SNI_STATUS_MALFORMED;
++  *host_len = n;
++  return SNI_STATUS_SEEN;
++}
++
+ // ============================================================================
+ // AES single-block encryption — used to recover the GHASH subkey H for
+ // BoringSSL.
+
+--- pkg/ebpf/bpf/helpers_test.c
+@@ -581,6 +581,228 @@ static void test_gf128_halve_to_h_edges(void) {
+ // main
+ // ============================================================================
+ 
++// ============================================================================
++// tls_parse_sni
++// ============================================================================
++
++#include "tls_sni_fixtures.h"
++
++static __u32 parse_sni(const unsigned char *ch, __u32 len, char host[MAX_HOST_LEN],
++                       __u32 *host_len) {
++  // The BPF caller parses a TLS_SNI_BUF_LEN scratch copy; mirror that.
++  static __u8 buf[TLS_SNI_BUF_LEN];
++  memset(buf, 0, sizeof(buf));
++  memcpy(buf, ch, len < sizeof(buf) ? len : sizeof(buf));
++  memset(host, 0, MAX_HOST_LEN);
++  return tls_parse_sni(buf, len, host, host_len);
++}
++
++static void assert_sni(const unsigned char *ch, __u32 len, const char *want) {
++  char host[MAX_HOST_LEN];
++  __u32 n = 0;
++  assert(parse_sni(ch, len, host, &n) == SNI_STATUS_SEEN);
++  assert(n == strlen(want));
++  assert(memcmp(host, want, n) == 0);
++  // Zero-padded, so hosts_match against a synced allowed_host works.
++  for (__u32 i = n; i < MAX_HOST_LEN; i++)
++    assert(host[i] == 0);
++}
++
++static void test_sni_go(void) { assert_sni(ch_go, sizeof(ch_go), "api.example.com"); }
++static void test_sni_node(void) { assert_sni(ch_node, sizeof(ch_node), "api.example.com"); }
++static void test_sni_bun(void) { assert_sni(ch_bun, sizeof(ch_bun), "api.example.com"); }
++
++static void test_sni_lowercase_trailing_dot(void) {
++  // Python sent "API.Example.com." verbatim.
++  assert_sni(ch_py, sizeof(ch_py), "api.example.com");
++}
++
++static void test_sni_absent(void) {
++  char host[MAX_HOST_LEN];
++  __u32 n = 7;
++  assert(parse_sni(ch_py_nosni, sizeof(ch_py_nosni), host, &n) == SNI_STATUS_ABSENT);
++  assert(n == 0);
++}
++
++static void test_sni_truncated_real(void) {
++  // A prefix of a real ClientHello is TRUNCATED until every extension header
++  // (type + length) is inside it: an unseen header could be ECH. Only the
++  // body of the last extension may be cut (Go's ~1.2 KB key_share ends the
++  // list), since bodies other than server_name are skipped, not read.
++  char host[MAX_HOST_LEN];
++  __u32 n;
++  int seen = 0;
++  for (__u32 len = 0; len < sizeof(ch_go); len++) {
++    __u32 st = parse_sni(ch_go, len, host, &n);
++    if (st == SNI_STATUS_SEEN) {
++      seen = 1;
++      assert(n == 15 && memcmp(host, "api.example.com", 15) == 0);
++      continue;
++    }
++    assert(!seen); // once every header is in, longer prefixes stay SEEN
++    assert(st == SNI_STATUS_TRUNCATED || st == SNI_NOT_CLIENT_HELLO);
++  }
++}
++
++static void test_sni_not_client_hello(void) {
++  char host[MAX_HOST_LEN];
++  __u32 n;
++  unsigned char appdata[64] = {0x17, 0x03, 0x03, 0x00, 0x3b};
++  assert(parse_sni(appdata, sizeof(appdata), host, &n) == SNI_NOT_CLIENT_HELLO);
++  unsigned char server_hello[64] = {0x16, 0x03, 0x03, 0x00, 0x3b, 0x02};
++  assert(parse_sni(server_hello, sizeof(server_hello), host, &n) == SNI_NOT_CLIENT_HELLO);
++  unsigned char http[] = "GET / HTTP/1.1\r\nHost: api.example.com\r\n\r\n";
++  assert(parse_sni(http, sizeof(http) - 1, host, &n) == SNI_NOT_CLIENT_HELLO);
++}
++
++// build_ch wraps an extensions block in a minimal ClientHello record.
++static __u32 build_ch(unsigned char *out, const unsigned char *exts, __u32 exts_len) {
++  __u32 body = 2 + 32 + 1 + 4 + 2 + 2 + exts_len; // version..compression + ext len
++  __u32 o = 0;
++  out[o++] = 0x16; out[o++] = 0x03; out[o++] = 0x01;
++  out[o++] = (unsigned char)((body + 4) >> 8); out[o++] = (unsigned char)(body + 4);
++  out[o++] = 0x01;
++  out[o++] = 0; out[o++] = (unsigned char)(body >> 8); out[o++] = (unsigned char)body;
++  out[o++] = 0x03; out[o++] = 0x03;
++  memset(out + o, 0xAB, 32); o += 32;  // random
++  out[o++] = 0;                        // session_id
++  out[o++] = 0; out[o++] = 2; out[o++] = 0x13; out[o++] = 0x01; // one cipher suite
++  out[o++] = 1; out[o++] = 0;          // null compression
++  out[o++] = (unsigned char)(exts_len >> 8); out[o++] = (unsigned char)exts_len;
++  memcpy(out + o, exts, exts_len);
++  return o + exts_len;
++}
++
++// sni_ext appends a server_name extension with one host_name entry.
++static __u32 sni_ext(unsigned char *out, const char *name, __u32 name_len) {
++  __u32 o = 0;
++  out[o++] = 0; out[o++] = 0;
++  out[o++] = (unsigned char)((name_len + 5) >> 8); out[o++] = (unsigned char)(name_len + 5);
++  out[o++] = (unsigned char)((name_len + 3) >> 8); out[o++] = (unsigned char)(name_len + 3);
++  out[o++] = 0;
++  out[o++] = (unsigned char)(name_len >> 8); out[o++] = (unsigned char)name_len;
++  memcpy(out + o, name, name_len);
++  return o + name_len;
++}
++
++static __u32 dummy_ext(unsigned char *out, __u32 type, __u32 len) {
++  out[0] = (unsigned char)(type >> 8); out[1] = (unsigned char)type;
++  out[2] = (unsigned char)(len >> 8); out[3] = (unsigned char)len;
++  memset(out + 4, 0x5A, len);
++  return 4 + len;
++}
++
++static void test_sni_synthetic(void) {
++  unsigned char exts[256], ch[512];
++  __u32 e = sni_ext(exts, "Svc.NS.svc.cluster.local", 24);
++  __u32 len = build_ch(ch, exts, e);
++  assert_sni(ch, len, "svc.ns.svc.cluster.local");
++}
++
++static void test_sni_ech_wins(void) {
++  // ECH before or after a readable server_name: the outer SNI is not the
++  // real host, refuse either way.
++  unsigned char exts[256], ch[512];
++  char host[MAX_HOST_LEN];
++  __u32 n;
++  __u32 e = sni_ext(exts, "api.example.com", 15);
++  e += dummy_ext(exts + e, TLS_EXT_ECH, 32);
++  __u32 len = build_ch(ch, exts, e);
++  assert(parse_sni(ch, len, host, &n) == SNI_STATUS_ECH);
++
++  e = dummy_ext(exts, TLS_EXT_ECH, 32);
++  e += sni_ext(exts + e, "api.example.com", 15);
++  len = build_ch(ch, exts, e);
++  assert(parse_sni(ch, len, host, &n) == SNI_STATUS_ECH);
++}
++
++static void test_sni_rejects_bad_host_bytes(void) {
++  unsigned char exts[256], ch[512];
++  char host[MAX_HOST_LEN];
++  __u32 n;
++  // Embedded NUL would compare equal to a zero-padded "api.example.com".
++  __u32 len = build_ch(ch, exts, sni_ext(exts, "api.example.com\0evil", 20));
++  assert(parse_sni(ch, len, host, &n) == SNI_STATUS_MALFORMED);
++  len = build_ch(ch, exts, sni_ext(exts, "api example.com", 15));
++  assert(parse_sni(ch, len, host, &n) == SNI_STATUS_MALFORMED);
++  // A lone "." strips to an empty host.
++  len = build_ch(ch, exts, sni_ext(exts, ".", 1));
++  assert(parse_sni(ch, len, host, &n) == SNI_STATUS_MALFORMED);
++}
++
++static void test_sni_too_long(void) {
++  unsigned char exts[256], ch[512];
++  char host[MAX_HOST_LEN], name[MAX_HOST_LEN];
++  __u32 n;
++  memset(name, 'a', sizeof(name));
++  // MAX_HOST_LEN - 1 fits (sync rejects hosts >= MAX_HOST_LEN), MAX_HOST_LEN does not.
++  __u32 len = build_ch(ch, exts, sni_ext(exts, name, MAX_HOST_LEN - 1));
++  assert(parse_sni(ch, len, host, &n) == SNI_STATUS_SEEN && n == MAX_HOST_LEN - 1);
++  len = build_ch(ch, exts, sni_ext(exts, name, MAX_HOST_LEN));
++  assert(parse_sni(ch, len, host, &n) == SNI_STATUS_MALFORMED);
++}
++
++static void test_sni_duplicate_server_name(void) {
++  unsigned char exts[256], ch[512];
++  char host[MAX_HOST_LEN];
++  __u32 n;
++  __u32 e = sni_ext(exts, "api.example.com", 15);
++  e += sni_ext(exts + e, "evil.example", 12);
++  __u32 len = build_ch(ch, exts, e);
++  assert(parse_sni(ch, len, host, &n) == SNI_STATUS_MALFORMED);
++}
++
++static void test_sni_lying_lengths(void) {
++  unsigned char exts[256], ch[512];
++  char host[MAX_HOST_LEN];
++  __u32 n;
++  __u32 e = sni_ext(exts, "api.example.com", 15);
++  __u32 len = build_ch(ch, exts, e);
++
++  unsigned char bad[512];
++  // Extension length runs past the extensions block.
++  memcpy(bad, ch, len);
++  bad[len - e + 3] = 0xFF;
++  assert(parse_sni(bad, len, host, &n) == SNI_STATUS_MALFORMED);
++  // Host name length disagrees with the extension length.
++  memcpy(bad, ch, len);
++  bad[len - 15 - 1] = 14;
++  assert(parse_sni(bad, len, host, &n) == SNI_STATUS_MALFORMED);
++  // Handshake longer than its record.
++  memcpy(bad, ch, len);
++  bad[4] = (unsigned char)(bad[4] - 1);
++  assert(parse_sni(bad, len, host, &n) == SNI_STATUS_MALFORMED);
++  // Extensions block shorter than the handshake says.
++  memcpy(bad, ch, len);
++  bad[len - e - 1] = (unsigned char)(bad[len - e - 1] - 1);
++  assert(parse_sni(bad, len, host, &n) == SNI_STATUS_MALFORMED);
++}
++
++static void test_sni_too_many_extensions(void) {
++  unsigned char exts[512], ch[1024];
++  char host[MAX_HOST_LEN];
++  __u32 n;
++  __u32 e = 0;
++  for (int i = 0; i < TLS_SNI_MAX_EXTS; i++)
++    e += dummy_ext(exts + e, 0x1000 + (__u32)i, 0);
++  e += sni_ext(exts + e, "api.example.com", 15);
++  __u32 len = build_ch(ch, exts, e);
++  // server_name sits past the walk limit: not trusted.
++  assert(parse_sni(ch, len, host, &n) == SNI_STATUS_MALFORMED);
++}
++
++static void test_sni_past_copy_buffer(void) {
++  // server_name after TLS_SNI_BUF_LEN bytes of padding: TRUNCATED.
++  static unsigned char exts[TLS_SNI_BUF_LEN + 64], ch[TLS_SNI_BUF_LEN + 192];
++  char host[MAX_HOST_LEN];
++  __u32 n;
++  __u32 e = dummy_ext(exts, 0x0015, TLS_SNI_BUF_LEN); // padding extension
++  e += sni_ext(exts + e, "api.example.com", 15);
++  __u32 len = build_ch(ch, exts, e);
++  assert(len > TLS_SNI_BUF_LEN);
++  assert(parse_sni(ch, len, host, &n) == SNI_STATUS_TRUNCATED);
++}
++
+ int main(void) {
+   printf("parse_http_host:\n");
+   RUN_TEST(test_parse_host_basic);
+@@ -643,6 +865,23 @@ int main(void) {
+   RUN_TEST(test_gf128_halve_to_h_aes_keys);
+   RUN_TEST(test_gf128_halve_to_h_edges);
+ 
++  printf("tls_parse_sni (SNI check):\n");
++  RUN_TEST(test_sni_go);
++  RUN_TEST(test_sni_node);
++  RUN_TEST(test_sni_bun);
++  RUN_TEST(test_sni_lowercase_trailing_dot);
++  RUN_TEST(test_sni_absent);
++  RUN_TEST(test_sni_truncated_real);
++  RUN_TEST(test_sni_not_client_hello);
++  RUN_TEST(test_sni_synthetic);
++  RUN_TEST(test_sni_ech_wins);
++  RUN_TEST(test_sni_rejects_bad_host_bytes);
++  RUN_TEST(test_sni_too_long);
++  RUN_TEST(test_sni_duplicate_server_name);
++  RUN_TEST(test_sni_lying_lengths);
++  RUN_TEST(test_sni_too_many_extensions);
++  RUN_TEST(test_sni_past_copy_buffer);
++
+   printf("\n%d/%d tests passed.\n", tests_passed, tests_run);
+   return 0;
+ }
+
+--- pkg/ebpf/bpf/tls_sni_fixtures.h
+@@ -0,0 +1,380 @@
++// tls_sni_fixtures.h — real ClientHello records for helpers_test.c.
++// Captured from local clients connecting to a listener that records the
++// first TLS record. Every client except py_nosni sent SNI api.example.com.
++
++#ifndef KLOAK_TLS_SNI_FIXTURES_H
++#define KLOAK_TLS_SNI_FIXTURES_H
++
++// Go 1.24 crypto/tls (X25519MLKEM768 key share): 1477 bytes.
++static const unsigned char ch_go[] = {
++  0x16, 0x03, 0x01, 0x05, 0xc0, 0x01, 0x00, 0x05, 0xbc, 0x03, 0x03, 0x50, 0xd9, 0xa5, 0x14, 0xe7,
++  0xb5, 0xef, 0x3d, 0x59, 0x34, 0x7b, 0x78, 0x6b, 0x7f, 0x21, 0xa0, 0xc4, 0x18, 0xc8, 0x85, 0xd1,
++  0x50, 0x51, 0x94, 0xeb, 0x6e, 0xa3, 0x20, 0x80, 0x67, 0xf9, 0x4d, 0x20, 0x4e, 0x89, 0x17, 0x20,
++  0xba, 0xb0, 0x0c, 0x2a, 0x83, 0xae, 0x0b, 0x1a, 0xaf, 0x0d, 0xdb, 0x78, 0x1c, 0x2c, 0x15, 0x55,
++  0xb6, 0x5b, 0x89, 0xe1, 0x53, 0x94, 0xc8, 0x49, 0x41, 0xd0, 0x6b, 0x30, 0x00, 0x1a, 0xc0, 0x2b,
++  0xc0, 0x2f, 0xc0, 0x2c, 0xc0, 0x30, 0xcc, 0xa9, 0xcc, 0xa8, 0xc0, 0x09, 0xc0, 0x13, 0xc0, 0x0a,
++  0xc0, 0x14, 0x13, 0x01, 0x13, 0x02, 0x13, 0x03, 0x01, 0x00, 0x05, 0x59, 0x00, 0x00, 0x00, 0x14,
++  0x00, 0x12, 0x00, 0x00, 0x0f, 0x61, 0x70, 0x69, 0x2e, 0x65, 0x78, 0x61, 0x6d, 0x70, 0x6c, 0x65,
++  0x2e, 0x63, 0x6f, 0x6d, 0x00, 0x0b, 0x00, 0x02, 0x01, 0x00, 0xff, 0x01, 0x00, 0x01, 0x00, 0x00,
++  0x17, 0x00, 0x00, 0x00, 0x12, 0x00, 0x00, 0x00, 0x05, 0x00, 0x05, 0x01, 0x00, 0x00, 0x00, 0x00,
++  0x00, 0x0a, 0x00, 0x0c, 0x00, 0x0a, 0x11, 0xec, 0x00, 0x1d, 0x00, 0x17, 0x00, 0x18, 0x00, 0x19,
++  0x00, 0x0d, 0x00, 0x1a, 0x00, 0x18, 0x08, 0x04, 0x04, 0x03, 0x08, 0x07, 0x08, 0x05, 0x08, 0x06,
++  0x04, 0x01, 0x05, 0x01, 0x06, 0x01, 0x05, 0x03, 0x06, 0x03, 0x02, 0x01, 0x02, 0x03, 0x00, 0x2b,
++  0x00, 0x05, 0x04, 0x03, 0x04, 0x03, 0x03, 0x00, 0x33, 0x04, 0xea, 0x04, 0xe8, 0x11, 0xec, 0x04,
++  0xc0, 0x0d, 0x13, 0xc0, 0x8f, 0x34, 0xb9, 0xb5, 0x75, 0x58, 0x5d, 0x72, 0x6f, 0x56, 0x26, 0xbe,
++  0xfd, 0xc2, 0x15, 0x8e, 0xda, 0xc3, 0x8c, 0x15, 0x19, 0x98, 0xd0, 0x14, 0x4c, 0x85, 0xc6, 0x66,
++  0xf8, 0x70, 0x5e, 0xe6, 0x06, 0xe7, 0x22, 0x90, 0xcc, 0x66, 0xb1, 0xec, 0xb8, 0x50, 0x65, 0x28,
++  0x74, 0x31, 0x92, 0x18, 0xe2, 0x25, 0x8a, 0x76, 0x13, 0x73, 0x15, 0xf9, 0x52, 0x4e, 0x63, 0x9c,
++  0xe8, 0x44, 0x59, 0x5c, 0xd1, 0x53, 0xa7, 0x23, 0x7e, 0xa9, 0xe6, 0xa4, 0x94, 0x16, 0x2c, 0xd5,
++  0x12, 0x7a, 0xaa, 0x61, 0x72, 0x33, 0xf7, 0x32, 0x12, 0xa0, 0xb3, 0x3b, 0x70, 0x1d, 0xd6, 0x65,
++  0x49, 0xed, 0x07, 0xba, 0xe5, 0x77, 0x73, 0x7a, 0x10, 0x56, 0x4e, 0x27, 0x5c, 0x94, 0x08, 0x4f,
++  0x6e, 0xd9, 0x8a, 0xd4, 0x22, 0x1a, 0xed, 0x97, 0x0f, 0x34, 0x10, 0x2c, 0x17, 0xe0, 0x69, 0x09,
++  0x5b, 0xb7, 0x7e, 0xa8, 0xbd, 0xdc, 0x37, 0xb4, 0xce, 0xb9, 0xb8, 0x98, 0x35, 0x34, 0xc8, 0xa3,
++  0xcd, 0xe3, 0x00, 0x65, 0x36, 0x5a, 0xbc, 0x0a, 0x48, 0x55, 0x8b, 0xe7, 0x08, 0x3c, 0x2c, 0x18,
++  0xa9, 0xba, 0x54, 0x3b, 0x87, 0x99, 0x5c, 0x03, 0x6f, 0x01, 0x29, 0xb2, 0xa0, 0x5b, 0xcb, 0xac,
++  0xa3, 0x9a, 0xc4, 0x61, 0xc0, 0x59, 0x7a, 0xa5, 0x31, 0xa0, 0x72, 0xd7, 0xa9, 0xce, 0x6f, 0x3c,
++  0x6b, 0x3d, 0x8b, 0x0c, 0x86, 0x9a, 0x8b, 0x87, 0x8c, 0x7c, 0x73, 0xb1, 0x82, 0x77, 0xb5, 0x55,
++  0xb1, 0x50, 0x72, 0xae, 0xd4, 0x6b, 0x08, 0xb8, 0x99, 0xe5, 0x1b, 0x5b, 0x03, 0x00, 0x3b, 0xc0,
++  0x30, 0xcf, 0x4f, 0xf2, 0xa8, 0xbb, 0x2b, 0x46, 0x3b, 0x09, 0xb9, 0x42, 0xe5, 0x51, 0x99, 0xbc,
++  0x1f, 0x36, 0x00, 0x7d, 0xeb, 0xea, 0x6e, 0x9b, 0xa6, 0x66, 0x4b, 0xe2, 0x27, 0xc2, 0x58, 0xa3,
++  0x01, 0xf7, 0x27, 0xf2, 0x3b, 0x2d, 0x5e, 0xca, 0xa2, 0x18, 0xa8, 0x55, 0xe2, 0xa6, 0xaa, 0x7a,
++  0x38, 0x44, 0xbc, 0x50, 0x1d, 0x38, 0x06, 0xbb, 0x50, 0x1b, 0x66, 0xb1, 0x8a, 0xcf, 0x0e, 0xc9,
++  0x7d, 0x20, 0xd2, 0x60, 0x5a, 0x08, 0x15, 0x8b, 0x03, 0x8f, 0x04, 0xc4, 0xbd, 0x49, 0x04, 0x15,
++  0xd7, 0x75, 0x73, 0xda, 0x76, 0xc5, 0xe8, 0xec, 0x77, 0x0c, 0x24, 0x11, 0xf0, 0x85, 0x16, 0x7a,
++  0x77, 0x8e, 0x89, 0x05, 0x17, 0x82, 0xea, 0x02, 0x26, 0xe6, 0x08, 0x64, 0xe2, 0x3a, 0x5c, 0xfb,
++  0x98, 0x24, 0x1c, 0x76, 0xf5, 0xd5, 0x19, 0xd7, 0x19, 0x84, 0x60, 0x3c, 0x5d, 0xf1, 0xcc, 0xcb,
++  0x11, 0x46, 0x12, 0x8a, 0xf7, 0x3f, 0x2e, 0x73, 0x85, 0x21, 0x49, 0xcc, 0xc4, 0xcb, 0x61, 0x3c,
++  0x88, 0xc9, 0xc9, 0x31, 0x09, 0x91, 0xd9, 0x5c, 0xa2, 0xc1, 0x48, 0x28, 0x96, 0x90, 0xee, 0x02,
++  0x40, 0x77, 0x32, 0xb3, 0xb0, 0x81, 0x88, 0xcd, 0x83, 0xc9, 0x8a, 0x7c, 0x1a, 0xc8, 0x12, 0x08,
++  0x56, 0xab, 0x47, 0xe0, 0x17, 0x69, 0x38, 0x7a, 0x4a, 0x88, 0x20, 0x34, 0x97, 0xd6, 0xb0, 0xd8,
++  0xb7, 0x0f, 0xf8, 0x03, 0x2c, 0xd7, 0x77, 0xc0, 0x28, 0x72, 0xc7, 0x5e, 0x32, 0x3b, 0x01, 0x49,
++  0xc7, 0xb4, 0x1b, 0x8d, 0xa1, 0x81, 0x7a, 0xca, 0x2b, 0x60, 0xc7, 0x86, 0x8d, 0x69, 0x70, 0xad,
++  0x7c, 0xb2, 0xaa, 0x6b, 0xe4, 0x6d, 0xc2, 0xe6, 0x43, 0xd9, 0x76, 0x77, 0x76, 0xc3, 0x6f, 0xbd,
++  0xf4, 0x77, 0x4b, 0x0c, 0x20, 0xeb, 0x44, 0x5b, 0x9d, 0x65, 0x40, 0xc9, 0x27, 0x05, 0x65, 0xd0,
++  0x1a, 0x71, 0xf4, 0xc5, 0xbb, 0xa6, 0xa3, 0x25, 0x70, 0x46, 0x4e, 0xf3, 0x09, 0x63, 0x91, 0x73,
++  0x35, 0xaa, 0xc9, 0xa7, 0xb5, 0x4c, 0x3c, 0x91, 0xc5, 0x8e, 0x4b, 0x1d, 0xed, 0xa2, 0x38, 0xc8,
++  0xd1, 0x1b, 0xc2, 0xf3, 0x98, 0xc2, 0xb9, 0x63, 0x78, 0x2b, 0x61, 0xb3, 0xb5, 0x8d, 0xe0, 0x9b,
++  0x29, 0x02, 0x58, 0x55, 0xf1, 0x2a, 0x04, 0xcb, 0x40, 0x59, 0x37, 0x9a, 0x86, 0x1a, 0x16, 0x40,
++  0x8b, 0xc1, 0xab, 0x65, 0x9a, 0x18, 0x22, 0xfa, 0x4c, 0x04, 0xd6, 0x06, 0x08, 0x94, 0x78, 0x3d,
++  0x77, 0x58, 0xdc, 0xea, 0xae, 0x39, 0x45, 0x04, 0x99, 0xc9, 0x6e, 0x75, 0xe9, 0x3a, 0x78, 0xfa,
++  0x29, 0x3a, 0x48, 0x60, 0xc4, 0xd0, 0xba, 0xe6, 0x85, 0x99, 0x0c, 0xe9, 0x3e, 0x64, 0xf2, 0x20,
++  0x2f, 0x43, 0x43, 0xaf, 0x95, 0x32, 0x13, 0xc4, 0x08, 0x72, 0x6c, 0xad, 0x1a, 0x50, 0x56, 0x3c,
++  0x14, 0xc7, 0x22, 0x4b, 0x0a, 0xb9, 0xfa, 0xa1, 0xe7, 0x35, 0x57, 0x14, 0x85, 0x23, 0xac, 0xb7,
++  0xa7, 0x11, 0xf6, 0x22, 0xbb, 0x2b, 0x19, 0x08, 0x21, 0xc8, 0xc0, 0xe9, 0x88, 0x0b, 0x61, 0x49,
++  0xc0, 0xe6, 0x29, 0x27, 0xfa, 0x00, 0xc4, 0x62, 0x97, 0x17, 0x65, 0xb6, 0x0b, 0x72, 0xbd, 0x24,
++  0x67, 0x5a, 0x51, 0x45, 0x0a, 0xb4, 0x40, 0x4f, 0xc6, 0x7a, 0xcf, 0x0b, 0x41, 0x79, 0x78, 0x9c,
++  0x70, 0xef, 0xc2, 0x41, 0xb0, 0xd6, 0xc2, 0x27, 0x3b, 0x8b, 0xbd, 0x55, 0xae, 0x00, 0x51, 0x23,
++  0x51, 0x9b, 0xb8, 0x19, 0x42, 0xa2, 0x80, 0x89, 0x7a, 0xca, 0x0b, 0x16, 0xfe, 0xd6, 0x9b, 0x5c,
++  0x3a, 0x2b, 0x48, 0x86, 0xbb, 0x3d, 0x6b, 0x13, 0x2e, 0xec, 0x43, 0x08, 0xa6, 0x79, 0x54, 0xd6,
++  0xa8, 0xf7, 0x10, 0x46, 0x60, 0x7c, 0x4d, 0x84, 0x61, 0xa5, 0xbd, 0x13, 0x27, 0x2e, 0x05, 0x26,
++  0x9e, 0x07, 0x5b, 0xaf, 0xbb, 0x3e, 0x12, 0x5b, 0x7f, 0xc6, 0x77, 0x76, 0x47, 0xf8, 0x94, 0x42,
++  0xa1, 0xb4, 0xfe, 0xcc, 0x28, 0x00, 0x03, 0x96, 0x47, 0x7b, 0xce, 0x6c, 0xca, 0x48, 0xbd, 0x90,
++  0x10, 0x27, 0xcc, 0x59, 0x74, 0xa1, 0x21, 0xcb, 0x52, 0x2c, 0x96, 0x66, 0xbf, 0xc3, 0xb2, 0xae,
++  0xf0, 0x7b, 0xc8, 0x14, 0x83, 0x1d, 0x3d, 0xf3, 0x0b, 0x02, 0x48, 0xa1, 0xc4, 0xbb, 0x6a, 0x11,
++  0xb2, 0x3e, 0xe3, 0xfa, 0x9a, 0x59, 0x20, 0x9f, 0x96, 0x1b, 0x03, 0xb6, 0x47, 0x57, 0xa7, 0x31,
++  0x49, 0x03, 0x5c, 0x54, 0xac, 0x40, 0xc1, 0xd8, 0x56, 0x65, 0xc0, 0x61, 0x0f, 0xd5, 0x63, 0xca,
++  0xa4, 0x9b, 0x11, 0x8a, 0xc3, 0x95, 0xa5, 0xd5, 0xc3, 0x6e, 0x5b, 0x51, 0x2c, 0xc8, 0x9f, 0xe9,
++  0x61, 0x2a, 0xb5, 0xe2, 0x38, 0xea, 0xf8, 0x37, 0x91, 0x9c, 0xb4, 0xc7, 0x65, 0xbb, 0x55, 0x00,
++  0x46, 0xcc, 0x14, 0x40, 0xa4, 0xd0, 0x73, 0x80, 0xf9, 0xc0, 0xf6, 0x10, 0xb3, 0xf5, 0x23, 0x65,
++  0x22, 0x6a, 0x11, 0xfa, 0xe3, 0x0a, 0x5a, 0xf4, 0x2e, 0x74, 0xb0, 0x74, 0x62, 0x7b, 0xb7, 0x32,
++  0x47, 0x97, 0x90, 0x33, 0xc1, 0x27, 0x26, 0x97, 0xf0, 0x9b, 0x4f, 0x3d, 0xbc, 0x2c, 0x00, 0x66,
++  0x82, 0x70, 0xc8, 0x14, 0xf9, 0x09, 0x31, 0x0d, 0x69, 0x1c, 0x4e, 0xc4, 0x66, 0x74, 0x51, 0x8a,
++  0xf5, 0xdb, 0xc6, 0x88, 0x03, 0x58, 0xc8, 0x05, 0xb7, 0x18, 0xfb, 0x46, 0x0f, 0x56, 0x62, 0x85,
++  0xd7, 0x9e, 0x35, 0x5b, 0x9b, 0xf9, 0x08, 0x1b, 0x13, 0x70, 0x2a, 0x8a, 0xca, 0x88, 0xb6, 0xcb,
++  0x20, 0xa7, 0x25, 0x2a, 0x9e, 0xb5, 0xbb, 0x0d, 0x03, 0xcd, 0x45, 0x50, 0xcd, 0x89, 0xe1, 0x8c,
++  0xf9, 0x49, 0x9a, 0x18, 0xcb, 0xa8, 0x4e, 0xdc, 0x11, 0x89, 0x85, 0x63, 0x40, 0x08, 0x1b, 0x8c,
++  0x99, 0x7c, 0xb8, 0x68, 0x0a, 0x1c, 0x0a, 0x88, 0x8d, 0xf8, 0x4e, 0x8b, 0x28, 0xae, 0x8e, 0xca,
++  0xb5, 0x93, 0x44, 0xc1, 0x7e, 0x83, 0x7d, 0xc6, 0x64, 0x01, 0x0c, 0x33, 0x6c, 0x43, 0xe6, 0x9d,
++  0x7c, 0x37, 0x2c, 0x76, 0x7b, 0xa7, 0x57, 0x15, 0x4f, 0x3d, 0xfb, 0x80, 0xa5, 0xe2, 0xca, 0xdf,
++  0xe9, 0x6b, 0xd4, 0xa7, 0xaa, 0x7d, 0x8b, 0x63, 0x79, 0x7b, 0x4f, 0x15, 0x42, 0x73, 0x10, 0xc5,
++  0xab, 0x35, 0x37, 0x70, 0xa4, 0xdc, 0x9b, 0x93, 0x51, 0xbd, 0xc1, 0x17, 0x05, 0xef, 0x61, 0xc7,
++  0x66, 0x6b, 0x3c, 0x9b, 0xc7, 0x7d, 0x2a, 0x15, 0x3a, 0xc3, 0xc8, 0xbe, 0x16, 0xda, 0xaf, 0x26,
++  0xfb, 0xa7, 0xf6, 0xf9, 0xc1, 0x6a, 0x43, 0x29, 0xa8, 0x34, 0x8a, 0xf1, 0xa3, 0xa5, 0x92, 0x26,
++  0x8e, 0x81, 0x84, 0x34, 0x73, 0x31, 0x93, 0xff, 0xc4, 0x75, 0x16, 0x93, 0x29, 0xb5, 0xb9, 0x69,
++  0xd9, 0x22, 0x4b, 0x70, 0x98, 0xb8, 0xc1, 0x60, 0x07, 0x23, 0x89, 0x93, 0xfb, 0x47, 0x22, 0xd7,
++  0x19, 0xca, 0xd0, 0x46, 0x07, 0x7a, 0x23, 0x86, 0xa3, 0x07, 0xa7, 0x47, 0x2c, 0x83, 0x64, 0x54,
++  0x56, 0x8a, 0x36, 0x62, 0x4e, 0x0f, 0x88, 0x9e, 0x56, 0xb6, 0x5f, 0x2d, 0xe4, 0x22, 0x43, 0x9f,
++  0x68, 0x76, 0xa2, 0x58, 0x85, 0x2a, 0x6a, 0x79, 0x1c, 0xef, 0xca, 0xe5, 0x60, 0x2a, 0xe2, 0x3a,
++  0x54, 0x03, 0x89, 0x87, 0x58, 0x06, 0x8d, 0x87, 0x70, 0x97, 0xe9, 0x16, 0x80, 0x54, 0xa6, 0xf7,
++  0x6f, 0xe3, 0xd9, 0x62, 0x86, 0x60, 0xbe, 0x31, 0xa9, 0x76, 0x75, 0x9c, 0xad, 0xfd, 0x10, 0x0d,
++  0x50, 0x00, 0x1d, 0x00, 0x20, 0x03, 0x89, 0x87, 0x58, 0x06, 0x8d, 0x87, 0x70, 0x97, 0xe9, 0x16,
++  0x80, 0x54, 0xa6, 0xf7, 0x6f, 0xe3, 0xd9, 0x62, 0x86, 0x60, 0xbe, 0x31, 0xa9, 0x76, 0x75, 0x9c,
++  0xad, 0xfd, 0x10, 0x0d, 0x50,
++};
++
++// Node.js 22 (bundled OpenSSL): 1592 bytes.
++static const unsigned char ch_node[] = {
++  0x16, 0x03, 0x01, 0x06, 0x33, 0x01, 0x00, 0x06, 0x2f, 0x03, 0x03, 0xa5, 0x16, 0xee, 0xab, 0x2f,
++  0xd3, 0x6e, 0xdd, 0xa1, 0x92, 0x54, 0x5d, 0xb4, 0x24, 0xe3, 0xd4, 0x56, 0xd0, 0x5e, 0xd7, 0xdd,
++  0x11, 0x0d, 0x96, 0x34, 0x5c, 0x8c, 0x78, 0xb1, 0xf2, 0xeb, 0xe8, 0x20, 0x4b, 0x27, 0x84, 0x3e,
++  0xe8, 0x01, 0x78, 0xd4, 0x58, 0x4e, 0x07, 0xab, 0x41, 0x94, 0x26, 0x60, 0xb0, 0x80, 0xa1, 0x4e,
++  0xb8, 0x8e, 0xc2, 0x8b, 0x7f, 0xf0, 0x33, 0xb5, 0xc0, 0x71, 0x10, 0xa6, 0x00, 0x68, 0x13, 0x02,
++  0x13, 0x03, 0x13, 0x01, 0xc0, 0x2f, 0xc0, 0x2b, 0xc0, 0x30, 0xc0, 0x2c, 0x00, 0x9e, 0xc0, 0x27,
++  0x00, 0x67, 0xc0, 0x28, 0x00, 0x6b, 0x00, 0xa3, 0x00, 0x9f, 0xcc, 0xa9, 0xcc, 0xa8, 0xcc, 0xaa,
++  0xc0, 0xad, 0xc0, 0x9f, 0xc0, 0x5d, 0xc0, 0x61, 0xc0, 0x57, 0xc0, 0x53, 0x00, 0xa2, 0xc0, 0xac,
++  0xc0, 0x9e, 0xc0, 0x5c, 0xc0, 0x60, 0xc0, 0x56, 0xc0, 0x52, 0xc0, 0x24, 0x00, 0x6a, 0xc0, 0x23,
++  0x00, 0x40, 0xc0, 0x0a, 0xc0, 0x14, 0x00, 0x39, 0x00, 0x38, 0xc0, 0x09, 0xc0, 0x13, 0x00, 0x33,
++  0x00, 0x32, 0x00, 0x9d, 0xc0, 0x9d, 0xc0, 0x51, 0x00, 0x9c, 0xc0, 0x9c, 0xc0, 0x50, 0x00, 0x3d,
++  0x00, 0x3c, 0x00, 0x35, 0x00, 0x2f, 0x01, 0x00, 0x05, 0x7e, 0xff, 0x01, 0x00, 0x01, 0x00, 0x00,
++  0x00, 0x00, 0x14, 0x00, 0x12, 0x00, 0x00, 0x0f, 0x61, 0x70, 0x69, 0x2e, 0x65, 0x78, 0x61, 0x6d,
++  0x70, 0x6c, 0x65, 0x2e, 0x63, 0x6f, 0x6d, 0x00, 0x0b, 0x00, 0x04, 0x03, 0x00, 0x01, 0x02, 0x00,
++  0x0a, 0x00, 0x12, 0x00, 0x10, 0x11, 0xec, 0x00, 0x1d, 0x00, 0x17, 0x00, 0x1e, 0x00, 0x18, 0x00,
++  0x19, 0x01, 0x00, 0x01, 0x01, 0x00, 0x23, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00, 0x17, 0x00,
++  0x00, 0x00, 0x0d, 0x00, 0x36, 0x00, 0x34, 0x09, 0x05, 0x09, 0x06, 0x09, 0x04, 0x04, 0x03, 0x05,
++  0x03, 0x06, 0x03, 0x08, 0x07, 0x08, 0x08, 0x08, 0x1a, 0x08, 0x1b, 0x08, 0x1c, 0x08, 0x09, 0x08,
++  0x0a, 0x08, 0x0b, 0x08, 0x04, 0x08, 0x05, 0x08, 0x06, 0x04, 0x01, 0x05, 0x01, 0x06, 0x01, 0x03,
++  0x03, 0x03, 0x01, 0x03, 0x02, 0x04, 0x02, 0x05, 0x02, 0x06, 0x02, 0x00, 0x2b, 0x00, 0x05, 0x04,
++  0x03, 0x04, 0x03, 0x03, 0x00, 0x2d, 0x00, 0x02, 0x01, 0x01, 0x00, 0x33, 0x04, 0xea, 0x04, 0xe8,
++  0x11, 0xec, 0x04, 0xc0, 0xfc, 0xb5, 0x8d, 0x21, 0x33, 0x82, 0x90, 0xd0, 0x94, 0x40, 0x10, 0x2d,
++  0x11, 0x21, 0xba, 0x8d, 0xfb, 0x28, 0xfb, 0xf3, 0x76, 0xb9, 0xd9, 0x5d, 0xbd, 0x56, 0x15, 0xe1,
++  0x34, 0x57, 0xc1, 0x6a, 0x46, 0x48, 0x59, 0xc2, 0x98, 0xc7, 0x09, 0x2c,
+[truncated]
+
+--- pkg/ebpf/bpf/tls_uprobe.c
+@@ -174,16 +174,48 @@ struct {
+   __uint(max_entries, 64 * 1024);
+ } secret_binding_events SEC(".maps");
+ 
+-// A process redeemed a placeholder of a secret its pod does not reference.
+-// Must match secretBindingEvent in pkg/ebpf/secret_binding.go.
++// Why a placeholder was not rewritten (secret_binding_event.reason).
++#define SECRET_EVT_BINDING 0 // its pod does not reference the secret (secret_acl)
++#define SECRET_EVT_SNI 1     // the connection's SNI is not the secret's host (sni_state)
++
++// A process redeemed a placeholder it may not redeem. Must match
++// secretBindingEvent in pkg/ebpf/secret_binding.go.
+ struct secret_binding_event {
+   __u64 cgroup_id;
+   __u32 tgid;
+-  __u8 audit; // 1 = audit mode, the rewrite went ahead; 0 = refused
+-  __u8 _pad[3];
+-  char key[8]; // placeholder BPF key (SECRET_KEY_LEN)
++  __u8 audit;      // 1 = audit mode, the rewrite went ahead; 0 = refused
++  __u8 reason;     // SECRET_EVT_*
++  __u8 sni_status; // SECRET_EVT_SNI: the connection's SNI_STATUS_*
++  __u8 memory_bio; // SECRET_EVT_SNI: 1 = memory-BIO writer, the socket may be another connection
++  char key[8];     // placeholder BPF key (SECRET_KEY_LEN)
++  char sni[MAX_HOST_LEN]; // SECRET_EVT_SNI: the connection's SNI, if any
+ };
+ 
++// report_secret_event submits a refused (or, in audit mode, allowed)
++// redemption to secret_binding_events. sni may be NULL. Ring buffer memory
++// is not zeroed, so every field is written.
++static __always_inline void report_secret_event(const struct secret_key *key,
++                                                __u8 audit, __u8 reason,
++                                                __u8 sni_status, __u8 memory_bio,
++                                                const char *sni) {
++  struct secret_binding_event *evt =
++      bpf_ringbuf_reserve(&secret_binding_events, sizeof(*evt), 0);
++  if (!evt)
++    return;
++  evt->cgroup_id = bpf_get_current_cgroup_id();
++  evt->tgid = (__u32)(bpf_get_current_pid_tgid() >> 32);
++  evt->audit = audit;
++  evt->reason = reason;
++  evt->sni_status = sni_status;
++  evt->memory_bio = memory_bio;
++  __builtin_memcpy(evt->key, key->prefix, sizeof(evt->key));
++  if (sni)
++    __builtin_memcpy(evt->sni, sni, MAX_HOST_LEN);
++  else
++    __builtin_memset(evt->sni, 0, MAX_HOST_LEN);
++  bpf_ringbuf_submit(evt, 0);
++}
++
+ // Debug counters for diagnosing DNS interception issues.
+ // Index: see DBG_* constants below.
+ enum {
+@@ -244,6 +276,9 @@ enum {
+   DBG_OSSL_H_FROM_HKEY1,     // OpenSSL: H recovered from the AVX-512 HashKey_1 slot (raw H field zero)
+   DBG_SECRET_BINDING_DENY,   // placeholder redeemed outside its pod binding: refused
+   DBG_SECRET_BINDING_AUDIT,  // same, but audit mode let the rewrite go ahead
++  DBG_SNI_CAPTURED,          // first handshake record on a connection parsed into sni_state
++  DBG_SNI_DENY,              // patch for a host-restricted secret refused: SNI missing / not the host
++  DBG_SNI_AUDIT,             // same, but audit mode let the rewrite go ahead
+   DBG_MAX,
+ };
+ 
+@@ -278,18 +313,7 @@ static __always_inline int secret_binding_allows(const struct secret_key *key) {
+   __u32 *mode = bpf_map_lookup_elem(&secret_binding_mode, &zero);
+   int audit = mode && *mode == SECRET_BINDING_AUDIT;
+   dbg_inc(audit ? DBG_SECRET_BINDING_AUDIT : DBG_SECRET_BINDING_DENY);
+-
+-  struct secret_binding_event *evt =
+-      bpf_ringbuf_reserve(&secret_binding_events, sizeof(*evt), 0);
+-  if (evt) {
+-    evt->cgroup_id = ak.cgroup_id;
+-    evt->tgid = (__u32)(bpf_get_current_pid_tgid() >> 32);
+-    evt->audit = (__u8)audit;
+-    // Ring buffer memory is not zeroed; don't leak stale kernel bytes.
+-    __builtin_memset(evt->_pad, 0, sizeof(evt->_pad));
+-    __builtin_memcpy(evt->key, key->prefix, sizeof(evt->key));
+-    bpf_ringbuf_submit(evt, 0);
+-  }
++  report_secret_event(key, (__u8)audit, SECRET_EVT_BINDING, 0, 0, NULL);
+   return audit;
+ }
+ 
+@@ -591,6 +615,7 @@ struct xor_patch {
+   __u32 secret_offset;      // byte offset of secret in plaintext
+   __u32 secret_len;         // length of secret (1..128)
+   __u8  xor_delta[SECRET_MAX_LEN]; // shadow[i] ^ real[i]
++  struct secret_key key;    // placeholder key: tcp_sendmsg re-checks the secret's host against the SNI
+ };
+ 
+ // Per-thread pending XOR patches. Supports multiple secrets per SSL_write.
+@@ -2271,6 +2296,8 @@ int bpf_xor_path(void *ctx) {
+     w->staged_pending.patches[pi & (XOR_MAX_PATCHES - 1)].secret_len = val_len;
+     __builtin_memcpy(w->staged_pending.patches[pi & (XOR_MAX_PATCHES - 1)].xor_delta,
+                      w->ct_buf, SECRET_MAX_LEN);
++    __builtin_memcpy(&w->staged_pending.patches[pi & (XOR_MAX_PATCHES - 1)].key,
++                     &key, sizeof(key));
+     w->staged_pending.patch_count = pi + 1;
+   }
+ 
+@@ -2502,6 +2529,269 @@ static int ghash_patch_iter(__u32 p, void *_unused) {
+   return 0;
+ }
+ 
++// =============================================================================
++// SNI check (spinningfactory/kloak#328)
++//
++// A secret restricted to a hostname is only rewritten on a connection whose
++// first ClientHello named that host. The destination-IP check alone lets a
++// compromised pod open TLS to a verified IP of the host (a CDN or cloud load
++// balancer edge) with the SNI of another tenant on the same front end, which
++// then routes the real value to that tenant.
++//
++// bpf_kprobe_tcp_sendmsg_sni parses the first handshake record written on
++// each TCP connection into sni_state; tp_inet_sock_set_state clears the entry
++// when a socket starts a new connection or closes, so a reused struct sock
++// never inherits an old SNI. The bridge kprobe (bpf_kprobe_tcp_sendmsg) drops
++// patches whose secret host is not the SNI of the socket they would leave on.
++// =============================================================================
++
++struct sni_state_val {
++  __u32 status; // SNI_STATUS_* (helpers.h)
++  __u32 len;    // host length when status == SNI_STATUS_SEEN
++  char sni[MAX_HOST_LEN]; // lowercased, zero-padded (hosts_match-comparable)
++};
++
++// struct sock * -> SNI of the first ClientHello on that connection. A
++// missing (never seen, or evicted) entry refuses host-restricted patches.
++struct {
++  __uint(type, BPF_MAP_TYPE_LRU_HASH);
++  __uint(max_entries, 65536);
++  __type(key, __u64);
++  __type(value, struct sni_state_val);
++} sni_state SEC(".maps");
++
++struct sni_scratch_buf {
++  __u8 buf[TLS_SNI_BUF_LEN]; // copy of the ClientHello prefix
++  struct sni_state_val st;
++};
++
++struct {
++  __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
++  __uint(max_entries, 1);
++  __type(key, __u32);
++  __type(value, struct sni_scratch_buf);
++} sni_scratch SEC(".maps");
++
++// SNI check mode, index 0. Enforce is the zero value, so an unconfigured map
++// still enforces.
++#define SNI_CHECK_ENFORCE 0
++#define SNI_CHECK_AUDIT 1
++
++struct {
++  __uint(type, BPF_MAP_TYPE_ARRAY);
++  __uint(max_entries, 1);
++  __uint(map_flags, BPF_F_RDONLY_PROG);
++  __type(key, __u32);
++  __type(value, __u32);
++} sni_check_mode SEC(".maps");
++
++// iov_iter before Linux 6.4 named the iovec array `iov` (now `__iov`).
++struct iov_iter___pre_6_4 {
++  const struct iovec *iov;
++} __attribute__((preserve_access_index));
++
++// sendmsg_first_buf returns the user address and length of the first
++// contiguous chunk of a tcp_sendmsg payload: the whole buffer for write() /
++// send() (ITER_UBUF), the first iovec for writev() / sendmsg() (ITER_IOVEC).
++// A ClientHello is written in one piece by every TLS stack kloak supports.
++static __always_inline int sendmsg_first_buf(struct msghdr *msg, __u64 *base,
++                                             __u64 *len) {
++  if (!bpf_core_field_exists(msg->msg_iter.iter_type))
++    return -1; // < 5.14: no stable iter_type; the check fails closed
++  __u8 type = BPF_CORE_READ(msg, msg_iter.iter_type);
++  __u64 count = BPF_CORE_READ(msg, msg_iter.count);
++  __u64 skip = BPF_CORE_READ(msg, msg_iter.iov_offset);
++
++  if (bpf_core_enum_value_exists(enum iter_type, ITER_UBUF) &&
++      type == bpf_core_enum_value(enum iter_type, ITER_UBUF)) {
++    *base = (__u64)BPF_CORE_READ(msg, msg_iter.ubuf) + skip;
++    *len = count;
++    return 0;
++  }
++  if (type != bpf_core_enum_value(enum iter_type, ITER_IOVEC))
++    return -1;
++
++  const struct iovec *iov;
++  if (bpf_core_field_exists(msg->msg_iter.__iov)) {
++    iov = BPF_CORE_READ(msg, msg_iter.__iov);
++  } else {
++    struct iov_iter___pre_6_4 *it = (void *)&msg->msg_iter;
++    iov = BPF_CORE_READ(it, iov);
++  }
++  if (!iov)
++    return -1;
++  __u64 iov_base = (__u64)BPF_CORE_READ(iov, iov_base);
++  __u64 iov_len = BPF_CORE_READ(iov, iov_len);
++  if (skip >= iov_len)
++    return -1;
++  *base = iov_base + skip;
++  *len = iov_len - skip;
++  if (*len > count)
++    *len = count;
++  return 0;
++}
++
++// kprobe/tcp_sendmsg: record the SNI of the first handshake record each
++// connection writes. Runs before any SSL_write on that connection, so the
++// bridge kprobe below always finds it.
++//
++// The first TLS handshake record decides: anything that starts with
++// 0x16 0x03 and is not a parseable ClientHello leaves the connection
++// unusable for host-restricted secrets. Plaintext before it (STARTTLS-style
++// protocols) is ignored. A later valid ClientHello (after a
++// HelloRetryRequest) that names another host or carries ECH marks the
++// connection SNI_STATUS_MISMATCH.
++SEC("kprobe/tcp_sendmsg")
++int bpf_kprobe_tcp_sendmsg_sni(void *ctx) {
++  __u32 tgid = (__u32)(bpf_get_current_pid_tgid() >> 32);
++  if (!bpf_map_lookup_elem(&tracked_tgids, &tgid))
++    return 0;
++
++  // tcp_sendmsg(struct sock *sk, struct msghdr *msg, size_t size)
++  struct sock *sk = NULL;
++  struct msghdr *msg = NULL;
++#if defined(bpf_target_x86)
++  bpf_probe_read_kernel(&sk, sizeof(sk), (char *)ctx + 112); // RDI
++  bpf_probe_read_kernel(&msg, sizeof(msg), (char *)ctx + 104); // RSI
++#elif defined(bpf_target_arm64)
++  bpf_probe_read_kernel(&sk, sizeof(sk), (char *)ctx + 0); // X0
++  bpf_probe_read_kernel(&msg, sizeof(msg), (char *)ctx + 8); // X1
++#else
++  return 0;
++#endif
++  if (!sk || !msg)
++    return 0;
++
++  __u64 base = 0, len = 0;
++  if (sendmsg_first_buf(msg, &base, &len) < 0 || len < 2)
++    return 0;
++  __u8 hdr[2] = {};
++  if (bpf_probe_read_user(hdr, sizeof(hdr), (void *)base) < 0)
++    return 0;
++  if (hdr[0] != TLS_CT_HANDSHAKE || hdr[1] != 0x03)
++    return 0;
++
++  __u64 sk_key = (__u64)sk;
++  struct sni_state_val *cur = bpf_map_lookup_elem(&sni_state, &sk_key);
++  __u32 cur_status = cur ? cur->status : SNI_STATUS_NONE;
++  if (cur_status != SNI_STATUS_NONE && cur_status != SNI_STATUS_SEEN)
++    return 0; // already decided, and not by a valid ClientHello
++
++  __u32 zero = 0;
++  struct sni_scratch_buf *s = bpf_map_lookup_elem(&sni_scratch, &zero);
++  if (!s)
++    return 0;
++  __u32 n = len > TLS_SNI_BUF_LEN ? TLS_SNI_BUF_LEN : (__u32)len;
++  if (bpf_probe_read_user(s->buf, n, (void *)base) < 0)
++    return 0;
++  __builtin_memset(&s->st, 0, sizeof(s->st));
++  __u32 host_len = 0;
++  __u32 status = tls_parse_sni(s->buf, n, s->st.sni, &host_len);
++
++  if (cur_status == SNI_STATUS_SEEN) {
++    // Only a fully valid ClientHello can change a decided connection: an
++    // encrypted TLS 1.2 handshake record (Finished) also starts with
++    // 0x16 0x03, and the server would reject a malformed second ClientHello.
++    int other = status == SNI_STATUS_ECH ||
++                (status == SNI_STATUS_SEEN && !hosts_match(cur->sni, s->st.sni));
++    if (other) {
++      cur = bpf_map_lookup_elem(&sni_state, &sk_key);
++      if (cur)
++        cur->status = SNI_STATUS_MISMATCH;
++    }
++    return 0;
++  }
++
++  if (status == SNI_NOT_CLIENT_HELLO)
++    status = SNI_STATUS_MALFORMED; // a handshake record, but not a ClientHello
++  s->st.status = status;
++  s->st.len = host_len;
++  bpf_map_update_elem(&sni_state, &sk_key, &s->st, BPF_ANY);
++  dbg_inc(DBG_SNI_CAPTURED);
++  return 0;
++}
++
++// tracepoint/sock/inet_sock_set_state: forget a socket's SNI when it starts
++// a new connection (SYN_SENT, before any data) or c
+[truncated]
+

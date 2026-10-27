@@ -1,0 +1,35 @@
+repo: cilium/cilium
+commit: 30e2acada7f5a5f4c71a4f3bf4e7edab169fa4c3
+rank: 3194
+
+bpf, socketlb: move MKE enablement to runtime config
+
+Use a non-zero MKE host class ID to enable the MKE host-network
+extension, removing the ENABLE_MKE compile-time macro.
+
+Populate the class ID only when MKE and kube-proxy replacement are
+enabled, preserving the existing behavior. Extend the verifier
+permutations to cover the enabled datapath path.
+
+Signed-off-by: viktor-kurchenko <viktor.kurchenko@isovalent.com>
+
+--- bpf/bpf_sock.c
+@@ -72,12 +72,12 @@ void ctx_set_port(struct bpf_sock_addr *ctx, __be16 dport)
+ 
+ static __always_inline __maybe_unused bool task_in_extended_hostns(void)
+ {
+-#ifdef ENABLE_MKE
++	__u32 classid = CONFIG(mke_host);
++
++	if (!classid)
++		return false;
+ 	/* Extension for non-Cilium managed containers on MKE. */
+-	return get_cgroup_classid() == CONFIG(mke_host);
+-#else
+-	return false;
+-#endif
++	return get_cgroup_classid() == classid;
+ }
+ 
+ static __always_inline __maybe_unused bool
+

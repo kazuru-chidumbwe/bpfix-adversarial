@@ -1,0 +1,114 @@
+repo: iopsystems/rezolus
+commit: d26308a89990b90c0a2584a1a5427922483afc17
+rank: 5080
+
+fix(cpu): conserve CPU time of exited tasks (#1037) (#1051)
+
+Per-task CPU attribution was accurate while a task lived and then lost its
+entire total at exit. `sched_process_exit` zeroes the exported counter
+(mod.bpf.c) at the same moment `handle_task_exit()` clears the task's
+metadata, so both the value and its labels are released together and the
+series simply ends.
+
+Measured on a 32-core EPYC against the kernel's own accounting for a
+pinned single-core burner: the live counter tracks /proc/<pid>/stat to
+~0.07% (2948 ticks = 29.48s vs 29.500s) for the task's whole life, then
+drops to zero in one step at exit. There is no drip-loss during the run,
+and there is no bounded task table or slot eviction -- task_cpu_usage is a
+full MAX_PID array and sparse_packed_counters is a bare alias for
+packed_counters with no cap, so the mechanism suspected in the issue does
+not exist.
+
+This matters more for rezolus than for a live exporter: recordings are
+analyzed after the fact, so every short-lived task contributes CPU time
+that is invisible in the task view while still present in the cgroup and
+host totals, with no indication the two disagree.
+
+Rather than change the retention lifecycle (which would keep dead-task
+cardinality alive for a scrape interval), fold the task's total into
+exited-task aggregates before dropping it, so the books can be reconciled:
+sum(live tasks) + exited ~= cgroup total. O(1), no added cardinality.
+
+Deliberately a distinct metric name rather than another `cpu_usage` state:
+this time is a subset of user+system, not a disjoint category, so exposing
+it as a third state would double-count any sum across states.
+
+Verified the aggregate gains exactly what the per-task series loses:
+
+  last live per-task value   20.108 s
+  exited aggregate before     5.995 s
+  exited aggregate after     26.195 s   (delta 20.200 s)
+
+The 92 ms difference is CPU consumed between the final sample and the
+actual exit. The host baseline also climbs steadily from other short-lived
+tasks exiting, including a +4.6 core-second step that was previously
+invisible entirely.
+
+Refs #1037
+
+--- src/agent/samplers/cpu/linux/usage/mod.bpf.c
+@@ -29,6 +29,7 @@
+ // the offsets to use in the `counters` group
+ #define USER_OFFSET 0
+ #define SYSTEM_OFFSET 1
++#define EXITED_OFFSET 2
+ 
+ // the offsets to use in the `softirqs` group
+ #define HI 0
+@@ -191,6 +192,15 @@ struct {
+     __uint(max_entries, MAX_CGROUPS);
+ } cgroup_system SEC(".maps");
+ 
++// per-cgroup CPU time belonging to tasks that have since exited
++struct {
++    __uint(type, BPF_MAP_TYPE_ARRAY);
++    __uint(map_flags, BPF_F_MMAPABLE);
++    __type(key, u32);
++    __type(value, u64);
++    __uint(max_entries, MAX_CGROUPS);
++} cgroup_exited SEC(".maps");
++
+ /**
+  * handle_new_task - Check if task is new/reused and send info to userspace
+  * @task: The task_struct to check
+@@ -326,6 +336,7 @@ int BPF_KPROBE(cpuacct_account_field_kprobe, struct task_struct* task, u32 index
+         u64 zero = 0;
+         bpf_map_update_elem(&cgroup_user, &cgroup_id, &zero, BPF_ANY);
+         bpf_map_update_elem(&cgroup_system, &cgroup_id, &zero, BPF_ANY);
++        bpf_map_update_elem(&cgroup_exited, &cgroup_id, &zero, BPF_ANY);
+     }
+ 
+     if (delta_utime > 0) {
+@@ -347,6 +358,31 @@ static __always_inline int account__sched_process_exit(u64* ctx) {
+     if (pid == 0 || pid >= MAX_PID)
+         return 0;
+ 
++    // Fold this task's total into the exited-task aggregates before dropping it.
++    // The per-task counter and its metadata are released together below, so
++    // without this the time is simply gone: the cgroup and host totals still
++    // include it, but no per-task series accounts for it, and a consumer cannot
++    // tell how much of the task view is missing. These aggregates let the books
++    // be reconciled -- sum(live tasks) + exited ~= cgroup total -- at O(1) cost
++    // and with no additional cardinality.
++    u64* usage = bpf_map_lookup_elem(&task_cpu_usage, &pid);
++    if (usage && *usage) {
++        u32 cpu = bpf_get_smp_processor_id();
++
++        if (cpu < MAX_CPUS) {
++            array_add(&cpu_usage, CPU_USAGE_GROUP_WIDTH * cpu + EXITED_OFFSET, *usage);
++        }
++
++        struct task_group* tg = BPF_CORE_READ(task, sched_task_group);
++        if (tg) {
++            int cgroup_id = BPF_CORE_READ(tg, css.id);
++
++            if (cgroup_id > 0 && cgroup_id < MAX_CGROUPS) {
++                array_add(&cgroup_exited, cgroup_id, *usage);
++            }
++        }
++    }
++
+     // Zero the exported counter FIRST to prevent exporting values without metadata
+     u64 zero = 0;
+     bpf_map_update_elem(&task_cpu_usage, &pid, &zero, BPF_ANY);
+

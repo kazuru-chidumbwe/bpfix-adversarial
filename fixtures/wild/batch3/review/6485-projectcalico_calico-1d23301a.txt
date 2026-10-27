@@ -1,0 +1,432 @@
+repo: projectcalico/calico
+commit: 1d23301ade229c2e2449760c32fce2fbe34e775b
+rank: 6485
+
+[BPF] Migrate BPF events from perf event array to ring buffer (#12111)
+
+* Migrate BPF events from perf event array to ring buffer
+
+Replace BPF_MAP_TYPE_PERF_EVENT_ARRAY (cali_perf_evnt) with
+BPF_MAP_TYPE_RINGBUF (cali_rb_evnt) for all BPF event delivery.
+
+BPF side:
+- Add ringbuf.h with CALI_RINGBUF macro, cali_rb_evnt map,
+  cali_rb_drops per-CPU drop counter, and ringbuf_submit_event() helper
+- Switch event_flow_log() from perf_commit_event() to ringbuf_submit_event()
+- Remove perf.h and perf_types.h
+- Rename struct perf_event_header to struct event_header
+- Rename ut/perf_events.c to ut/ringbuf_events.c
+
+Go side:
+- Add felix/bpf/ringbuf/ package: pure-Go mmap ring buffer reader,
+  DropsMap/ReadDrops for per-CPU drop counter polling
+- Remove felix/bpf/perf/ package
+- Update events.go: replace perfEventsReader with ringBufferEventsReader,
+  add drop counter tracking to preserve ErrLostEvents functionality
+- Scale ring buffer size by NumCPU to match perf array total capacity
+- Add ringbuf map type to libbpf map type registry
+
+Tests:
+- Rewrite perf_events_test.go as ringbuf_events_test.go with four tests:
+  basic send/receive, reader recovery, fill-up/drop, multiple events
+- Update bpf_prog_test.go, flow_log and policy_verdict test harnesses
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+* Fix static checks
+
+* Fix ring buffer map cleanup panic in BPF unit tests
+
+PinnedMap.Iter() does not support ring buffer maps (no key/value
+entries), causing errno 524 (ENOTSUPP) and a panic in cleanUpMaps().
+Return ErrNotSupported for ringbuf type, and skip the per-CPU drops
+array map (can't delete entries from array maps).
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+* Fix ring buffer reader correctness and sizing
+
+- Fix discardBit to match kernel ABI (1<<30, not 1<<29)
+- Validate power-of-two and page size in ringbuf.New()
+- Handle concurrent Close() during EpollWait (return EINTR)
+- Initialize epollFD to -1, close when >= 0
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+* Emit drop events through ring buffer instead of Go-side polling
+
+Replace the per-CPU drop counter polling with a BPF-side mechanism:
+- cali_rb_drops is now a shared BPF_MAP_TYPE_ARRAY (2 entries: count
+  + flush timestamp) instead of a PERCPU_ARRAY
+- ringbuf_flush_drops() atomically swaps the counter and emits a
+  TYPE_LOST_EVENTS event through the ring buffer, at most every 5s
+- If the emit fails (ring still full), the counter is restored
+- Go side handles TYPE_LOST_EVENTS like any other event, converting
+  to ErrLostEvents for the existing bpfEventPoller handler
+- Removes Go-side ReadDrops/checkDrops syscall-per-event overhead
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* Test drop event delivery through ring buffer
+
+Extend TestRingBufFillup to verify the drop counter flush mechanism:
+fill ring, cause exactly 1 drop, drain, send one more event, and
+assert the TYPE_LOST_EVENTS event carries count=1. Add Drain() helper
+to RingBuffer for test isolation across shared maps.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* Address PR review: spinlock, map macro, Go reader tests
+
+- Use CALI_MAP_V1 macro for cali_rb_drops map with versioned naming
+- Use struct rb_drops_val {lock, count, last_flush_ts} as single map
+  entry instead of two separate keys
+- Protect read-and-zero in ringbuf_flush_drops with bpf_spin_lock;
+  use __sync_fetch_and_add for simple increments and restores
+- Set EVENT_LOST_EVENTS to 0 (matching existing TypeLostEvents Go
+  constant) instead of 8
+- Add pure-Go unit tests for ring buffer reader: readOne, roundupLen,
+  busy/discard bit handling, Drain
+- Fix Drain to continue past discarded records instead of stopping
+  early
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* Improve lock to cover count/timestamp checks and add high-position test
+
+- Improve bpf_spin_lock in ringbuf_flush_drops to prevent TOCTOU race
+  where two CPUs could both pass the check and one flushes zero drops
+- Add TestReadOneHighPositions with startPos=1<<40 to verify mask
+  arithmetic at scale, as positions are monotonically increasing in
+  real systems
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* Remove spinlock from drop counter, use atomics only
+
+Remove bpf_spin_lock from rb_drops_val struct and all lock/unlock
+calls. Use __sync_lock_test_and_set for atomic read-and-zero and
+__sync_fetch_and_add for increments and restores. This is simpler
+and avoids the constraint that bpf_ringbuf_output cannot be called
+while holding a lock.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+--- felix/bpf-gpl/events.h
+@@ -1,15 +1,14 @@
+ // Project Calico BPF dataplane programs.
+-// Copyright (c) 2021-2025 Tigera, Inc. All rights reserved.
++// Copyright (c) 2021-2026 Tigera, Inc. All rights reserved.
+ // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ 
+ #ifndef __CALI_EVETNS_H__
+ #define __CALI_EVETNS_H__
+ 
+ #include "bpf.h"
+ #include "types.h"
+-#include "perf.h"
++#include "ringbuf.h"
+ #include "jump.h"
+-#include <linux/bpf_perf_event.h>
+ #include "events_type.h"
+ #include "log.h"
+ 
+@@ -25,10 +24,10 @@ static CALI_BPF_INLINE void event_flow_log(struct cali_tc_ctx *ctx)
+ 	/* Due to stack space limitations, the begining of the state is structured as the
+ 	 * event and so we can send the data straight without copying in BPF.
+ 	 */
+-	int err = perf_commit_event(ctx->skb, ctx->state, ctx->state->eventhdr.len);
++	int err = ringbuf_submit_event(ctx->state, ctx->state->eventhdr.len);
+ 
+ 	if (err != 0) {
+-		CALI_DEBUG("event_flow_log: perf_commit_event returns %d\n", err);
++		CALI_DEBUG("event_flow_log: ringbuf_submit_event returns %d\n", err);
+ 	}
+ }
+ 
+
+--- felix/bpf-gpl/events_type.h
+@@ -1,10 +1,12 @@
+ // Project Calico BPF dataplane programs.
+-// Copyright (c) 2021-2025 Tigera, Inc. All rights reserved.
++// Copyright (c) 2021-2026 Tigera, Inc. All rights reserved.
+ // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ 
+ #ifndef __CALI_EVENTS_TYPE_H__
+ #define __CALI_EVENTS_TYPE_H__
+ 
++#define EVENT_LOST_EVENTS          0
++
+ #define EVENT_PROTO_STATS       1
+ #define EVENT_DNS               2
+ #define EVENT_POLICY_VERDICT    3
+@@ -13,4 +15,18 @@
+ #define EVENT_DNS_L3            6
+ 
+ #define EVENT_POLICY_VERDICT_V6    7
++
++/* We need the header to be 64bit of size so that any 64bit fields in the
++ * message structures that embed this header are also aligned.
++ */
++struct event_header {
++	__u32 type;
++	__u32 len;
++};
++
++struct event_timestamp_header {
++	struct event_header h;
++	__u64 timestamp_ns;
++};
++
+ #endif /* __CALI_EVENTS_TYPE_H__ */
+
+--- felix/bpf-gpl/perf.h
+@@ -1,25 +0,0 @@
+-// Project Calico BPF dataplane programs.
+-// Copyright (c) 2020-2025 Tigera, Inc. All rights reserved.
+-// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+-
+-#ifndef __CALI_PERF_H__
+-#define __CALI_PERF_H__
+-
+-#include "bpf.h"
+-#include "perf_types.h"
+-
+-/* perf_commit_event commits an event with the provided data */
+-static CALI_BPF_INLINE int perf_commit_event(void *ctx, void *data, __u64 size)
+-{
+-	return bpf_perf_event_output(ctx, &cali_perf_evnt, BPF_F_CURRENT_CPU, data, size);
+-}
+-
+-/* perf_commit_event_ctx commits an event and includes ctx_send_size bytes of the context */
+-static CALI_BPF_INLINE int perf_commit_event_ctx(void *ctx, __u32 ctx_send_size, void *data, __u64 size)
+-{
+-	__u64 flags = BPF_F_CURRENT_CPU | (((__u64)ctx_send_size << 32) & BPF_F_CTXLEN_MASK);
+-
+-	return bpf_perf_event_output(ctx, &cali_perf_evnt, flags, data, size);
+-}
+-
+-#endif /* __CALI_PERF_H__ */
+
+--- felix/bpf-gpl/perf_types.h
+@@ -1,29 +0,0 @@
+-// Project Calico BPF dataplane programs.
+-// Copyright (c) 2021-2025 Tigera, Inc. All rights reserved.
+-// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+-
+-#ifndef __CALI_PERF_TYPES_H__
+-#define __CALI_PERF_TYPES_H__
+-
+-#include "bpf.h"
+-
+-CALI_MAP_V1(cali_perf_evnt,
+-		BPF_MAP_TYPE_PERF_EVENT_ARRAY,
+-		__u32, __u32,
+-		512,
+-		0)
+-
+-/* We need the header to be 64bit of size so that any 64bit fields in the
+- * message structures that embed this header are also aligned.
+- */
+-struct perf_event_header {
+-	__u32 type;
+-	__u32 len;
+-};
+-
+-struct perf_event_timestamp_header {
+-	struct perf_event_header h;
+-	__u64 timestamp_ns;
+-};
+-
+-#endif /* __CALI_PERF_TYPES_H__ */
+
+--- felix/bpf-gpl/ringbuf.h
+@@ -0,0 +1,109 @@
++// Project Calico BPF dataplane programs.
++// Copyright (c) 2026 Tigera, Inc. All rights reserved.
++// SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
++
++#ifndef __CALI_RINGBUF_H__
++#define __CALI_RINGBUF_H__
++
++#include "bpf.h"
++#include "events_type.h"
++
++// Ring buffer map macro — ring buffers have no key/value types and no
++// lookup/update/delete helpers. max_entries is the buffer size in bytes.
++#define CALI_RINGBUF(name, size_bytes)		\
++struct {					\
++	__uint(type, BPF_MAP_TYPE_RINGBUF);	\
++	__uint(max_entries, size_bytes);		\
++} name SEC(".maps");
++
++// Shared event ring buffer.
++// The 1MB compile-time value is a fallback default. At runtime, Go overrides
++// max_entries via maps.SetSize() -> bpf_map__set_max_entries() to
++// BPFExportBufferSizeMB * NumPossibleCPUs (preserving the same total buffer
++// capacity as the old per-CPU perf event array). For ring buffers,
++// max_entries IS the buffer size in bytes.
++CALI_RINGBUF(cali_rb_evnt, 1024 * 1024)
++
++// Shared drop counter and flush timestamp.
++// Drops are emitted as EVENT_LOST_EVENTS through the ring buffer itself;
++// Go never reads this map directly.
++//
++// No bpf_spin_lock: kprobe/tracing programs cannot reference maps whose
++// value type contains a spin lock. Instead, count uses atomic XCHG
++// (__sync_lock_test_and_set) for the read-and-zero in flush, and
++// __sync_fetch_and_add for increments.
++#define CALI_RB_FLUSH_INTERVAL_NS (5ULL * 1000000000ULL) /* 5 seconds */
++
++struct rb_drops_val {
++	__u64 count;
++	__u64 last_flush_ts;
++};
++
++CALI_MAP_V1(cali_rb_drops, BPF_MAP_TYPE_ARRAY, __u32, struct rb_drops_val, 1, 0)
++
++// ringbuf_flush_drops emits accumulated drop count as a TYPE_LOST_EVENTS
++// event through the ring buffer, at most once every CALI_RB_FLUSH_INTERVAL_NS.
++static CALI_BPF_INLINE void ringbuf_flush_drops(void)
++{
++	__u32 key = 0;
++	struct rb_drops_val *val = cali_rb_drops_lookup_elem(&key);
++	if (!val) {
++		return;
++	}
++
++	__u64 now = bpf_ktime_get_ns();
++	if (now - val->last_flush_ts < CALI_RB_FLUSH_INTERVAL_NS) {
++		return;
++	}
++
++	__u64 dropped = __sync_lock_test_and_set(&val->count, 0);
++	if (dropped == 0) {
++		return;
++	}
++
++	/* Emit the accumulated drop count as a lost-events notification. */
++	struct {
++		struct event_header hdr;
++		__u64 count;
++	} evt = {
++		.hdr = {
++			.type = EVENT_LOST_EVENTS,
++			.len  = sizeof(evt),
++		},
++		.count = dropped,
++	};
++	if (bpf_ringbuf_output(&cali_rb_evnt, &evt, sizeof(evt), 0) != 0) {
++		/* Ring still full — restore the counter so drops are not lost.
++		 * Concurrent increments between unlock and here are preserved:
++		 * the restore adds back the original amount on top of any new
++		 * increments, so the total remains accurate. */
++		__sync_fetch_and_add(&val->count, dropped);
++		return;
++	}
++
++	/* No lock needed: if two CPUs write last_flush_ts concurrently,
++	 * both values are near-identical (same bpf_ktime_get_ns epoch),
++	 * so the difference is irrelevant for a 5-second interval. */
++	val->last_flush_ts = now;
++}
++
++// Submit helper — drop-in replacement for perf_commit_event().
++// Unlike perf_commit_event, does not require a program context pointer.
++// On failure (ring buffer full), increments the shared drop counter.
++// On success, flushes accumulated drops if the flush interval has elapsed.
++static CALI_BPF_INLINE int ringbuf_submit_event(void *data, __u64 size)
++{
++	int err = bpf_ringbuf_output(&cali_rb_evnt, data, size, 0);
++	if (err != 0) {
++		__u32 key = 0;
++		struct rb_drops_val *val = cali_rb_drops_lookup_elem(&key);
++		if (val) {
++			__sync_fetch_and_add(&val->count, 1);
++		}
++	} else {
++		ringbuf_flush_drops();
++	}
++	return err;
++}
++
++#endif /* __CALI_RINGBUF_H__ */
+
+--- felix/bpf-gpl/types.h
+@@ -22,7 +22,7 @@
+ #include "arp.h"
+ #include "conntrack_types.h"
+ #include "nat_types.h"
+-#include "perf_types.h"
++#include "events_type.h"
+ #include "reasons.h"
+ 
+ #define IPV4_UDP_SIZE		(sizeof(struct iphdr) + sizeof(struct udphdr))
+@@ -55,7 +55,7 @@ struct fwd {
+ // - the Go version of the struct in bpf/state/map.go
+ // - the event handling logic in bpf/events/collector_policy_listener.go.
+ struct cali_tc_state {
+-	struct perf_event_header eventhdr;
++	struct event_header eventhdr;
+ 	/* Initial IP read from the packet, updated to host's IP when doing NAT encap/ICMP error.
+ 	 * updated when doing CALI_CT_ESTABLISHED_SNAT handling. Used for FIB lookup. */
+ 	DECLARE_IP_ADDR(ip_src);
+
+--- felix/bpf-gpl/ut/ringbuf_events.c
+@@ -1,17 +1,17 @@
+ // Project Calico BPF dataplane programs.
+-// Copyright (c) 2020-2025 Tigera, Inc. All rights reserved.
++// Copyright (c) 2020-2026 Tigera, Inc. All rights reserved.
+ // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ 
+ #include "ut.h"
+ #include "bpf.h"
+-#include "perf.h"
++#include "ringbuf.h"
+ #include "skb.h"
+ 
+ #include <linux/ip.h>
+ #include <linux/udp.h>
+ 
+ struct tuple {
+-	struct perf_event_header hdr;
++	struct event_header hdr;
+ 	__u32 ip_src;
+ 	__u32 ip_dst;
+ 	__u16 port_src;
+@@ -26,7 +26,7 @@ struct {
+ 	__type(value, struct tuple);
+ 	__uint(max_entries, 1);
+ 	__uint(map_flags, 0);
+-}cali_perf_scratch SEC(".maps");
++}cali_event_scratch SEC(".maps");
+ 
+ static CALI_BPF_INLINE int calico_unittest_entry (struct __sk_buff *skb)
+ {
+@@ -44,7 +44,7 @@ static CALI_BPF_INLINE int calico_unittest_entry (struct __sk_buff *skb)
+ 	struct iphdr *ip = ctx->ip_header;
+ 
+ 	int scratch_zero = 0;
+-	struct tuple *tp = bpf_map_lookup_elem(&cali_perf_scratch, &scratch_zero);
++	struct tuple *tp = bpf_map_lookup_elem(&cali_event_scratch, &scratch_zero);
+ 
+ 	if (!tp) {
+ 		return -1;
+@@ -72,14 +72,8 @@ static CALI_BPF_INLINE int calico_unittest_entry (struct __sk_buff *skb)
+ 		break;
+ 	}
+ 
+-	if (ip->protocol == IPPROTO_ICMP) {
+-		tp->hdr.type++;
+-		tp->hdr.len += skb->len;
+-		err = perf_commit_event_ctx(skb, skb->len, tp, sizeof(struct tuple));
+-	} else {
+-		err = perf_commit_event(skb, tp, sizeof(struct tuple));
+-	}
+-	CALI_DEBUG("perf_commit_event returns %d\n", err);
++	err = ringbuf_submit_event(tp, sizeof(struct tuple));
++	CALI_DEBUG("ringbuf_submit_event returns %d\n", err);
+ 
+ 	return err == 0 ? TC_ACT_UNSPEC : TC_ACT_SHOT;
+ }
+

@@ -1,0 +1,108 @@
+repo: cilium/tetragon
+commit: 79cd780aa26105657331856336f6d5a0bde25b00
+rank: 3596
+
+tetragon: Add USE_PERF_RING_BUF config variable
+
+We allow to use perf ring buffer based on --use-perf-ring-buffer config
+option. We store that bool value in struct tetragon_conf and bpf program
+uses ring buffer based on that.
+
+This value will never change within the tetragon instance execution, it's
+better to add it as frozen/read-only config value, so verifier can remove
+unused ring buffer code from bpf sensors.
+
+Signed-off-by: Jiri Olsa <jolsa@kernel.org>
+
+--- bpf/lib/config.h
+@@ -30,6 +30,7 @@
+ 	}))
+ 
+ DECLARE_CONFIG(bool, ITER_NUM);
++DECLARE_CONFIG(bool, USE_PERF_RING_BUF);
+ 
+ #else
+ 
+
+--- bpf/lib/environ_conf.h
+@@ -25,8 +25,7 @@ struct tetragon_conf {
+ 	__u32 tg_cgrp_level; /* Tetragon cgroup level */
+ 	__u64 tg_cgrpid; /* Tetragon current cgroup ID to avoid filtering blocking itself */
+ 	__u64 cgrp_fs_magic; /* Cgroupv1 or Cgroupv2 */
+-	__u8 use_perf_ring_buf; /* Use perf ring buffer rather than the bpf ring buffer */
+-	__u8 pad[7];
++	__u8 pad[8];
+ }; // All fields aligned so no 'packed' attribute.
+ 
+ /* Tetragon runtime configuration storage.
+
+--- bpf/lib/process.h
+@@ -13,6 +13,7 @@
+ #include "policy_stats.h"
+ #include "errmetrics.h"
+ #include "environ_conf.h"
++#include "config.h"
+ 
+ /* Applying 'packed' attribute to structs causes clang to write to the
+  * members byte-by-byte, as offsets may not be aligned. This is bad for
+@@ -646,26 +647,18 @@ perf_event_output_metric(void *ctx, u8 msg_op, void *map, u64 flags, void *data,
+ FUNC_INLINE long
+ event_output(void *ctx, void *data, u64 size)
+ {
+-	struct tetragon_conf *conf;
+-	int zero = 0;
+-
+-	conf = map_lookup_elem(&tg_conf_map, &zero);
+-	if (conf && conf->use_perf_ring_buf)
++	if (CONFIG(USE_PERF_RING_BUF))
+ 		return perf_event_output(ctx, &tcpmon_map, BPF_F_CURRENT_CPU, data, size);
+ 	return ringbuf_output(&tg_rb_events, data, size, 0);
+ }
+ 
+ FUNC_INLINE bool
+ event_output_metric(void *ctx, u8 msg_op, void *data, u64 size)
+ {
+-	struct tetragon_conf *conf;
+-	int zero = 0;
+ 	long err;
+ 
+-	conf = map_lookup_elem(&tg_conf_map, &zero);
+-	if (conf && conf->use_perf_ring_buf) {
++	if (CONFIG(USE_PERF_RING_BUF))
+ 		return perf_event_output_metric(ctx, msg_op, &tcpmon_map, BPF_F_CURRENT_CPU, data, size);
+-	}
+ 
+ 	err = ringbuf_output(&tg_rb_events, data, size, 0);
+ 
+
+--- bpf/test/bpf_lseek.c
+@@ -8,6 +8,7 @@
+ #include "bpf_event.h"
+ #include "bpf_task.h"
+ #include "bpf_ktime.h"
++#include "config.h"
+ 
+ /*
+  * # cat /sys/kernel/tracing/events/syscalls/sys_enter_lseek/format
+@@ -47,19 +48,14 @@ test_lseek(struct sys_enter_lseek_args *ctx)
+ 	if (ctx->fd == -1 && ctx->whence == 4729) {
+ 		struct msg_test msg = { 0 };
+ 		size_t size = sizeof(msg);
+-#ifdef __V511_BPF_PROG
+-		struct tetragon_conf *conf;
+-		int zero = 0;
+-#endif
+ 
+ 		msg.common.op = MSG_OP_TEST;
+ 		msg.common.ktime = tg_get_ktime();
+ 		msg.common.size = size;
+ 		msg.arg0 = get_smp_processor_id();
+ #ifdef __V511_BPF_PROG
+ 		// If sending via the BPF ring buffer, set arg1 to 1.
+-		conf = map_lookup_elem(&tg_conf_map, &zero);
+-		if (conf && !conf->use_perf_ring_buf)
++		if (!CONFIG(USE_PERF_RING_BUF))
+ 			msg.arg1 = 1;
+ #endif
+ 		event_output_metric(ctx, MSG_OP_TEST, &msg, size);
+

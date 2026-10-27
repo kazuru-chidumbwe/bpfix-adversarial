@@ -1,0 +1,45 @@
+repo: inspektor-gadget/inspektor-gadget
+commit: cc05827e6a6bec41201cd18f9f5d238871198579
+rank: 6257
+
+gadgets/advise_seccomp: Keep syscall index 64-bit
+
+Clang 21.1.8 can compile the unsigned int syscall index into a 32-bit
+bounds comparison followed by a 64-bit mask before map pointer arithmetic.
+On Azure Linux 3 kernel 6.6.157.1-1.azl3, the verifier retains u32_max=499
+but uses umax=511 at the byte store into the 501-byte map value and rejects
+the program. The same artifact loads on Ubuntu 6.8.0-138-generic.
+
+Keep the index as __u64, matching the raw tracepoint argument width, so
+the bounds comparison constrains the full-width scalar used for indexing.
+With Clang 21.1.8-8 this emits a 64-bit comparison and no indexing mask.
+Preserve the existing bounds check and all map, WASM, and metadata layouts.
+Negative/sign-extended syscall numbers still fail the unsigned upper bound.
+This is a compiler/verifier compatibility fix, not a demonstrated runtime
+out-of-bounds fix or a change to LLVM itself.
+
+Both existing gadget unit subtests pass with the patched source compiled
+by Clang 21.1.8-8 and Clang 18.1.8 on the affected x86_64 AZL3 kernel.
+The unmodified Clang 21 artifact fails both there. The patched Clang 21
+artifact also passes both subtests on the upstream x86_64 kernel-image
+matrix from 5.10 through 7.2; 5.4 skips the test's existing 5.6 minimum.
+Both compiler versions cross-compile the fixed source for arm64; arm64
+runtime validation remains pending.
+
+Fixes: 0eadba7beb20 ("gadgets: add image-based version for advise_seccomp")
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+Copilot-Session: ead353c1-95fe-40ff-b3be-627e671b269b
+Signed-off-by: Burak Ok <burakok@microsoft.com>
+
+--- gadgets/advise_seccomp/program.bpf.c
+@@ -97,7 +97,8 @@ int ig_seccomp_e(struct bpf_raw_tracepoint_args *ctx)
+ 	// will fail.
+ 
+ 	struct pt_regs regs = {};
+-	unsigned int id;
++	// Keep the bounds check and map index 64-bit for verifier compatibility.
++	__u64 id;
+ 
+ #ifdef __TARGET_ARCH_x86
+ 	struct task_struct *task = (struct task_struct *)bpf_get_current_task();
+

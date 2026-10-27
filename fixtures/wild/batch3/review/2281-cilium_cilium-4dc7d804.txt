@@ -1,0 +1,66 @@
+repo: cilium/cilium
+commit: 4dc7d8047cafc9661ff07bc784a20da1e0f617e3
+rank: 2281
+
+bpf: Fix "same insn cannot be used with different pointers" in proxy.h
+
+When DEBUG is enabled, Clang 17 optimizes the final part of
+assign_socket_tcp and assign_socket_udp by keeping only one instance of
+the code and jumping to it from two places. It means that the same
+struct bpf_sock *sk pointer can point to the return value of either
+skc_lookup_tcp or sk_lookup_udp. Unfortunately, for the verifier these
+pointer types are different (PTR_TO_SOCK_COMMON and PTR_TO_SOCKET), and
+it doesn't allow such pattern with the following error:
+
+; sk = sk_lookup_udp(ctx, tuple, len, BPF_F_CURRENT_NETNS, 0);
+829: (bf) r1 = r6
+830: (b4) w3 = 36
+831: (b7) r4 = -1
+832: (b7) r5 = 0
+833: (85) call bpf_sk_lookup_udp#85
+last_idx 833 first_idx 827
+regs=8 stack=0 before 832: (b7) r5 = 0
+regs=8 stack=0 before 831: (b7) r4 = -1
+regs=8 stack=0 before 830: (b4) w3 = 36
+834: (b4) w7 = -178
+; if (!sk)
+835: (15) if r0 == 0x0 goto pc+38
+ R0_w=sock(id=0,ref_obj_id=29,off=0,imm=0) R6=ctx(id=0,off=0,imm=0) R7_w=inv4294967118 R8=inv(id=0,umax_value=4294967295,var_off=(0x0; 0xffffffff)) R9=inv(id=22,umax_value=65535,var_off=(0x0; 0xffff)) R10=fp0 fp-16=???mmmmm fp-24=mmmmmmmm fp-32=mmmmmmmm fp-40=mmmmmmmm fp-48=mmmmmmmm fp-72=????mmmm fp-80=mmmmmmmm fp-88=mmmmmmmm refs=29
+;
+836: (61) r1 = *(u32 *)(r6 +16)
+837: (63) *(u32 *)(r10 -104) = r1
+838: (61) r7 = *(u32 *)(r0 +4)
+same insn cannot be used with different pointers
+processed 1261 insns (limit 1000000) max_states_per_insn 4 total_states 68 peak_states 67 mark_read 19
+
+Work around it by adding READ_ONCE to the problematic dereference.
+Although it doesn't guarantee that the same problem won't happen, it
+helps in this case.
+
+Ref: https://github.com/cilium/cilium/pull/32169
+Fixes: 673d481d1dbe ("images: Update LLVM to 17.0.6")
+Reported-by: Marco Hofstetter <marco.hofstetter@isovalent.com>
+Signed-off-by: Maxim Mikityanskiy <maxim@isovalent.com>
+Co-developed-by: Marco Hofstetter <marco.hofstetter@isovalent.com>
+Signed-off-by: Marco Hofstetter <marco.hofstetter@isovalent.com>
+
+--- bpf/lib/proxy.h
+@@ -28,7 +28,7 @@ assign_socket_tcp(struct __ctx_buff *ctx,
+ 	if (established && sk->state == BPF_TCP_LISTEN)
+ 		goto release;
+ 
+-	dbg_ctx = sk->family << 16 | ctx->protocol;
++	dbg_ctx = READ_ONCE(sk)->family << 16 | ctx->protocol;
+ 	result = sk_assign(ctx, sk, 0);
+ 	cilium_dbg(ctx, DBG_SK_ASSIGN, -result, dbg_ctx);
+ 	if (result == 0)
+@@ -54,7 +54,7 @@ assign_socket_udp(struct __ctx_buff *ctx,
+ 	if (!sk)
+ 		goto out;
+ 
+-	dbg_ctx = sk->family << 16 | ctx->protocol;
++	dbg_ctx = READ_ONCE(sk)->family << 16 | ctx->protocol;
+ 	result = sk_assign(ctx, sk, 0);
+ 	cilium_dbg(ctx, DBG_SK_ASSIGN, -result, dbg_ctx);
+ 	if (result == 0)
+

@@ -1,0 +1,124 @@
+repo: microsoft/retina
+commit: 424c0e4c5f88c55b5be01d1df1da04f298fb0cce
+rank: 5029
+
+fix: Don't bypass other tc-bpf programs (#276)
+
+# Description
+
+This pull request fixes the compatibility with Cilium. Both Cilium and
+Retina attach tc-bpf programs to the host interfaces of pods and,
+depending on the configuration for Cilium, to the native devices (eth0 &
+co). As a result, whichever program is executed first bypasses the other
+program. Since Cilium relies on its BPF programs to implement service
+handling, policy enforcement, and much more, a bypass can have dire
+consequences.
+
+To avoid bypassing Cilium, Retina needs to return TC_ACT_UNSPEC instead
+of TC_ACT_OK; that return code will cause subsequent BPF programs attach
+at the same tc hook to be executed [1]. In addition, Cilium should be
+run with `--bpf-filter-priority=2` to always run after Retina.
+
+This change was tested on a 5-nodes GKE cluster with Cilium installed.
+The full connectivity tests from latest [Cilium
+CLI](https://github.com/cilium/cilium-cli/blob/main/README.md#connectivity-check)
+passed. Retina was attached to both the ingress and egress of all
+interfaces:
+
+$ ks exec ds/cilium -c cilium-agent -- bpftool net | grep
+lxc461b2341ecd6
+    lxc461b2341ecd6(18) clsact/ingress endpoint_ingres id 3283
+lxc461b2341ecd6(18) clsact/ingress cil_from_container-lxc461b2341ecd6 id
+790
+    lxc461b2341ecd6(18) clsact/egress endpoint_egress id 3282
+lxc461b2341ecd6(18) clsact/egress cil_to_container-lxc461b2341ecd6 id
+795
+
+1 -
+https://lpc.events/event/16/contributions/1353/attachments/1068/2130/plumbers_2022_tc_bpf_links.pdf
+
+## Related Issue
+
+https://github.com/microsoft/retina/issues/252
+
+## Checklist
+
+- [x] I have read the [contributing
+documentation](https://retina.sh/docs/contributing).
+- [x] I signed and signed-off the commits (`git commit -S -s ...`). See
+[this
+documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification)
+on signing commits.
+- [x] I have correctly attributed the author(s) of the code.
+- [x] I have tested the changes locally.
+- [x] I have followed the project's style guidelines.
+- [x] I have updated the documentation, if necessary.
+- [ ] I have added tests, if applicable.
+
+## Screenshots (if applicable) or Testing Completed
+
+Please add any relevant screenshots or GIFs to showcase the changes
+made.
+
+## Additional Notes
+
+Add any additional notes or context about the pull request here.
+
+---
+
+Please refer to the [CONTRIBUTING.md](../CONTRIBUTING.md) file for more
+information on how to contribute to this project.
+
+--- pkg/plugin/packetparser/_cprog/packetparser.c
+@@ -236,8 +236,8 @@ int endpoint_ingress_filter(struct __sk_buff *skb)
+ 	// This is attached to the interface on the host side.
+ 	// So ingress on host is egress on endpoint and vice versa.
+ 	parse(skb, FROM_ENDPOINT);
+-	// Always return 0 to allow packet to pass.
+-	return 0;
++	// Always return TC_ACT_UNSPEC to allow packet to pass to the next BPF program.
++	return TC_ACT_UNSPEC;
+ }
+ 
+ SEC("classifier_endpoint_egress")
+@@ -246,22 +246,22 @@ int endpoint_egress_filter(struct __sk_buff *skb)
+ 	// This is attached to the interface on the host side.
+ 	// So egress on host is ingress on endpoint and vice versa.
+ 	parse(skb, TO_ENDPOINT);
+-	// Always return 0 to allow packet to pass.
+-	return 0;
++	// Always return TC_ACT_UNSPEC to allow packet to pass to the next BPF program.
++	return TC_ACT_UNSPEC;
+ }
+ 
+ SEC("classifier_host_ingress")
+ int host_ingress_filter(struct __sk_buff *skb)
+ {
+ 	parse(skb, FROM_NETWORK);
+-	// Always return 0 to allow packet to pass.
+-	return 0;
++	// Always return TC_ACT_UNSPEC to allow packet to pass to the next BPF program.
++	return TC_ACT_UNSPEC;
+ }
+ 
+ SEC("classifier_host_egress")
+ int host_egress_filter(struct __sk_buff *skb)
+ {
+ 	parse(skb, TO_NETWORK);
+-	// Always return 0 to allow packet to pass.
+-	return 0;
++	// Always return TC_ACT_UNSPEC to allow packet to pass to the next BPF program.
++	return TC_ACT_UNSPEC;
+ }
+
+--- pkg/plugin/packetparser/_cprog/packetparser.h
+@@ -4,6 +4,8 @@
+ #define ETH_P_IP	0x0800
+ // The maximum length of the TCP options field.
+ #define MAX_TCP_OPTIONS_LEN 40
++// tc-bpf return code to execute the next tc-bpf program.
++#define TC_ACT_UNSPEC   (-1)
+ 
+ typedef enum
+ {
+

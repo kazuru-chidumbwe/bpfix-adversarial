@@ -1,0 +1,39 @@
+repo: projectcalico/calico
+commit: 3810dfb1c77abe9db28cc192153683c98e5041c9
+rank: 2372
+
+felix: reduce IPv6 ext-header parse verifier complexity (#13155)
+
+The IPv6 extension-header parse loop in tc_state_fill_from_iphdr_v6_offset
+emitted a CALI_DEBUG immediately before bpf_load_bytes() on every iteration.
+A helper call ahead of the packet load forces the verifier to checkpoint
+state across the load, and because the loop is walked under many downstream
+policy states, the cost fans out combinatorially. On the heaviest debug
+programs (from-HEP, IPv6) this pushed from_hep_debug_v6 and
+from_hep_dsr_debug_v6 past the verifier's 1,000,000-instruction complexity
+limit (-E2BIG) on newer kernels (seen on 6.8.0-1063-gcp).
+
+Move the log to after the load and length check so both per-iteration debug
+logs sit on the single post-load success path. This drops calico_tc_main
+from >1,000,000 (rejected) to 810,522 processed insns, with no change to
+no_log builds or dataplane behaviour. The only trade-off is that a
+"Too short" failure no longer logs the offset it failed to read.
+
+Co-authored-by: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+--- felix/bpf-gpl/parsing6.h
+@@ -125,12 +125,12 @@ static CALI_BPF_INLINE void tc_state_fill_from_iphdr_v6_offset(struct cali_tc_ct
+ 	for (i = 0; i < 8; i++) {
+ 		struct ipv6_opt_hdr opt;
+ 
+-		CALI_DEBUG("loading extension at offset %d", ipoff + len);
+ 		if (bpf_load_bytes(ctx, ipoff + len, &opt, sizeof(opt))) {
+ 			CALI_DEBUG("Too short");
+ 			goto deny;
+ 		}
+ 
++		CALI_DEBUG("loading extension at offset %d", ipoff + len);
+ 		CALI_DEBUG("ext nexthdr %d hdrlen %d", opt.nexthdr, opt.hdrlen);
+ 
+ 		switch(hdr) {
+

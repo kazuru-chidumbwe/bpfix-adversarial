@@ -1,0 +1,683 @@
+repo: ccfos/huatuo
+commit: 2774496c0da86c3220baf3522f5ccf9726c7186a
+rank: 2597
+
+feat(iolatency): collect block IO latency and size intervals
+
+Collect Q2G, Q2D and D2C latency and IO size intervals for SCSI, NVMe and
+virtio disks. Check iostats and request-time accounting once at startup,
+treating nonzero iostats values as enabled.
+
+Read Q from the bio's kernel submission timestamp and G/last D from the
+request. Support packed and full-width bio timestamps by field presence.
+Missing Q skips only Q2G/Q2D; D2C and size accounting stay independent.
+Keep kernel timestamp precision, including plug caching and merging.
+Nonpositive Q-stage deltas enter the first bucket without an exact timing
+guarantee; missing times and reversed D2C remain invalid.
+
+Q records queued size. Bio remap supplies it only when the kernel's
+completion flag suppresses a later Q, excluding partition translation.
+Request remap accounts directly dispatched clones. Resolve the actual bio
+flag enum, retaining the legacy macro ABI when no enum exists.
+
+Raw request completion settles whole bios within its completed byte range.
+Partial bios wait for their later completion. Bound walks to 512 bios, keep
+classification and container updates in scalar helpers, and arrange
+optional exits so older verifiers can bound the walk. Inline counter
+lookup/create to avoid an extra active verifier call frame, without adding
+map lookups, field reads or accounting work. No per-bio state needs
+retention or reclamation, including IO that ends before forming a request.
+
+Probe disk identity under a sysfs-owned reference, then publish Host
+counters from the sole userspace creator. Keep the cold sysfs probe with
+the session; its result map is empty after startup. Device changes discard
+the session and its baselines, including a change observed after capture:
+reject that interval before publishing it. Unsupported online configuration
+changes do not introduce disk pause or re-enrollment states.
+
+Use each live bio's CSS and cache its kernel serial until final release.
+Publish release in the counter stream so userspace can reclaim that
+generation. Compute raw deltas before combining public container labels.
+Read failures rebuild the baseline; attribution failure preserves Host.
+
+NVMe and virtio size samples use the wide completion byte count. SCSI uses
+its last-dispatch sector count across partial completions, including the
+older request_aux layout. Keep its 16-bit sector capacity instead of adding
+request-size state or a dispatch probe.
+
+Define shared counter layouts, keys, stage and failure values in an ABI
+header and generate the Go decoding types. Preserve wire values, offsets,
+bucket bounds and map capacities. Native C fixtures consume the same header
+while retaining independent accounting and layout checks.
+
+Select raw tracepoint arguments with attach-time capability probes. Require
+selected hooks and check initialized software crypto fallback before
+publishing the session.
+
+Copy adjacent bio/request fields in CO-RE-checked snapshots. Other layouts
+keep the individual field reads.
+
+The complete series versus main averaged the following IOPS with Huatuo
+enabled. Both versions pinned a single fio process to the same CPU in the
+NVMe PCI device's NUMA node, using 4 KiB random reads at QD 256:
+
+  Kernel  Main     This series  Gain
+  4.18    155,721  215,063      38.11%
+  5.10    239,532  277,294      15.76%
+
+Each version had five alternating 15-second runs after two seconds of
+warmup, with BPF runtime statistics disabled.
+
+For performance comparisons, pin fio to a CPU in the NVMe PCI device's NUMA
+node and keep the submission CPU fixed across versions.
+
+Signed-off-by: Li Nan <magiclinan@didiglobal.com>
+
+--- bpf/include/abi/iolatency_types.h
+@@ -0,0 +1,107 @@
++// Copyright 2026 The HuaTuo Authors
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++// http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++/* IOLatency map layouts and numeric contracts also generate the Go decoder. */
++#ifndef __BPF_ABI_IOLATENCY_H__
++#define __BPF_ABI_IOLATENCY_H__
++
++#include "bpf_abi.h"
++
++enum iolatency_layout {
++	IO_LATENCY_BUCKETS = 17,
++	IO_SIZE_BUCKETS = 6,
++	IO_LATENCY_OPERATIONS = 2,
++	IO_LATENCY_DISK_NAME_LEN = 32,
++	IO_LATENCY_REQUEST_SCAN_BUDGET = 512,
++	IO_LATENCY_CRYPTO_MODE_CAPACITY = 64,
++};
++
++enum iolatency_stage {
++	IO_LATENCY_STAGE_Q2D = 0,
++	IO_LATENCY_STAGE_D2C,
++	IO_LATENCY_STAGE_Q2G,
++	IO_LATENCY_STAGE_COUNT,
++};
++
++enum iolatency_counter_kind {
++	IO_LATENCY_ROW_COUNTERS = 0,
++	IO_LATENCY_CSS_RELEASED,
++};
++
++enum iolatency_failure {
++	IO_LATENCY_CHAIN_OVERFLOW = 1,
++	IO_LATENCY_GROUP_INSERT_FAILED = 3,
++	IO_LATENCY_GROUP_RELEASE_FAILED,
++};
++
++enum iolatency_queue_probe_status {
++	IO_LATENCY_PROBE_PENDING = 0,
++	IO_LATENCY_PROBE_SKIPPED,
++	IO_LATENCY_PROBE_SUPPORTED,
++	IO_LATENCY_PROBE_DISABLED,
++};
++
++enum iolatency_crypto_probe_status {
++	IO_LATENCY_CRYPTO_PENDING = 0,
++	IO_LATENCY_CRYPTO_UNUSED,
++	IO_LATENCY_CRYPTO_INITIALIZED,
++};
++
++/* Preserve the Q2D, D2C, Q2G wire order when indexing stages on either side. */
++struct iolatency_counters {
++	u64 buckets[IO_LATENCY_STAGE_COUNT][IO_LATENCY_BUCKETS];
++	u64 queued_size[IO_SIZE_BUCKETS];
++	u64 issued_size[IO_SIZE_BUCKETS];
++};
++
++struct iolatency_host_counters {
++	u32 major;
++	u32 minor;
++	struct iolatency_counters counters[IO_LATENCY_OPERATIONS];
++	u64 scsi;
++};
++
++struct iolatency_container_key {
++	u64 blkcg;
++	u64 serial;
++	u32 major;
++	u32 minor;
++	u32 operation;
++	u32 kind;
++};
++
++struct iolatency_queue_probe_key {
++	u8 name[IO_LATENCY_DISK_NAME_LEN];
++};
++
++struct iolatency_queue_probe_result {
++	s64 result;
++	u32 major;
++	u32 minor;
++	u64 disk;
++};
++
++BPF_ABI_EXPORT(iolatency_counters);
++BPF_ABI_EXPORT(iolatency_host_counters);
++BPF_ABI_EXPORT(iolatency_container_key);
++BPF_ABI_EXPORT(iolatency_queue_probe_key);
++BPF_ABI_EXPORT(iolatency_queue_probe_result);
++BPF_ABI_EXPORT_ENUM(iolatency_layout);
++BPF_ABI_EXPORT_ENUM(iolatency_stage);
++BPF_ABI_EXPORT_ENUM(iolatency_counter_kind);
++BPF_ABI_EXPORT_ENUM(iolatency_failure);
++BPF_ABI_EXPORT_ENUM(iolatency_queue_probe_status);
++BPF_ABI_EXPORT_ENUM(iolatency_crypto_probe_status);
++
++#endif /* __BPF_ABI_IOLATENCY_H__ */
+
+--- bpf/include/bpf_blkio.h
+@@ -6,13 +6,6 @@
+ #include <bpf/bpf_core_read.h>
+ #include <bpf/bpf_helpers.h>
+ 
+-#define TIMESTAMP_MASK (((u64)1 << 51) - 1)
+-
+-static __always_inline u64 ktime_ns_mask()
+-{
+-	return bpf_ktime_get_ns() & TIMESTAMP_MASK;
+-}
+-
+ /* Local struct definitions for kernel 5.12+ compatibility.
+  * In newer kernels, bio->bi_disk was moved to bio->bi_bdev->bd_disk.
+  * These local structs with preserve_access_index enable BPF CO-RE to
+@@ -47,33 +40,4 @@ static __always_inline struct gendisk *bio_disk(struct bio *bio)
+ 	return disk;
+ }
+ 
+-static __always_inline u8 bio_partno(struct bio *bio)
+-{
+-	u8 partno = 0;
+-
+-	if (bpf_core_field_exists(bio->bi_partno)) {
+-		BPF_CORE_READ_INTO(&partno, bio, bi_partno);
+-	} else {
+-		/* Kernel 5.12+: bi_partno moved to bio->bi_bdev->bd_dev */
+-		struct bio___5_12 *bio_new = (struct bio___5_12 *)bio;
+-		struct block_device___5_12 *bdev;
+-
+-		BPF_CORE_READ_INTO(&bdev, bio_new, bi_bdev);
+-		if (bdev) {
+-			BPF_CORE_READ_INTO(&partno, bdev, bd_dev);
+-		}
+-	}
+-
+-	return partno;
+-}
+-
+-static __always_inline void
+-bio_major_minor_numbers(struct bio *bio, u32 *disk_dev)
+-{
+-	struct gendisk *disk = bio_disk(bio);
+-
+-	bpf_probe_read(disk_dev, 2 * sizeof(u32), disk);
+-	disk_dev[1] = disk_dev[1] + bio_partno(bio);
+-}
+-
+ #endif
+
+--- bpf/iolatency_probe.c
+@@ -0,0 +1,94 @@
++/*
++ * Copyright 2026 The HuaTuo Authors
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/*
++ * Probe raw tracepoint argument counts at startup. Fixed-offset context
++ * loads let the kernel reject slots beyond an event's argument list during
++ * attach. Volatile preserves each load without dereferencing its value or
++ * retaining event state. The context is read as the raw u64 argument array,
++ * so probing needs no CO-RE field relocation. A default section event
++ * satisfies loaders; each attachment selects the event being measured.
++ */
++
++#include "vmlinux.h"
++
++#include <bpf/bpf_helpers.h>
++
++#include "abi/iolatency_types.h"
++
++char __license[] SEC("license") = "Dual MIT/GPL";
++
++#define PROBE_ARGUMENT(slot) \
++	SEC("raw_tracepoint/block_bio_queue") \
++	int probe_arg##slot(struct bpf_raw_tracepoint_args *ctx) \
++	{ \
++		const volatile __u64 *args = (const volatile __u64 *)ctx; \
++		(void)args[slot]; \
++		return 0; \
++	}
++
++PROBE_ARGUMENT(0)
++PROBE_ARGUMENT(1)
++PROBE_ARGUMENT(2)
++PROBE_ARGUMENT(3)
++PROBE_ARGUMENT(4)
++
++/*
++ * Inspect initialized software encryption at startup.
++ * The running kernel's enum supplies the full tfms_inited array length.
++ * Byte-sized reads work with the legacy probe-read helper and preserve its
++ * error result; a failed read never means that encryption is unused.
++ */
++const volatile __u64 io_latency_tfms_inited = 0;
++const volatile __u32 io_latency_crypto_modes = 0;
++struct {
++	__uint(type, BPF_MAP_TYPE_ARRAY);
++	__uint(max_entries, 1);
++	__type(key, __u32);
++	__type(value, __s64);
++} io_latency_crypto_map SEC(".maps");
++
++SEC("raw_tracepoint/sys_enter")
++int probe_crypto_fallback(struct bpf_raw_tracepoint_args *ctx)
++{
++	__u32 key = 0;
++	__s64 *result = bpf_map_lookup_elem(&io_latency_crypto_map, &key);
++	__s64 completed = IO_LATENCY_CRYPTO_UNUSED;
++	int i;
++
++	if (!result || *result)
++		return 0;
++
++#pragma unroll
++	for (i = 0; i < IO_LATENCY_CRYPTO_MODE_CAPACITY; i++) {
++		__u8 initialized = 0;
++		int ret;
++
++		if (i >= io_latency_crypto_modes)
++			break;
++		ret = (int)bpf_probe_read(&initialized, sizeof(initialized),
++					 (const void *)(io_latency_tfms_inited + i));
++		if (ret) {
++			completed = ret;
++			break;
++		}
++		if (initialized)
++			completed = IO_LATENCY_CRYPTO_INITIALIZED;
++	}
++	/* Publish one complete observation in a single aligned 64-bit value. */
++	*result = completed;
++	return 0;
++}
+
+--- bpf/iolatency_tracing.c
+@@ -1,244 +1,1070 @@
++/*
++ * Measure read/write IO on enrolled SCSI/SAS, NVMe and virtio queues. Q/A
++ * counts queued size; the bio's kernel submission timestamp supplies Q,
++ * request timestamps supply G and the last D, and raw request completion
++ * supplies C before the kernel advances the bio chain.
++ * This boundary excludes upper DM/MD processing and bio completion callbacks.
++ * Host counters gate disk selection. Device changes invalidate the session.
++ * No per-bio state survives a probe: an IO ending before request completion
++ * needs no cleanup. Missing kernel Q timestamps skip Q2G/Q2D only. The kernel
++ * owns submission timing, including resubmission, splitting and plug caching;
++ * it does not guarantee the exact Q/A tracepoint time.
++ */
+ #include "vmlinux.h"
+ 
+ #include <bpf/bpf_core_read.h>
+ #include <bpf/bpf_helpers.h>
+ #include <bpf/bpf_tracing.h>
+ 
+-#include "bpf_common.h"
+ #include "bpf_blkio.h"
++#include "bpf_common.h"
++#include "bpf_iocontrol.h"
+ #include "bpf_compat_7_0.h"
+-
+-#define LATENCY_20MS_NS 20000000
+-#define LATENCY_30MS_NS 30000000
+-#define LATENCY_50MS_NS 50000000
+-#define LATENCY_100MS_NS 100000000
+-#define LATENCY_200MS_NS 200000000
+-#define LATENCY_400MS_NS 400000000
++#include "abi/iolatency_types.h"
+ 
+ char __license[] SEC("license") = "Dual MIT/GPL";
+ 
+-#define LATENCY_ZONE_MAX (6)
++IO_CONTROL_DEVICE_HOOKS()
+ 
+-struct disk_entry {
+-	u64 disk;
+-	u32 major;
+-	u32 minor;
+-	u64 freeze_nr;
+-	u64 q2c_zone[LATENCY_ZONE_MAX];
+-	u64 d2c_zone[LATENCY_ZONE_MAX];
+-};
++#define IO_SIZE_KIB 1024ULL
++#define IO_LATENCY_REQUEST_CHUNK_BIOS 32
++#define IO_LATENCY_COMPLETION_CHUNK_COUNT \
++	((IO_LATENCY_REQUEST_SCAN_BUDGET - 1 + IO_LATENCY_REQUEST_CHUNK_BIOS - 1) / \
++	 IO_LATENCY_REQUEST_CHUNK_BIOS)
++#define IO_LATENCY_DISKS 128
++#define IO_LATENCY_CONTAINER_CSS 2048
++#define IO_LATENCY_CONTAINER_SERIES \
++	(IO_LATENCY_CONTAINER_CSS * IO_LATENCY_DISKS * \
++	 IO_LATENCY_OPERATIONS)
++#define IO_LATENCY_ENOENT 2
++#define IO_LATENCY_EBUSY 16
++#define IO_LATENCY_EFAULT 14
++#define IO_LATENCY_EEXIST 17
+ 
+-struct blkgq_entry {
+-	u64 blkgq;
+-	u64 disk;
+-	u32 major, minor;
+-	u64 q2c_zone[LATENCY_ZONE_MAX];
+-	u64 d2c_zone[LATENCY_ZONE_MAX];
++#define IO_SIZE_POINT_QUEUE 0
++#define IO_SIZE_POINT_ISSUE 1
++
++#define IO_LATENCY_NS_PER_US 1000ULL
++#define IO_LATENCY_NS_PER_MS 1000000ULL
++#define IO_LATENCY_NS_PER_SEC 1000000000ULL
++
++#ifndef REQ_OP_MASK
++#define REQ_OP_MASK ((1U << 8) - 1)
++#endif
++
++/* Go probes each raw tracepoint's argument count before loading. */
++volatile const u32 block_bio_queue_bio_arg = 0;
++volatile const u32 block_bio_remap_bio_arg = 0;
++volatile const u32 block_rq_remap_request_arg = 0;
++volatile const u32 io_latency_bio_trace_completion = 10;
++volatile const u64 io_latency_root_blkcg = 0;
++
++/* Optional fields need a local declaration even when build-time architecture
++ * headers omit them; CO-RE selects the running kernel's layout.
++ */
++struct request___iolatency {
++	u16 stats_sectors;
++} __attribute__((preserve_access_index));
++
++/* CSS entries cache the kernel serial until actual release. */
++struct io_latency_group_state {
++	u64 serial;
+ };
+ 
++/* A completion IRQ can first observe several CSS identities before the
++ * allocator can refill. This small BPF-only index has a fixed bound.
++ */
+ struct {
+ 	__uint(type, BPF_MAP_TYPE_HASH);
+ 	__type(key, u64);
+-	__type(value, struct disk_entry);
+-	__uint(max_entries, 128);
+-} blkdisk_map SEC(".maps");
++	__type(value, struct io_latency_group_state);
++	__uint(max_entries, IO_LATENCY_CONTAINER_CSS);
++} io_latency_group_map SEC(".maps");
++
++static const struct iolatency_counters zero_latency_counters = {};
++
++/*
++ * Keep failure handling out of per-bio accounting to bound older verifier
++ * state. Map operations return signed 32-bit errno; consume their results as
++ * int so direct JIT calls and helper wrappers use the same comparison width.
++ * One aligned word publishes the reason and signed helper errno. Userspace
++ * checks it at collection boundaries and detaches the session on error.
++ */
++static __noinline void io_latency_fail(u32 reason, int error)
++{
++	struct io_control_status *status;
++
++	/* A nested hash writer can return EBUSY before changing the map.
++	 * Skip that write: missed samples are accepted.
++	 * Retrying here cannot release the interrupted writer's guard.
++	 */
++	if (error == -IO_LATENCY_EBUSY)
++		return;
++	status = io_control_status_value();
++
++	if (status)
++		status->failure = ((u64)reason << 32) | (u32)error;
++}
+ 
+ struct {
+ 	__uint(type, BPF_MAP_TYPE_HASH);
+ 	__type(key, u64);
+-	__type(value, struct blkgq_entry);
+-	__uint(max_entries, 2048);
+-} blkcg_map SEC(".maps");
++	__type(value, struct iolatency_host_counters);
++	__uint(max_entries, IO_LATENCY_DISKS);
++	__uint(map_flags, COMPAT_BPF_F_NO_PREALLOC);
++} blkdisk_lat_map SEC(".maps");
+ 
+ /*
+- * key: bio address
+- * value: start timestamp
++ * Each CSS can emit one series per disk and read/write operation. Keep the
++ * full cardinality bound sparse so only observed series allocate counters.
+  */
+ struct {
+ 	__uint(type, BPF_MAP_TYPE_HASH);
+-	__type(key, u64);
+-	__type(value, u64);
+-	__uint(max_entries, 10240);
+-} bio_start_time SEC(".maps");
++	__type(key, struct iolatency_container_key);
++	__type(value, struct iolatency_counters);
++	__uint(max_entries, IO_LATENCY_CONTAINER_SERIES + IO_LATENCY_CONTAINER_CSS);
++	__uint(map_flags, COMPAT_BPF_F_NO_PREALLOC);
++} blkcg_lat_map SEC(".maps");
+ 
+-static int zone_index(u64 delta)
++/* Disk registration is a cold path under a sysfs-owned disk reference.
++ * Device changes invalidate the session at the next collection boundary.
++ */
++/* The queue sysfs kobject's parent is the whole-disk device. Its owning
++ * structure changed from embedded hd_struct to block_device. Relocate that
++ * ownership directly; queue_attr_show keeps the same kobject argument.
++ */
++struct block_device___queue_probe {
++	struct device bd_device;
++	struct gendisk *bd_disk;
++} __attribute__((preserve_access_index));
++
++struct blk_queue_stats___queue_probe {
++	int accounting;
++} __attribute__((preserve_access_index));
++
++/* Use the builtin also provided by legacy CO-RE headers. */
++#define QUEUE_PROBE_CONTAINER(ptr, type, member) \
++	((type *)((char *)(ptr) - __builtin_preserve_field_info( \
++		((type *)0)->member, BPF_FIELD_BYTE_OFFSET)))
++static __always_inline struct gendisk *io_latency_device_disk(struct device *device)
++{
++	if (bpf_core_field_exists(((struct block_device___queue_probe *)0)->bd_device)) {
++		struct block_device___queue_probe *bdev = QUEUE_PROBE_CONTAINER(
++			device, struct block_device___queue_probe, bd_device);
++
++		return BPF_CORE_READ(bdev, bd_disk);
++	}
++	return (struct gendisk *)QUEUE_PROBE_CONTAINER(device,
++		struct gendisk, part0.__dev);
++}
++
++/* Results use the disk name read from sysfs. BPF_EXIST keeps a late reader
++ * from recreating a removed result or overwriting another disk's result.
++ */
++struct {
++	__uint(type, BPF_MAP_TYPE_HASH);
++	__uint(max_entries, 1);
++	__type(key, struct iolatency_queue_probe_key);
++	__type(value, struct iolatency_queue_probe_result);
++} io_latency_probe_result SEC(".maps");
++
++/* Each requested read of queue/iostats also samples the state which controls
++ * QUEUE_FLAG_STATS: accounting enabled or at least one stats callback.
++ * This follows blk-stat.c without depending on flag bit numbers. G is the
++ * iostats value returned by sysfs. Results: 1 skipped, 2 supported,
++ * 3 disabled; negative values are errno. Keep this cold sysfs hook attached
++ * with the session; an empty result map makes reads after startup no-ops.
++ */
++SEC("kprobe/queue_attr_show")
++int probe_queue_stats(struct pt_regs *ctx)
+ {
+-	if (delta < LATENCY_20MS_NS)
++	struct kobject *kobj = (struct kobject *)PT_REGS_PARM1_CORE(ctx);
++	struct attribute *attr = (struct attribute *)PT_REGS_PARM2_CORE(ctx);
++	struct kobject *parent;
++	struct device *device;
++	struct gendisk *disk;
++	struct request_queue *q;
++	const struct blk_mq_ops *mq_ops;
++	struct blk_queue_stats *stats;
++	struct list_head *next;
++	struct iolatency_queue_probe_result result = {};
++	__u64 disk_key;
++	const char *disk_name, *attr_name;
++	struct iolatency_queue_probe_key key = {};
++	char attribute[9] = {};
++	__u32 major, minor;
++	int accounting = 0, ret;
++	bool enabled = false;
++
++	/* Any reader of the requested disk's iostats can finish the probe. */
++	ret = BPF_CORE_READ_INTO(&attr_name, attr, name);
++	if (ret)
++		return 0;
++	ret = bpf_probe_read_str(attribute, sizeof(attribute), attr_name);
++	if (ret != 8 || attribute[0] != 'i' ||
++	    attribute[1] != 'o' || attribute[2] != 's' ||
++	    attribute[3] != 't' || attribute[4] != 'a' ||
++	    attribute[5] != 't' || attribute[6] != 's' || attribute[7])
++		return 0;
++	ret = BPF_CORE_READ_INTO(&parent, kobj, parent);
++	if (ret)
++		return 0;
++	ret = BPF_CORE_READ_INTO(&disk_name, parent, name);
++	if (ret)
++		return 0;
++	ret = bpf_probe_read_str(key.name, sizeof(key.name), disk_name);
++	if (ret < 0)
++		return 0;
++	/* Hidden NVMe paths have a sysfs name but no device.devt. */
++	if (!bpf_map_lookup_elem(&io_latency_probe_result, &key))
++		return 0;
++	device = QUEUE_PROBE_CONTAINER(parent, struct device, kobj);
++	disk = io_latency_device_disk(device);
++	if (!disk) {
++		ret = -IO_LATENCY_EFAULT;
++		goto failed;
++	}
++	ret = BPF_CORE_READ_INTO(&q, disk, queue);
++	if (ret)
++		goto failed;
++	/* Multipath heads forward bios; only NVMe MQ paths issue requests. */
++	if (key.name[0] == 'n' && key.name[1] == 'v' &&
++	    key.name[2] == 'm' && key.name[3] == 'e') {
++		ret = BPF_CORE_READ_INTO(&mq_ops, q, mq_ops);
++		if (ret)
++			goto failed;
++		if (!mq_ops) {
++			result.result = IO_LATENCY_PROBE_SKIPPED;
++			goto finished;
++		}
++	}
++	ret = BPF_CORE_READ_INTO(&stats, q, stats);
++	if (ret)
++		goto failed;
++	ret = BPF_CORE_READ_INTO(&next, stats, callbacks.next);
++	if (ret)
++		goto failed;
++	if (bpf_core_field_exists(((struct blk_queue_stats___queue_probe *)0)->accounting)) {
++		ret = BPF_CORE_READ_INTO(&accounting,
++			(struct blk_queue_stats___queue_probe *)stats, accounting);
++		enabled = accounting != 0;
++	} else {
++		ret = BPF_CORE_READ_INTO(&enabled, stats, enable_accounting);
++	}
++	if (ret)
++		goto failed;
++	ret = BPF_CORE_READ_INTO(&major, disk, major);
++	if (ret)
++		goto failed;
++	ret = BPF_CORE_READ_INTO(&minor, disk, first_minor);
++	if (ret)
++		goto failed;
++
++	disk_key = (__u64)disk;
++	result.major = major;
++	result.minor = minor;
++	result.disk = disk_key;
++	if (!enabled && next == &stats->callbacks) {
++		result.result = IO_LATENCY_PROBE_DISABLED;
++		goto finished;
++	}
++	/* Go owns initial Host publication after accepting this queue check. */
++	result.result = IO_LATENCY_PROBE_SUPPORTED;
++finished:
++	/* Report the state observed by this read. Replace the whole value so
++	 * no writable pointer survives result deletion or HASH node reuse.
++	 */
++	bpf_map_update_elem(&io_latency_probe_result, &key, &result, COMPAT_BPF_EXIST);
++	return 0;
++failed:
++	result.result = ret;
++	goto finished;
++}
++
++/* Thresholds are below 2^63. Values with the high bit set exceed all of
++ * them; otherwise the subtraction's high bit gives the comparison.
++ * The first bucket uses one fast return; arithmetic classification of
++ * larger waits bounds verifier work across the 512-bio walk.
++ */
++static __always_inline u32 io_histogram_above(u64 value, u64 threshold)
++{
++	u64 distance = threshold - value;
++
++	asm volatile("" : "+r"(distance));
++	return (distance | value) >> 63;
++}
++
++/* Scalar inputs allow independent timestamp and bucket checks on kernels
++ * with global-function verification. Keep these decisions in one helper;
++ * older verifiers also need the optional-path ordering in the bio walk.
++ */
++__noinline int io_latency_bucket(u64 start_ns, u64 end_ns, u64 queue_stage)
++{
++	u64 ns;
++	u32 bucket = 0;
++
++	if (!start_ns || !end_ns)
+ 		return -1;
++	/* Kernel plug caching and request merging can put G/D before Q.
++	 * Preserve those samples in the first bucket without claiming exact
++	 * per-event 
+[truncated]
+

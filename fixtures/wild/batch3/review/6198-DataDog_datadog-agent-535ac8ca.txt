@@ -1,0 +1,835 @@
+repo: DataDog/datadog-agent
+commit: 535ac8ca1bf37327c92a0af51a3484d734f20340
+rank: 6198
+
+dyninst: filter() expression operator over slices and swiss maps (#50909)
+
+### What does this PR do?
+
+Implements `filter(coll, predicate)`, returning the elements of a slice or swiss-map collection that satisfy `predicate`. Result lives in capture-expression and message-template position; nested use is rejected.
+
+Pipeline
+- exprlang/irgen: parse `filter` into a typed FilterExpr; irgen synthesizes a per-call-site type pair (handle + element/pair) and lowers the inline marker op plus a deferred enqueue_pc loop. The handle's user-visible name mirrors the source collection (`[]int`, `map[string]int`).
+- compiler: 8 new SM opcodes plus type handlers that emit the deferred loop body, including a per-element CallOp so nested pointer chases fire on every emitted element.
+- BPF: a new DYNAMIC_SIZE_CLASS_FILTER_DEFERRED size class skips the chase preamble's serialize so each iteration emits its own data item. Filter helpers in filter.h re-derive map pointers via bpf_map_lookup_elem internally (no `global_ctx_t*` argument) and bitmask-clamp sizes/offsets to keep the verifier happy.
+- decoder: new filter-type decoders walk all data items of the per-call-site type, sort by output_index, and surface ExprStatusTruncated as `notCapturedReason: "collectionSize"`. ExprStatusBits widens from 2 to 4 to make room for the new status.
+
+### Motivation
+
+Filter is very useful
+
+### Describe how you validated your changes
+
+Tests
+- New simple-binary probes for slice/map filter, plus a negative probe for `len(filter(...))` and a condition-position rejection probe.
+- Regenerated irgen IR snapshots, compiler snapshots, and integration decoded fixtures for all toolchains.
+
+### Additional Notes
+
+https://datadoghq.atlassian.net/browse/DEBUG-5608
+
+Co-authored-by: piob-io <piotr.bejda@datadoghq.com>
+
+--- pkg/dyninst/ebpf/context.h
+@@ -205,6 +205,14 @@ typedef struct stack_machine {
+   // insufficient buffer space. Checked and cleared by SM_OP_CHASE_POINTERS
+   // to trigger a flush-and-continue.
+   bool buffer_full;
++  // One-shot ExprStatus override read and cleared by SM_OP_EXPR_SAVE.
++  // Used by the filter marker ops to surface EXPR_STATUS_TRUNCATED
++  // inline (before the chase phase). Co-located with buffer_full so we
++  // consume natural alignment padding before saved_dict_ptr rather than
++  // growing the struct (which would shift swissmap_loop_state.phase
++  // out of the verifier's bounds-tracking window for the existing
++  // cold-path reset in sm_run).
++  uint8_t pending_expr_status;
+ 
+   // Dictionary pointer for generic shape functions. Set by
+   // SM_OP_PROCESS_GO_DICT_TYPE on entry, propagated through call context
+@@ -387,6 +395,85 @@ typedef struct stack_machine {
+   buf_offset_t cur_loop_it_start;
+ } stack_machine_t;
+ 
++// filter_loop_state_t holds per-iteration state for the deferred
++// filter() loop. It lives in its own per-CPU map (filter_loop_state_buf
++// below) rather than inside stack_machine_t so that:
++//   - stack_machine_t doesn't grow large enough to push existing field
++//     offsets out of the BPF verifier's bounds-tracking window for
++//     cold-path resets via a spilled-and-reloaded pointer.
++//   - the filter helpers can re-derive the pointer cheaply via
++//     bpf_map_lookup_elem when they need fresh verifier bounds.
++//
++// One slot is sufficient: filter is leaf-only, the chase queue is FIFO,
++// and each filter's enqueue_pc runs to completion before the next
++// chase item pops.
++typedef struct filter_loop_state {
++  target_ptr_t data_ptr;
++  uint32_t     remaining;
++  uint32_t     elem_size;
++  uint32_t     val_offset_in_pair;  // maps only
++  uint32_t     val_size;             // maps only
++  uint64_t     output_index;
++  type_t       data_type_id;
++  buf_offset_t it_start;
++  uint8_t      last_body_result;
++  uint8_t      in_progress;
++  uint8_t      is_map;
++  // map_slot_returned: 1 if the current map_slot_idx was already read
++  // into @it and handed to predicate/emit. On the next entry to
++  // sm_filter_map_advance_and_read_noctx, this flag triggers an
++  // advance past that slot before scanning. Decoupling read from
++  // advance is required because emit reads the slot again from user
++  // memory via slot_base = ... + slot_idx * slot_size; advancing
++  // slot_idx before emit would make emit read the wrong slot.
++  uint8_t      map_slot_returned;
++  // Swiss-map walker state, mirroring swissmap_loop_state's layout
++  // when is_map == 1. Kept separate so a concurrent any/all loop's
++  // swissmap_loop_state isn't clobbered.
++  uint64_t map_dir_ptr;
++  uint64_t map_dir_len;
++  uint64_t map_groups_data;
++  uint64_t map_length_mask;
++  uint64_t map_ctrl;
++  target_ptr_t map_prev_table_ptr;
++  target_ptr_t map_tmp_table_ptr;
++  uint32_t map_table_idx;
++  uint32_t map_group_idx;
++  uint8_t  map_slot_idx;
++  uint8_t  map_loaded_table;
++  uint8_t  __map_pad[6];
++  // Swiss-map layout immediates (cached from InitFilterMapLoopOp).
++  uint8_t  map_dir_ptr_offset;
++  uint8_t  map_dir_len_offset;
++  uint8_t  map_ctrl_offset;
++  uint8_t  map_slots_offset;
++  uint8_t  map_key_in_slot_offset;
++  uint16_t map_val_in_slot_offset;
++  uint16_t map_slot_size;
++  uint16_t map_group_byte_size;
++  uint8_t  map_table_groups_field_offset;
++  uint8_t  map_groups_data_field_offset;
++  uint8_t  map_groups_len_mask_field_offset;
++  uint8_t  __map_pad2[3];
++} filter_loop_state_t;
++
++struct {
++  __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
++  __uint(max_entries, 1);
++  __type(key, uint32_t);
++  __type(value, filter_loop_state_t);
++} filter_loop_state_buf SEC(".maps");
++
++// filter_loop_state_load returns the per-CPU filter_loop_state slot.
++// Each call re-derives the pointer via bpf_map_lookup_elem so the
++// verifier has fresh bounds knowledge — important because the slot
++// is much larger than the verifier's bounds-tracking window allows
++// across function calls / bpf_loop boundaries.
++static filter_loop_state_t* filter_loop_state_load(void) {
++  const unsigned long zero = 0;
++  return (filter_loop_state_t*)bpf_map_lookup_elem(&filter_loop_state_buf, &zero);
++}
++
+ struct {
+   __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
+   __uint(max_entries, 1);
+@@ -417,6 +504,12 @@ static stack_machine_t* stack_machine_ctx_load(const probe_params_t* probe_param
+   stack_machine->continuation_seq = 0;
+   stack_machine->last_submitted_seq = LAST_SUBMITTED_SEQ_NONE;
+   stack_machine->continuation_aborted = false;
++  // pending_expr_status lives early in the struct so the verifier can
++  // prove bounds on a hot-path reset. filter_loop_state lives at the
++  // end of the struct and is unconditionally re-initialized by
++  // sm_filter_*_init from sm->di_0 every chase, so no hot-path reset
++  // is needed for it.
++  stack_machine->pending_expr_status = 0;
+   // start_ns and entry_ktime_ns are set explicitly by probe_run before use.
+   return stack_machine;
+ }
+
+--- pkg/dyninst/ebpf/filter.h
+@@ -0,0 +1,574 @@
++#ifndef __FILTER_H__
++#define __FILTER_H__
++
++// BPF runtime helpers for the deferred filter() collection operator. The
++// filter loop runs as the enqueue_pc of a per-call-site
++// GoFilteredSliceDataType / GoFilteredMapDataType: sm_chase_pointer's
++// FILTER_DEFERRED arm jumps to the type's enqueue_pc without writing a
++// header or reading source contents; the helpers below drive the
++// iterate-and-emit loop from inside that enqueue_pc.
++//
++// State lives in its own per-CPU map (filter_loop_state_buf, declared in
++// context.h) so its presence doesn't grow stack_machine_t and push
++// existing field offsets out of the verifier's bounds-tracking window.
++// Each helper that touches the state calls filter_loop_state_load() to
++// re-derive the pointer with fresh verifier bounds.
++//
++// Bounds-check pattern. The BPF compiler frequently spills `tail` between
++// successive helper calls and the verifier loses range refinement on
++// reload, so each `bpf_probe_read_user` here is preceded by a fresh
++// scratch_buf_bounds_check with a compile-time-constant `len` (variable
++// `len` defeats verifier propagation). For map emit/advance, two writes
++// are issued per pair (key at +0, value at +vo), so the constant covers
++// the worst-case verifier-visible extent of both fields: with `vo`/`vs`
++// each masked to `0xff` (verifier sees each ≤ 255), the worst case is
++// sizeof(header) + 2 * MAX_ELEM_BYTES. The runtime `vo + vs ≤
++// MAX_ELEM_BYTES` check below is what bounds actual writes; the * 2 is
++// the price of the verifier losing that runtime constraint at stack
++// spills.
++
++#include "context.h"
++#include "framing.h"
++#include "scratch.h"
++#include "types.h"
++
++// sm_emit_filter_slice_element_noctx emits one per-element data item
++// for a slice filter. Re-derives map pointers internally (see
++// sm_filter_slice_init_noctx for rationale).
++__attribute__((noinline)) int
++sm_emit_filter_slice_element_noctx(void) {
++  const uint32_t zero = 0;
++  stack_machine_t* sm = bpf_map_lookup_elem(&stack_machine_buf, &zero);
++  scratch_buf_t* buf = bpf_map_lookup_elem(&events_scratch_buf_map, &zero);
++  filter_loop_state_t* fst = filter_loop_state_load();
++  if (!buf || !sm || !fst) return 0;
++  uint32_t elem_size = fst->elem_size;
++  if (elem_size == 0 || elem_size > COLLECTION_PREDICATE_MAX_ELEM_BYTES) {
++    return 0;
++  }
++  target_ptr_t src = fst->data_ptr;
++  uint64_t idx = fst->output_index;
++  di_data_item_header_t hdr = {
++      .type = fst->data_type_id,
++      .length = elem_size,
++      .address = idx,
++  };
++  buf_offset_t pre_emit_len = scratch_buf_len(buf);
++  buf_offset_t r = scratch_buf_serialize_with_src_256(
++      buf, &hdr, src, elem_size);
++  if (r == 0) {
++    if (!scratch_buf_flush_and_continue(
++            buf, &sm->continuation_seq, &sm->last_submitted_seq,
++            sm->start_ns, sm->entry_ktime_ns)) {
++      sm->continuation_aborted = true;
++      return 0;
++    }
++    pre_emit_len = scratch_buf_len(buf);
++    hdr.length = elem_size;
++    hdr.address = idx;
++    r = scratch_buf_serialize_with_src_256(buf, &hdr, src, elem_size);
++    if (r == 0) {
++      return 0;
++    }
++  }
++  if (r & FAILED_READ_OFFSET_BIT) {
++    scratch_buf_set_len(buf, pre_emit_len);
++    return 0;
++  }
++  // Point sm->offset at the emitted payload so the subsequent CallOp
++  // for the element's type handler (ProcessType[T]) reads from the
++  // correct buffer location when chasing nested pointers.
++  sm->offset = r;
++  fst->output_index = idx + 1;
++  return 1;
++}
++
++// sm_emit_filter_map_element_noctx emits one per-(k,v)-pair data item
++// for a map filter. Reads key and value separately from swiss-map slot.
++// Re-derives map pointers internally (see sm_filter_slice_init_noctx).
++__attribute__((noinline)) int
++sm_emit_filter_map_element_noctx(void) {
++  const uint32_t zero = 0;
++  stack_machine_t* sm = bpf_map_lookup_elem(&stack_machine_buf, &zero);
++  scratch_buf_t* buf = bpf_map_lookup_elem(&events_scratch_buf_map, &zero);
++  filter_loop_state_t* fst = filter_loop_state_load();
++  if (!buf || !sm || !fst) return 0;
++  uint32_t ks = fst->elem_size & 0xff;
++  uint32_t vs = fst->val_size & 0xff;
++  uint32_t vo = fst->val_offset_in_pair & 0xff;
++  if (ks == 0) ks = 1;
++  if (vs == 0) vs = 1;
++  uint32_t payload_len = vo + vs;
++  if (payload_len > COLLECTION_PREDICATE_MAX_ELEM_BYTES) return 0;
++  uint64_t idx = fst->output_index;
++  type_t type = fst->data_type_id;
++
++  target_ptr_t slot_base = fst->map_groups_data +
++                           (target_ptr_t)fst->map_group_idx * fst->map_group_byte_size +
++                           fst->map_slots_offset +
++                           (target_ptr_t)fst->map_slot_idx * fst->map_slot_size;
++
++  // Slack = header + worst-case (vo + vs) per the file-header comment.
++  // On failure flush-and-continue so a large matching set spans multiple
++  // fragments (mirrors the slice emit path).
++  buf_offset_t tail = scratch_buf_len(buf);
++  if (!scratch_buf_bounds_check(&tail,
++          sizeof(di_data_item_header_t) +
++          2 * COLLECTION_PREDICATE_MAX_ELEM_BYTES)) {
++    if (!scratch_buf_flush_and_continue(
++            buf, &sm->continuation_seq, &sm->last_submitted_seq,
++            sm->start_ns, sm->entry_ktime_ns)) {
++      sm->continuation_aborted = true;
++      return 0;
++    }
++    tail = scratch_buf_len(buf);
++    if (!scratch_buf_bounds_check(&tail,
++            sizeof(di_data_item_header_t) +
++            2 * COLLECTION_PREDICATE_MAX_ELEM_BYTES)) {
++      return 0;
++    }
++  }
++  di_data_item_header_t hdr = {
++      .type = type,
++      .length = payload_len,
++      .address = idx,
++  };
++  // Stash original tail on filter_loop_state so we can mutate `tail` in
++  // place below without paying for an extra stack local (we're tight
++  // against the BPF 512-byte combined-stack limit).
++  fst->it_start = tail;
++  *(di_data_item_header_t*)(&(*buf)[tail]) = hdr;
++  tail += sizeof(di_data_item_header_t);
++  if (!scratch_buf_bounds_check(&tail, COLLECTION_PREDICATE_MAX_ELEM_BYTES)) {
++    return 0;
++  }
++  uint16_t kios = fst->map_key_in_slot_offset & 0xfff;
++  if (bpf_probe_read_user(&(*buf)[tail], ks,
++                          (void*)(slot_base + kios)) != 0) {
++    return 0;
++  }
++  tail += vo;
++  if (!scratch_buf_bounds_check(&tail, COLLECTION_PREDICATE_MAX_ELEM_BYTES)) {
++    return 0;
++  }
++  uint16_t vios = fst->map_val_in_slot_offset & 0xfff;
++  if (bpf_probe_read_user(&(*buf)[tail], vs,
++                          (void*)(slot_base + vios)) != 0) {
++    return 0;
++  }
++
++  uint32_t total = sizeof(di_data_item_header_t) + payload_len;
++  uint32_t rem = payload_len % 8;
++  if (rem != 0) total += 8 - rem;
++  scratch_buf_set_len(buf, fst->it_start + total);
++
++  // Point sm->offset at the emitted payload so the subsequent CallOp
++  // for the element's type handler reads from the correct location.
++  sm->offset = fst->it_start + sizeof(di_data_item_header_t);
++  fst->output_index = idx + 1;
++  return 1;
++}
++
++// sm_emit_filter_slice_marker_noctx: noinline body for
++// SM_OP_EMIT_FILTER_SLICE_MARKER. Validates the slice header at
++// sm->offset, computes the capped byte length, and stores the chase
++// parameters in filter_loop_state (data_type_id, data_ptr,
++// remaining as a temporary chase-bytes channel). Returns:
++//   0 = chase needed; sm_loop should call sm_record_pointer.
++//   1 = skip (null pointer, zero len, or zero elem_size).
++//   2 = error (bounds check failure, map lookup failure).
++__attribute__((noinline)) int
++sm_emit_filter_slice_marker_noctx(type_t data_type, uint32_t elem_size) {
++  const uint32_t zero = 0;
++  stack_machine_t* sm = bpf_map_lookup_elem(&stack_machine_buf, &zero);
++  scratch_buf_t* buf = bpf_map_lookup_elem(&events_scratch_buf_map, &zero);
++  filter_loop_state_t* fst = filter_loop_state_load();
++  if (!buf || !sm || !fst) return 2;
++  if (!scratch_buf_bounds_check(&sm->offset, 24)) {
++    return 2;
++  }
++  target_ptr_t data_ptr = *(target_ptr_t*)(&(*buf)[sm->offset]);
++  int64_t signed_len = *(int64_t*)(&(*buf)[sm->offset + 8]);
++
++  if (data_ptr == 0 || signed_len <= 0 || elem_size == 0) {
++    return 1;
++  }
++  uint64_t len = (uint64_t)signed_len;
++
++  if (len > COLLECTION_PREDICATE_MAX_ITERATIONS) {
++    sm->pending_expr_status = EXPR_STATUS_TRUNCATED;
++    len = COLLECTION_PREDICATE_MAX_ITERATIONS;
++  }
++  uint64_t capped_bytes = len * (uint64_t)elem_size;
++  if (capped_bytes > 0xFFFFFFFFULL) {
++    capped_bytes = 0xFFFFFFFFULL;
++  }
++  // Store chase parameters in sm->di_0 for sm_loop to pass to
++  // sm_record_pointer. di_0 is the standard channel for passing data
++  // items in the chase path; we reuse it here since the marker runs
++  // before any chase processing.
++  sm->di_0.type = data_type;
++  sm->di_0.address = data_ptr;
++  sm->di_0.length = (uint32_t)capped_bytes;
++  return 0;
++}
++
++// sm_emit_filter_map_marker_noctx: noinline body for
++// SM_OP_EMIT_FILTER_MAP_MARKER. Validates the map pointer at
++// sm->offset, reads the used count, and stores chase parameters in
++// sm->di_0. Returns same codes as the slice variant.
++__attribute__((noinline)) int
++sm_emit_filter_map_marker_noctx(type_t data_type,
++                                uint32_t swiss_header_size,
++                                uint32_t used_field_offset) {
++  const uint32_t zero = 0;
++  stack_machine_t* sm = bpf_map_lookup_elem(&stack_machine_buf, &zero);
++  scratch_buf_t* buf = bpf_map_lookup_elem(&events_scratch_buf_map, &zero);
++  if (!buf || !sm) return 2;
++  if (!scratch_buf_bounds_check(&sm->offset, 8)) {
++    return 2;
++  }
++  target_ptr_t map_addr = *(target_ptr_t*)(&(*buf)[sm->offset]);
++  if (map_addr == 0) {
++    return 1;
++  }
++
++  uint64_t used = 0;
++  if (bpf_probe_read_user(&used, sizeof(used),
++                          (void*)(map_addr + used_field_offset)) == 0) {
++    if (used > COLLECTION_PREDICATE_MAX_ITERATIONS) {
++      sm->pending_expr_status = EXPR_STATUS_TRUNCATED;
++    }
++  }
++
++  sm->di_0.type = data_type;
++  sm->di_0.address = map_addr;
++  sm->di_0.length = swiss_header_size;
++  return 0;
++}
++
++// sm_filter_slice_init_noctx is the SM_OP_INIT_FILTER_SLICE_LOOP body.
++//
++// Takes no global_ctx_t* by design. Passing a stack pointer to a
++// noinline function makes the verifier conservatively assume the callee
++// can clobber any caller-stack slot reachable through it, which
++// invalidates the typed-pointer tracking on spilled map_value pointers
++// in sm_loop and breaks downstream accesses. Every map pointer this
++// helper needs is re-derived via bpf_map_lookup_elem so the verifier
++// sees fresh, well-typed pointers.
++__attribute__((noinline)) int
++sm_filter_slice_init_noctx(uint32_t elem_size,
++                           uint32_t iter_scratch_budget) {
++  const uint32_t zero = 0;
++  stack_machine_t* sm = bpf_map_lookup_elem(&stack_machine_buf, &zero);
++  scratch_buf_t* buf = bpf_map_lookup_elem(&events_scratch_buf_map, &zero);
++  filter_loop_state_t* fst = filter_loop_state_load();
++  if (!buf || !sm || !fst) return 2;
++  target_ptr_t data_ptr = sm->di_0.address;
++  uint32_t total_bytes = sm->di_0.length;
++  if (elem_size == 0 || elem_size > COLLECTION_PREDICATE_MAX_ELEM_BYTES) {
++    return 2;
++  }
++  uint32_t remaining = total_bytes / elem_size;
++  if (remaining > COLLECTION_PREDICATE_MAX_ITERATIONS) {
++    remaining = COLLECTION_PREDICATE_MAX_ITERATIONS;
++  }
++  fst->data_ptr = data_ptr;
++  fst->remaining = remaining;
++  fst->elem_size = elem_size;
++  fst->data_type_id = sm->di_0.type;
++  fst->output_index = 0;
++  fst->in_progress = 1;
++  fst->is_map = 0;
++
++  if (remaining == 0) {
++    return 1;
++  }
++  buf_offset_t tail = scratch_buf_len(buf);
++  if (!scratch_buf_bounds_check(&tail, iter_scratch_budget)) {
++    if (!scratch_buf_flush_and_continue(
++            buf, &sm->continuation_seq, &sm->last_submitted_seq,
++            sm->start_ns, sm->entry_ktime_ns)) {
++      sm->continuation_aborted = true;
++      return 2;
++    }
++    tail = scratch_buf_len(buf);
++  
+[truncated]
+
+--- pkg/dyninst/ebpf/scratch.h
+@@ -258,6 +258,78 @@ static long copy_stack_loop(unsigned long i, void* _ctx) {
+ 
+ static const uint64_t FAILED_READ_OFFSET_BIT = 1LL << 63;
+ 
++// scratch_buf_serialize_with_src is a sibling of
++// scratch_buf_serialize_inner that takes a separate src_addr for the
++// bpf_probe_read_user call. This decouples the wire header's .address
++// (which the filter emit helper uses to carry the output_index) from
++// the source-memory address (filter_loop_state.data_ptr or a swiss-map
++// slot field address). max_size is the static upper bound the verifier
++// needs for the in-buffer payload write.
++//
++// Return value matches scratch_buf_serialize_inner's convention:
++//   - 0 on buffer-full (header didn't fit).
++//   - offset with FAILED_READ_OFFSET_BIT set on bpf_probe_read_user
++//     failure (header committed, payload zeroed; caller should rollback
++//     to pre-emit_len).
++//   - plain offset on success.
++static inline buf_offset_t
++scratch_buf_serialize_with_src_inner(scratch_buf_t* scratch_buf,
++                                     di_data_item_header_t* hdr,
++                                     target_ptr_t src_addr,
++                                     const uint64_t len) {
++  buf_offset_t offset = scratch_buf_len(scratch_buf);
++  if (!scratch_buf_bounds_check(&offset, sizeof(di_data_item_header_t))) {
++    return 0;
++  }
++  if (hdr->length == ENQUEUE_LEN_SENTINEL) {
++    hdr->length = len;
++  }
++  uint64_t read_len = hdr->length;
++  if (read_len >= len) {
++    read_len = len;
++  }
++  hdr->length = read_len;
++  *(di_data_item_header_t*)(&(*scratch_buf)[offset]) = *hdr;
++  offset += sizeof(di_data_item_header_t);
++  if (!scratch_buf_bounds_check(&offset, len)) {
++    return 0;
++  }
++  int read_result = bpf_probe_read_user(&(*scratch_buf)[offset], read_len,
++                                        (void*)src_addr);
++  scratch_buf_set_len(scratch_buf, offset + read_len);
++  int rem = hdr->length % 8;
++  if (rem != 0) {
++    scratch_buf_increment_len(scratch_buf, 8 - rem);
++  }
++  if (read_result != 0) {
++    offset |= FAILED_READ_OFFSET_BIT;
++  }
++  return offset;
++}
++
++// scratch_buf_serialize_with_src_256 is the single fixed-size-class
++// global wrapper used by the filter emit helpers. Filter elements / map
++// (key, value) pairs are capped at COLLECTION_PREDICATE_MAX_ELEM_BYTES
++// (256), so we only need one bound here — no SIZE_LIST dispatch.
++buf_offset_t scratch_buf_serialize_with_src_256(
++    scratch_buf_t* scratch_buf,
++    di_data_item_header_t* hdr,
++    target_ptr_t src_addr,
++    const uint64_t len) {
++  if (!hdr || !scratch_buf) {
++    return 0;
++  }
++  if (hdr->length == ENQUEUE_LEN_SENTINEL) {
++    hdr->length = len;
++  } else if (hdr->length > len) {
++    hdr->length = len;
++  }
++  if (len > 256) {
++    return 0;  // not supported by this fixed-size wrapper.
++  }
++  return scratch_buf_serialize_with_src_inner(scratch_buf, hdr, src_addr, 256);
++}
++
+ // Write the queue entry to the scratch buffer, and return the offset of the
+ // data in the scratch buffer on success or 0 on failure.
+ static buf_offset_t
+
+--- pkg/dyninst/ebpf/stack_machine.h
+@@ -14,12 +14,15 @@
+ #include "swiss_map_hash.h"
+ 
+ // Expression status values. Each expression gets EXPR_STATUS_BITS bits in the
+-// expression status array at the start of event root data.
+-#define EXPR_STATUS_BITS      2
++// expression status array at the start of event root data. Must stay in
++// sync with ir.ExprStatusBits / the ExprStatus* constants in
++// pkg/dyninst/ir/expression.go.
++#define EXPR_STATUS_BITS      4
+ #define EXPR_STATUS_ABSENT    0  // evaluation failed (unknown reason)
+ #define EXPR_STATUS_PRESENT   1  // evaluation succeeded
+ #define EXPR_STATUS_NIL_DEREF 2  // nil pointer dereference
+ #define EXPR_STATUS_OOB       3  // index out of bounds
++#define EXPR_STATUS_TRUNCATED 4  // value present, but collection truncated (filter)
+ 
+ // Sentinel value for expr_status_idx indicating no status should be written
+ // (used by condition expressions which report errors via condition_eval_error).
+@@ -308,6 +311,19 @@ sm_chase_pointer(global_ctx_t* ctx, pointers_queue_item_t item) {
+   if (info->byte_len == 0) {
+     return true;
+   }
++  // Filter (deferred collection-filter) types skip the entire
++  // header-write + payload-read block: the enqueue_pc itself emits
++  // per-element data items, and reading the source contents into
++  // scratch would corrupt our element-by-element streaming.
++  // sm->offset is positioned at the current buffer tail and
++  // sm->di_0 carries the chase item unchanged so the enqueue_pc
++  // can recover source pointer/length from it.
++  if (info->dynamic_size_class == DYNAMIC_SIZE_CLASS_FILTER_DEFERRED) {
++    sm->offset = scratch_buf_len(ctx->buf);
++    sm->pointer_chasing_ttl = item.ttl;
++    sm->di_0 = item.di;
++    goto enqueue_pc_jump;
++  }
+   uint32_t byte_len = info->byte_len;
+   switch (info->dynamic_size_class) {
+   case DYNAMIC_SIZE_CLASS_STATIC:
+@@ -335,6 +351,10 @@ sm_chase_pointer(global_ctx_t* ctx, pointers_queue_item_t item) {
+       byte_len = sm->collection_size_limit * info->byte_len * 4;
+     }
+     break;
++  case DYNAMIC_SIZE_CLASS_FILTER_DEFERRED:
++    // Already handled above; this case is unreachable but keeps the
++    // switch exhaustive.
++    break;
+   }
+   // For dynamically-sized objects (strings, slices), byte_len is the
+   // configured upper limit (e.g. maxLength). Clamp it to the actual runtime
+@@ -365,6 +385,7 @@ sm_chase_pointer(global_ctx_t* ctx, pointers_queue_item_t item) {
+   sm->pointer_chasing_ttl = item.ttl;
+   sm->di_0 = item.di;
+   sm->di_0.length = item.di.length;
++enqueue_pc_jump:
+   if (!info->enqueue_pc) {
+     return false;
+   }
+@@ -3059,6 +3080,11 @@ sm_panic_unwind_evict_slots(scratch_buf_t* buf) {
+   return 0;
+ }
+ 
++// filter.h depends on COLLECTION_PREDICATE_MAX_ITERATIONS,
++// EXPR_STATUS_TRUNCATED, sm_record_pointer, and stack_machine_t —
++// all defined above. Include here so the helpers are in scope for the
++// sm_loop op handlers below.
++#include "filter.h"
+ 
+ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+   global_ctx_t* ctx = (global_ctx_t*)_ctx;
+@@ -3115,6 +3141,11 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+     // Mirrors the ConditionBegin / ConditionCheck lifecycle for conditions.
+     sm->condition_eval_error = false;
+     sm->condition_nil_deref = false;
++    // Defensively clear any leftover one-shot status override. The
++    // marker ops set this; if any future code path ever sets it and
++    // errors before the matching ExprSave, prepare-time reset
++    // guarantees no cross-expression leak.
++    sm->pending_expr_status = 0;
+     sm->expr_results_end_offset = scratch_buf_len(buf);
+     sm->offset = sm->expr_results_end_offset;
+     if (sm->expr_type == POINTER) {
+@@ -3136,8 +3167,16 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+ 
+     LOG(4, "copy data 0x%llx->0x%llx !%u", sm->offset, sm->expr_results_offset + result_offset, byte_len);
+ 
+-    // Write expression status = present.
+-    expr_status_write(buf, sm->expr_results_offset, expr_idx, EXPR_STATUS_PRESENT);
++    // Write expression status. The default is PRESENT, but the filter
++    // marker ops set pending_expr_status = EXPR_STATUS_TRUNCATED
++    // inline (before the chase phase) when the source collection
++    // exceeds the iteration cap. The override is one-shot: cleared
++    // here so the next expression's save sees the default again.
++    uint8_t status = sm->pending_expr_status != 0
++                     ? sm->pending_expr_status
++                     : EXPR_STATUS_PRESENT;
++    expr_status_write(buf, sm->expr_results_offset, expr_idx, status);
++    sm->pending_expr_status = 0;
+ 
+     // Set the offset at the result data, for potential following process type functions.
+     sm->offset = sm->expr_results_offset + result_offset;
+@@ -4973,6 +5012,122 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+     (void)sm_panic_unwind_evict_slots(buf);
+     break;
+ 
++  case SM_OP_EMIT_FILTER_SLICE_MARKER: {
++    type_t data_type = (type_t)sm_read_program_uint32(sm);
++    uint32_t elem_size = sm_read_program_uint32(sm);
++    int r = sm_emit_filter_slice_marker_noctx(data_type, elem_size);
++    if (r == 2) {
++      return 1;
++    }
++    if (r == 0) {
++      // Helper stored chase params in sm->di_0; enqueue the chase.
++      sm_record_pointer(ctx, sm->di_0.type, sm->di_0.address,
++                        /*decrease_ttl=*/false, sm->di_0.length);
++    }
++  } break;
++
++  case SM_OP_INIT_FILTER_SLICE_LOOP: {
++    uint32_t elem_size = sm_read_program_uint32(sm);
++    uint32_t iter_budget = sm_read_program_uint32(sm);
++    uint32_t end_label_pc = sm_read_program_uint32(sm);
++    int r = sm_filter_slice_init_noctx(elem_size, iter_budget);
++    if (r == 1 || r == 2) {
++      sm->pc = end_label_pc;
++    }
++  } break;
++
++  case SM_OP_FILTER_SLICE_ADVANCE: {
++    uint32_t elem_size = sm_read_program_uint32(sm);
++    uint32_t body_target_pc = sm_read_program_uint32(sm);
++    uint32_t iter_budget = elem_size + 512 + 16 + elem_size + 8;
++    int r = sm_filter_slice_advance_noctx(elem_size, iter_budget);
++    if (r == 0) {
++      sm->pc = body_target_pc;
++    }
++  } break;
++
++  case SM_OP_EMIT_FILTER_SLICE_ELEMENT: {
++    uint32_t elem_size = sm_read_program_uint32(sm);
++    (void)elem_size;
++    sm_emit_filter_slice_element_noctx();
++  } break;
++
++  case SM_OP_EMIT_FILTER_MAP_MARKER: {
++    type_t data_type = (type_t)sm_read_program_uint32(sm);
++    uint32_t swiss_header_size = sm_read_program_uint32(sm);
++    uint32_t used_field_offset = sm_read_program_uint32(sm);
++    int r = sm_emit_filter_map_marker_noctx(data_type, swiss_header_size,
++                                            used_field_offset);
++    if (r == 2) {
++      return 1;
++    }
++    if (r == 0) {
++      sm_record_pointer(ctx, sm->di_0.type, sm->di_0.address,
++                        /*decrease_ttl=*/false, sm->di_0.length);
++    }
++  } break;
++
++  case SM_OP_INIT_FILTER_MAP_LOOP: {
++    uint32_t op_start = sm->pc - 1;
++    filter_loop_state_t* fst = filter_loop_state_load();
++    if (!fst) {
++      sm_read_program_uint32(sm); sm_read_program_uint32(sm);
++      sm_read_program_uint32(sm); sm_read_program_uint32(sm);
++      sm_read_program_uint8(sm); sm_read_program_uint8(sm);
++      sm_read_program_uint8(sm); sm_read_program_uint8(sm);
++      sm_read_program_uint8(sm);
++      sm_read_program_uint16(sm); sm_read_program_uint16(sm);
++      sm_read_program_uint16(sm);
++      sm_read_program_uint8(sm); sm_read_program_uint8(sm);
++      sm_read_program_uint8(sm);
++      uint32_t end_label_pc = sm_read_program_uint32(sm);
++      sm->pc = end_label_pc;
++      break;
++    }
++    fst->elem_size = sm_read_program_uint32(sm);
++    fst->val_size = sm_read_program_uint32(sm);
++    fst->val_offset_in_pair = sm_read_program_uint32(sm);
++    uint32_t iter_scratch_budget = sm_read_program_uint32(sm);
++    fst->map_dir_ptr_offset = sm_read_program_uint8(sm);
++    fst->map_dir_len_offset = sm_read_program_uint8(sm);
++    fst->map_ctrl_offset = sm_read_program_uint8(sm);
++    fst->map_slots_offset = sm_read_program_uint8(sm);
++    fst->map_key_in_slot_offset = sm_read_program_uint8(sm);
++    fst->map_val_in_slot_offset = sm_read_program_uint16(sm);
++    fst->map_slot_size = sm_read_program_uint16(sm);
++    fst->map_group_byte_size = sm_read_program_uint16(sm);
++    fst->map_table_groups_field_offset = sm_read_program_uint8(sm);
++    fst->map_groups_data_field_offset = sm_read_program_uint8(sm);
++    fst->map_groups_len_mask_field_offset = sm_read_program_uint8(sm);
++    uint32_t end_label_pc = sm_read_program_uint32(sm);
++    int r = sm_filter_map_init_noctx(iter_scratch_budget);
++    if (r == 1 || r == 2) {
++      sm->pc = end_label_pc;
++    } else if (r == 3) {
++      sm->pc = op_start;
++    }
++  } break;
++
++  case SM_OP_EMIT_FILTER_MAP_ELEMENT: {
++    uint32_t key_size = sm_read_program_uint32(sm);
++    uint32_t val_size = sm_read_program_uint32(sm);
++    uint32_t val_off = sm_read_program_uint32(sm);
++    (void)key_size; (void)val_size; (void)val_off;
++    sm_emit_filter_map_element_noctx();
++  } break;
++
++  case SM_OP_FILTER_MAP_ADVANCE: {
++    uint32_t op_start = sm->pc - 1;
++    uint32_t body_target_pc = sm_read_program_uint32(sm);
++    uint32_t iter_scratch_budget = 1024;
++    int r = sm_filter_map_advance_and_read_noctx(iter_scratch_budget);
++    if (r == 0) {
++      sm->pc = body_target_pc;
++    } else if (r == 3) {
++      sm->pc = op_start;
++    }
++  } break;
++
+   default:
+     LOG(1, "enqueue: @0x%x unknown instruction %d\n", sm->pc - 1, op);
+     return 1;
+@@ -4981,19 +5136,39 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+   return 0;
+ }
+ 
++// sm_run_reset_phase resets the swiss-map any/all loop phase. Re-derives
++// the stack_machine pointer via bpf_map_lookup_elem so the verifier
++// has fresh map_value bounds — loading the pointer through ctx after
++// a bpf_loop call boundary loses the typed-pointer info.
++__attribute__((noinline)) int sm_run_reset_phase(void) {
++  const unsigned long zero = 0;
++  stack_machine_t* sm =
++      (stack_machine_t*)bpf_map_lookup_elem(&stack_machine_buf, &zero);
++  if (!sm) return 0;
++  sm->swissmap_loop_state.phase = 0;
++  return 0;
++}
++
+ __attribute__((always_inline)) int sm_run(global_ctx_t* ctx) {
+   // TODO: Use a tighter bound on the number of iterations. The current choice
+   // is arbitrary.
+   const int limit = 512 << 10;
+   int n = bpf_loop(limit, sm_loop, ctx, 0);
+   if (n == limit) {
+-    // Hitting the iteration cap can leave a swiss-map any/all loop's phase
+-    // mid-step (phase==1). Reset it so the next probe's first
+-    // SM_OP_SWISS_MAP_LOOP_BEGIN runs sm_swissmap_loop_init rather than
+-    // reading uninitialized state. Doing the reset here (cold path, after
+-    // bpf_loop) avoids forcing a stack_machine_t spill in the hot
+-    // probe_run_with_cookie frame.
+-    ctx->stack_machine->swissmap_loop_state.phase = 0;
++    // Hitting the iteration cap can leave a swiss-map any/all loop's
++    // phase mid-step (phase==1). Reset it so the next probe's first
++    // SWISS_MAP_LOOP_BEGIN runs sm_swissmap_loop_init rather than
++    // reading uninitialized state.
++    //
++    // The reset goes through a noinline helper that re-derives the
++    // pointer via bpf_map_lookup_elem. Writing through
++    // ctx->stack_machine here would be rejected by the verifier:
++    // after the bpf_loop call the compiler may reload
++    // ctx->stack_machine from a stack spill whose typed-pointer info
++    // the verifier has forgotten, and the access to
++    // swissmap_loop_state.phase (well past the verifier's bounds-
++    // tracking window for a scalar register) fails.
++    (void)sm_run_reset_phase();
+     LOG(2, "stack machine loop hit limit of %d steps", n)
+     return -1;
+   }
+
+--- pkg/dyninst/ebpf/types.h
+@@ -69,6 +69,12 @@ typedef enum dynamic_size_class {
+   DYNAMIC_SIZE_CLASS_SLICE = 1,
+   DYNAMIC_SIZE_CLASS_STRING = 2,
+   DYNAMIC_SIZE_CLASS_HASHMAP = 3,
++  // FILTER_DEFERRED marks per-call-site filter data types whose
++  // enqueue_pc runs the deferred filter loop. sm_chase_pointer
++  // emits no header and reads no payload for these types — the
++  // enqueue_pc itself does all the work. Must stay in sync with
++  // ir.DynamicSizeFilterDeferred.
++  DYNAMIC_SIZE_CLASS_FILTER_DEFERRED = 4,
+ } dynamic_size_class_t;
+ 
+ typedef struct type_info {
+@@ -228,6 +234,18 @@ typedef enum sm_opcode {
+   // in (lo, hi]; deletes the per-goroutine map entry if empty.
+   SM_OP_PANIC_UNWIND_PREPARE = 58,
+   SM_OP_PANIC_UNWIND_EVICT_SLOTS = 59,
++  // Filter (deferred collection-filter) opcodes. See
++  // ir.EmitFilter{Slice,Map}MarkerOp, ir.InitFilter{Slice,Map}LoopOp,
++  // ir.FilterSliceLoopStepOp, ir.FilterMapLoopStepOp, and the
++  // compiler-only EmitFilter{Slice,Map}ElementOp / Filter{Slice,Map}AdvanceOp.
++  SM_OP_EMIT_FILTER_SLICE_MARKER = 60,
++  SM_OP_EMIT_FILTER_MAP_MARKER = 61,
++  SM_OP_INIT_FILTER_SLICE_LOOP = 62,
++  SM_OP_EMIT_FILTER_SLICE_ELEMENT = 63,
++  SM_OP_FILTER_SLICE_ADVANCE = 64,
++  SM_OP_INIT_FILTER_MAP_LOOP = 65,
++  SM_OP_EMIT_FILTER_MAP_ELEMENT = 66,
++  SM_OP_FILTER_MAP_ADVANCE = 67,
+ } sm_opcode_t;
+ 
+ // cmp_op_t identifies which comparison SM_OP_EXPR_CMP_BASE /
+

@@ -1,0 +1,90 @@
+repo: ThisSeanZhang/landscape
+commit: 3d7946dc7d43e4e5243f13fb02bfd924c4dc27e0
+rank: 5799
+
+fix: firewall service fails to start with stricter BPF_MAP_TYPE_PROG_ARRAY verifier checks
+
+Since: https://www.opennet.ru/kernel/6.12.53.html
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=f856c598080ba7ce1252867b8ecd6ad5bdaf9a6a
+
+--- landscape-ebpf/src/bpf/firewall.bpf.c
+@@ -22,22 +22,35 @@ SEC("tc/egress") int ipv4_egress_firewall(struct __sk_buff *skb);
+ SEC("tc/ingress") int ipv4_ingress_firewall(struct __sk_buff *skb);
+ SEC("tc/egress") int ipv6_egress_firewall(struct __sk_buff *skb);
+ SEC("tc/ingress") int ipv6_ingress_firewall(struct __sk_buff *skb);
++
+ struct {
+     __uint(type, BPF_MAP_TYPE_PROG_ARRAY);
+-    __uint(max_entries, 4);
++    __uint(max_entries, 2);
+     __uint(key_size, sizeof(u32));
+     __uint(value_size, sizeof(u32));
+     __array(values, int());
+-} prog_array SEC(".maps") = {
++} ingress_prog_array SEC(".maps") = {
+     .values =
+         {
+-            [IPV4_EGRESS_PROG_INDEX] = (void *)&ipv4_egress_firewall,
+             [IPV4_INGRESS_PROG_INDEX] = (void *)&ipv4_ingress_firewall,
+-            [IPV6_EGRESS_PROG_INDEX] = (void *)&ipv6_egress_firewall,
+             [IPV6_INGRESS_PROG_INDEX] = (void *)&ipv6_ingress_firewall,
+         },
+ };
+ 
++struct {
++    __uint(type, BPF_MAP_TYPE_PROG_ARRAY);
++    __uint(max_entries, 2);
++    __uint(key_size, sizeof(u32));
++    __uint(value_size, sizeof(u32));
++    __array(values, int());
++} egress_prog_array SEC(".maps") = {
++    .values =
++        {
++            [IPV4_EGRESS_PROG_INDEX] = (void *)&ipv4_egress_firewall,
++            [IPV6_EGRESS_PROG_INDEX] = (void *)&ipv6_egress_firewall,
++        },
++};
++
+ #define FRAG_CACHE_SIZE 1024 * 32
+ struct {
+     __uint(type, BPF_MAP_TYPE_LRU_HASH);
+@@ -1267,9 +1280,9 @@ int egress_firewall(struct __sk_buff *skb) {
+     }
+ 
+     if (is_ipv4) {
+-        ret = bpf_tail_call(skb, &prog_array, IPV4_EGRESS_PROG_INDEX);
++        ret = bpf_tail_call(skb, &egress_prog_array, IPV4_EGRESS_PROG_INDEX);
+     } else {
+-        ret = bpf_tail_call(skb, &prog_array, IPV6_EGRESS_PROG_INDEX);
++        ret = bpf_tail_call(skb, &egress_prog_array, IPV6_EGRESS_PROG_INDEX);
+     }
+     // if (ret) {
+     //     bpf_log_info("bpf_tail_call error: %d", ret);
+@@ -1289,9 +1302,9 @@ int ingress_firewall(struct __sk_buff *skb) {
+     }
+ 
+     if (is_ipv4) {
+-        ret = bpf_tail_call(skb, &prog_array, IPV4_INGRESS_PROG_INDEX);
++        ret = bpf_tail_call(skb, &ingress_prog_array, IPV4_INGRESS_PROG_INDEX);
+     } else {
+-        ret = bpf_tail_call(skb, &prog_array, IPV6_INGRESS_PROG_INDEX);
++        ret = bpf_tail_call(skb, &ingress_prog_array, IPV6_INGRESS_PROG_INDEX);
+     }
+     return TC_ACT_UNSPEC;
+ #undef BPF_LOG_TOPIC
+
+--- landscape-ebpf/src/bpf/firewall.h
+@@ -8,9 +8,9 @@
+ #include "packet_def.h"
+ 
+ #define IPV4_EGRESS_PROG_INDEX 0
+-#define IPV4_INGRESS_PROG_INDEX 1
+-#define IPV6_EGRESS_PROG_INDEX 2
+-#define IPV6_INGRESS_PROG_INDEX 3
++#define IPV4_INGRESS_PROG_INDEX 0
++#define IPV6_EGRESS_PROG_INDEX 1
++#define IPV6_INGRESS_PROG_INDEX 1
+ 
+ const volatile u64 TCP_SYN_TIMEOUT = 1E9 * 6;
+ const volatile u64 TCP_TCP_TRANS = 1E9 * 60 * 4;
+

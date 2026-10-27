@@ -1,0 +1,549 @@
+repo: eunomia-bpf/agentsight
+commit: e81fb8718a15266d1eff6cd1876f318cab50d1ab
+rank: 5814
+
+Add CodeBuddy CLI support and fix Codex rustls plaintext capture (#212)
+
+* feat: add CodeBuddy CLI session and record support
+
+Discover ~/.codebuddy/projects transcripts and skip the misleading
+codebuddy comm filter so Node/libssl capture is not dropped.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* fix: capture Codex rustls plaintext via buffer_plaintext
+
+Attach the shared rustls funnel instead of inlined write/writev, and
+clamp probe sizes so the 6.6 verifier accepts sslsniff.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* fix: address Copilot review on CodeBuddy parse and Codex attach
+
+Guard strdup before counting extra Codex binaries, skip empty
+assistant events using this message's tools, and classify
+CODEBUDDY_CONFIG_DIR session paths.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* fix: unblock Windows classify, Codex canary, and top tokens
+
+Treat Unix-style CODEBUDDY_CONFIG_DIR paths as absolute on Windows,
+prove buffer_plaintext attach in sslsniff, and read latest Codex
+last_token_usage so top can show session tokens.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* fix: keep Codex session totals and vendor sslsniff attach proof
+
+Prefer cumulative total_token_usage over a trailing last-only
+event, treat Unix/Windows CODEX_HOME as absolute, and refresh
+the bundled sslsniff with the buffer_plaintext attach log.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* fix: read Codex token_usage_record for live session totals
+
+Codex 0.153 writes token_usage_record with total_tokens before
+event_msg token_count, and the macOS smoke greps that record
+then immediately runs top.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* fix: keep Codex canary SSL requests across session and record splits
+
+Pinned --binary-path already scopes the uprobe; --session/getsid and
+home-standalone attaches dropped or delayed the 40KB /v1/responses
+body that Codex 0.153 writes in 8-16KB TLS records.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* fix: emit HTTP/1.1 when Content-Length overstates a closed JSON body
+
+The Linux capture-extension check failed because FakeRunner advertises
+Content-Length 150 for a shorter JSON request, so reassembly held the
+event forever.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+* fix: keep HTTP/1 reassembly strict to Content-Length
+
+Complete JSON must not override a declared Content-Length, and
+incomplete HTTP/1 bodies are held until the declared byte count is
+reassembled. The FakeRunner fixture now derives its Content-Length
+values from the actual request and response bodies, and tests pin
+that segmented and pipelined messages emit only at the declared
+length.
+
+* fix: emit every complete pipelined HTTP/1 message
+
+Reassembly now drains the buffer in a loop so all complete messages in
+a pipelined burst are emitted, merges incoming chunks into pending
+stream state instead of replacing it, and retains the incomplete tail
+under the (pid, tid, direction) key with the existing caps and
+eviction. Declared Content-Length stays authoritative over a
+syntactically complete JSON body, and a stream ending short emits
+nothing.
+
+* fix: harden HTTP/1 reassembly for chunked, pipelined, and truncated streams
+
+* fix: complete HTTP/1 framing recovery
+
+---------
+
+Co-authored-by: gwsun <13051433+sun-wenwenguo@user.noreply.gitee.com>
+Co-authored-by: Cursor <cursoragent@cursor.com>
+Co-authored-by: Yunwei 123 <yunwei356@gmail.com>
+
+--- bpf/codex_offsets.h
+@@ -47,6 +47,24 @@ static const uint8_t codex_rustls_writev_copy[] = {
+ 	0x24, 0x10,
+ };
+ 
++/*
++ * rustls 0.23 CommonState::buffer_plaintext as compiled into Codex
++ * 0.144.5 / 0.151.0 / 0.152.0 (musl, rustc != Grok's 1.92 layout).
++ * write() is often inlined; this function remains the single plaintext
++ * funnel from both write and write_vectored.
++ */
++static const uint8_t codex_rustls_buffer_plaintext_prefix[] = {
++	0x55, 0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41,
++	0x54, 0x53, 0x48, 0x83, 0xec, 0x28, 0x49, 0x89,
++	0xd6, 0x48, 0x89, 0xf3, 0x4c, 0x8b, 0xa7, 0x08,
++	0x03, 0x00, 0x00,
++};
++#define CODEX_RUSTLS_BUFFER_PLAINTEXT_SENTINEL_OFFSET 0x1b
++static const uint8_t codex_rustls_buffer_plaintext_sentinel[] = {
++	0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x80,
++};
++
+ /* rustls 0.23 CommonState::buffer_plaintext, as emitted by rustc 1.92.
+  * This stable prefix is shared by the supported stripped Grok binaries. */
+ static const uint8_t grok_rustls_buffer_plaintext_prefix[] = {
+@@ -164,6 +182,45 @@ static bool codex_find_rustls_offsets(const char *binary_path,
+ 	return out->count > 0;
+ }
+ 
++static bool codex_find_rustls_buffer_plaintext_offset(const char *binary_path,
++						       size_t *offset)
++{
++	struct stat st;
++	uint8_t *data;
++	size_t found;
++	int fd;
++
++	fd = open(binary_path, O_RDONLY);
++	if (fd < 0)
++		return false;
++	if (fstat(fd, &st) < 0 || st.st_size <= 0) {
++		close(fd);
++		return false;
++	}
++	data = mmap(NULL, (size_t)st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
++	if (data == MAP_FAILED) {
++		close(fd);
++		return false;
++	}
++	found = codex_find_pattern(data, (size_t)st.st_size,
++				   codex_rustls_buffer_plaintext_prefix,
++				   sizeof(codex_rustls_buffer_plaintext_prefix));
++	if (found == (size_t)-1
++	    || found > (size_t)st.st_size
++		       - CODEX_RUSTLS_BUFFER_PLAINTEXT_SENTINEL_OFFSET
++		       - sizeof(codex_rustls_buffer_plaintext_sentinel)
++	    || memcmp(data + found + CODEX_RUSTLS_BUFFER_PLAINTEXT_SENTINEL_OFFSET,
++		      codex_rustls_buffer_plaintext_sentinel,
++		      sizeof(codex_rustls_buffer_plaintext_sentinel)) != 0)
++		found = (size_t)-1;
++	munmap(data, (size_t)st.st_size);
++	close(fd);
++	if (found == (size_t)-1)
++		return false;
++	*offset = found;
++	return true;
++}
++
+ static bool grok_find_rustls_buffer_plaintext_offset(const char *binary_path,
+ 						      size_t *offset)
+ {
+
+--- bpf/sslsniff.bpf.c
+@@ -32,6 +32,25 @@ struct {
+         _min1 < _min2 ? _min1 : _min2; \
+     })
+ 
++/* bpf_probe_read_user() requires a non-negative bounded size. After unrolled
++ * remaining -= copy_size, some 6.6 verifiers (including TencentOS 4) treat the
++ * size as signed-unbounded and reject with "R2 min value is negative".
++ * Mask + barrier_var forces a fresh register the verifier can prove is in
++ * [0, max_n]. 0x7ffff (19 bits) is larger than MAX_BUF_SIZE and the rustls
++ * chunk size, so the subsequent clamp is preserved. */
++static __always_inline u32 clamp_probe_size(size_t len, u32 max_n)
++{
++    u32 n = (u32)len;
++
++    n &= 0x7ffff;
++    if (n > max_n)
++        n = max_n;
++    barrier_var(n);
++    if (n > max_n)
++        n = max_n;
++    return n;
++}
++
+ /* ssl_data per-CPU array removed - ring buffer allocates memory directly */
+ 
+ struct {
+@@ -110,7 +129,7 @@ static __always_inline void submit_rustls_write(struct probe_SSL_data_t *data,
+ static __always_inline u32 copy_rustls_iovec(
+     struct probe_SSL_data_t *data, const struct rustls_iovec *iovec, u32 copied)
+ {
+-    size_t copy_size;
++    u32 copy_size;
+     u32 capacity;
+     u32 destination;
+ 
+@@ -121,9 +140,7 @@ static __always_inline u32 copy_rustls_iovec(
+     /* Keep independent bounds visible across merged verifier states. */
+     barrier_var(destination);
+     destination &= GROK_MAX_CAPTURE_SIZE - 1;
+-    copy_size = iovec->len;
+-    if (copy_size > GROK_MAX_CAPTURE_SIZE)
+-        copy_size = GROK_MAX_CAPTURE_SIZE;
++    copy_size = clamp_probe_size(iovec->len, GROK_MAX_CAPTURE_SIZE);
+     if (copy_size > capacity)
+         copy_size = capacity;
+     barrier_var(copy_size);
+@@ -144,9 +161,9 @@ int BPF_UPROBE(probe_rustls_write, void *conn, const void *buf, size_t len)
+     u32 pid = pid_tgid >> 32;
+     u32 tid = (u32)pid_tgid;
+     u32 uid = bpf_get_current_uid_gid();
+-    u32 copied = len > MAX_BUF_SIZE ? MAX_BUF_SIZE : (u32)len;
++    u32 copied = clamp_probe_size(len, MAX_BUF_SIZE);
+ 
+-    if (!trace_allowed(uid, pid) || !buf || len == 0)
++    if (!trace_allowed(uid, pid) || !buf || len == 0 || !copied)
+         return 0;
+     struct probe_SSL_data_t *data = bpf_ringbuf_reserve(&rb, sizeof(*data), 0);
+     if (!data)
+@@ -192,15 +209,19 @@ int BPF_UPROBE(probe_rustls_write_vectored, void *conn,
+         source = iovec.base;
+ #pragma unroll
+         for (int chunk = 0; chunk < MAX_RUSTLS_CHUNKS_PER_IOV; chunk++) {
+-            size_t copy_size;
++            u32 copy_size;
++            u32 dest;
+ 
+             if (remaining == 0
+                 || copied > MAX_BUF_SIZE - RUSTLS_COPY_CHUNK_SIZE)
+                 break;
+-            copy_size = remaining;
+-            if (copy_size > RUSTLS_COPY_CHUNK_SIZE)
+-                copy_size = RUSTLS_COPY_CHUNK_SIZE;
+-            if (bpf_probe_read_user(data->buf + copied, copy_size, source))
++            copy_size = clamp_probe_size(remaining, RUSTLS_COPY_CHUNK_SIZE);
++            if (copy_size == 0)
++                break;
++            dest = copied;
++            barrier_var(dest);
++            dest &= MAX_BUF_SIZE - 1;
++            if (bpf_probe_read_user(data->buf + dest, copy_size, source))
+                 break;
+             copied += copy_size;
+             source += copy_size;
+@@ -236,8 +257,7 @@ int BPF_UPROBE(probe_rustls_buffer_plaintext, void *state,
+         total = outbound.start_or_len;
+         if (!outbound.data || total == 0)
+             return 0;
+-        copied = total > GROK_MAX_CAPTURE_SIZE
+-            ? GROK_MAX_CAPTURE_SIZE : (u32)total;
++        copied = clamp_probe_size(total, GROK_MAX_CAPTURE_SIZE);
+         struct probe_SSL_data_t *data =
+             bpf_ringbuf_reserve(&rb, sizeof(*data), 0);
+         if (!data)
+@@ -344,7 +364,7 @@ static int SSL_exit(struct pt_regs *ctx, int rw) {
+     data->buf_size = 0;
+     data->rw = rw;
+     data->is_handshake = false;
+-    u32 buf_copy_size = min((size_t)MAX_BUF_SIZE, (size_t)len);
++    u32 buf_copy_size = clamp_probe_size((size_t)len, MAX_BUF_SIZE);
+ 
+     bpf_get_current_comm(&data->comm, sizeof(data->comm));
+ 
+
+--- bpf/sslsniff.c
+@@ -143,8 +143,11 @@ static const struct argp_option opts[] = {
+ };
+ 
+ static bool verbose = false;
++#define MAX_SSL_BINARIES 8
+ static struct bpf_link *codex_rustls_links[CODEX_MAX_RUSTLS_OFFSETS];
+ static size_t codex_rustls_link_count;
++static struct bpf_link *plaintext_links[MAX_SSL_BINARIES];
++static size_t plaintext_link_count;
+ static struct bpf_link *grok_rustls_link;
+ 
+ /*
+@@ -462,20 +465,81 @@ static int attach_codex_rustls(struct sslsniff_bpf *skel, const char *binary,
+ 	return 0;
+ }
+ 
++static int attach_rustls_buffer_plaintext(struct sslsniff_bpf *skel,
++					  const char *binary, size_t offset)
++{
++	LIBBPF_OPTS(bpf_uprobe_opts, opts, .retprobe = false);
++	struct bpf_link *link;
++
++	if (plaintext_link_count >= MAX_SSL_BINARIES)
++		return -ENOSPC;
++	link = bpf_program__attach_uprobe_opts(
++		skel->progs.probe_rustls_buffer_plaintext, env.pid, binary,
++		offset, &opts);
++	long err = link ? libbpf_get_error(link) : -(errno ? errno : EIO);
++	if (err)
++		return (int)err;
++	plaintext_links[plaintext_link_count++] = link;
++	return 0;
++}
++
+ static int attach_grok_rustls(struct sslsniff_bpf *skel, const char *binary,
+ 			      size_t offset)
+ {
+-	LIBBPF_OPTS(bpf_uprobe_opts, opts, .retprobe = false);
++	int err = attach_rustls_buffer_plaintext(skel, binary, offset);
+ 
+-	grok_rustls_link = bpf_program__attach_uprobe_opts(
+-		skel->progs.probe_rustls_buffer_plaintext, env.pid, binary, offset,
+-		&opts);
+-	long err = grok_rustls_link
+-		? libbpf_get_error(grok_rustls_link)
+-		: -(errno ? errno : EIO);
+-	if (err) {
+-		grok_rustls_link = NULL;
+-		return (int)err;
++	if (err)
++		return err;
++	grok_rustls_link = plaintext_links[plaintext_link_count - 1];
++	return 0;
++}
++
++static int attach_codex_ssl(struct sslsniff_bpf *skel, const char *binary)
++{
++	struct codex_rustls_offsets write_offsets = {};
++	size_t plaintext_offset = 0;
++	bool have_write = codex_find_rustls_offsets(binary, &write_offsets);
++	bool have_plain =
++		codex_find_rustls_buffer_plaintext_offset(binary, &plaintext_offset);
++	int err = 0;
++
++	if (!have_write && !have_plain) {
++		warn("Failed to attach to %s: Codex/rustls plaintext write "
++		     "signatures were not recognized\n",
++		     binary);
++		return -ENOENT;
++	}
++	/* Prefer the shared buffer_plaintext funnel. write() is often inlined
++	 * into it, and write_vectored also calls it — attaching both would
++	 * duplicate the same plaintext into the HTTP parser. */
++	if (have_plain) {
++		fprintf(stderr,
++			"Codex/rustls buffer_plaintext detected in %s at 0x%zx. "
++			"Attaching plaintext funnel...\n",
++			binary, plaintext_offset);
++		err = attach_rustls_buffer_plaintext(skel, binary,
++						     plaintext_offset);
++		if (!err) {
++			fprintf(stderr,
++				"Attached Codex/rustls buffer_plaintext at 0x%zx "
++				"(1 offset) for %s\n",
++				plaintext_offset, binary);
++			return 0;
++		}
++		warn("buffer_plaintext attach failed for %s (%d); "
++		     "falling back to write hooks\n",
++		     binary, err);
++		if (!have_write)
++			return err;
++	}
++	if (have_write) {
++		fprintf(stderr,
++			"Codex/rustls plaintext write patterns detected in %s. "
++			"Attaching %zu offsets...\n",
++			binary, write_offsets.count);
++		err = attach_codex_rustls(skel, binary, &write_offsets);
++		if (err)
++			return err;
+ 	}
+ 	return 0;
+ }
+@@ -586,8 +650,14 @@ void print_event(struct probe_SSL_data_t *event, const char *evt) {
+ 	if (env.comm && strcmp(env.comm, event->comm) != 0) {
+ 		return;
+ 	}
+-	if (env.session_id > 0 && getsid(event->pid) != env.session_id) {
+-		return;
++	if (env.session_id > 0) {
++		pid_t sid = getsid((pid_t)event->pid);
++
++		/* Drop only when we can prove a different live session.
++		 * getsid() fails after a short-lived Codex worker exits, and
++		 * sandbox children may create a new sid. */
++		if (sid >= 0 && sid != env.session_id)
++			return;
+ 	}
+ 
+ 	if (start == 0) {
+@@ -673,10 +743,8 @@ int main(int argc, char **argv) {
+ 	LIBBPF_OPTS(bpf_object_open_opts, open_opts);
+ 	struct sslsniff_bpf *obj = NULL;
+ 	struct ring_buffer *rb = NULL;
+-	struct codex_rustls_offsets codex_offsets = {};
+-	bool is_codex = false;
+-	bool codex_rustls = false;
+ 	size_t grok_rustls_offset = 0;
++	bool is_codex = false;
+ 	bool is_grok = false;
+ 	bool grok_rustls = false;
+ 	int err;
+@@ -686,8 +754,6 @@ int main(int argc, char **argv) {
+ 		return err;
+ 	if (env.extra_lib) {
+ 		is_codex = codex_binary_has_tls_markers(env.extra_lib);
+-		codex_rustls = is_codex
+-				&& codex_find_rustls_offsets(env.extra_lib, &codex_offsets);
+ 		is_grok = grok_binary_has_tls_markers(env.extra_lib);
+ 		grok_rustls = is_grok
+ 				&& grok_find_rustls_buffer_plaintext_offset(
+@@ -704,11 +770,11 @@ int main(int argc, char **argv) {
+ 		warn("failed to open BPF object\n");
+ 		goto cleanup;
+ 	}
+-	if (!codex_rustls) {
++	if (!is_codex) {
+ 		bpf_program__set_autoload(obj->progs.probe_rustls_write, false);
+ 		bpf_program__set_autoload(obj->progs.probe_rustls_write_vectored, false);
+ 	}
+-	if (!grok_rustls)
++	if (!grok_rustls && !is_codex)
+ 		bpf_program__set_autoload(
+ 			obj->progs.probe_rustls_buffer_plaintext, false);
+ 
+@@ -796,12 +862,8 @@ int main(int argc, char **argv) {
+ 		} else {
+ 			// Some stripped static clients use rustls; other clients use
+ 			// the existing generic BoringSSL detector.
+-			if (codex_rustls) {
+-				fprintf(stderr,
+-					"Codex/rustls plaintext write patterns detected in %s. "
+-					"Attaching %zu offsets...\n",
+-					env.extra_lib, codex_offsets.count);
+-				err = attach_codex_rustls(obj, env.extra_lib, &codex_offsets);
++			if (is_codex) {
++				err = attach_codex_ssl(obj, env.extra_lib);
+ 			} else if (grok_rustls) {
+ 				fprintf(stderr,
+ 					"Grok/rustls plaintext buffer pattern detected in %s. "
+@@ -848,6 +910,11 @@ int main(int argc, char **argv) {
+ 		goto cleanup;
+ 	}
+ 
++	/* Do not scan ~/.codex standalone releases here. A pinned
++	 * --binary-path is already the ELF record will exec; attaching
++	 * extra 250MB copies blocks ring_buffer__poll through the short
++	 * Codex TLS burst and silently drops plaintext. */
++
+ 	while (!exiting) {
+ 		err = ring_buffer__poll(rb, PERF_POLL_TIMEOUT_MS);
+ 		if (err < 0 && err != -EINTR) {
+@@ -858,8 +925,10 @@ int main(int argc, char **argv) {
+ 	}
+ 
+ cleanup:
+-	if (grok_rustls_link)
+-		bpf_link__destroy(grok_rustls_link);
++	for (size_t i = 0; i < plaintext_link_count; i++)
++		bpf_link__destroy(plaintext_links[i]);
++	plaintext_link_count = 0;
++	grok_rustls_link = NULL;
+ 	destroy_codex_rustls_links();
+ 	if (event_buf) {
+ 		free(event_buf);
+
+--- bpf/test_codex_offsets.c
+@@ -148,12 +148,74 @@ static void test_grok_signature_detection(void)
+ 	unlink(template);
+ }
+ 
++static void test_codex_buffer_plaintext_signature(void)
++{
++	char template[] = "/tmp/agentsight-codex-plaintext-test.XXXXXX";
++	uint8_t data[2048] = {};
++	size_t offset = 0;
++	int fd = mkstemp(template);
++
++	check(fd >= 0, "created Codex buffer_plaintext fixture");
++	if (fd < 0)
++		return;
++	memcpy(data + 32, "codex-cli rustls", sizeof("codex-cli rustls"));
++	memcpy(data + 256, codex_rustls_buffer_plaintext_prefix,
++	       sizeof(codex_rustls_buffer_plaintext_prefix));
++	memcpy(data + 256 + CODEX_RUSTLS_BUFFER_PLAINTEXT_SENTINEL_OFFSET,
++	       codex_rustls_buffer_plaintext_sentinel,
++	       sizeof(codex_rustls_buffer_plaintext_sentinel));
++	check(write(fd, data, sizeof(data)) == sizeof(data),
++	      "wrote Codex buffer_plaintext fixture");
++	close(fd);
++
++	check(codex_find_rustls_buffer_plaintext_offset(template, &offset)
++		      && offset == 256,
++	      "finds Codex/rustls buffer_plaintext signature");
++
++	data[256 + CODEX_RUSTLS_BUFFER_PLAINTEXT_SENTINEL_OFFSET] ^= 0xff;
++	fd = open(template, O_WRONLY | O_TRUNC);
++	check(fd >= 0, "opened Codex plaintext fixture for corruption");
++	if (fd >= 0) {
++		check(write(fd, data, sizeof(data)) == sizeof(data),
++		      "wrote corrupted Codex plaintext fixture");
++		close(fd);
++		check(!codex_find_rustls_buffer_plaintext_offset(template, &offset),
++		      "rejects a Codex signature with a changed sentinel");
++	}
++	unlink(template);
++}
++
++static void test_live_codex_buffer_plaintext(void)
++{
++	static const char *const paths[] = {
++		"/root/.codex/packages/standalone/releases/0.144.5-x86_64-unknown-linux-musl/bin/codex",
++		"/root/.codex/packages/standalone/releases/0.151.0-x86_64-unknown-linux-musl/bin/codex",
++		"/root/.codex/packages/standalone/releases/0.152.0-x86_64-unknown-linux-musl/bin/codex",
++	};
++	size_t i;
++
++	for (i = 0; i < sizeof(paths) / sizeof(paths[0]); i++) {
++		size_t offset = 0;
++		char name[256];
++
++		if (access(paths[i], R_OK) != 0)
++			continue;
++		snprintf(name, sizeof(name),
++			 "finds buffer_plaintext in installed %s", paths[i]);
++		check(codex_find_rustls_buffer_plaintext_offset(paths[i], &offset)
++			      && offset != 0,
++		      name);
++	}
++}
++
+ int main(void)
+ {
+ 	printf("===== Codex offset tests =====\n");
+ 	test_signature_detection();
+ 	test_marker_detection();
+ 	test_grok_signature_detection();
++	test_codex_buffer_plaintext_signature();
++	test_live_codex_buffer_plaintext();
+ 	printf("Tests passed: %d\n", tests_run - tests_failed);
+ 	printf("Tests failed: %d\n", tests_failed);
+ 	return tests_failed == 0 ? 0 : 1;
+

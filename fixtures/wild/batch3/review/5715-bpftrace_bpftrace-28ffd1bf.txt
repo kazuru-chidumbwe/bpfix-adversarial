@@ -1,0 +1,38 @@
+repo: bpftrace/bpftrace
+commit: 28ffd1bf8e6597e276275c7b7231aaabcdcf40b0
+rank: 5715
+
+Align variable scratch buffer slots to 8 bytes (#5377)
+
+Variables that don't fit on the stack live in a per-CPU scratch buffer
+where every slot is as wide as the largest such variable. The slot size
+was not rounded, so when the largest variable had a size that wasn't a
+multiple of 8 (e.g. a 20-byte string) every other slot, and every slot
+on CPUs past the first, could start at a misaligned offset.
+
+bpftrace's own loads tolerate this on architectures with efficient
+unaligned access, but the address of a variable can now be passed to C
+code with `&`. The verifier always requires aligned atomic operations,
+so an atomic on a field of a struct variable in the scratch buffer was
+rejected with "misaligned value access".
+
+Round the slot size up to 8 bytes so every variable starts 8-byte
+aligned. Stack variables don't need an equivalent change: LLVM raises
+their alignment when lowering the memset that zero-initializes them.
+
+
+
+stack-info: PR: https://github.com/bpftrace/bpftrace/pull/5377, branch: user/jordalgo/is_internal_refactor/6
+
+Signed-off-by: Jordan Rome <jordalgo@meta.com>
+
+--- src/stdlib/test/test.bpf.c
+@@ -17,3 +17,7 @@ struct task_struct *__test_get_current_task() {
+ struct task_struct *bpf_task_from_pid(int pid) {
+   return 0;
+ }
++
++void __test_atomic_inc(struct load_weight *w) {
++  __sync_fetch_and_add(&w->weight, 1);
++}
+

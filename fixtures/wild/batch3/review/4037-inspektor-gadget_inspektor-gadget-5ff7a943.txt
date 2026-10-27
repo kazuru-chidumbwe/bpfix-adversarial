@@ -1,0 +1,89 @@
+repo: inspektor-gadget/inspektor-gadget
+commit: 5ff7a9437a88fbae287ff02da9c9bbc816ee66e6
+rank: 4037
+
+trace_tcp: add option to see only failed connections
+
+Tested with the following:
+echo|nc 1.1.1.1 80
+echo|nc 127.0.0.1 8181
+
+$ sudo ./ig run ghcr.io/inspektor-gadget/gadget/trace_tcp:latest --verify-image=false -F proc.comm==nc --host --connect-only
+WARN[0001] image signature verification is disabled due to using corresponding option
+WARN[0001] image signature verification is disabled due to using corresponding option
+RUNTIME.CONTAINER… COMM              PID        TID SRC                      DST                     TYPE      ERROR
+                   nc             601382     601382 192.168.0.22:40316       1.1.1.1:80              connect
+                   nc             601391     601391 127.0.0.1:51788          127.0.0.1:8181          connect   ECONNRE
+
+$ sudo ./ig run ghcr.io/inspektor-gadget/gadget/trace_tcp:latest --verify-image=false -F proc.comm==nc --host --connect-only --failure-only
+WARN[0001] image signature verification is disabled due to using corresponding option
+WARN[0001] image signature verification is disabled due to using corresponding option
+RUNTIME.CONTAINER… COMM              PID        TID SRC                      DST                     TYPE      ERROR
+                   nc             601438     601438 127.0.0.1:38594          127.0.0.1:8181          connect   ECONNRE
+
+Signed-off-by: Alban Crequy <albancrequy@linux.microsoft.com>
+
+--- gadgets/trace_tcp/ebpf/accept.h
+@@ -28,8 +28,12 @@ static __always_inline int handle_sys_accept_x(struct syscall_trace_exit *ctx)
+ 	skpp = bpf_map_lookup_elem(&tcp_tid_sock, &tid);
+ 	if (!skpp)
+ 		return 0;
+-	sk = *skpp;
+ 
++	// User does not want to see successful events
++	if (failure_only && ctx->ret >= 0)
++		goto end;
++
++	sk = *skpp;
+ 	family = BPF_CORE_READ(sk, __sk_common.skc_family);
+ 
+ 	fill_tuple(&t, sk, family);
+
+--- gadgets/trace_tcp/ebpf/close.h
+@@ -16,6 +16,11 @@ static __always_inline void handle_tcp_close(struct pt_regs *ctx,
+ 	struct event *event;
+ 	u16 family;
+ 
++	// Close events don't have errors.
++	// User does not want to see successful events.
++	if (failure_only)
++		return;
++
+ 	if (filter_event(sk, close))
+ 		return;
+ 
+
+--- gadgets/trace_tcp/ebpf/common.h
+@@ -102,8 +102,10 @@ __u8 ip_v6_zero[16] = {
+ };
+ 
+ const volatile bool connect_only = false;
++const volatile bool failure_only = false;
+ 
+ GADGET_PARAM(connect_only);
++GADGET_PARAM(failure_only);
+ 
+ /* Define here, because there are conflicts with include files */
+ #define AF_INET 2
+
+--- gadgets/trace_tcp/ebpf/connect.h
+@@ -118,12 +118,16 @@ static __always_inline void handle_tcp_set_state(struct pt_regs *ctx,
+ 	if (!ei)
+ 		return; /* missed entry */
+ 
++	err = BPF_CORE_READ(sk, sk_err);
++
++	// User does not want to see successful events
++	if (failure_only && err == 0)
++		goto end;
++
+ 	event = gadget_reserve_buf(&events, sizeof(*event));
+ 	if (!event)
+ 		goto end;
+ 
+-	err = BPF_CORE_READ(sk, sk_err);
+-
+ 	fill_event(event, &tuple, &ei->proc, err, connect);
+ 	event->fd = ei->fd;
+ 
+

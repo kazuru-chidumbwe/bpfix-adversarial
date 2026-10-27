@@ -1,0 +1,61 @@
+repo: eunomia-bpf/agentsight
+commit: 3f5e4f9a1d4e83f8a98825379f4a499c559d559e
+rank: 3586
+
+fix: load process probes on newer kernels and isolate root test fixtures (#231)
+
+* fix: load process probes on newer kernels and isolate root test fixtures
+
+* fix(bpf): bound rustls iovec size for newer verifiers
+
+--- bpf/process_ext/bpf_common.h
+@@ -63,6 +63,8 @@ static __always_inline void update_agg_map(struct agg_key *key, u64 count, u64 b
+ /* Format "fd=N" into a detail buffer without bpf_snprintf */
+ static __always_inline void format_fd_detail(char *buf, int buf_len, int fd)
+ {
++	/* Keep LLVM from folding stack pointer arithmetic into bitwise OR. */
++	barrier_var(buf);
+ 	/* "fd=" prefix */
+ 	if (buf_len < 4) return;
+ 	buf[0] = 'f'; buf[1] = 'd'; buf[2] = '=';
+@@ -103,13 +105,17 @@ static __always_inline void format_fd_detail(char *buf, int buf_len, int fd)
+ /* Fully unrolled for BPF verifier (no loops / back-edges) */
+ static __always_inline void write_octet(char *buf, int buf_len, int *pos, u8 val)
+ {
++	/* Keep LLVM from folding stack pointer arithmetic into bitwise OR. */
++	barrier_var(buf);
+ 	if (val >= 100 && *pos < buf_len - 1) buf[(*pos)++] = '0' + val / 100;
+ 	if (val >= 10  && *pos < buf_len - 1) buf[(*pos)++] = '0' + (val / 10) % 10;
+ 	if (*pos < buf_len - 1)               buf[(*pos)++] = '0' + val % 10;
+ }
+ 
+ static __always_inline void format_ipv4_port(char *buf, int buf_len, u32 ip, u16 port)
+ {
++	/* Keep LLVM from folding stack pointer arithmetic into bitwise OR. */
++	barrier_var(buf);
+ 	int pos = 0;
+ 	u8 o0 = ip & 0xFF;
+ 	u8 o1 = (ip >> 8) & 0xFF;
+
+--- bpf/sslsniff.bpf.c
+@@ -144,6 +144,8 @@ static __always_inline u32 copy_rustls_iovec(
+     if (copy_size > capacity)
+         copy_size = capacity;
+     barrier_var(copy_size);
++    /* Bound the signed range that the verifier carries into the helper. */
++    copy_size &= GROK_MAX_CAPTURE_SIZE * 2 - 1;
+     if (copy_size > GROK_MAX_CAPTURE_SIZE)
+         copy_size = GROK_MAX_CAPTURE_SIZE;
+     if (copy_size == 0)
+
+--- bpf/tests/test_process_ext_map_flush.c
+@@ -183,7 +183,7 @@ static void test_json_escape_truncation(void)
+ 	json_escape("abcdefgh", dst, sizeof(dst));
+ 	/* Must be NUL-terminated and at most 3 payload chars. */
+ 	test_assert(strlen(dst) <= 3, "output is bounded by dst_size");
+-	test_assert(dst[sizeof(dst) - 1] == '\0' || dst[3] == '\0',
++	test_assert(memchr(dst, '\0', sizeof(dst)) != NULL,
+ 	            "output is NUL-terminated");
+ }
+ 
+

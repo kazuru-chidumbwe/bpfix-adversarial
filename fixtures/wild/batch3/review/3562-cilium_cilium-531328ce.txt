@@ -1,0 +1,1091 @@
+repo: cilium/cilium
+commit: 531328ce3436f9ee650551dffd77347498c608bb
+rank: 3562
+
+bpf/tests: TCP and UDP checksum checks.
+
+All added checksums where verified in wireshark by dumping eBPF unit
+tests payloads using `-dump-ctx` flag.
+Checksum log fatal message type changed from decimal to hexadecimal
+to make it easier for troubleshooting.
+
+Signed-off-by: viktor-kurchenko <viktor.kurchenko@isovalent.com>
+
+--- bpf/tests/hairpin_sctp_flow.c
+@@ -136,7 +136,7 @@ int hairpin_flow_forward_check(__maybe_unused const struct __ctx_buff *ctx)
+ 		test_fatal("dest IP hasn't been changed to the pod IP");
+ 
+ 	if (l3->check != bpf_htons(0xb09c))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	l4 = (void *)l3 + sizeof(struct iphdr);
+ 
+@@ -227,7 +227,7 @@ int hairpin_flow_forward_ingress_check(__maybe_unused const struct __ctx_buff *c
+ 		test_fatal("dest IP changed");
+ 
+ 	if (l3->check != bpf_htons(0xaf9c))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	l4 = (void *)l3 + sizeof(struct iphdr);
+ 
+@@ -399,7 +399,7 @@ int hairpin_sctp_flow_4_reverse_ingress_v4_check(const struct __ctx_buff *ctx)
+ 		test_fatal("dest IP hasn't been NAT'ed to the original source IP");
+ 
+ 	if (l3->check != bpf_htons(0x3a0))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	l4 = (void *)l3 + sizeof(struct iphdr);
+ 
+
+--- bpf/tests/inter_cluster_snat_clusterip_backend_lxc.c
+@@ -214,14 +214,17 @@ int overlay_to_lxc_syn_check(struct __ctx_buff *ctx)
+ 		test_fatal("dst IP has changed");
+ 
+ 	if (l3->check != bpf_htons(0x4111))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != CLIENT_INTER_CLUSTER_SNAT_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port has changed");
+ 
++	if (l4->check != bpf_htons(0x1df4))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	/* Check ingress conntrack state is in the default CT */
+ 	tuple.daddr   = CLIENT_NODE_IP;
+ 	tuple.saddr   = BACKEND_IP;
+@@ -308,14 +311,17 @@ int lxc_to_overlay_ack_check(struct __ctx_buff *ctx)
+ 		test_fatal("dst IP has changed");
+ 
+ 	if (l3->check != bpf_htons(0x4111))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != BACKEND_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != CLIENT_INTER_CLUSTER_SNAT_PORT)
+ 		test_fatal("dst port has changed");
+ 
++	if (l4->check != bpf_htons(0x1de4))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	/* Make sure we hit the conntrack entry */
+ 	tuple.saddr   = BACKEND_IP;
+ 	tuple.daddr   = CLIENT_NODE_IP;
+@@ -404,14 +410,17 @@ int overlay_to_lxc_ack_check(struct __ctx_buff *ctx)
+ 		test_fatal("dst IP has changed");
+ 
+ 	if (l3->check != bpf_htons(0x4111))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != CLIENT_INTER_CLUSTER_SNAT_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port has changed");
+ 
++	if (l4->check != bpf_htons(0x1de6))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	/* Make sure we hit the conntrack entry */
+ 	tuple.daddr   = CLIENT_NODE_IP;
+ 	tuple.saddr   = BACKEND_IP;
+
+--- bpf/tests/inter_cluster_snat_clusterip_backend_overlay.c
+@@ -250,14 +250,17 @@ int from_overlay_syn_check(struct __ctx_buff *ctx)
+ 		test_fatal("dst IP has changed");
+ 
+ 	if (l3->check != bpf_htons(0x4212))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != CLIENT_INTER_CLUSTER_SNAT_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port has changed");
+ 
++	if (l4->check != bpf_htons(0x777f))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	meta = ctx_load_meta(ctx, CB_IFINDEX);
+ 	if (meta != BACKEND_IFINDEX)
+ 		test_fatal("skb->cb[CB_IFINDEX] should be %d, got %d", BACKEND_IFINDEX, meta);
+@@ -341,14 +344,17 @@ int to_overlay_synack_check(struct __ctx_buff *ctx)
+ 		test_fatal("dst IP has changed");
+ 
+ 	if (l3->check != bpf_htons(0x4112))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != BACKEND_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != CLIENT_INTER_CLUSTER_SNAT_PORT)
+ 		test_fatal("dst port has changed");
+ 
++	if (l4->check != bpf_htons(0x776f))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+ 
+@@ -413,14 +419,17 @@ int from_overlay_ack_check(struct __ctx_buff *ctx)
+ 		test_fatal("dst IP has changed");
+ 
+ 	if (l3->check != bpf_htons(0x4212))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != CLIENT_INTER_CLUSTER_SNAT_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port has changed");
+ 
++	if (l4->check != bpf_htons(0x7771))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	meta = ctx_load_meta(ctx, CB_IFINDEX);
+ 	if (meta != BACKEND_IFINDEX)
+ 		test_fatal("skb->cb[CB_IFINDEX] should be %d, got %d", BACKEND_IFINDEX, meta);
+
+--- bpf/tests/inter_cluster_snat_clusterip_client_lxc.c
+@@ -215,14 +215,17 @@ int lxc_to_overlay_syn_check(struct __ctx_buff *ctx)
+ 		test_fatal("dst IP hasn't been NATed to remote backend IP");
+ 
+ 	if (l3->check != bpf_htons(0xf968))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != CLIENT_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port hasn't been NATed to backend port");
+ 
++	if (l4->check != bpf_htons(0xd64b))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	/* Check service conntrack state is in the default CT */
+ 	tuple.daddr = FRONTEND_IP;
+ 	tuple.saddr = CLIENT_IP;
+@@ -322,14 +325,17 @@ int overlay_to_lxc_synack_check(struct __ctx_buff *ctx)
+ 		test_fatal("dst IP is not client IP");
+ 
+ 	if (l3->check != bpf_htons(0x402))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != FRONTEND_PORT)
+ 		test_fatal("src port is not service frontend port");
+ 
+ 	if (l4->dest != CLIENT_PORT)
+ 		test_fatal("dst port is not client port");
+ 
++	if (l4->check != bpf_htons(0x6325))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	/* Make sure we hit the conntrack entry */
+ 	tuple.daddr   = CLIENT_IP;
+ 	tuple.saddr   = BACKEND_IP;
+@@ -410,14 +416,17 @@ int lxc_to_overlay_ack_check(struct __ctx_buff *ctx)
+ 		test_fatal("dst IP hasn't been NATed to remote backend IP");
+ 
+ 	if (l3->check != bpf_htons(0xf968))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != CLIENT_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port hasn't been NATed to backend port");
+ 
++	if (l4->check != bpf_htons(0xd63d))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	/* Make sure we hit the conntrack entry */
+ 	tuple.daddr   = CLIENT_IP;
+ 	tuple.saddr   = BACKEND_IP;
+
+--- bpf/tests/inter_cluster_snat_clusterip_client_overlay.c
+@@ -247,14 +247,17 @@ int to_overlay_syn_check(struct __ctx_buff *ctx)
+ 		test_fatal("dst IP has changed");
+ 
+ 	if (l3->check != bpf_htons(0x4111))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != CLIENT_INTER_CLUSTER_SNAT_PORT)
+ 		test_fatal("src port hasn't been SNATed for inter-cluster communication");
+ 
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port has changed");
+ 
++	if (l4->check != bpf_htons(0x777e))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	tuple.daddr = BACKEND_IP;
+ 	tuple.saddr = CLIENT_IP;
+ 	tuple.dport = BACKEND_PORT;
+@@ -347,14 +350,17 @@ int from_overlay_synack_check(struct __ctx_buff *ctx)
+ 		test_fatal("dst IP hasn't been RevSNATed to client IP");
+ 
+ 	if (l3->check != bpf_htons(0xfa68))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != BACKEND_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != CLIENT_PORT)
+ 		test_fatal("dst port hasn't been RevSNATed to client port");
+ 
++	if (l4->check != bpf_htons(0x2fc5))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	meta = ctx_load_meta(ctx, CB_IFINDEX);
+ 	if (meta != CLIENT_IFINDEX)
+ 		test_fatal("skb->cb[CB_IFINDEX] should be %d, got %d", CLIENT_IFINDEX, meta);
+@@ -442,13 +448,16 @@ int to_overlay_ack_check(struct __ctx_buff *ctx)
+ 		test_fatal("dst IP has changed");
+ 
+ 	if (l3->check != bpf_htons(0x4111))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != CLIENT_INTER_CLUSTER_SNAT_PORT)
+ 		test_fatal("src port hasn't been SNATed for inter-cluster communication");
+ 
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port has changed");
+ 
++	if (l4->check != bpf_htons(0x7770))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+
+--- bpf/tests/ipsec_from_host_generic.h
+@@ -166,7 +166,7 @@ int ipv4_ipsec_from_host_check(__maybe_unused const struct __ctx_buff *ctx)
+ 		test_fatal("dest IP was changed");
+ 
+ 	if (l3->check != bpf_htons(0xf948))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	l4 = (void *)l3 + sizeof(struct iphdr);
+ 
+
+--- bpf/tests/ipsec_from_lxc_generic.h
+@@ -188,6 +188,9 @@ int ipv4_from_lxc_encrypt_check(__maybe_unused const struct __ctx_buff *ctx)
+ 	if (l4->dest != tcp_svc_one)
+ 		test_fatal("dst TCP port was changed");
+ 
++	if (l4->check != bpf_htons(0x589c))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	payload = (void *)l4 + sizeof(struct tcphdr);
+ 	if ((void *)payload + sizeof(default_data) > data_end)
+ 		test_fatal("paylaod out of bounds\n");
+@@ -388,6 +391,9 @@ int ipv6_from_lxc_encrypt_check(__maybe_unused const struct __ctx_buff *ctx)
+ 	if (l4->dest != tcp_svc_one)
+ 		test_fatal("dst TCP port was changed");
+ 
++	if (l4->check != bpf_htons(0xdfe3))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	payload = (void *)l4 + sizeof(struct tcphdr);
+ 	if ((void *)payload + sizeof(default_data) > data_end)
+ 		test_fatal("paylaod out of bounds\n");
+
+--- bpf/tests/ipsec_from_network_generic.h
+@@ -160,7 +160,7 @@ int ipv4_not_decrypted_ipsec_from_network_check(__maybe_unused const struct __ct
+ 		test_fatal("dest IP was changed");
+ 
+ 	if (l3->check != bpf_htons(0xf948))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	l4 = (void *)l3 + sizeof(struct iphdr);
+ 
+@@ -400,7 +400,7 @@ int ipv4_decrypted_ipsec_from_network_check(__maybe_unused const struct __ctx_bu
+ 		test_fatal("dest IP was changed");
+ 
+ 	if (l3->check != bpf_htons(0xf968))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	l4 = (void *)l3 + sizeof(struct iphdr);
+ 
+@@ -413,6 +413,9 @@ int ipv4_decrypted_ipsec_from_network_check(__maybe_unused const struct __ctx_bu
+ 	if (l4->dest != tcp_svc_one)
+ 		test_fatal("dst TCP port was changed");
+ 
++	if (l4->check != bpf_htons(0x589c))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	payload = (void *)l4 + sizeof(struct tcphdr);
+ 	if ((void *)payload + sizeof(default_data) > data_end)
+ 		test_fatal("paylaod out of bounds\n");
+@@ -517,6 +520,9 @@ int ipv6_decrypted_ipsec_from_network_check(__maybe_unused const struct __ctx_bu
+ 	if (l4->dest != tcp_svc_one)
+ 		test_fatal("dst TCP port was changed");
+ 
++	if (l4->check != bpf_htons(0xdfe3))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	payload = (void *)l4 + sizeof(struct tcphdr);
+ 	if ((void *)payload + sizeof(default_data) > data_end)
+ 		test_fatal("paylaod out of bounds\n");
+
+--- bpf/tests/ipsec_from_overlay_generic.h
+@@ -193,7 +193,7 @@ int ipv4_not_decrypted_ipsec_from_overlay_check(__maybe_unused const struct __ct
+ 		test_fatal("dest IP was changed");
+ 
+ 	if (l3->check != bpf_htons(0xf948))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	l4 = (void *)l3 + sizeof(struct iphdr);
+ 
+@@ -433,7 +433,7 @@ int ipv4_decrypted_ipsec_from_overlay_check(__maybe_unused const struct __ctx_bu
+ 		test_fatal("dest IP was changed");
+ 
+ 	if (l3->check != bpf_htons(0xfa68))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	l4 = (void *)l3 + sizeof(struct iphdr);
+ 
+@@ -446,6 +446,9 @@ int ipv4_decrypted_ipsec_from_overlay_check(__maybe_unused const struct __ctx_bu
+ 	if (l4->dest != tcp_svc_one)
+ 		test_fatal("dst TCP port was changed");
+ 
++	if (l4->check != bpf_htons(0x589c))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	payload = (void *)l4 + sizeof(struct tcphdr);
+ 	if ((void *)payload + sizeof(default_data) > data_end)
+ 		test_fatal("paylaod out of bounds\n");
+@@ -550,6 +553,9 @@ int ipv6_decrypted_ipsec_from_overlay_check(__maybe_unused const struct __ctx_bu
+ 	if (l4->dest != tcp_svc_one)
+ 		test_fatal("dst TCP port was changed");
+ 
++	if (l4->check != bpf_htons(0xdfe3))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	payload = (void *)l4 + sizeof(struct tcphdr);
+ 	if ((void *)payload + sizeof(default_data) > data_end)
+ 		test_fatal("paylaod out of bounds\n");
+
+--- bpf/tests/l4lb_ipip_health_check_host.c
+@@ -179,13 +179,16 @@ int l4lb_health_check_host_check(const struct __ctx_buff *ctx)
+ 		test_fatal("dst IP has changed");
+ 
+ 	if (l3->check != bpf_htons(0x402))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != CLIENT_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != FRONTEND_PORT)
+ 		test_fatal("dst port has changed");
+ 
++	if (l4->check != bpf_htons(0xba00))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+
+--- bpf/tests/nodeport_geneve_dsr_lb_xdp.c
+@@ -204,14 +204,17 @@ int nodeport_geneve_dsr_lb_xdp1_local_backend_check(const struct __ctx_buff *ctx
+ 		test_fatal("dst IP hasn't been NATed to local backend IP");
+ 
+ 	if (l3->check != bpf_htons(0x4112))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != CLIENT_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst TCP port hasn't been NATed to backend port");
+ 
++	if (l4->check != bpf_htons(0xd7d0))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+ 
+@@ -341,7 +344,7 @@ int nodeport_geneve_dsr_lb_xdp_fwd_check(__maybe_unused const struct __ctx_buff
+ 		test_fatal("outerDstIP is not correct");
+ 
+ 	if (l3->check != bpf_htons(0x5371))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (udp->dest != bpf_htons(TUNNEL_PORT))
+ 		test_fatal("outerDstPort is not tunnel port");
+@@ -379,13 +382,16 @@ int nodeport_geneve_dsr_lb_xdp_fwd_check(__maybe_unused const struct __ctx_buff
+ 		test_fatal("innerDstIP hasn't been NATed to remote backend IP");
+ 
+ 	if (inner_l3->check != bpf_htons(0x4111))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(inner_l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(inner_l3->check));
+ 
+ 	if (tcp_inner->source != CLIENT_PORT)
+ 		test_fatal("innerSrcPort has changed");
+ 
+ 	if (tcp_inner->dest != BACKEND_PORT)
+ 		test_fatal("innerDstPort hasn't been NATed to backend port");
+ 
++	if (tcp_inner->check != bpf_htons(0xd7cf))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(tcp_inner->check));
++
+ 	test_finish();
+ }
+
+--- bpf/tests/skip_tunnel_from_host.c
+@@ -211,7 +211,7 @@ check_ctx(const struct __ctx_buff *ctx, __u32 expected_result, bool v4)
+ 			test_fatal("dest IP was changed");
+ 
+ 		if (l3->check != bpf_htons(0xa611))
+-			test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++			test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 		l4 = (void *)l3 + sizeof(struct iphdr);
+ 	} else {
+
+--- bpf/tests/skip_tunnel_from_lxc.c
+@@ -192,7 +192,7 @@ check_ctx(const struct __ctx_buff *ctx, __u32 expected_result, bool v4)
+ 			test_fatal("dest IP was changed");
+ 
+ 		if (l3->check != bpf_htons(0xf968))
+-			test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++			test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 		l4 = (void *)l3 + sizeof(struct iphdr);
+ 	} else {
+
+--- bpf/tests/tc_egressgw_snat.c
+@@ -337,7 +337,7 @@ int egressgw_skip_excluded_cidr_snat_check(const struct __ctx_buff *ctx)
+ 		test_fatal("l3 out of bounds");
+ 
+ 	if (l3->check != bpf_htons(0x4112))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	l4 = (void *)l3 + sizeof(struct iphdr);
+ 	if ((void *)l4 + sizeof(struct tcphdr) > data_end)
+
+--- bpf/tests/tc_host_encrypted_overlay.c
+@@ -170,7 +170,7 @@ int tc_host_encrypted_overlay_01_check(const struct __ctx_buff *ctx)
+ 		test_fatal("dst IP has changed");
+ 
+ 	if (l3->check != bpf_htons(0x7da4))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != NODE1_TUNNEL_SPORT)
+ 		test_fatal("src port has changed");
+
+--- bpf/tests/tc_lxc_lb4_no_backend.c
+@@ -127,7 +127,7 @@ int lxc_no_backend_check(__maybe_unused const struct __ctx_buff *ctx)
+ 	assert(l3->protocol == IPPROTO_ICMP);
+ 
+ 	if (l3->check != bpf_htons(0x4b8e))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	l4 = data + sizeof(__u32) + sizeof(struct ethhdr) + sizeof(struct iphdr);
+ 	if ((void *) l4 + sizeof(struct icmphdr) > data_end)
+@@ -140,7 +140,7 @@ int lxc_no_backend_check(__maybe_unused const struct __ctx_buff *ctx)
+ 	 * context with the runner option and importing the packet into
+ 	 * wireshark
+ 	 */
+-	assert(l4->checksum == bpf_htons(0x2de7));
++	assert(l4->checksum == bpf_htons(0x2c3f));
+ 
+ 	test_finish();
+ }
+
+--- bpf/tests/tc_lxc_lb6_no_backend.c
+@@ -144,7 +144,7 @@ int lxc_no_backend_check(__maybe_unused const struct __ctx_buff *ctx)
+ 	 * context with the runner option and importing the packet into
+ 	 * wireshark
+ 	 */
+-	assert(l4->icmp6_cksum == bpf_htons(0x7da8));
++	assert(l4->icmp6_cksum == bpf_htons(0x9e14));
+ 
+ 	test_finish();
+ }
+
+--- bpf/tests/tc_nodeport_l3_dev.c
+@@ -175,7 +175,7 @@ int ipv4_l3_to_l2_fast_redirect_check(__maybe_unused const struct __ctx_buff *ct
+ 		test_fatal("dest IP was changed");
+ 
+ 	if (l3->check != bpf_htons(0xfa68))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	l4 = (void *)l3 + sizeof(struct iphdr);
+ 
+@@ -188,6 +188,9 @@ int ipv4_l3_to_l2_fast_redirect_check(__maybe_unused const struct __ctx_buff *ct
+ 	if (l4->dest != tcp_svc_one)
+ 		test_fatal("dst TCP port was changed");
+ 
++	if (l4->check != bpf_htons(0x589c))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	payload = (void *)l4 + sizeof(struct tcphdr);
+ 	if ((void *)payload + sizeof(default_data) > data_end)
+ 		test_fatal("paylaod out of bounds\n");
+@@ -316,6 +319,9 @@ int ipv6_l3_to_l2_fast_redirect_check(__maybe_unused const struct __ctx_buff *ct
+ 	if (l4->dest != tcp_svc_one)
+ 		test_fatal("dst TCP port was changed");
+ 
++	if (l4->check != bpf_htons(0xdfe3))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	payload = (void *)l4 + sizeof(struct tcphdr);
+ 	if ((void *)payload + sizeof(default_data) > data_end)
+ 		test_fatal("paylaod out of bounds\n");
+
+--- bpf/tests/tc_nodeport_lb4_dsr_backend.c
+@@ -248,7 +248,7 @@ int nodeport_dsr_backend_check(struct __ctx_buff *ctx)
+ 		test_fatal("dst IP has changed");
+ 
+ 	if (l3->check != bpf_htons(0x400a))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (opt->type != DSR_IPV4_OPT_TYPE)
+ 		test_fatal("type in DSR IP option has changed")
+@@ -265,6 +265,9 @@ int nodeport_dsr_backend_check(struct __ctx_buff *ctx)
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port has changed");
+ 
++	if (l4->check != bpf_htons(0xd7d0))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	struct ipv4_ct_tuple tuple;
+ 	struct ct_entry *ct_entry;
+ 	int l4_off, ret;
+@@ -368,14 +371,17 @@ static __always_inline int check_reply(const struct __ctx_buff *ctx)
+ 		test_fatal("dst IP has changed");
+ 
+ 	if (l3->check != bpf_htons(0x4baa))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != FRONTEND_PORT)
+ 		test_fatal("src port hasn't been RevNATed to frontend port");
+ 
+ 	if (l4->dest != CLIENT_PORT)
+ 		test_fatal("dst port has changed");
+ 
++	if (l4->check != bpf_htons(0x01a9))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+ 
+@@ -517,7 +523,7 @@ int nodeport_dsr_backend_redirect_check(struct __ctx_buff *ctx)
+ 		test_fatal("dst IP has changed");
+ 
+ 	if (l3->check != bpf_htons(0x3509))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (opt->type != DSR_IPV4_OPT_TYPE)
+ 		test_fatal("type in DSR IP option has changed")
+@@ -534,6 +540,9 @@ int nodeport_dsr_backend_redirect_check(struct __ctx_buff *ctx)
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port has changed");
+ 
++	if (l4->check != bpf_htons(0xcccf))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	struct ipv4_ct_tuple tuple;
+ 	struct ct_entry *ct_entry;
+ 	int l4_off, ret;
+@@ -651,13 +660,16 @@ int nodeport_dsr_backend_redirect_reply_check(struct __ctx_buff *ctx)
+ 		test_fatal("dst IP has changed");
+ 
+ 	if (l3->check != bpf_htons(0x3611))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != BACKEND_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != CLIENT_PORT)
+ 		test_fatal("dst port has changed");
+ 
++	if (l4->check != bpf_htons(0xcccf))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+
+--- bpf/tests/tc_nodeport_lb4_dsr_lb.c
+@@ -173,7 +173,7 @@ int nodeport_dsr_fwd_check(__maybe_unused const struct __ctx_buff *ctx)
+ 		test_fatal("dst IP hasn't been NATed to remote backend IP");
+ 
+ 	if (l3->check != bpf_htons(0x434a))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (opt->type != DSR_IPV4_OPT_TYPE)
+ 		test_fatal("type in DSR IP option is bad")
+@@ -190,5 +190,8 @@ int nodeport_dsr_fwd_check(__maybe_unused const struct __ctx_buff *ctx)
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port hasn't been NATed to backend port");
+ 
++	if (l4->check != bpf_htons(0xd7cf))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+
+--- bpf/tests/tc_nodeport_lb4_nat_backend.c
+@@ -174,13 +174,16 @@ int nodeport_nat_backend_check(const struct __ctx_buff *ctx)
+ 		test_fatal("dst IP has changed");
+ 
+ 	if (l3->check != bpf_htons(0xa712))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != LB_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port has changed");
+ 
++	if (l4->check != bpf_htons(0x3c62))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+
+--- bpf/tests/tc_nodeport_lb4_nat_lb.c
+@@ -269,14 +269,17 @@ int nodeport_local_backend_check(const struct __ctx_buff *ctx)
+ 		test_fatal("dst IP hasn't been NATed to local backend IP");
+ 
+ 	if (l3->check != bpf_htons(0x4212))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != CLIENT_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst TCP port hasn't been NATed to backend port");
+ 
++	if (l4->check != bpf_htons(0xd7d0))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+ 
+@@ -362,14 +365,17 @@ int nodeport_local_backend_reply_check(const struct __ctx_buff *ctx)
+ 		test_fatal("dst IP has changed");
+ 
+ 	if (l3->check != bpf_htons(0x4baa))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != FRONTEND_PORT)
+ 		test_fatal("src port hasn't been revNATed to frontend port");
+ 
+ 	if (l4->dest != CLIENT_PORT)
+ 		test_fatal("dst port has changed");
+ 
++	if (l4->check != bpf_htons(0x01a9))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+ 
+@@ -457,14 +463,17 @@ int nodeport_local_backend_redirect_check(const struct __ctx_buff *ctx)
+ 		test_fatal("dst IP hasn't been NATed to local backend IP");
+ 
+ 	if (l3->check != bpf_htons(0x3711))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != CLIENT_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst TCP port hasn't been NATed to backend port");
+ 
++	if (l4->check != bpf_htons(0xcccf))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+ 
+@@ -552,14 +561,17 @@ int nodeport_local_backend_redirect_reply_check(const struct __ctx_buff *ctx)
+ 		test_fatal("dst IP has changed");
+ 
+ 	if (l3->check != bpf_htons(0x3611))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != BACKEND_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != CLIENT_PORT)
+ 		test_fatal("dst port has changed");
+ 
++	if (l4->check != bpf_htons(0xcccf))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+ 
+@@ -654,14 +666,17 @@ int nodeport_udp_local_backend_check(const struct __ctx_buff *ctx)
+ 		test_fatal("dst IP hasn't been NATed to local backend IP");
+ 
+ 	if (l3->check != bpf_htons(0x4213))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != CLIENT_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port hasn't been NATed to backend port");
+ 
++	if (l4->check != bpf_htons(0x699a))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+ 
+@@ -759,7 +774,7 @@ int nodeport_nat_fwd_check(__maybe_unused const struct __ctx_buff *ctx)
+ 		test_fatal("dst IP hasn't been NATed to remote backend IP");
+ 
+ 	if (l3->check != bpf_htons(0xa711))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source == CLIENT_PORT)
+ 		test_fatal("src port hasn't been NATed");
+@@ -857,6 +872,9 @@ static __always_inline int check_reply(const struct __ctx_buff *ctx)
+ 	if (l4->dest != CLIENT_PORT)
+ 		test_fatal("dst port hasn't been RevNATed to client port");
+ 
++	if (l4->check != bpf_htons(0x1a8))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+ 
+
+--- bpf/tests/tc_nodeport_lb4_no_backend.c
+@@ -131,7 +131,7 @@ int nodeport_no_backend_check(__maybe_unused const struct __ctx_buff *ctx)
+ 	assert(l3->protocol == IPPROTO_ICMP);
+ 
+ 	if (l3->check != bpf_htons(0x4b8e))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	l4 = data + sizeof(__u32) + sizeof(struct ethhdr) + sizeof(struct iphdr);
+ 	if ((void *) l4 + sizeof(struct icmphdr) > data_end)
+@@ -144,7 +144,7 @@ int nodeport_no_backend_check(__maybe_unused const struct __ctx_buff *ctx)
+ 	 * context with the runner option and importing the packet into
+ 	 * wireshark
+ 	 */
+-	assert(l4->checksum == bpf_htons(0x2de7));
++	assert(l4->checksum == bpf_htons(0x2c3f));
+ 
+ 	test_finish();
+ }
+
+--- bpf/tests/tc_nodeport_lb6_dsr_backend.c
+@@ -349,6 +349,9 @@ int check_reply(const struct __ctx_buff *ctx)
+ 	if (l4->dest != CLIENT_PORT)
+ 		test_fatal("dst port has changed");
+ 
++	if (l4->check != bpf_htons(0x2dbc))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+ 
+
+--- bpf/tests/tc_nodeport_lb6_dsr_lb.c
+@@ -201,5 +201,8 @@ int nodeport_dsr_fwd_check(__maybe_unused const struct __ctx_buff *ctx)
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port hasn't been NATed to backend port");
+ 
++	if (l4->check != bpf_htons(0x0d7c))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+
+--- bpf/tests/tc_nodeport_lb6_no_backend.c
+@@ -149,7 +149,7 @@ int nodeport_no_backend_check(__maybe_unused const struct __ctx_buff *ctx)
+ 	 * context with the runner option and importing the packet into
+ 	 * wireshark
+ 	 */
+-	assert(l4->icmp6_cksum == bpf_htons(0x7da8));
++	assert(l4->icmp6_cksum == bpf_htons(0x9e14));
+ 
+ 	struct ratelimit_key key = {
+ 		.usage = RATELIMIT_USAGE_ICMPV6,
+
+--- bpf/tests/tc_nodeport_lb_terminating_backend.c
+@@ -203,14 +203,17 @@ int tc_nodeport_lb_terminating_backend_0_check(const struct __ctx_buff *ctx)
+ 		test_fatal("dst IP hasn't been NATed to local backend IP");
+ 
+ 	if (l3->check != bpf_htons(0x4213))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != CLIENT_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port hasn't been NATed to backend port");
+ 
++	if (l4->check != bpf_htons(0x699a))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+ 
+@@ -307,13 +310,16 @@ int tc_nodeport_lb_terminating_backend_1_check(const struct __ctx_buff *ctx)
+ 		test_fatal("dst IP hasn't been NATed to local backend IP");
+ 
+ 	if (l3->check != bpf_htons(0x4213))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != CLIENT_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port hasn't been NATed to backend port");
+ 
++	if (l4->check != bpf_htons(0x699a))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+
+--- bpf/tests/tc_nodeport_test.c
+@@ -145,7 +145,7 @@ int hairpin_flow_forward_check(__maybe_unused const struct __ctx_buff *ctx)
+ 		test_fatal("dest IP hasn't been changed to the pod IP");
+ 
+ 	if (l3->check != bpf_htons(-0x4f02))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	l4 = (void *)l3 + sizeof(struct iphdr);
+ 
+@@ -158,6 +158,9 @@ int hairpin_flow_forward_check(__maybe_unused const struct __ctx_buff *ctx)
+ 	if (l4->dest != tcp_dst_one)
+ 		test_fatal("dst TCP port incorrect");
+ 
++	if (l4->check != bpf_htons(0xb846))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	struct ipv4_ct_tuple tuple = {};
+ 	struct ct_entry *ct_entry;
+ 
+@@ -270,7 +273,7 @@ int hairpin_flow_forward_ingress_check(__maybe_unused const struct __ctx_buff *c
+ 		test_fatal("dest IP changed");
+ 
+ 	if (l3->check != bpf_htons(-0x5002))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	l4 = (void *)l3 + sizeof(struct iphdr);
+ 
+@@ -283,6 +286,9 @@ int hairpin_flow_forward_ingress_check(__maybe_unused const struct __ctx_buff *c
+ 	if (l4->dest != tcp_dst_one)
+ 		test_fatal("dst TCP port changed");
+ 
++	if (l4->check != bpf_htons(0xb846))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	struct ipv4_ct_tuple tuple = {};
+ 	struct ct_entry *ct_entry;
+ 
+@@ -391,6 +397,9 @@ int hairpin_flow_rev_check(__maybe_unused const struct __ctx_buff *ctx)
+ 	if (l4->dest != tcp_src_one)
+ 		test_fatal("dst TCP port changed");
+ 
++	if (l4->check != bpf_htons(0xb836))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+ 
+@@ -468,7 +477,7 @@ int hairpin_flow_reverse_ingress_check(const struct __ctx_buff *ctx)
+ 		test_fatal("dest IP hasn't been NAT'ed to the original source IP");
+ 
+ 	if (l3->check != bpf_htons(0x402))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	l4 = (void *)l3 + sizeof(struct iphdr);
+ 
+@@ -481,6 +490,9 @@ int hairpin_flow_reverse_ingress_check(const struct __ctx_buff *ctx)
+ 	if (l4->dest != tcp_src_one)
+ 		test_fatal("dst TCP port incorrect");
+ 
++	if (l4->check != bpf_htons(0x6325))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+ 
+
+--- bpf/tests/xdp_egressgw_reply.c
+@@ -203,7 +203,7 @@ int egressgw_reply_check(__maybe_unused const struct __ctx_buff *ctx)
+ 		test_fatal("outer IP doesn't have correct L4 protocol")
+ 
+ 	if (l3->check != bpf_htons(0x527e))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l3->saddr != IPV4_DIRECT_ROUTING)
+ 		test_fatal("outerSrcIP is not correct")
+@@ -227,7 +227,7 @@ int egressgw_reply_check(__maybe_unused const struct __ctx_buff *ctx)
+ 		test_fatal("innerDstIP hasn't been revNATed to the client IP");
+ 
+ 	if (inner_l3->check != bpf_htons(0x4212))
+-		test_fatal("inner L3 checksum is invalid: %d", bpf_htons(inner_l3->check));
++		test_fatal("inner L3 checksum is invalid: %x", bpf_htons(inner_l3->check));
+ 
+ 	if (inner_l4->source != EXTERNAL_SVC_PORT)
+ 		test_fatal("innerSrcPort is not the external SVC port");
+
+--- bpf/tests/xdp_nodeport_lb4_dsr_lb.c
+@@ -169,7 +169,7 @@ int nodeport_dsr_fwd_check(__maybe_unused const struct __ctx_buff *ctx)
+ 		test_fatal("dst IP hasn't been NATed to remote backend IP");
+ 
+ 	if (l3->check != bpf_htons(0x434a))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (opt->type != DSR_IPV4_OPT_TYPE)
+ 		test_fatal("type in DSR IP option is bad")
+@@ -186,5 +186,8 @@ int nodeport_dsr_fwd_check(__maybe_unused const struct __ctx_buff *ctx)
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port hasn't been NATed to backend port");
+ 
++	if (l4->check != bpf_htons(0xd7cf))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+
+--- bpf/tests/xdp_nodeport_lb4_nat_backend.c
+@@ -150,13 +150,16 @@ int nodeport_nat_backend_check(__maybe_unused const struct __ctx_buff *ctx)
+ 		test_fatal("dst IP has changed");
+ 
+ 	if (l3->check != bpf_htons(0xa612))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != LB_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port has changed");
+ 
++	if (l4->check != bpf_htons(0x3c62))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+
+--- bpf/tests/xdp_nodeport_lb4_nat_lb.c
+@@ -201,14 +201,17 @@ int nodeport_local_backend_check(const struct __ctx_buff *ctx)
+ 		test_fatal("dst IP hasn't been NATed to local backend IP");
+ 
+ 	if (l3->check != bpf_htons(0x4112))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != CLIENT_PORT)
+ 		test_fatal("src port has changed");
+ 
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst TCP port hasn't been NATed to backend port");
+ 
++	if (l4->check != bpf_htons(0xd7d0))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+ 
+@@ -306,7 +309,7 @@ int nodeport_nat_fwd_check(__maybe_unused const struct __ctx_buff *ctx)
+ 		test_fatal("dst IP hasn't been NATed to remote backend IP");
+ 
+ 	if (l3->check != bpf_htons(0xa711))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source == CLIENT_PORT)
+ 		test_fatal("src port hasn't been NATed");
+@@ -399,14 +402,17 @@ static __always_inline int check_reply(const struct __ctx_buff *ctx)
+ 		test_fatal("dst IP hasn't been RevNATed to client IP");
+ 
+ 	if (l3->check != bpf_htons(0x4ca9))
+-		test_fatal("L3 checksum is invalid: %d", bpf_htons(l3->check));
++		test_fatal("L3 checksum is invalid: %x", bpf_htons(l3->check));
+ 
+ 	if (l4->source != FRONTEND_PORT)
+ 		test_fatal("src port hasn't been RevNATed to frontend port");
+ 
+ 	if (l4->dest != CLIENT_PORT)
+ 		test_fatal("dst port hasn't been RevNATed to client port");
+ 
++	if (l4->check != bpf_htons(0x01a8))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+ 
+
+--- bpf/tests/xdp_nodeport_lb4_test.c
+@@ -184,6 +184,9 @@ int test1_check(__maybe_unused const struct __ctx_buff *ctx)
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port != backend port");
+ 
++	if (l4->check != bpf_htons(0xc9ee))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	char msg[20] = "Should not change!!";
+ 
+ 	if (data + sizeof(msg) > data_end)
+
+--- bpf/tests/xdp_nodeport_lb6_dsr_lb.c
+@@ -197,5 +197,8 @@ int nodeport_dsr_fwd_check(__maybe_unused const struct __ctx_buff *ctx)
+ 	if (l4->dest != BACKEND_PORT)
+ 		test_fatal("dst port hasn't been NATed to backend port");
+ 
++	if (l4->check != bpf_htons(0x0d7c))
++		test_fatal("L4 checksum is invalid: %x", bpf_htons(l4->check));
++
+ 	test_finish();
+ }
+

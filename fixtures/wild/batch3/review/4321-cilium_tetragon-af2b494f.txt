@@ -1,0 +1,59 @@
+repo: cilium/tetragon
+commit: af2b494f9a5b835f907b3ca28438acd9c81c8752
+rank: 4321
+
+tetragon: Add CONFIG_ITER_NUM bool
+
+Adding possibility to define bpf CONFIG variable and connecting
+it with loader to set it up properly.
+
+Adding CONFIG_ITER_NUM variable to guard usage of bpf num iterator,
+that's used to efficiently (verifier wise) implement loops.
+
+We detect bpf num iterator via its related kfunc.
+
+The CONFIG macro is borrowed from cilium, thanks ;-)
+
+Signed-off-by: Jiri Olsa <jolsa@kernel.org>
+
+--- bpf/lib/config.h
+@@ -0,0 +1,38 @@
++// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++/* Copyright Authors of Cilium */
++
++#pragma once
++
++#ifdef __V511_BPF_PROG
++
++#define DECLARE_CONFIG(type, name) \
++	volatile const type CONFIG_##name;
++
++/*
++ * Reconstruct the rodata pointer on each access to prevent the compiler
++ * from reusing the pointer across multiple accesses in short
++ * succession. This makes branches based on config variables more likely
++ * to be predictable using backtracking, since load/deref/branch will be
++ * close to each other and the pointer won't be reused across basic
++ * blocks.
++ *
++ * Specifying the global var ptr as an asm input gives enough
++ * information to the compiler to allow it to reuse the pointer across
++ * blocks, so opt for a direct symbol reference instead. We need the
++ * pointer reconstructed in bytecode on every access.
++ */
++#define CONFIG(name)                                                  \
++	(*({                                                          \
++		void *out;                                            \
++		asm volatile("%0 = " __stringify(CONFIG_##name) " ll" \
++			     : "=r"(out));                            \
++		(typeof(CONFIG_##name) *)out;                         \
++	}))
++
++DECLARE_CONFIG(bool, ITER_NUM);
++
++#else
++
++#define CONFIG(name) 0
++
++#endif /* __V511_BPF_PROG */
+

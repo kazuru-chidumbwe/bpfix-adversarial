@@ -1,0 +1,154 @@
+repo: DataDog/datadog-agent
+commit: 25b438f91743c7d1b585e75276e1fb59da5a0717
+rank: 4772
+
+[CWS] handle subrepears on exit (#46318)
+
+### What does this PR do?
+
+Handle Linux subreaper reparenting in the process resolver's cache. When a process exits, the kernel may reparent its children to the nearest subreaper ancestor (or init) . Before this PR, the process cache kept stale parent references until the next cache flush (up to 2 minutes), causing events on reparented children to report incorrect parent lineage.
+
+**Key changes:**
+
+- **`childrenCache`**: new reverse index (`PPid → []child PIDs`) maintained alongside `entryCache`, enabling efficient lookup of a process's children on exit.
+- **`tryReparentChildrenFromProcfs`**: on exit events (`ApplyExitEntry`, `DequeueExited`), iterates over the exiting process's children, reads their current ppid from `/proc`, and reparents them in the cache. If the new parent is not yet in the cache, it is resolved from procfs.
+- **`TryReparentFromProcfs`**: called lazily from `setProcessContext` on every event. If a process on the lineage have exited, it tries to reparent its childs to their new parents.
+- **Removed `validLineageResult` cache**: the lineage validation cache (`validLineageResult` field and associated `InvalidateLineageCache`/`invalidateDescendantsLineageCache` logic) is removed. `HasValidLineage()` now walks the ancestor chain directly without caching, which is simpler and avoids stale cache invalidation issues after reparenting.
+
+### Motivation
+
+The CWS agent's process cache did not handle subreaper reparenting, causing `process.parent.*` fields to report the wrong parent for reparented processes.
+
+### Describe how you validated your changes
+
+- **Unit tests**: all existing process resolver tests pass. Added `TestSubreaperReparenting` which builds a tree with a fake intermediate parent, calls `tryReparentChildrenFromProcfs` using real PIDs, and verifies the child is reparented to the grandparent.
+- **Functional test**: added `TestProcessSubreaperReparenting` which uses the `syscall_tester` to set `PR_SET_CHILD_SUBREAPER`, build a chain of 50 fork/exit cycles (each intermediate process reparented to the subreaper), and verify that the last process in the chain reports the subreaper as its parent.
+
+### Additional Notes
+
+- When procfs hasn't been updated yet (race with `forget_original_parent`), children stay linked to their dead parent via the Go `Ancestor` pointer. The dead parent object is kept alive by the GC and remains valid for field resolution. The reparenting is retried on the next event.
+
+
+Co-authored-by: jonathan.ribas <jonathan.ribas@datadoghq.com>
+
+--- pkg/security/ebpf/c/include/constants/offsets/process.h
+@@ -21,6 +21,18 @@ u64 __attribute__((always_inline)) get_sizeof_upid() {
+     return sizeof_upid;
+ }
+ 
++u64 __attribute__((always_inline)) get_task_struct_real_parent_offset() {
++    u64 offset;
++    LOAD_CONSTANT("task_struct_real_parent_offset", offset);
++    return offset;
++}
++
++u64 __attribute__((always_inline)) get_task_struct_tgid_offset() {
++    u64 offset;
++    LOAD_CONSTANT("task_struct_tgid_offset", offset);
++    return offset;
++}
++
+ u64 __attribute__((always_inline)) get_task_struct_pid_offset() {
+     u64 kernel_has_pid_link_struct;
+     LOAD_CONSTANT("kernel_has_pid_link_struct", kernel_has_pid_link_struct);
+
+--- pkg/security/ebpf/c/include/helpers/approvers.h
+@@ -421,11 +421,7 @@ enum SYSCALL_STATE __attribute__((always_inline)) approve_open_sample(struct den
+         return DISCARDED;
+     }
+ 
+-    u32 ppid = 0;
+-    struct pid_cache_t *pid_entry = (struct pid_cache_t *)bpf_map_lookup_elem(&pid_cache, &pid);
+-    if (pid_entry != NULL) {
+-        ppid = pid_entry->ppid;
+-    }
++    u32 ppid = get_current_ppid();
+ 
+     struct process_path_key_t key = {
+         .ppid = ppid,
+
+--- pkg/security/ebpf/c/include/helpers/process.h
+@@ -39,8 +39,8 @@ void __attribute__((always_inline)) copy_proc_entry(struct process_entry_t *src,
+ void __attribute__((always_inline)) copy_pid_cache_except_exit_ts(struct pid_cache_t *src, struct pid_cache_t *dst) {
+     dst->cookie = src->cookie;
+     dst->user_session_id = src->user_session_id;
+-    dst->ppid = src->ppid;
+     dst->fork_timestamp = src->fork_timestamp;
++    dst->fork_flags = src->fork_flags;
+     dst->credentials = src->credentials;
+ }
+ 
+@@ -66,6 +66,21 @@ struct proc_cache_t *__attribute__((always_inline)) get_proc_cache(u32 tgid) {
+     return get_proc_from_cookie(pid_entry->cookie);
+ }
+ 
++static u32 __attribute__((always_inline)) get_current_ppid(void) {
++    u32 ppid = 0;
++    u64 real_parent_offset = get_task_struct_real_parent_offset();
++    u64 tgid_offset = get_task_struct_tgid_offset();
++    if (real_parent_offset > 0 && tgid_offset > 0) {
++        struct task_struct *cur_task = (struct task_struct *)bpf_get_current_task();
++        struct task_struct *parent = NULL;
++        bpf_probe_read_kernel(&parent, sizeof(parent), (void *)cur_task + real_parent_offset);
++        if (parent) {
++            bpf_probe_read_kernel(&ppid, sizeof(ppid), (void *)parent + tgid_offset);
++        }
++    }
++    return ppid;
++}
++
+ static struct proc_cache_t *__attribute__((always_inline)) fill_process_context_with_pid_tgid(struct process_context_t *data, u64 pid_tgid) {
+     u32 tgid = pid_tgid >> 32;
+ 
+@@ -86,6 +101,12 @@ static struct proc_cache_t *__attribute__((always_inline)) fill_process_context_
+         data->is_kworker = 1;
+     }
+ 
++    // Read the live ppid from real_parent->tgid. Only valid when called
++    // from the actual task context (not for stored pid_tgid from io_uring).
++    if (pid_tgid == bpf_get_current_pid_tgid()) {
++        data->ppid = get_current_ppid();
++    }
++
+     struct pid_cache_t *pid_entry = get_pid_cache(tgid);
+     if (!pid_entry) {
+         return NULL;
+
+--- pkg/security/ebpf/c/include/hooks/exec.h
+@@ -224,10 +224,12 @@ int __attribute__((always_inline)) sched_process_fork_common(void *ctx, u32 pid,
+         return 0;
+     }
+ 
+-    event->pid_entry.ppid = ppid;
+-    // sched::sched_process_fork is triggered from the parent process, update the pid / tid to the child value
++    // sched::sched_process_fork is triggered from the parent process, update the pid / tid to the child value.
++    // Override ppid: fill_process_context set it to the grandparent (parent's real_parent), but for
++    // the child the ppid is the parent PID.
+     event->process.pid = pid;
+     event->process.tid = pid;
++    event->process.ppid = ppid;
+ 
+     event->pid_entry.fork_flags = syscall->fork.flags;
+ 
+
+--- pkg/security/ebpf/c/include/structs/events_context.h
+@@ -30,6 +30,7 @@ struct process_context_t {
+     u32 netns;
+     u32 mntns;
+     u32 is_kworker;
++    u32 ppid;
+     u64 inode;
+     u64 user_session_id;
+ };
+
+--- pkg/security/ebpf/c/include/structs/process.h
+@@ -33,8 +33,6 @@ struct credentials_t {
+ 
+ struct pid_cache_t {
+     u64 cookie;
+-    u32 ppid;
+-    u32 padding;
+     u64 fork_timestamp;
+     u64 exit_timestamp;
+     u64 user_session_id;
+

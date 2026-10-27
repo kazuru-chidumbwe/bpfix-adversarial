@@ -1,0 +1,702 @@
+repo: DataDog/datadog-agent
+commit: 494f9399af4c18874a6ca95597f4020a803d04cc
+rank: 2945
+
+[tls-certs] Add parser for X509 DER certificates (#41132)
+
+### What does this PR do?
+This PR adds a DER parser for X509 certificates, including:
+
+1. Serial number
+2. Validity (not-before, not-after)
+3. Certificate Key Usage extension (whether this cert is a CA or not)
+4. Subject Alternative Name extension (domains for this cert)
+
+### Motivation
+We want to track TLS cert expiration in userspace.
+
+### Describe how you validated your changes
+I made a small test suite to make sure it is parsing correctly:
+`./pkg/network/ebpf/c/protocols/tls/tls-certs-tests/test.sh`
+
+It uses `#define TEST_BUILD_NO_EBPF` to replace eBPF functions/types with stuff that will run in normal C. This code passes the verifier in real eBPF usage as well, but I am posting the uprobe attacher/etc in a separate PR
+
+### Additional Notes
+`test.sh` doesn't run in CI yet, not sure how to set that up.
+
+--- pkg/network/ebpf/c/protocols/tls/tls-certs-parser.h
+@@ -0,0 +1,557 @@
++#ifndef __TLS_CERTS_PARSER_H
++#define __TLS_CERTS_PARSER_H
++
++
++
++#include "tls-certs-types.h"
++
++
++#ifndef TEST_BUILD_NO_EBPF
++
++#include "map-defs.h"
++
++// there are enough places where log_bail is called that enabling it causes verifier trouble
++#define log_bail()
++
++#else
++
++#include <stdio.h>
++#include <stdbool.h>
++#include <string.h>
++#include <sys/types.h>
++
++#define log_debug(format, ...) printf(format "\n", ##__VA_ARGS__)
++#define log_bail() log_debug("certs parser bailed in func %s line %d\n", __func__, __LINE__)
++#define bpf_memcmp(a, b, sz) memcmp(a, b, sz)
++#define barrier_var(a)
++
++static __always_inline long bpf_probe_read_user(void *dst, __u32 size, const void *unsafe_ptr) {
++    memcpy(dst, unsafe_ptr, size);
++    return 0;
++}
++
++#endif
++
++typedef struct {
++    __u8 *buf;
++    __u8 *end;
++} data_t;
++
++
++static __always_inline __u32 data_size(data_t data) {
++    return data.end - data.buf;
++}
++static __always_inline bool is_data_consumed(data_t data) {
++    return data.buf >= data.end;
++}
++
++static __always_inline bool data_peek_impl(void *target, data_t *data, __u32 sizeof_target, __u32 size) {
++    if (data->buf + size > data->end) {
++        log_bail();
++        return true;
++    }
++    // llvm will optimize out our bounds checks, failing the verifier, unless we use volatile
++    volatile __u32 vol_size = size;
++    __u32 checked_size = vol_size;
++    if (checked_size > sizeof_target) {
++        log_bail();
++        return true;
++    }
++
++    int err = bpf_probe_read_user(target, checked_size, data->buf);
++    if (err) {
++        log_bail();
++        return true;
++    }
++
++    return false;
++}
++static __always_inline bool data_read_impl(void *target, data_t *data, __u32 sizeof_target, __u32 size) {
++    if (data_peek_impl(target, data, sizeof_target, size)) {
++        log_bail();
++        return true;
++    }
++
++    data->buf += size;
++    return false;
++}
++
++#define data_peek(target, data, size) data_peek_impl((target), (data), sizeof(*target), size)
++#define data_read(target, data, size) data_read_impl((target), (data), sizeof(*target), size)
++
++
++static __always_inline __s32 read_elem_size(data_t *data) {
++    __u8 meta_size = 0;
++    if (data_read(&meta_size, data, 1)) {
++        log_bail();
++        return -1;
++    }
++
++    if (meta_size < 128) {
++        return meta_size;
++    }
++
++    // size >= 128 means we use "long form" length encoding
++    meta_size -= 128;
++    // no need to consider anything larger than 3 bytes
++    const int MAX_BYTES = 3;
++    if (meta_size > MAX_BYTES) {
++        log_bail();
++        return -1;
++    }
++
++    __s32 retval = 0;
++    for (int i = 0; i < MAX_BYTES; i++) {
++        if (i >= meta_size) {
++            break;
++        }
++        retval <<= 8;
++
++        __u8 digit = 0;
++        if (data_read(&digit, data, 1)) {
++            log_bail();
++            return -1;
++        }
++        retval += digit;
++    }
++    return retval;
++}
++
++#define BOOL_TYPE 0x01
++#define INT_TYPE 0x02
++#define BIT_STR_TYPE 0x03
++#define OCTET_STR_TYPE 0x04
++#define OBJECT_ID_TYPE 0x06
++#define UTC_DATE_TYPE 0x17
++#define SEQ_TYPE 0x30
++#define CONTEXT_SPECIFIC_TYPE 0xa0
++
++static __always_inline data_t expect_der_elem(data_t *data, __u8 expected_type) {
++    __u8 actual_type = 0;
++    data_t null_data = {0};
++    if (data_read(&actual_type, data, 1)) {
++        log_bail();
++        return null_data;
++    }
++    if (expected_type != actual_type) {
++        log_bail();
++        return null_data;
++    }
++
++    __s32 size = read_elem_size(data);
++    if (size < 0) {
++        log_bail();
++        return null_data;
++    }
++
++    data_t retval = { data->buf, data->buf + size };
++    if (retval.end > data->end) {
++        log_bail();
++        return null_data;
++    }
++    data->buf = retval.end;
++
++    return retval;
++}
++
++
++static __always_inline bool parse_cert_version(data_t *data) {
++    data_t outer_version = expect_der_elem(data, CONTEXT_SPECIFIC_TYPE | 0);
++    if (!outer_version.buf) {
++        log_bail();
++        return true;
++    }
++    data_t inner_version = expect_der_elem(&outer_version, INT_TYPE);
++    if (!inner_version.buf) {
++        log_bail();
++        return true;
++    }
++    if (data_size(inner_version) != 1) {
++        log_bail();
++        return true;
++    }
++    __u8 version = 0;
++    if (data_read(&version, &inner_version, 1)) {
++        log_bail();
++        return true;
++    }
++
++    if (version != 2) {
++        log_bail();
++        return true;
++    }
++
++    return false;
++}
++
++
++
++static __always_inline bool parse_cert_serial(data_t *data, cert_t *cert) {
++    data_t serial_int = expect_der_elem(data, INT_TYPE);
++    if (!serial_int.buf) {
++        log_bail();
++        return true;
++    }
++
++    __u32 size = data_size(serial_int);
++    if (size > 20) {
++        log_bail();
++        return true;
++    }
++    
++    cert->serial.len = size;
++    if (data_read(&cert->serial.data, &serial_int, size)) {
++        log_bail();
++        return true;
++    }
++
++    return false;
++}
++
++static __always_inline bool parse_cert_date(data_t *data, __u8 (*dst)[UTC_TIME_LEN]) {
++    data_t utc_data = expect_der_elem(data, UTC_DATE_TYPE);
++    if (!utc_data.buf) {
++        log_bail();
++        return true;
++    }
++
++    if (data_size(utc_data) != UTC_ZULU_LEN) {
++        log_bail();
++        return true;
++    }
++
++    // read all of it except for the Z at the end
++    if (data_read(dst, &utc_data, UTC_TIME_LEN)) {
++        log_bail();
++        return true;
++    }
++
++    return false;
++}
++
++static __always_inline bool parse_cert_validity(data_t *data, cert_t *cert) {
++    data_t validity_seq = expect_der_elem(data, SEQ_TYPE);
++    if (!validity_seq.buf) {
++        log_bail();
++        return true;
++    }
++
++    if (parse_cert_date(&validity_seq, &cert->validity.not_before)) {
++        log_bail();
++        return true;
++    }
++
++    if (parse_cert_date(&validity_seq, &cert->validity.not_after)) {
++        log_bail();
++        return true;
++    }
++
++    return false;
++}
++
++static __always_inline bool parse_key_usage(data_t *data, cert_t *cert) {
++    data_t usage_bitstr = expect_der_elem(data, BIT_STR_TYPE);
++    if (!usage_bitstr.buf) {
++        log_bail();
++        return true;
++    }
++    
++    __u32 size = data_size(usage_bitstr);
++    if (size < 2) {
++        log_bail();
++        return true;
++    }
++
++    __u8 extra_bits = 0;
++    if (data_read(&extra_bits, &usage_bitstr, 1)) {
++        log_bail();
++        return true;
++    }
++    __u8 set_bits = (size - 1) * 8 - extra_bits;
++
++    __u8 usage_bits = 0;
++    if (data_read(&usage_bits, &usage_bitstr, 1)) {
++        log_bail();
++        return true;
++    }
++
++    // based off RFC 2459, section 4.2.1.3 -- Key Usage,
++    // we know keyCertSign is bit #5, and it's MSB first
++    const __u8 CA_BIT = 5;
++    // bits are zero indexed, so we start from 7
++    const __u8 CA_MASK = 1 << (7 - CA_BIT);
++    cert->is_ca = set_bits >= CA_BIT && (usage_bits & CA_MASK);
++
++    return false;
++}
++
++
++static __always_inline bool parse_alternative_names(data_t *data, cert_t *cert) {
++    data_t alt_name_seq = expect_der_elem(data, SEQ_TYPE);
++    if (!alt_name_seq.buf) {
++        log_bail();
++        return true;
++    }
++
++    for (int i = 0; i < 16; i++) {
++        if (is_data_consumed(alt_name_seq)) {
++            break;
++        }
++
++        __u8 next_type = 0;
++        if (data_peek(&next_type, &alt_name_seq, 1)) {
++            log_bail();
++            return true;
++        }
++
++        data_t name = expect_der_elem(&alt_name_seq, next_type);
++        if (!name.buf) {
++            log_bail();
++            return true;
++        }
++
++        // this is context specific and thus not applicable elsewhere
++        const __u8 DNS_NAME_TYPE = 0x82;
++        if (next_type != DNS_NAME_TYPE) {
++            continue;
++        }
++
++        __u8 domain_len = DOMAIN_LEN;
++        __u32 size = data_size(name);
++        if (size < DOMAIN_LEN) {
++            domain_len = size;
++        }
++
++        cert->domain.len = domain_len;
++        if (data_read(&cert->domain.data, &name, domain_len)) {
++            log_bail();
++            return true;
++        }
++
++        // we found a domain, break out
++        break;
++    }
++
++    return false;
++}
++
++#define SUBJECT_ALT_NAME_ID "\x55\x1D\x11"
++#define KEY_USAGE_ID "\x55\x1D\x0F"
++
++static __always_inline bool parse_cert_extensions(data_t *data, cert_t *cert) {
++    data_t extensions = expect_der_elem(data, CONTEXT_SPECIFIC_TYPE | 3);
++    if (!extensions.buf) {
++        log_bail();
++        return true;
++    }
++
++    data_t extensions_seq = expect_der_elem(&extensions, SEQ_TYPE);
++    if (!extensions.buf) {
++        log_bail();
++        return true;
++    }
++
++
++    data_t key_usage_value = {0};
++    data_t alt_name_value = {0};
++    for (int i = 0; i < 32; i++) {
++        if (is_data_consumed(extensions_seq)) {
++            break;
++        }
++        data_t single_ext_seq = expect_der_elem(&extensions_seq, SEQ_TYPE);
++        if (!single_ext_seq.buf) {
++            log_bail();
++            return true;
++        }
++
++        data_t obj_id = expect_der_elem(&single_ext_seq, OBJECT_ID_TYPE);
++        if (!obj_id.buf) {
++            log_bail();
++            return true;
++        }
++
++        __u8 next_type = 0;
++        if (data_peek(&next_type, &single_ext_seq, 1)) {
++            log_bail();
++            return true;
++        }
++        if (next_type == BOOL_TYPE) {
++            // if they added the "critical" boolean, skip
++            if (!expect_der_elem(&single_ext_seq, BOOL_TYPE).buf) {
++                log_bail();
++                return true;
++            }
++        }
++
++        data_t extension_value = expect_der_elem(&single_ext_seq, OCTET_STR_TYPE);
++        if (!extension_value.buf) {
++            log_bail();
++            return true;
++        }
++
++        // the IDs we care about are all length 3
++        if (data_size(obj_id) != 3) {
++            continue;
++        }
++
++        char obj_id_buf[3] = {0};
++        if (data_read(&obj_id_buf, &obj_id, 3)) {
++            log_bail();
++            return true;
++        }
++
++        if (!bpf_memcmp(KEY_USAGE_ID, obj_id_buf, 3)) {
++            key_usage_value = extension_value;
++        } else if (!bpf_memcmp(SUBJECT_ALT_NAME_ID, obj_id_buf, 3)) {
++            alt_name_value = extension_value;
++        }
++    }
++
++    if (!is_data_consumed(extensions_seq)) {
++        log_bail();
++        return true;
++    }
++
++
++    if (key_usage_value.buf && parse_key_usage(&key_usage_value, cert)) {
++        log_bail();
++        return true;
++    }
++
++    if (alt_name_value.buf && parse_alternative_names(&alt_name_value, cert)) {
++        log_bail();
++        return true;
++    }
++
++    return false;
++}
++
++
++static __always_inline bool parse_tbs_cert(data_t *data, cert_t *cert) {
++    data_t tbs_cert_seq = expect_der_elem(data, SEQ_TYPE);
++    if (!tbs_cert_seq.buf) {
++        log_bail();
++        return true;
++    }
++
++    if (parse_cert_version(&tbs_cert_seq)) {
++        log_bail();
++        return true;
++    }
++
++    if (parse_cert_serial(&tbs_cert_seq, cert)) {
++        log_bail();
++        return true;
++    }
++
++    // we don't care about the signature's algorithm, skip it
++    if (!expect_der_elem(&tbs_cert_seq, SEQ_TYPE).buf) {
++        log_bail();
++        return true;
++    }
++    // issuer -- also irrelevant
++    if (!expect_der_elem(&tbs_cert_seq, SEQ_TYPE).buf) {
++        log_bail();
++        return true;
++    }
++
++    if (parse_cert_validity(&tbs_cert_seq, cert)) {
++        log_bail();
++        return true;
++    }
++
++    // subject -- also irrelevant
++    if (!expect_der_elem(&tbs_cert_seq, SEQ_TYPE).buf) {
++        log_bail();
++        return true;
++    }
++
++    // subject public key -- also irrelevant
++    if (!expect_der_elem(&tbs_cert_seq, SEQ_TYPE).buf) {
++        log_bail();
++        return true;
++    }
++
++    // issuerUniqueID and subjectUniqueID come next, but they are
++    // IMPLICIT OPTIONAL, long 
+[truncated]
+
+--- pkg/network/ebpf/c/protocols/tls/tls-certs-tests/parser-test.c
+@@ -0,0 +1,193 @@
++#include <stdlib.h>
++#include <stdio.h>
++#include <errno.h>
++
++
++#define TEST_BUILD_NO_EBPF
++
++#include "../tls-certs-parser.h"
++
++
++#define bail(format, ...) { printf(format "\n", ##__VA_ARGS__); exit(1); }
++
++
++long read_file(char *path, char** buffer) {
++    FILE *fp = fopen(path, "rb");
++    if (!fp) {
++        bail("failed to fopen '%s': %d", path, errno);
++    }
++
++    int err = fseek(fp, 0, SEEK_END);
++    if (err) {
++        bail("fseek SEEK_END error: %d", err);
++    }
++
++    long size = ftell(fp);
++    if (size < 0) {
++        bail("ftell error: %d", errno);
++    }
++
++    err = fseek(fp, 0, SEEK_SET);
++    if (err) {
++        bail("fseek SEEK_SET error: %d", err);
++    }
++
++    *buffer = calloc(size, 1);
++    if (!*buffer) {
++        bail("malloc failed");
++    }
++
++    int written = fread(*buffer, size, 1, fp);
++    if (written != 1) {
++        bail("fread failed for size %ld: %d", size, written);
++    }
++
++    fclose(fp);
++
++    return size;
++}
++
++void hexdump(char *data, size_t size) {
++    for (size_t i=0; i<size; i++) {
++        if (i > 0 && i % 20 == 0) {
++            printf("\n");
++        }
++        printf("%02x ", data[i]);
++    }
++    printf("\n");
++}
++
++bool memcmp_len(char *a_buf, size_t a_size, char *b_buf, size_t b_size) {
++    if (a_size != b_size) {
++        return false;
++    }
++
++    int cmp = memcmp(a_buf, b_buf, a_size);
++    return cmp == 0;
++}
++bool matches_utc(char *test_name, char *kind, char *expected, char *actual) {
++    bool matches = !memcmp(expected, actual, UTC_TIME_LEN);
++    if (!matches) {
++        printf("[%s] mismatched %s, expected:\n", test_name, kind);
++        printf("    %.*s\n", UTC_TIME_LEN, expected);
++        printf("actual:\n");
++        printf("    %.*s\n", UTC_TIME_LEN, actual);
++    }
++
++    return matches;
++}
++
++bool check_memcmp_len(char *test_name, cert_t expected, cert_t actual) {
++    bool passed = true;
++
++    if (expected.is_ca != actual.is_ca) {
++        passed = false;
++
++        printf("[%s] mismatched is_ca.\n", test_name);
++        printf("expected: %d\n", expected.is_ca);
++        printf("  actual: %d\n", actual.is_ca);
++    }
++
++    if (!memcmp_len(expected.serial.data, expected.serial.len, actual.serial.data, actual.serial.len)) {
++        passed = false;
++
++        printf("[%s] mismatched serial.\n", test_name);
++        printf("expected: ");
++        hexdump(expected.serial.data, expected.serial.len);
++        printf("  actual: ");
++        hexdump(actual.serial.data, actual.serial.len);
++    }
++
++    if (!memcmp_len(expected.domain.data, expected.domain.len, actual.domain.data, actual.domain.len)) {
++        passed = false;
++
++        printf("[%s] mismatched domain.\n", test_name);
++        printf("expected: '%.*s'\n", expected.domain.len, expected.domain.data);
++        printf("  actual: '%.*s'\n", actual.domain.len, actual.domain.data);
++    }
++
++    if (!matches_utc(test_name, "not_before", expected.validity.not_before, actual.validity.not_before)) {
++        passed = false;
++    }
++    if (!matches_utc(test_name, "not_after", expected.validity.not_after, actual.validity.not_after)) {
++        passed = false;
++    }
++
++    if (!passed) {
++        printf("========\n");
++    }
++
++    return passed;
++}
++
++bool test_datadoghq() {
++    char *buffer;
++    long size = read_file("datadoghq.der", &buffer);
++
++    data_t data = { buffer, buffer + size };
++    cert_t actual = {0};
++    bool failed = parse_cert(data, &actual);
++    if (failed) {
++        printf("datadoghq parse_cert failed\n");
++        return false;
++    }
++    free(buffer);
++
++    cert_t dd_cert = {0};
++    char expected_serial[] = {0x07, 0x7C, 0x68, 0xDF, 0xBA, 0x21, 0x15, 0x28, 0xFA, 0xB6, 0x4E, 0x47, 0xC5, 0x1C, 0x7E, 0xB7};
++    dd_cert.serial.len = sizeof(expected_serial);
++    memcpy(dd_cert.serial.data, expected_serial, sizeof(expected_serial));
++    strncpy(dd_cert.validity.not_before, "250702000000", UTC_TIME_LEN);
++    strncpy(dd_cert.validity.not_after, "260702235959", UTC_TIME_LEN);
++
++    const char *domain = "*.datadoghq.com";
++    dd_cert.domain.len = strlen(domain);
++    strcpy(dd_cert.domain.data, domain);
++
++
++    return check_memcmp_len("datadoghq", dd_cert, actual);
++}
++
++
++bool test_digicert_ca() {
++    char *buffer;
++    long size = read_file("digicert_ca.der", &buffer);
++
++    data_t data = { buffer, buffer + size };
++    cert_t actual = {0};
++    bool failed = parse_cert(data, &actual);
++    if (failed) {
++        printf("datadoghq parse_cert failed\n");
++        return false;
++    }
++    free(buffer);
++
++    cert_t dd_cert = {0};
++    dd_cert.is_ca = true;
++    char expected_serial[] = {0x0C, 0xF5, 0xBD, 0x06, 0x2B, 0x56, 0x02, 0xF4, 0x7A, 0xB8, 0x50, 0x2C, 0x23, 0xCC, 0xF0, 0x66};
++    dd_cert.serial.len = sizeof(expected_serial);
++    memcpy(dd_cert.serial.data, expected_serial, sizeof(expected_serial));
++    strncpy(dd_cert.validity.not_before, "210330000000", UTC_TIME_LEN);
++    strncpy(dd_cert.validity.not_after, "310329235959", UTC_TIME_LEN);
++
++    return check_memcmp_len("digicert_ca", dd_cert, actual);
++}
++
++int main(int argc, char **argv) {
++    int fails = 0;
++    if (!test_datadoghq()) {
++        fails++;
++    }
++    if (!test_digicert_ca()) {
++        fails++;
++    }
++
++    if (fails > 0) {
++        printf("%d tests failed\n", fails);
++        return 1;
++    }
++
++    printf("all tests passed\n");
++
++    return 0;
++}
+

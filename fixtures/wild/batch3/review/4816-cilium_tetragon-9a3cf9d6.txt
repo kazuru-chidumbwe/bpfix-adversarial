@@ -1,0 +1,28 @@
+repo: cilium/tetragon
+commit: 9a3cf9d6484988a80f51006509ada645057b6772
+rank: 4816
+
+tetragon: Add __V61_BPF_PROG version of FUNC macros
+
+Add support to mark some functions as static, local and not inlined.
+That will give us faster verification on recent kernels. Enabling this
+for v6.1 onwards for now.
+
+Signed-off-by: Jiri Olsa <jolsa@kernel.org>
+
+--- bpf/include/compiler.h
+@@ -4,6 +4,13 @@
+ #ifndef __BPF_COMPILER_H__
+ #define __BPF_COMPILER_H__
+ 
++#ifdef __V61_BPF_PROG
++#define FUNC_LOCAL  static __attribute__((noinline)) __attribute__((__unused__))
+ #define FUNC_INLINE static inline __attribute__((always_inline))
++#else
++/* Older kernels have all functions inlined.  */
++#define FUNC_LOCAL  static inline __attribute__((always_inline))
++#define FUNC_INLINE static inline __attribute__((always_inline))
++#endif
+ 
+ #endif /* __BPF_COMPILER_H__ */
+

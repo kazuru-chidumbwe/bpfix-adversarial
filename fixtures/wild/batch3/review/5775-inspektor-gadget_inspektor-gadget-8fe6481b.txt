@@ -1,0 +1,86 @@
+repo: inspektor-gadget/inspektor-gadget
+commit: 8fe6481b8d400b9c1427a356b4be95fc463465e8
+rank: 5775
+
+profile_cpu: reduce BPF stack frame size for older kernels
+
+Move struct key_t from a stack-local variable to a per-CPU array map.
+This reduces the BPF stack frame by ~148 bytes, avoiding the 256-byte
+verifier limit when tail calls are combined with BPF-to-BPF subprogram
+calls on kernels < 6.13. See the previous commit for details.
+
+The per-CPU array element is zeroed before use via bpf_map_update_elem
+with a static const zero-initialized key, since key_t is used as a hash
+map key and must not contain stale data from previous invocations.
+
+Signed-off-by: Alban Crequy <alban.crequy@gmail.com>
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+
+--- gadgets/profile_cpu/program.bpf.c
+@@ -22,6 +22,21 @@ struct key_t {
+ 	struct gadget_process proc;
+ };
+ 
++/* Per-CPU temporary storage for struct key_t. Using a per-CPU array
++ * instead of a stack-local variable reduces the BPF stack frame size
++ * by sizeof(struct key_t) (~148 bytes). See the comment in
++ * profile_cuda/program.bpf.c for details on the 256-byte verifier
++ * limit with tail calls.
++ */
++struct {
++	__uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
++	__uint(max_entries, 1);
++	__type(key, u32);
++	__type(value, struct key_t);
++} tmp_key SEC(".maps");
++
++static const struct key_t empty_key;
++
+ const volatile bool kernel_stacks_only = false;
+ GADGET_PARAM(kernel_stacks_only);
+ 
+@@ -76,30 +91,35 @@ int ig_prof_cpu(struct bpf_perf_event_data *ctx)
+ 	static const struct values zero = {
+ 		0,
+ 	};
+-	struct key_t key = {};
++	u32 map_key = 0;
++	bpf_map_update_elem(&tmp_key, &map_key, &empty_key, BPF_ANY);
++	struct key_t *key = bpf_map_lookup_elem(&tmp_key, &map_key);
++	if (!key)
++		return 0;
+ 
+ 	if (!include_idle && tid == 0)
+ 		return 0;
+ 
+-	gadget_process_populate(&key.proc);
++	gadget_process_populate(&key->proc);
+ 
+ 	if (user_stacks_only)
+-		key.kern_stack_raw = -1;
++		key->kern_stack_raw = -1;
+ 	else
+-		key.kern_stack_raw = bpf_get_stackid(&ctx->regs, &ig_kstack, 0);
++		key->kern_stack_raw =
++			bpf_get_stackid(&ctx->regs, &ig_kstack, 0);
+ 
+ 	if (!kernel_stacks_only)
+-		gadget_get_user_stack(ctx, &key.user_stack_raw);
++		gadget_get_user_stack(ctx, &key->user_stack_raw);
+ 
+-	if (key.kern_stack_raw >= 0) {
++	if (key->kern_stack_raw >= 0) {
+ 		// populate extras to fix the kernel stack
+ 		u64 ip = PT_REGS_IP(&ctx->regs);
+ 
+ 		if (is_kernel_addr(ip))
+-			key.kernel_ip = ip;
++			key->kernel_ip = ip;
+ 	}
+ 
+-	valp = bpf_map_lookup_or_try_init(&counts, &key, &zero);
++	valp = bpf_map_lookup_or_try_init(&counts, key, &zero);
+ 	if (valp)
+ 		__sync_fetch_and_add(&valp->samples, 1);
+ 
+

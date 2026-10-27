@@ -1,0 +1,234 @@
+repo: netobserv/netobserv-ebpf-agent
+commit: 665d27a97a976a64927790e11a7ff3e9a9a70c30
+rank: 2764
+
+NETOBSERV-2859: Capture OpenSSL socket tuples at event time (#1062)
+
+* fix(NETOBSERV-2859): capture OpenSSL socket tuples at event time
+
+Resolve socket endpoints in BPF during the TLS call instead of looking up
+file descriptors later in /proc, where reuse can select another connection.
+Track successful SSL_set_fd bindings and invalidate them on SSL/BIO changes.
+Export kernel tuple provenance and leave unsupported connections unverified.
+
+Add regression coverage and regenerate BPF objects for all supported arches.
+Validated with package tests, lint, map verification and Oliver's kind scenario.
+
+Signed-off-by: Julien Pinsonneau <jpinsonn@redhat.com>
+
+* fix(NETOBSERV-2859): retain OpenSSL hooks in all flow loaders
+
+Use the shared TLS program bundle in each specialized flow loader and
+preserve read, socket binding and invalidation program handles when
+constructing the flow fetcher's BPF objects.
+
+Add a privileged regression covering all six loader branches. The five
+specialized paths fail before this fix and all branches pass afterward.
+
+Validated package tests, focused race tests and lint, plus three kind runs
+with 108 requests each: ordinary flows, passive TLS, and passive TLS with
+OpenSSL. All connections were captured in both directions and TLS metadata
+was preserved with OpenSSL enabled.
+
+Signed-off-by: Julien Pinsonneau <jpinsonn@redhat.com>
+
+* removed unused functions
+
+Signed-off-by: Julien Pinsonneau <jpinsonn@redhat.com>
+
+---------
+
+Signed-off-by: Julien Pinsonneau <jpinsonn@redhat.com>
+
+--- bpf/maps_definition.h
+@@ -160,6 +160,14 @@ struct {
+     __type(key, struct ssl_fd_key_t);
+     __type(value, s32);
+ } ssl_fd_map SEC(".maps");
++
++struct {
++    __uint(type, BPF_MAP_TYPE_LRU_HASH);
++    __uint(max_entries, 4096);
++    __type(key, u64);
++    __type(value, struct ssl_fd_pending_t);
++} ssl_fd_pending_map SEC(".maps");
++
+ // QUIC flow tracking map - keyed by flow_id (like other flow maps)
+ struct {
+     __uint(type, BPF_MAP_TYPE_PERCPU_HASH);
+
+--- bpf/openssl_tracker.h
+@@ -33,7 +33,35 @@ int probe_entry_SSL_set_fd(struct pt_regs *ctx) {
+     struct ssl_fd_key_t key = {};
+     key.ssl_ptr = (u64)ssl;
+     key.tgid = (u32)(pid_tgid >> 32);
+-    bpf_map_update_elem(&ssl_fd_map, &key, &fd, BPF_ANY);
++    bpf_map_delete_elem(&ssl_fd_map, &key);
++    struct ssl_fd_pending_t pending = {.key = key, .fd = fd};
++    bpf_map_update_elem(&ssl_fd_pending_map, &pid_tgid, &pending, BPF_ANY);
++    return 0;
++}
++
++// Commit the binding only after SSL_set_fd succeeds (it calls SSL_set_bio).
++SEC("uretprobe/SSL_set_fd")
++int probe_ret_SSL_set_fd(struct pt_regs *ctx) {
++    u64 pid_tgid = bpf_get_current_pid_tgid();
++    struct ssl_fd_pending_t *pending = bpf_map_lookup_elem(&ssl_fd_pending_map, &pid_tgid);
++    if (!pending) {
++        return 0;
++    }
++    struct ssl_fd_pending_t binding = *pending;
++    bpf_map_delete_elem(&ssl_fd_pending_map, &pid_tgid);
++    if (PT_REGS_RC(ctx) == 1) {
++        bpf_map_update_elem(&ssl_fd_map, &binding.key, &binding.fd, BPF_ANY);
++    }
++    return 0;
++}
++
++// Also attached to BIO setters: changing the BIO invalidates the fd binding.
++SEC("uprobe/SSL_free")
++int probe_entry_SSL_free(struct pt_regs *ctx) {
++    struct ssl_fd_key_t key = {};
++    key.ssl_ptr = (u64)PT_REGS_PARM1(ctx);
++    key.tgid = (u32)(bpf_get_current_pid_tgid() >> 32);
++    bpf_map_delete_elem(&ssl_fd_map, &key);
+     return 0;
+ }
+ 
+@@ -89,13 +117,15 @@ int probe_ret_SSL_read(struct pt_regs *ctx) {
+     }
+ 
+     int ret = PT_REGS_RC(ctx);
++    struct ssl_read_active_t captured = *active;
+     bpf_map_delete_elem(&ssl_read_active_map, &pid_tgid);
+-    if (ret <= 0 || active->buf_user == 0) {
++    if (ret <= 0 || captured.buf_user == 0) {
+         return 0;
+     }
+ 
+-    generate_SSL_data_event(ctx, pid_tgid, active->ssl_type, SSL_DIRECTION_READ, TLS_SOURCE_OPENSSL,
+-                            (const char *)active->buf_user, (uint32_t)ret, active->conn_user_ptr);
++    generate_SSL_data_event(ctx, pid_tgid, captured.ssl_type, SSL_DIRECTION_READ,
++                            TLS_SOURCE_OPENSSL, (const char *)captured.buf_user, (uint32_t)ret,
++                            captured.conn_user_ptr);
+     return 0;
+ }
+ 
+
+--- bpf/packets/maps.h
+@@ -57,4 +57,11 @@ struct {
+     __type(value, s32);
+ } ssl_fd_map SEC(".maps");
+ 
++struct {
++    __uint(type, BPF_MAP_TYPE_LRU_HASH);
++    __uint(max_entries, 4096);
++    __type(key, u64);
++    __type(value, struct ssl_fd_pending_t);
++} ssl_fd_pending_map SEC(".maps");
++
+ #endif // __PACKETS_MAPS_H__
+
+--- bpf/tls_plaintext.h
+@@ -6,15 +6,66 @@
+ #define __TLS_PLAINTEXT_H__
+ 
+ #include "types.h"
++#include <bpf_core_read.h>
++
++// Resolve the descriptor while the TLS call still owns it. Reading /proc after
++// ring-buffer delivery can observe a different socket reusing the same fd.
++static __always_inline void ssl_socket_tuple(struct ssl_data_event_t *event, s32 fd) {
++    if (fd < 0) {
++        return;
++    }
++    struct task_struct *task = (void *)bpf_get_current_task();
++    struct fdtable *fdt = BPF_CORE_READ(task, files, fdt);
++    if (!fdt || (u32)fd >= BPF_CORE_READ(fdt, max_fds)) {
++        return;
++    }
++    struct file **fds = BPF_CORE_READ(fdt, fd);
++    struct file *file = NULL;
++    if (bpf_probe_read_kernel(&file, sizeof(file), fds + fd) || !file) {
++        return;
++    }
++    // private_data is a socket only for S_IFSOCK files.
++    if ((BPF_CORE_READ(file, f_inode, i_mode) & 0170000) != 0140000) {
++        return;
++    }
++    struct socket *socket = BPF_CORE_READ(file, private_data);
++    if (!socket || BPF_CORE_READ(socket, type) != 1) { // SOCK_STREAM
++        return;
++    }
++    struct sock *sk = BPF_CORE_READ(socket, sk);
++    if (!sk) {
++        return;
++    }
++    u16 family = BPF_CORE_READ(sk, __sk_common.skc_family);
++    event->src_port = BPF_CORE_READ(sk, __sk_common.skc_num);
++    event->dst_port = bpf_ntohs(BPF_CORE_READ(sk, __sk_common.skc_dport));
++    if (!event->src_port || !event->dst_port) {
++        return;
++    }
++    if (family == AF_INET) { // AF_INET, stored as IPv4-mapped IPv6.
++        __builtin_memset(event->src_addr, 0, sizeof(event->src_addr));
++        __builtin_memset(event->dst_addr, 0, sizeof(event->dst_addr));
++        event->src_addr[10] = event->dst_addr[10] = 0xff;
++        event->src_addr[11] = event->dst_addr[11] = 0xff;
++        BPF_CORE_READ_INTO((u32 *)&event->src_addr[12], sk, __sk_common.skc_rcv_saddr);
++        BPF_CORE_READ_INTO((u32 *)&event->dst_addr[12], sk, __sk_common.skc_daddr);
++    } else if (family == AF_INET6) { // AF_INET6
++        BPF_CORE_READ_INTO(&event->src_addr, sk, __sk_common.skc_v6_rcv_saddr);
++        BPF_CORE_READ_INTO(&event->dst_addr, sk, __sk_common.skc_v6_daddr);
++    } else {
++        return;
++    }
++    event->tuple_valid = 1;
++}
+ 
+ #define SSL_DIRECTION_WRITE 0
+ #define SSL_DIRECTION_READ 1
+ #define TLS_SOURCE_OPENSSL 0
+ // Reserved for follow-ups: 1=gotls, 2=ktls
+ 
+-static inline void generate_SSL_data_event(struct pt_regs *ctx, u64 pid_tgid, u8 ssl_type,
+-                                           u8 direction, u8 tls_source, const char *buf,
+-                                           uint32_t len, u64 conn_user_ptr) {
++static __always_inline void generate_SSL_data_event(struct pt_regs *ctx, u64 pid_tgid, u8 ssl_type,
++                                                    u8 direction, u8 tls_source, const char *buf,
++                                                    uint32_t len, u64 conn_user_ptr) {
+     if (len <= 0) {
+         return;
+     }
+@@ -39,6 +90,7 @@ static inline void generate_SSL_data_event(struct pt_regs *ctx, u64 pid_tgid, u8
+         s32 *fd = bpf_map_lookup_elem(&ssl_fd_map, &key);
+         if (fd != NULL && *fd >= 0) {
+             event->socket_fd = *fd;
++            ssl_socket_tuple(event, *fd);
+         }
+     }
+     u32 capture_len = len < MAX_DATA_SIZE_OPENSSL ? len : MAX_DATA_SIZE_OPENSSL;
+
+--- bpf/types.h
+@@ -333,7 +333,7 @@ struct ssl_data_event_t {
+     u8 ssl_type;
+     u8 direction;   // 0=write/outbound, 1=read/inbound
+     u8 tls_source;  // 0=openssl (1=gotls, 2=ktls reserved)
+-    u8 tuple_valid; // 1 when src_addr/dst_addr/ports are populated (kTLS sk_msg)
++    u8 tuple_valid; // 1 when the local/remote tuple was captured from the socket
+     u16 src_port;
+     u16 dst_port;
+     u8 src_addr[IP_MAX_LEN];
+@@ -363,6 +363,11 @@ struct ssl_fd_key_t {
+ };
+ 
+ const static struct ssl_fd_key_t *unused_ssl_fd_key __attribute__((unused));
++struct ssl_fd_pending_t {
++    struct ssl_fd_key_t key;
++    s32 fd;
++};
++
+ // QUIC flow metrics
+ typedef struct quic_metrics_t {
+     u64 start_mono_time_ts;
+

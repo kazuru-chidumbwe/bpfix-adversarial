@@ -1,0 +1,47 @@
+repo: cilium/tetragon
+commit: 49e480c3d35e1b9f2236c5a56610520ea0e73e4b
+rank: 3488
+
+tetragon: Use bpf_for in match_cmd_args function
+
+Use bpf_for in match_cmd_args function to save some verifier cycles
+on recent kernels. This affects generic_uprobe_process_filter program:
+
+File                      Program                            Insns (A)  Insns (B)  Insns     (DIFF)
+------------------------  ---------------------------------  ---------  ---------  ----------------
+bpf_generic_uprobe_v61.o  generic_uprobe_process_filter         205567     164076  -41491 (-20.18%)
+
+States (A)  States (B)  States   (DIFF)  Program size (A)  Program size (B)  Program size (DIFF)
+----------  ----------  ---------------  ----------------  ----------------  -------------------
+      8815        6805  -2010 (-22.80%)              4666              4754         +88 (+1.89%)
+
+Note by doing the negative case first 'if (!CONFIG(ITER_NUM)))' we save
+4k more verifier instructions, not sure why.. but oh well.
+
+Signed-off-by: Jiri Olsa <jolsa@kernel.org>
+
+--- bpf/process/pfilter.h
+@@ -608,7 +608,21 @@ match_cmd_args(__u8 *f, __u32 selidx, struct args *cached_args)
+ 	argc = reloaded_argc;
+ 
+ 	/* Iterate again over the filters to perform filtering */
+-	for (i = 0; i < 5; i++) {
++
++	if (!CONFIG(ITER_NUM)) {
++		for (i = 0; i < 5; i++) {
++			ret = match_cmd_arg(f, section_off, filters->argoff[i], arg_offsets, argc, cached_args);
++			if (ret < 0)
++				return 0;
++			if (ret == 0)
++				break;
++		}
++
++		return 1;
++	}
++
++	bpf_for(i, 0, 5)
++	{
+ 		ret = match_cmd_arg(f, section_off, filters->argoff[i], arg_offsets, argc, cached_args);
+ 		if (ret < 0)
+ 			return 0;
+

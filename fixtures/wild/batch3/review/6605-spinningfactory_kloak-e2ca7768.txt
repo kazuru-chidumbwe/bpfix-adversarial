@@ -1,0 +1,204 @@
+repo: spinningfactory/kloak
+commit: e2ca7768c6c8411ddab84f3315d1b63b466e9602
+rank: 6605
+
+feat: add HTTP/2 HPACK Huffman support for secret rewriting (#67)
+
+* feat: add HTTP/2 HPACK Huffman support for secret rewriting
+
+The eBPF scanner now detects both HTTP/1.1 plaintext "kloak:" prefix and
+HTTP/2 HPACK Huffman-encoded "kloak:" (0xeb 0x41 0xc7 0xd6 0xe7). For
+each secret, sync.go stores both a plaintext and Huffman-encoded variant
+in the BPF secret_map. The scanner checks for both prefixes and rewrites
+with the matching encoding.
+
+- Added is_kloak_prefix_huffman() in helpers.h (5-byte static Huffman)
+- scan_chunk checks both plaintext and Huffman prefixes
+- sync.go computes Huffman variants using golang.org/x/net/http2/hpack
+- Padded shorter Huffman encoding with HPACK EOS bits (0xFF)
+- Go demo switched to default HTTP/2 (removed http1.1 force)
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* chore: install curl in all demo app images for testing
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: ensure shadow Huffman length >= real secret for HTTP/2 rewriting
+
+The secret reconciler now generates shadow values whose HPACK Huffman
+encoding is at least as long as the real secret's. This is required
+because the HPACK length prefix in the wire buffer is immutable — the
+rewritten data must fit exactly.
+
+Shadow values are padded with uppercase letters (Z, X) which have
+longer Huffman codes (8 bits vs 5-6 for hex digits), inflating the
+Huffman output to match or exceed the real secret's Huffman length.
+
+Also fixed the Huffman prefix check to use 4 stable bytes (0xeb 0x41
+0xc7 0xd6) instead of 5 — the 5th byte varies depending on the
+character following "kloak:" due to Huffman bit packing.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: update stale HTTP/1.1 comment in Go demo
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* feat: switch Go demo to HTTP/2 with 5s startup delay
+
+Go demo now uses default HTTP/2 instead of forcing HTTP/1.1.
+The eBPF scanner supports HPACK Huffman-encoded headers.
+Increased startup delay to 5s for CI reliability.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: walk cgroup tree recursively to find kubepods in k3d/Docker
+
+k3d nests kubepods deeper than one level (e.g., under
+system.slice/docker-<hash>.scope/). Use filepath.WalkDir to search
+the entire cgroup hierarchy instead of only one level deep.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* test: remove Go demo startup delay to verify exec tracepoint works
+
+The bpf_current_task_under_cgroup exec tracepoint should attach uprobes
+before Go makes its first TLS call, eliminating the need for any delay.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: add clear error log when kubepods cgroup is not found
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: use PID-scoped uprobes for Go and remove cgroup filter from Go handler
+
+Go binaries are statically linked — system-wide uprobes via overlay
+don't work for them. Use PID-scoped attachment (which uses cpu=-1,
+all CPUs) for Go's crypto/tls.(*Conn).Write and main exe symbols.
+
+Removed the cgroup filter from bpf_uprobe_go_tls_write since PID-scoped
+uprobes only fire for the target process — no cgroup filtering needed.
+The exec tracepoint detects the Go binary exec and attaches the uprobe
+before Go makes its first TLS call.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* debug: log top-level cgroup dirs when kubepods not found
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: derive kubepods cgroup from controller's own /proc/self/cgroup
+
+The controller itself runs under kubepods. Read /proc/self/cgroup to
+find the kubepods ancestor path as a fallback when the tree walk fails.
+This handles k3d/Docker where kubepods is deeply nested.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: add 5s delay to Go demo for watched_hosts sync timing
+
+The Go demo needs a delay before first DNS query because watched_hosts
+BPF map is populated by the periodic sync (every 5s). Without the delay,
+Go's DNS response for httpbin.org arrives before watched_hosts contains
+httpbin.org, so the DNS response is discarded and host resolution fails.
+
+TODO: Fix by triggering syncSecretsToBPF immediately when secrets are
+discovered by the reconciler, not just on the 5s periodic ticker.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* revert: remove immediate sync notification, keep 5s delay for Go demo
+
+The immediate sync approach doesn't solve the timing issue because Go's
+first DNS query happens before the secret reconciler processes secrets.
+Keep the 5s delay in the Go demo as a workaround. The proper fix
+(syncing watched_hosts at controller startup from K8s secrets) is a
+separate effort.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* add changes to the makefile
+
+* fix: use random uppercase letters for shadow padding instead of fixed Z
+
+Fixed Z padding increased collision risk between shadow secrets sharing
+the same first 8 bytes. Now uses random uppercase letters (A-Z) which
+still have long HPACK Huffman codes (7-8 bits) but maintain uniqueness.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+---------
+
+Co-authored-by: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+--- pkg/ebpf/bpf/helpers.h
+@@ -86,7 +86,7 @@ HELPER_INLINE __u32 clamp_write_len(__u32 val_len) {
+   return ((val_len - 1) & (SECRET_MAX_LEN - 1)) + 1;
+ }
+ 
+-// Check if buffer starts with the 6-byte "kloak:" prefix.
++// Check if buffer starts with the 6-byte "kloak:" prefix (HTTP/1.1 plaintext).
+ // Returns 1 if it matches, 0 otherwise. Caller must ensure buf has >= 6 bytes.
+ HELPER_INLINE int is_kloak_prefix(const char *buf) {
+   return (buf[0] == 'k' && buf[1] == 'l' && buf[2] == 'o' && buf[3] == 'a' &&
+@@ -95,4 +95,16 @@ HELPER_INLINE int is_kloak_prefix(const char *buf) {
+              : 0;
+ }
+ 
++// Check if buffer starts with the HPACK Huffman encoding of "kloak:" (HTTP/2).
++// The HPACK static Huffman table (RFC 7541 Appendix B) encodes "kloak" as
++// 4 stable bytes: 0xeb 0x41 0xc7 0xd6. The 5th byte varies depending on
++// the character after ":" due to Huffman bit packing. 4 bytes is sufficient
++// to avoid false positives — the 8-byte key lookup confirms the match.
++HELPER_INLINE int is_kloak_prefix_huffman(const unsigned char *buf) {
++  return (buf[0] == 0xeb && buf[1] == 0x41 && buf[2] == 0xc7 &&
++          buf[3] == 0xd6)
++             ? 1
++             : 0;
++}
++
+ #endif // KLOAK_HELPERS_H
+
+--- pkg/ebpf/bpf/tls_uprobe.c
+@@ -991,11 +991,21 @@ static int scan_chunk(__u32 chunk_idx, void *ctx) {
+     if (i + SECRET_KEY_LEN > read_len)
+       break;
+ 
+-    if (!is_kloak_prefix(&scratch_data->data[i]))
++    // Check for both plaintext "kloak:" (HTTP/1.1) and HPACK Huffman
++    // encoded "kloak:" (HTTP/2). Both use the same 8-byte key lookup
++    // into secret_map — plaintext keys start with "kloak:" ASCII,
++    // Huffman keys start with the Huffman encoding bytes.
++    int matched = 0;
++    if (is_kloak_prefix(&scratch_data->data[i]))
++      matched = 1;
++    else if (is_kloak_prefix_huffman((const unsigned char *)&scratch_data->data[i]))
++      matched = 1;
++
++    if (!matched)
+       continue;
+ 
+-    // 8-byte key lookup (kloak: + 2 UUID chars).
+-    // Collision detection is done on the Go side at sync time.
++    // 8-byte key lookup. For plaintext: "kloak:" + 2 UUID chars.
++    // For Huffman: first 8 bytes of Huffman-encoded shadow value.
+     struct secret_key key = {};
+     __builtin_memcpy(key.prefix, &scratch_data->data[i], SECRET_KEY_LEN);
+ 
+@@ -1082,11 +1092,8 @@ int bpf_phase2_rewrite(void *ctx) {
+ 
+ SEC("uprobe/go_tls_write")
+ int bpf_uprobe_go_tls_write(void *ctx) {
+-  // Filter by cgroup: only intercept processes in tracked containers.
+-  // Uprobes are attached system-wide (all CPUs) so we must filter here.
+-  __u64 cgroup_id = bpf_get_current_cgroup_id();
+-  if (!bpf_map_lookup_elem(&tracked_cgroups, &cgroup_id))
+-    return 0;
++  // No cgroup filter — Go uprobes use PID-scoped attachment because
++  // Go binaries are statically linked (unique per container).
+ 
+   void *data_ptr;
+   __u64 data_len;
+

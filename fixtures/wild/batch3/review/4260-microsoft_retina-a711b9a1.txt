@@ -1,0 +1,63 @@
+repo: microsoft/retina
+commit: a711b9a13af6d313ed0e4be276ed5d3c2057b08a
+rank: 4260
+
+fix: report TCP packets that carried important flags regardless of the report interval (#909)
+
+# Description
+
+In conntrack, we should always report any TCP packets that carried
+important flags such as SYN and URG to userspace, regardless of the
+report interval.
+
+## Related Issue
+
+#908 
+
+## Checklist
+
+- [ ] I have read the [contributing
+documentation](https://retina.sh/docs/contributing).
+- [ ] I signed and signed-off the commits (`git commit -S -s ...`). See
+[this
+documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification)
+on signing commits.
+- [ ] I have correctly attributed the author(s) of the code.
+- [ ] I have tested the changes locally.
+- [ ] I have followed the project's style guidelines.
+- [ ] I have updated the documentation, if necessary.
+- [ ] I have added tests, if applicable.
+
+## Screenshots (if applicable) or Testing Completed
+Manually verified that we are now capturing the SYN-ACK packet at both
+point of observation (client and server, when they are deployed on a
+same node)
+
+`hubble_tcp_flags_total{destination="",family="IPv4",flag="SYN-ACK",source="kube-system/agnhost-flow-intra-1"}
+2`
+## Additional Notes
+
+Add any additional notes or context about the pull request here.
+
+---
+
+Please refer to the [CONTRIBUTING.md](../CONTRIBUTING.md) file for more
+information on how to contribute to this project.
+
+--- pkg/plugin/conntrack/_cprog/conntrack.c
+@@ -259,6 +259,14 @@ static __always_inline bool _ct_should_report_packet(struct ct_entry *entry, __u
+         }
+         WRITE_ONCE(entry->eviction_time, now + CT_CONNECTION_LIFETIME_NONTCP);
+     }
++
++    // Check for important/special flags that we will always report regardless of the report interval.
++    // Note: SYN can still be present at this stage due to SYN-ACK packets.
++    // We will not update the last report time for these flags as we still want to sample other flags based on the report interval.
++    if (protocol == IPPROTO_TCP && flags & (TCP_SYN | TCP_URG | TCP_ECE | TCP_CWR)) {
++        return true;
++    }
++
+     // We will only report this packet iff a new flag is seen for the given direction or the report interval has passed.
+     if (flags != seen_flags || now - last_report >= CT_REPORT_INTERVAL) {
+         if (direction == CT_PACKET_DIR_TX) {
+

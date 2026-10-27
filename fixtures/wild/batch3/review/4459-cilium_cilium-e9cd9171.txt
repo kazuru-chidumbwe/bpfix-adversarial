@@ -1,0 +1,36 @@
+repo: cilium/cilium
+commit: e9cd917197d630f8a5d072a486d5b71a3e65eb8a
+rank: 4459
+
+bpf: Make ipv6_hdrlen_with_fraginfo into global func
+
+That function is at the top of several BPF program and contains a loop
+and a few conditions. Moving it to a global function should help a lot
+with complexity.
+
+Pointers to the stack given in arguments to global functions are seen as
+mem_or_null by the verifier, even if they are always non-null in the
+caller. To allow derefencing those pointers, we need to null-check them.
+That is already done for fraginfo in ipv6_hdrlen_offset, so that only
+leaves nexthdr to null-check.
+
+Signed-off-by: Paul Chaignon <paul.chaignon@gmail.com>
+
+--- bpf/lib/ipv6.h
+@@ -161,10 +161,12 @@ static __always_inline int ipv6_hdrlen_offset(const struct __ctx_buff *ctx, int
+ 	return DROP_INVALID_EXTHDR;
+ }
+ 
+-static __always_inline int ipv6_hdrlen_with_fraginfo(const struct __ctx_buff *ctx,
+-						     __u8 *nexthdr,
+-						     fraginfo_t *fraginfo)
++__noinline __weak
++int ipv6_hdrlen_with_fraginfo(const struct __ctx_buff *ctx, __u8 *nexthdr, fraginfo_t *fraginfo)
+ {
++	if (!nexthdr)
++		return DROP_INVALID;
++
+ 	return ipv6_hdrlen_offset(ctx, ETH_HLEN, nexthdr, fraginfo);
+ }
+ 
+

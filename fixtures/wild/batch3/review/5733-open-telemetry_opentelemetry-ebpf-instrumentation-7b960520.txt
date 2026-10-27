@@ -1,0 +1,107 @@
+repo: open-telemetry/opentelemetry-ebpf-instrumentation
+commit: 7b960520dd22b503b295774de5dd1239f3f46442
+rank: 5733
+
+Honor context propagation modes in Go clients (#3011)
+
+* Honor Go header propagation modes
+
+Separate the kernel write-user capability from configured HTTP header
+propagation. Disabled and tcp modes no longer inject traceparent values.
+
+Keep Go Auto SDK activation capability-gated under the default disabled
+mode, and cover the public mode contract with unit and wire-level tests.
+
+* Preserve Go wire propagation without write helper
+
+Keep header-mode correlation active when kernels cannot expose the
+bpf_probe_write_user helper so tpinjector can still mutate plaintext
+traffic on the wire.
+
+Gate only the in-process HTTP and gRPC buffer writers on helper support,
+and cover both the verifier configuration and unaffected manual spans.
+
+* Inline Go write-user capability check
+
+Remove the single-use temporary from gotracer constant construction. The
+map now reads the capability directly without changing the configured BPF
+value.
+
+--- bpf/common/globals.h
+@@ -8,4 +8,5 @@
+ volatile const bool g_bpf_debug = false;
+ volatile const bool g_bpf_traceparent_enabled = false;
+ volatile const bool g_bpf_header_propagation = false;
+-volatile const bool g_bpf_loop_enabled = false;
+\ No newline at end of file
++volatile const bool g_bpf_probe_write_user_enabled = false;
++volatile const bool g_bpf_loop_enabled = false;
+
+--- bpf/gotracer/go_grpc.c
+@@ -852,7 +852,7 @@ int obi_uprobe_grpcFramerWriteHeaders(struct pt_regs *ctx) {
+ 
+ SEC("uprobe/grpcFramerWriteHeaders_returns")
+ int obi_uprobe_grpcFramerWriteHeaders_returns(struct pt_regs *ctx) {
+-    if (!g_bpf_header_propagation) {
++    if (!g_bpf_header_propagation || !g_bpf_probe_write_user_enabled) {
+         return 0;
+     }
+ 
+
+--- bpf/gotracer/go_nethttp.c
+@@ -999,7 +999,7 @@ client_request_has_traceparent(void *buf_ptr,
+ static __always_inline int on_writeSubset_returns(struct pt_regs *ctx,
+                                                   unsigned char *(*tp_loop_fn)(unsigned char *,
+                                                                                const u16)) {
+-    if (!g_bpf_header_propagation) {
++    if (!g_bpf_header_propagation || !g_bpf_probe_write_user_enabled) {
+         return 0;
+     }
+ 
+@@ -1441,7 +1441,7 @@ int obi_uprobe_net_http2FramerWriteHeaders(struct pt_regs *ctx) {
+ 
+ SEC("uprobe/http2FramerWriteHeaders_returns")
+ int obi_uprobe_http2FramerWriteHeaders_returns(struct pt_regs *ctx) {
+-    if (!g_bpf_header_propagation) {
++    if (!g_bpf_header_propagation || !g_bpf_probe_write_user_enabled) {
+         return 0;
+     }
+ 
+
+--- bpf/gotracer/go_sdk.c
+@@ -23,6 +23,7 @@
+ 
+ #include <common/algorithm.h>
+ #include <common/common.h>
++#include <common/globals.h>
+ #include <common/http_types.h>
+ #include <common/map_sizing.h>
+ #include <common/ringbuf.h>
+@@ -424,7 +425,7 @@ int obi_uprobe_tracer_Start_global(struct pt_regs *ctx) {
+ SEC("uprobe/tracer_new_span")
+ int obi_uprobe_tracer_NewSpan(struct pt_regs *ctx) {
+     u64 generation = 0;
+-    if (!go_auto_target_generation(&generation) || !g_bpf_header_propagation ||
++    if (!go_auto_target_generation(&generation) || !g_bpf_probe_write_user_enabled ||
+         !span_context_offsets_available()) {
+         return 0;
+     }
+@@ -591,7 +592,7 @@ int obi_uprobe_tracer_Start_Returns(struct pt_regs *ctx) {
+ SEC("uprobe/auto_sdk_tracer_start")
+ int obi_uprobe_auto_sdk_tracer_Start(struct pt_regs *ctx) {
+     u64 generation = 0;
+-    if (!go_auto_target_generation(&generation) || !g_bpf_header_propagation ||
++    if (!go_auto_target_generation(&generation) || !g_bpf_probe_write_user_enabled ||
+         !span_context_offsets_available()) {
+         return 0;
+     }
+@@ -643,7 +644,7 @@ int obi_uprobe_auto_sdk_tracer_Start(struct pt_regs *ctx) {
+ 
+ SEC("uprobe/auto_sdk_context_with_value")
+ int obi_uprobe_auto_sdk_context_WithValue(struct pt_regs *ctx) {
+-    if (!g_bpf_header_propagation) {
++    if (!g_bpf_probe_write_user_enabled) {
+         return 0;
+     }
+ 
+

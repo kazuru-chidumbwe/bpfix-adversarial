@@ -1,0 +1,162 @@
+repo: cilium/cilium
+commit: c4dcaa767f9f6628d65168b1706921f3789705ad
+rank: 4820
+
+bpf: hostfw: spell out in masquerade tests policies effect
+
+This commit extends current hostfw_bpf_masq.c and hostfw_host_iptables.c
+tests by adding specific drop-default rules on egress and ingress to verify
+that the packets are actually allowed to pass as expected. The type of
+packets under tests simply need to create a CT entry, but do not actually
+go through the policy enforcement of HostFW. Prior to this commit, these
+tests were not using any default-drop policy in place, we were missing
+this coverage. Now we make sure they go though both CT lookup and policy.
+
+Signed-off-by: Simone Magnani <simone.magnani@isovalent.com>
+
+--- bpf/tests/hostfw_bpf_masq.c
+@@ -67,6 +67,8 @@ int hostfw_ipv4_bpf_masq_proxy_01_setup(struct __ctx_buff *ctx)
+ 	ipcache_v4_add_entry(NODE_IP, 0, HOST_ID, 0, 0);
+ 	ipcache_v4_add_world_entry();
+ 
++	policy_add_egress_deny_all_entry();
++
+ 	set_identity_mark(ctx, POD_SEC_IDENTITY, MARK_MAGIC_PROXY_EGRESS);
+ 
+ 	return netdev_send_packet(ctx);
+@@ -108,6 +110,8 @@ int hostfw_ipv4_bpf_masq_proxy_01_check(const struct __ctx_buff *ctx)
+ 
+ 	assert(ct_entry->packets == 1);
+ 
++	policy_delete_egress_all_entry();
++
+ 	test_finish();
+ }
+ 
+@@ -136,6 +140,8 @@ int hostfw_ipv4_bpf_masq_proxy_02_pktgen(struct __ctx_buff *ctx)
+ SETUP("tc", "hostfw_ipv4_bpf_masq_proxy_02")
+ int hostfw_ipv4_bpf_masq_proxy_02_setup(struct __ctx_buff *ctx)
+ {
++	policy_add_ingress_allow_all_entry();
++
+ 	return netdev_receive_packet(ctx);
+ }
+ 
+@@ -173,5 +179,7 @@ int hostfw_ipv4_bpf_masq_proxy_02_check(const struct __ctx_buff *ctx)
+ 
+ 	assert(ct_entry->packets == 2);
+ 
++	policy_delete_ingress_all_entry();
++
+ 	test_finish();
+ }
+
+--- bpf/tests/hostfw_host_iptables.c
+@@ -68,6 +68,8 @@ int hostfw_iptables_host_ipv4_01_pod_setup(struct __ctx_buff *ctx)
+ 	ipcache_v4_add_entry(NODE_IP, 0, HOST_ID, 0, 0);
+ 	ipcache_v4_add_world_entry();
+ 
++	policy_add_egress_deny_all_entry();
++
+ 	set_identity_mark(ctx, POD_SEC_IDENTITY, MARK_MAGIC_IDENTITY);
+ 
+ 	return netdev_send_packet(ctx);
+@@ -109,6 +111,8 @@ int hostfw_iptables_host_ipv4_01_pod_check(const struct __ctx_buff *ctx)
+ 
+ 	assert(ct_entry->packets == 1);
+ 
++	policy_delete_egress_all_entry();
++
+ 	test_finish();
+ }
+ 
+@@ -137,6 +141,8 @@ int hostfw_iptables_host_ipv4_02_pod_pktgen(struct __ctx_buff *ctx)
+ SETUP("tc", "hostfw_iptables_host_ipv4_02_pod")
+ int hostfw_iptables_host_ipv4_02_pod_setup(struct __ctx_buff *ctx)
+ {
++	policy_add_ingress_deny_all_entry();
++
+ 	return netdev_receive_packet(ctx);
+ }
+ 
+@@ -174,6 +180,8 @@ int hostfw_iptables_host_ipv4_02_pod_check(const struct __ctx_buff *ctx)
+ 
+ 	assert(ct_entry->packets == 2);
+ 
++	policy_delete_ingress_all_entry();
++
+ 	test_finish();
+ }
+ 
+@@ -206,6 +214,8 @@ int hostfw_iptables_host_ipv4_03_host_pktgen(struct __ctx_buff *ctx)
+ SETUP("tc", "hostfw_iptables_host_ipv4_03_host")
+ int hostfw_iptables_host_ipv4_03_host_setup(struct __ctx_buff *ctx)
+ {
++	policy_add_egress_deny_all_entry();
++
+ 	set_identity_mark(ctx, 0, MARK_MAGIC_HOST);
+ 
+ 	return netdev_send_packet(ctx);
+@@ -229,6 +239,8 @@ int hostfw_iptables_host_ipv4_03_host_check(const struct __ctx_buff *ctx)
+ 
+ 	assert(*status_code == CTX_ACT_DROP);
+ 
++	policy_delete_egress_all_entry();
++
+ 	test_finish();
+ }
+ 
+@@ -303,6 +315,8 @@ int hostfw_iptables_host_ipv4_04_host_check(const struct __ctx_buff *ctx)
+ 
+ 	assert(ct_entry->packets == 1);
+ 
++	policy_delete_egress_all_entry();
++
+ 	test_finish();
+ }
+ 
+@@ -331,6 +345,8 @@ int hostfw_iptables_host_ipv4_05_host_pktgen(struct __ctx_buff *ctx)
+ SETUP("tc", "hostfw_iptables_host_ipv4_05_host")
+ int hostfw_iptables_host_ipv4_05_host_setup(struct __ctx_buff *ctx)
+ {
++	policy_add_ingress_deny_all_entry();
++
+ 	return netdev_receive_packet(ctx);
+ }
+ 
+@@ -368,7 +384,7 @@ int hostfw_iptables_host_ipv4_05_host_check(const struct __ctx_buff *ctx)
+ 
+ 	assert(ct_entry->packets == 2);
+ 
+-	policy_delete_egress_all_entry();
++	policy_delete_ingress_all_entry();
+ 
+ 	test_finish();
+ }
+
+--- bpf/tests/lib/policy.h
+@@ -84,6 +84,23 @@ policy_add_ingress_deny_all_entry(void)
+ 	policy_add_entry(false, 0, 0, 0, 0, true, 0);
+ }
+ 
++static __always_inline void policy_add_ingress_allow_all_entry(void)
++{
++	policy_add_entry(false, 0, 0, 0, 0, false, 0);
++}
++
++static __always_inline void
++policy_delete_ingress_l3_l4_entry(__u32 sec_label, __u8 protocol, __be16 dport,
++				  __u8 port_range)
++{
++	policy_delete_entry(false, sec_label, protocol, dport, port_range);
++}
++
++static __always_inline void policy_delete_ingress_all_entry(void)
++{
++	policy_delete_ingress_l3_l4_entry(0, 0, 0, 0);
++}
++
+ static __always_inline void
+ policy_add_egress_allow_l3_l4_entry(__u32 sec_label, __u8 protocol, __be16 dport,
+ 				    __u8 port_range)
+

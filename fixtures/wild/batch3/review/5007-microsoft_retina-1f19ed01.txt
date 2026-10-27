@@ -1,0 +1,363 @@
+repo: microsoft/retina
+commit: 1f19ed019cbdd70e196205c1f6d67de9b5af3609
+rank: 5007
+
+chore: add prefix retina_ to eBPF maps so that they are easier to identify (#768)
+
+# Description
+
+As title.
+
+## Related Issue
+
+If this pull request is related to any issue, please mention it here.
+Additionally, make sure that the issue is assigned to you before
+submitting this pull request.
+
+## Checklist
+
+- [x] I have read the [contributing
+documentation](https://retina.sh/docs/contributing).
+- [x] I signed and signed-off the commits (`git commit -S -s ...`). See
+[this
+documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification)
+on signing commits.
+- [x] I have correctly attributed the author(s) of the code.
+- [x] I have tested the changes locally.
+- [x] I have followed the project's style guidelines.
+- [x] I have updated the documentation, if necessary.
+- [x] I have added tests, if applicable.
+
+## Screenshots (if applicable) or Testing Completed
+
+Please add any relevant screenshots or GIFs to showcase the changes
+made.
+
+## Additional Notes
+
+Add any additional notes or context about the pull request here.
+
+---
+
+Please refer to the [CONTRIBUTING.md](../CONTRIBUTING.md) file for more
+information on how to contribute to this project.
+
+--- pkg/plugin/conntrack/_cprog/conntrack.c
+@@ -70,7 +70,7 @@ struct {
+     __type(value, struct ct_entry);
+     __uint(max_entries, CT_MAP_SIZE);
+     __uint(pinning, LIBBPF_PIN_BY_NAME); // needs pinning so this can be access from other processes .i.e debug cli
+-} retina_conntrack_map SEC(".maps");
++} retina_conntrack SEC(".maps");
+ 
+ 
+ /**
+@@ -120,7 +120,7 @@ static __always_inline bool _ct_create_new_tcp_connection(struct ct_v4_key key,
+     new_value.eviction_time = now + CT_SYN_TIMEOUT;
+     new_value.flags_seen_tx_dir = flags;
+     new_value.traffic_direction = _ct_get_traffic_direction(observation_point);
+-    bpf_map_update_elem(&retina_conntrack_map, &key, &new_value, BPF_ANY);
++    bpf_map_update_elem(&retina_conntrack, &key, &new_value, BPF_ANY);
+     return true;
+ }
+ 
+@@ -142,7 +142,7 @@ static __always_inline bool _ct_handle_udp_connection(struct packet *p, struct c
+     new_value.flags_seen_tx_dir = p->flags;
+     new_value.last_report_tx_dir = now;
+     new_value.traffic_direction = _ct_get_traffic_direction(observation_point);
+-    bpf_map_update_elem(&retina_conntrack_map, &key, &new_value, BPF_ANY);
++    bpf_map_update_elem(&retina_conntrack, &key, &new_value, BPF_ANY);
+     // Update packet
+     p->is_reply = false;
+     p->traffic_direction = new_value.traffic_direction;
+@@ -186,12 +186,12 @@ static __always_inline bool _ct_handle_tcp_connection(struct packet *p, struct c
+         p->is_reply = true;
+         new_value.flags_seen_rx_dir = p->flags;
+         new_value.last_report_rx_dir = now;
+-        bpf_map_update_elem(&retina_conntrack_map, &reverse_key, &new_value, BPF_ANY);
++        bpf_map_update_elem(&retina_conntrack, &reverse_key, &new_value, BPF_ANY);
+     } else { // Otherwise, the packet is considered as a packet in the send direction.
+         p->is_reply = false;
+         new_value.flags_seen_tx_dir = p->flags;
+         new_value.last_report_tx_dir = now;
+-        bpf_map_update_elem(&retina_conntrack_map, &key, &new_value, BPF_ANY);
++        bpf_map_update_elem(&retina_conntrack, &key, &new_value, BPF_ANY);
+     }
+     return true;
+ }
+@@ -300,7 +300,7 @@ static __always_inline __attribute__((unused)) bool ct_process_packet(struct pac
+     key.dst_port = p->dst_port;
+     key.proto = p->proto;
+     // Lookup the connection in the map.
+-    struct ct_entry *entry = bpf_map_lookup_elem(&retina_conntrack_map, &key);
++    struct ct_entry *entry = bpf_map_lookup_elem(&retina_conntrack, &key);
+ 
+     // If the connection is found in the send direction, update the connection.
+     if (entry) {
+@@ -316,7 +316,7 @@ static __always_inline __attribute__((unused)) bool ct_process_packet(struct pac
+     _ct_reverse_key(&reverse_key, &key);
+ 
+     // Lookup the connection in the map based on the reverse key.
+-    entry = bpf_map_lookup_elem(&retina_conntrack_map, &reverse_key);
++    entry = bpf_map_lookup_elem(&retina_conntrack, &reverse_key);
+ 
+     // If the connection is found based on the reverse key, meaning that the packet is a reply packet to an existing connection.
+     if (entry) {
+
+--- pkg/plugin/dropreason/_cprog/drop_reason.c
+@@ -54,7 +54,7 @@ struct
+ {
+     __uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
+     __uint(max_entries, 16384);
+-} dropreason_events SEC(".maps");
++} retina_dropreason_events SEC(".maps");
+ 
+ // Define const variables to avoid warnings.
+ const struct packet *unused __attribute__((unused));
+@@ -65,31 +65,31 @@ struct
+     __uint(max_entries, 16384);
+     __type(key, __u32);
+     __type(value, struct packet);
+-} natdrop_pids SEC(".maps");
++} retina_dropreason_natdrop_pids SEC(".maps");
+ 
+ struct
+ {
+     __uint(type, BPF_MAP_TYPE_HASH);
+     __uint(max_entries, 16384);
+     __type(key, __u32);
+     __type(value, struct packet);
+-} drop_pids SEC(".maps");
++} retina_dropreason_drop_pids SEC(".maps");
+ 
+ struct
+ {
+     __uint(type, BPF_MAP_TYPE_HASH);
+     __uint(max_entries, 16384);
+     __type(key, __u32);
+     __type(value, __u64);
+-} accept_pids SEC(".maps");
++} retina_dropreason_accept_pids SEC(".maps");
+ 
+ struct
+ {
+     __uint(type, BPF_MAP_TYPE_PERCPU_HASH);
+     __uint(max_entries, 512);
+     __type(key, struct metrics_map_key);
+     __type(value, struct metrics_map_value);
+-} metrics_map SEC(".maps");
++} retina_dropreason_metrics SEC(".maps");
+ 
+ #define member_address(source_struct, source_member)                                                 \
+     ({                                                                                               \
+@@ -114,7 +114,7 @@ void update_metrics_map(void *ctx, drop_reason_t drop_type, int ret_val, struct
+     key.drop_type = drop_type;
+     key.return_val = ret_val;
+ 
+-    entry = bpf_map_lookup_elem(&metrics_map, &key);
++    entry = bpf_map_lookup_elem(&retina_dropreason_metrics, &key);
+     if (entry)
+     {
+         entry->count += 1;
+@@ -124,7 +124,7 @@ void update_metrics_map(void *ctx, drop_reason_t drop_type, int ret_val, struct
+     {
+         new_entry.count = 1;
+         new_entry.bytes = p->skb_len;
+-        bpf_map_update_elem(&metrics_map, &key, &new_entry, 0);
++        bpf_map_update_elem(&retina_dropreason_metrics, &key, &new_entry, 0);
+     }
+ // parse packet if advanced metrics are enabled
+ #ifdef ADVANCED_METRICS
+@@ -133,7 +133,7 @@ void update_metrics_map(void *ctx, drop_reason_t drop_type, int ret_val, struct
+     {
+         p->drop_type = drop_type;
+         p->return_val = ret_val;
+-        bpf_perf_event_output(ctx, &dropreason_events, BPF_F_CURRENT_CPU, p, sizeof(struct packet));
++        bpf_perf_event_output(ctx, &retina_dropreason_events, BPF_F_CURRENT_CPU, p, sizeof(struct packet));
+     };
+ #endif
+ #endif
+@@ -253,7 +253,7 @@ int BPF_KPROBE(nf_hook_slow, struct sk_buff *skb, struct nf_hook_state *state)
+ 
+     __u64 pid_tgid = bpf_get_current_pid_tgid();
+     __u32 pid = pid_tgid >> 32;
+-    bpf_map_update_elem(&drop_pids, &pid, &p, BPF_ANY);
++    bpf_map_update_elem(&retina_dropreason_drop_pids, &pid, &p, BPF_ANY);
+     return 0;
+ }
+ 
+@@ -271,17 +271,17 @@ int BPF_KRETPROBE(nf_hook_slow_ret, int retVal)
+ 
+     if (retVal >= 0)
+     {
+-        bpf_map_delete_elem(&drop_pids, &pid);
++        bpf_map_delete_elem(&retina_dropreason_drop_pids, &pid);
+         return 0;
+     }
+ 
+-    struct packet *p = bpf_map_lookup_elem(&drop_pids, &pid);
++    struct packet *p = bpf_map_lookup_elem(&retina_dropreason_drop_pids, &pid);
+     if (!p)
+     {
+         return 0;
+     }
+ 
+-    bpf_map_delete_elem(&drop_pids, &pid);
++    bpf_map_delete_elem(&retina_dropreason_drop_pids, &pid);
+ 
+     update_metrics_map(ctx, IPTABLE_RULE_DROP, 0, p);
+     return 0;
+@@ -319,7 +319,7 @@ int BPF_KPROBE(inet_csk_accept, struct sock *sk, int flags, int *err, bool kern)
+     __u64 pid_tgid = bpf_get_current_pid_tgid();
+     __u32 pid = pid_tgid >> 32;
+     __u64 err_ptr = (__u64)err;
+-    bpf_map_update_elem(&accept_pids, &pid, &err_ptr, BPF_ANY);
++    bpf_map_update_elem(&retina_dropreason_accept_pids, &pid, &err_ptr, BPF_ANY);
+     return 0;
+ }
+ 
+@@ -337,8 +337,8 @@ int BPF_KRETPROBE(inet_csk_accept_ret, struct sock *sk)
+     */
+     __u64 pid_tgid = bpf_get_current_pid_tgid();
+     __u32 pid = pid_tgid >> 32;
+-    __u64 *err_ptr = bpf_map_lookup_elem(&accept_pids, &pid);
+-    bpf_map_delete_elem(&accept_pids, &pid);
++    __u64 *err_ptr = bpf_map_lookup_elem(&retina_dropreason_accept_pids, &pid);
++    bpf_map_delete_elem(&retina_dropreason_accept_pids, &pid);
+ 
+     if (!err_ptr)
+         return 0;
+@@ -384,7 +384,7 @@ int BPF_KPROBE(nf_nat_inet_fn, void *priv, struct sk_buff *skb, const struct nf_
+ 
+     __u64 pid_tgid = bpf_get_current_pid_tgid();
+     __u32 pid = pid_tgid >> 32;
+-    bpf_map_update_elem(&natdrop_pids, &pid, &p, BPF_ANY);
++    bpf_map_update_elem(&retina_dropreason_natdrop_pids, &pid, &p, BPF_ANY);
+     return 0;
+ }
+ 
+@@ -396,17 +396,17 @@ int BPF_KRETPROBE(nf_nat_inet_fn_ret, int retVal)
+ 
+     if (retVal != NF_DROP)
+     {
+-        bpf_map_delete_elem(&natdrop_pids, &pid);
++        bpf_map_delete_elem(&retina_dropreason_natdrop_pids, &pid);
+         return 0;
+     }
+ 
+-    struct packet *p = bpf_map_lookup_elem(&natdrop_pids, &pid);
++    struct packet *p = bpf_map_lookup_elem(&retina_dropreason_natdrop_pids, &pid);
+     if (!p)
+     {
+         return 0;
+     }
+ 
+-    bpf_map_delete_elem(&natdrop_pids, &pid);
++    bpf_map_delete_elem(&retina_dropreason_natdrop_pids, &pid);
+ 
+     update_metrics_map(ctx, IPTABLE_NAT_DROP, 0, p);
+     return 0;
+@@ -430,7 +430,7 @@ int BPF_KPROBE(nf_conntrack_confirm, struct sk_buff *skb)
+ 
+     __u64 pid_tgid = bpf_get_current_pid_tgid();
+     __u32 pid = pid_tgid >> 32;
+-    bpf_map_update_elem(&natdrop_pids, &pid, &p, BPF_ANY);
++    bpf_map_update_elem(&retina_dropreason_natdrop_pids, &pid, &p, BPF_ANY);
+     return 0;
+ }
+ 
+@@ -442,17 +442,17 @@ int BPF_KRETPROBE(nf_conntrack_confirm_ret, int retVal)
+     
+     if (retVal != NF_DROP)
+     {
+-        bpf_map_delete_elem(&natdrop_pids, &pid);
++        bpf_map_delete_elem(&retina_dropreason_natdrop_pids, &pid);
+         return 0;
+     }
+     
+-    struct packet *p = bpf_map_lookup_elem(&natdrop_pids, &pid);
++    struct packet *p = bpf_map_lookup_elem(&retina_dropreason_natdrop_pids, &pid);
+     if (!p)
+     {
+         return 0;
+     }
+ 
+-    bpf_map_delete_elem(&natdrop_pids, &pid);
++    bpf_map_delete_elem(&retina_dropreason_natdrop_pids, &pid);
+ 
+     update_metrics_map(ctx, CONNTRACK_ADD_DROP, retVal, p);
+     return 0;
+
+--- pkg/plugin/filter/_cprog/retina_filter.c
+@@ -16,7 +16,7 @@ struct {
+         __uint(map_flags, BPF_F_NO_PREALLOC);
+         __uint(max_entries, 255);
+ 	__uint(pinning, LIBBPF_PIN_BY_NAME); // Pinned to /sys/fs/bpf.
+-} retina_filter_map SEC(".maps");
++} retina_filter SEC(".maps");
+ 
+ // Returns 1 if the IP address is in the map, 0 otherwise.
+ bool lookup(__u32 ipaddr)
+@@ -26,7 +26,7 @@ bool lookup(__u32 ipaddr)
+                 .data = ipaddr
+         };
+ 
+-        if (bpf_map_lookup_elem(&retina_filter_map, &key))
++        if (bpf_map_lookup_elem(&retina_filter, &key))
+                 return true;
+         return false;
+ }
+
+--- pkg/plugin/packetforward/_cprog/packetforward.c
+@@ -22,7 +22,7 @@ struct {
+     __uint(max_entries, 2);
+     __type(key, key_type);
+     __type(value, struct metric);
+-} packets SEC(".maps");
++} retina_packetforward_metrics SEC(".maps");
+ 
+ SEC("socket1")
+ int socket_filter(struct __sk_buff *skb) {
+@@ -40,13 +40,13 @@ int socket_filter(struct __sk_buff *skb) {
+     // Get the packet size (in bytes) including headers.
+     u64 packetSize = skb->len;
+ 
+-    struct metric *curMetric = bpf_map_lookup_elem(&packets, &mapKey);
++    struct metric *curMetric = bpf_map_lookup_elem(&retina_packetforward_metrics, &mapKey);
+ 	if (!curMetric) {
+         // Per CPU hashmap, hence no race condition here.
+         struct metric initMetric;
+         initMetric.count = 1;
+         initMetric.bytes = packetSize;
+-        bpf_map_update_elem(&packets, &mapKey, &initMetric, BPF_ANY);
++        bpf_map_update_elem(&retina_packetforward_metrics, &mapKey, &initMetric, BPF_ANY);
+     } else {
+         // Atomic operation.
+         curMetric->count++;
+
+--- pkg/plugin/packetparser/_cprog/packetparser.c
+@@ -16,7 +16,7 @@ struct
+ {
+ 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
+ 	__uint(max_entries, 16384);
+-} packetparser_events SEC(".maps");
++} retina_packetparser_events SEC(".maps");
+ 
+ // Define const variables to avoid warnings.
+ const struct packet *unused __attribute__((unused));
+@@ -206,12 +206,12 @@ static void parse(struct __sk_buff *skb, __u8 obs)
+ 	#ifdef DATA_AGGREGATION_LEVEL
+ 	// If the data aggregation level is low, always send the packet to the perf buffer.
+ 	#if DATA_AGGREGATION_LEVEL == DATA_AGGREGATION_LEVEL_LOW
+-		bpf_perf_event_output(skb, &packetparser_events, BPF_F_CURRENT_CPU, &p, sizeof(p));
++		bpf_perf_event_output(skb, &retina_packetparser_events, BPF_F_CURRENT_CPU, &p, sizeof(p));
+ 		return;
+ 	// If the data aggregation level is high, only send the packet to the perf buffer if it needs to be reported.
+ 	#elif DATA_AGGREGATION_LEVEL == DATA_AGGREGATION_LEVEL_HIGH
+ 		if (report) {
+-			bpf_perf_event_output(skb, &packetparser_events, BPF_F_CURRENT_CPU, &p, sizeof(p));
++			bpf_perf_event_output(skb, &retina_packetparser_events, BPF_F_CURRENT_CPU, &p, sizeof(p));
+ 		}
+ 	#endif
+ 	#endif
+

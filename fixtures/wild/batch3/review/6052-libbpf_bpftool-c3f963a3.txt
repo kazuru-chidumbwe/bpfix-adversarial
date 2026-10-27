@@ -1,0 +1,62 @@
+repo: libbpf/bpftool
+commit: c3f963a31f985d34d342e8c8abbf3cdd987e0f26
+rank: 6052
+
+bpf: add special internal-only MOV instruction to resolve per-CPU addrs
+
+Add a new BPF instruction for resolving absolute addresses of per-CPU
+data from their per-CPU offsets. This instruction is internal-only and
+users are not allowed to use them directly. They will only be used for
+internal inlining optimizations for now between BPF verifier and BPF JITs.
+
+We use a special BPF_MOV | BPF_ALU64 | BPF_X form with insn->off field
+set to BPF_ADDR_PERCPU = -1. I used negative offset value to distinguish
+them from positive ones used by user-exposed instructions.
+
+Such instruction performs a resolution of a per-CPU offset stored in
+a register to a valid kernel address which can be dereferenced. It is
+useful in any use case where absolute address of a per-CPU data has to
+be resolved (e.g., in inlining bpf_map_lookup_elem()).
+
+BPF disassembler is also taught to recognize them to support dumping
+final BPF assembly code (non-JIT'ed version).
+
+Add arch-specific way for BPF JITs to mark support for this instructions.
+
+This patch also adds support for these instructions in x86-64 BPF JIT.
+
+Signed-off-by: Andrii Nakryiko <andrii@kernel.org>
+Acked-by: John Fastabend <john.fastabend@gmail.com>
+Link: https://lore.kernel.org/r/20240402021307.1012571-2-andrii@kernel.org
+Signed-off-by: Alexei Starovoitov <ast@kernel.org>
+
+--- src/kernel/bpf/disasm.c
+@@ -172,6 +172,17 @@ static bool is_addr_space_cast(const struct bpf_insn *insn)
+ 		insn->off == BPF_ADDR_SPACE_CAST;
+ }
+ 
++/* Special (internal-only) form of mov, used to resolve per-CPU addrs:
++ * dst_reg = src_reg + <percpu_base_off>
++ * BPF_ADDR_PERCPU is used as a special insn->off value.
++ */
++#define BPF_ADDR_PERCPU	(-1)
++
++static inline bool is_mov_percpu_addr(const struct bpf_insn *insn)
++{
++	return insn->code == (BPF_ALU64 | BPF_MOV | BPF_X) && insn->off == BPF_ADDR_PERCPU;
++}
++
+ void print_bpf_insn(const struct bpf_insn_cbs *cbs,
+ 		    const struct bpf_insn *insn,
+ 		    bool allow_ptr_leaks)
+@@ -194,6 +205,9 @@ void print_bpf_insn(const struct bpf_insn_cbs *cbs,
+ 			verbose(cbs->private_data, "(%02x) r%d = addr_space_cast(r%d, %d, %d)\n",
+ 				insn->code, insn->dst_reg,
+ 				insn->src_reg, ((u32)insn->imm) >> 16, (u16)insn->imm);
++		} else if (is_mov_percpu_addr(insn)) {
++			verbose(cbs->private_data, "(%02x) r%d = &(void __percpu *)(r%d)\n",
++				insn->code, insn->dst_reg, insn->src_reg);
+ 		} else if (BPF_SRC(insn->code) == BPF_X) {
+ 			verbose(cbs->private_data, "(%02x) %c%d %s %s%c%d\n",
+ 				insn->code, class == BPF_ALU ? 'w' : 'r',
+

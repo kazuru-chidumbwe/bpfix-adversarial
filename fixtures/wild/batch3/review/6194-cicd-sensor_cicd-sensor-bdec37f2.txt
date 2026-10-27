@@ -1,0 +1,556 @@
+repo: cicd-sensor/cicd-sensor
+commit: bdec37f2c3eed8dccde246a5ef0a39b11af79f03
+rank: 6194
+
+feat(agent): capture cleartext HTTP request metadata (#139)
+
+* feat(agent): capture cleartext HTTP request line as http_request event
+
+* refactor(bpf): copy HTTP fields directly to ringbuf
+
+* fix(bpf): enforce HTTP copy field bounds
+
+* refactor(bpf): collapse HTTP parser to one tail target
+
+* test(agent): assert concurrent HTTP captures stay self-consistent
+
+* test(rule): pin HTTP method/path wire casing and literal normalization
+
+* test(agent): verify raw sample redaction and prefix-boundary capture
+
+* fix(agent): lowercase every http_request payload field
+
+* refactor(agent): deduplicate HTTP tests and single-caller BPF helpers
+
+--- internal/agent/bpf/common_helpers.bpf.h
+@@ -8,6 +8,15 @@
+ #define AGENT_AF_INET6 10
+ #define AGENT_AF_UNIX 1
+ 
++// Linux 5.15-6.9 name this field `iov`; 6.10+ renamed it to `__iov`.
++// Our vmlinux.h is newer, so this minimal shadow lets CO-RE emit a
++// relocation for the old field name. preserve_access_index keeps that
++// synthetic field access visible to clang/BTF. Shared by the DNS and HTTP
++// sendmsg payload readers.
++struct iov_iter___legacy {
++    const struct iovec *iov;
++} __attribute__((preserve_access_index));
++
+ static __always_inline void note_ringbuf_drop(void)
+ {
+     __u32 key = 0;
+
+--- internal/agent/bpf/dns_helpers.bpf.h
+@@ -24,14 +24,6 @@ _Static_assert(DNS_PAYLOAD_LEN >= DNS_PER_IOV_MAX,
+ _Static_assert((DNS_PAYLOAD_LEN % DNS_PER_IOV_MAX) == 0,
+                "DNS_PAYLOAD_LEN must be a multiple of DNS_PER_IOV_MAX");
+ 
+-// Linux 5.15-6.9 name this field `iov`; 6.10+ renamed it to `__iov`.
+-// Our vmlinux.h is newer, so this minimal shadow lets CO-RE emit a
+-// relocation for the old field name. preserve_access_index keeps that
+-// synthetic field access visible to clang/BTF.
+-struct iov_iter___legacy {
+-    const struct iovec *iov;
+-} __attribute__((preserve_access_index));
+-
+ // 6.0+ single user buffer path. count is the logical send length.
+ static __always_inline int fill_dns_payload_from_ubuf(struct iov_iter *iter,
+                                                       __u8 *out_buf,
+
+--- internal/agent/bpf/http_helpers.bpf.h
+@@ -0,0 +1,456 @@
++// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++#pragma once
++
++// http_helpers.bpf.h — in-kernel HTTP/1 request-line + Host parsing.
++//
++// Redaction invariant: the raw send prefix stays in the per-CPU
++// http_scratch workspace. Only the parsed method / path / host bytes are
++// ever written into the ringbuf sample; path is terminated at '?' during
++// the parse so the query string never enters a sample. Header and body
++// bytes (Authorization, Cookie, ...) never cross the kernel boundary.
++//
++// The parse is best-effort request-start observation (see the design doc):
++// a request split across writes yields empty/truncated fields, and only
++// origin-form request lines ("GET /path HTTP/1.x") are accepted.
++
++// HTTP_SOURCE_* values are ringbuf ABI and mirror kerneltracker.HTTPSource*.
++#define HTTP_SOURCE_CLEARTEXT 0
++
++// Shortest acceptable request line: "GET / HTTP/1.0" (14 bytes).
++#define HTTP_MIN_REQUEST_LINE 14
++
++// bpf_ringbuf_reserve does not zero its storage and the buffer is reused, so
++// every parsed-field byte and padding must be zeroed before partial writes —
++// otherwise stale bytes from a previous sample could leak past the parsed
++// fields. This is part of the redaction invariant, not an optimization.
++// Zeroing uses literal-bound volatile u64 loops for the same BPF-backend
++// reason as the zero_* helpers in common_helpers.bpf.h.
++static __always_inline void zero_http_request_fields(struct http_request_sample *sample)
++{
++    volatile const __u64 zero_word = 0;
++    volatile __u64 *words = (volatile __u64 *)sample->method;
++    for (int i = 0; i < HTTP_METHOD_LEN / 8; i++)
++        words[i] = zero_word;
++    words = (volatile __u64 *)sample->path;
++    for (int i = 0; i < HTTP_PATH_LEN / 8; i++)
++        words[i] = zero_word;
++    words = (volatile __u64 *)sample->host;
++    for (int i = 0; i < HTTP_HOST_LEN / 8; i++)
++        words[i] = zero_word;
++}
++
++// http_method_len matches a known request-method token + space at the start
++// of buf (which must hold at least 8 readable bytes) and returns the token
++// length, or 0 when the bytes cannot start an HTTP request. CONNECT is
++// intentionally absent: its authority-form target never passes the
++// origin-form ('/') check below, so matching it would only cost cycles.
++static __always_inline __u32 http_method_len(const char *b)
++{
++    if (b[0] == 'G' && b[1] == 'E' && b[2] == 'T' && b[3] == ' ')
++        return 3;
++    if (b[0] == 'P' && b[1] == 'U' && b[2] == 'T' && b[3] == ' ')
++        return 3;
++    if (b[0] == 'P' && b[1] == 'O' && b[2] == 'S' && b[3] == 'T' && b[4] == ' ')
++        return 4;
++    if (b[0] == 'H' && b[1] == 'E' && b[2] == 'A' && b[3] == 'D' && b[4] == ' ')
++        return 4;
++    if (b[0] == 'P' && b[1] == 'A' && b[2] == 'T' && b[3] == 'C' && b[4] == 'H' &&
++        b[5] == ' ')
++        return 5;
++    if (b[0] == 'T' && b[1] == 'R' && b[2] == 'A' && b[3] == 'C' && b[4] == 'E' &&
++        b[5] == ' ')
++        return 5;
++    if (b[0] == 'D' && b[1] == 'E' && b[2] == 'L' && b[3] == 'E' && b[4] == 'T' &&
++        b[5] == 'E' && b[6] == ' ')
++        return 6;
++    if (b[0] == 'O' && b[1] == 'P' && b[2] == 'T' && b[3] == 'I' && b[4] == 'O' &&
++        b[5] == 'N' && b[6] == 'S' && b[7] == ' ')
++        return 7;
++    return 0;
++}
++
++// http_prefix_byte reads prefix[idx] masked to the buffer. The barrier makes
++// idx opaque to clang so it cannot prove the index in range and delete the
++// mask; the mask is then the verifier's in-bounds proof. Splitting the parse
++// across two programs keeps the per-read scalars from accumulating into the
++// state explosion that sank the single-program parser.
++static __always_inline char http_prefix_byte(struct http_scratch *s, __u32 idx)
++{
++    asm volatile("" : "+r"(idx));
++    idx &= HTTP1_PREFIX_LEN - 1;
++    return s->prefix[idx];
++}
++
++// The comparisons reject invalid parser state; the masks are separate verifier
++// proofs that clang cannot optimize away. Linux 6.6 rejected both comparison-
++// bounded variable reads and the previous per-byte ringbuf writes, but accepts
++// this masked variable-length read into the fixed sample fields.
++static __always_inline void http_copy_field(char *dst, struct http_scratch *s,
++                                            __u32 src, __u32 n)
++{
++    if (n == 0 || n >= HTTP1_PREFIX_LEN)
++        return;
++    if (src >= HTTP1_PREFIX_LEN)
++        return;
++    asm volatile("" : "+r"(src), "+r"(n));
++    src &= HTTP1_PREFIX_LEN - 1;
++    n &= HTTP1_PREFIX_LEN - 1;
++    if (src + n > HTTP1_PREFIX_LEN)
++        return;
++    bpf_probe_read_kernel(dst, n, &s->prefix[src]);
++}
++
++// http_scratch_get returns the single per-CPU parse workspace entry.
++static __always_inline struct http_scratch *http_scratch_get(void)
++{
++    __u32 key = 0;
++    return bpf_map_lookup_elem(&http_scratch, &key);
++}
++
++// The only state carried beyond the parse offsets is http_scratch.have_host
++// (1 = a host value was captured). The parse captures what it can and leaves
++// anything it cannot as empty — there is no truncation signal, rules match the
++// value or its absence, nothing finer. A "no host" outcome needs no flag: the
++// host steps simply find nothing and leave have_host at 0.
++
++// The parse is split between the attached entry and one tail-call target
++// (http_hooks.bpf.h), giving the target fresh verifier state. A single program
++// that did all of this exceeds the verifier instruction budget. Intermediate
++// values stay in the scratch map and are explicitly bounded before each scan.
++//
++// A step returns 0 to continue and -1 to drop the capture. Only the entry
++// tail-calls after its step; inside the parse target the steps run in sequence,
++// and a drop returns from the program without emitting a sample.
++
++// Step: request line. Method token, origin-form '/', scan to the ending space,
++// and validate " HTTP/1.". Stores data_len / mlen / pos / line_end.
++static __always_inline int http_step_reqline(struct http_scratch *s)
++{
++    __u32 data_len = s->data_len;
++    if (data_len > HTTP1_PREFIX_LEN)
++        data_len = HTTP1_PREFIX_LEN;
++    if (data_len < HTTP_MIN_REQUEST_LINE)
++        return -1;
++
++    __u32 mlen = http_method_len(s->prefix);
++    if (!mlen)
++        return -1;
++    __u32 pos = mlen + 1;
++    if (http_prefix_byte(s, pos) != '/')
++        return -1;
++
++    __u32 line_end = data_len;
++    __u8 space_found = 0;
++    for (int i = 0; i < HTTP1_PREFIX_LEN; i++) {
++        __u32 idx = pos + i;
++        if (idx >= data_len)
++            break;
++        char c = http_prefix_byte(s, idx);
++        if (c == ' ') {
++            line_end = idx;
++            space_found = 1;
++            break;
++        }
++        // A control byte (including CR / LF / NUL) or DEL cannot appear in a
++        // valid HTTP/1 request line: reject the capture as non-HTTP.
++        if ((__u8)c < 0x20 || (__u8)c == 0x7f)
++            return -1;
++    }
++
++    // When a space was found and the version token fits in the captured prefix,
++    // validate " HTTP/1.<digit>\r" so "GET /x junk" is not accepted as HTTP. If
++    // the request line ran past the prefix (no space) or the version token is
++    // cut at the boundary, that is an accepted partial capture: keep the path
++    // and let the host steps find nothing (have_host stays 0). The version
++    // bytes are read only inside the length guard, so no read reaches past
++    // data_len — which is why the prefix does not need pre-zeroing.
++    if (space_found) {
++        __u32 after_space = line_end + 1;
++        if (after_space + 7 <= data_len) {
++            __u8 v_ok = http_prefix_byte(s, after_space + 0) == 'H' &&
++                        http_prefix_byte(s, after_space + 1) == 'T' &&
++                        http_prefix_byte(s, after_space + 2) == 'T' &&
++                        http_prefix_byte(s, after_space + 3) == 'P' &&
++                        http_prefix_byte(s, after_space + 4) == '/' &&
++                        http_prefix_byte(s, after_space + 5) == '1' &&
++                        http_prefix_byte(s, after_space + 6) == '.';
++            if (!v_ok)
++                return -1;
++            if (after_space + 9 <= data_len) {
++                // Full "HTTP/1.<digit>\r": validate the minor digit and the
++                // request-line CR so "HTTP/1.Xjunk" is not accepted as HTTP.
++                char minor = http_prefix_byte(s, after_space + 7);
++                if (minor < '0' || minor > '9' ||
++                    http_prefix_byte(s, after_space + 8) != '\r')
++                    return -1;
++            }
++            // Else the minor digit / CR is past the prefix: accept the token.
++        }
++        // Else the version token is cut at the prefix boundary: accept.
++    }
++
++    s->data_len = data_len;
++    s->mlen = mlen;
++    s->pos = pos;
++    s->line_end = line_end;
++    return 0;
++}
++
++// Step: path. Scan for '?' (query stripped, never copied) up to the
++// request-line space; compute path_n (capped to the path field).
++static __always_inline int http_step_path(struct http_scratch *s)
++{
++    __u32 data_len = s->data_len;
++    if (data_len > HTTP1_PREFIX_LEN)
++        data_len = HTTP1_PREFIX_LEN;
++    __u32 pos = s->pos;
++    if (pos >= HTTP1_PREFIX_LEN)
++        return -1;
++    __u32 line_end = s->line_end;
++    if (line_end > data_len)
++        line_end = data_len;
++    if (line_end < pos)
++        line_end = pos;
++
++    __u32 path_end = line_end;
++    for (int i = 0; i < HTTP1_PREFIX_LEN; i++) {
++        __u32 idx = pos + i;
++        if (idx >= line_end)
++            break;
++        if (http_prefix_byte(s, idx) == '?') {
++            path_end = idx;
++            break;
++        }
++    }
++
++    __u32 path_n = path_end - pos;
++    if (path_n >= HTTP_PATH_LEN)
++        path_n = HTTP_PATH_LEN - 1;
++
++    s->path_n = path_n;
++    return 0;
++}
++
++// Step: find the Host header value start. Scans for "\r\nHost:" (case-
++// insensitive), stopping at the "\r\n\r\n" end of headers so a "Host:" in the
++// body cannot false-match. Sets have_host + host_val when found; otherwise
++// leaves have_host at 0 and the host is emitted empty.
++static __always_inline int http_step_hostfind(struct http_scratch *s)
++{
++    __u32 data_len = s->data_len;
++    if (data_len > HTTP1_PREFIX_LEN)
++        data_len = HTTP1_PREFIX_LEN;
++    __u32 after_space = s->line_end + 1;
++    if (after_space > data_len)
++        after_space = data_len;
++
++    __u32 host_val = 0;
++    for (int i = 0; i < HTTP1_PREFIX_LEN; i++) {
++        __u32 p = after_space + i;
++        if (p + 1 >= data_len)
++            break;
++        if (http_prefix_byte(s, p) != '\r' ||
++            http_prefix_byte(s, p + 1) != '\n')
++            continue;
++        if (p + 3 < data_len &&
++            http_prefix_byte(s, p + 2) == '\r' &&
++            http_prefix_byte(s, p + 3) == '\n')
++            break;   // end of headers reached before any Host: leave empty.
++        if (p + 6 >= data_len)
++            break;
++        if ((http_prefix_byte(s, p + 2) | 0x20) == 'h' &&
++            (http_prefix_byte(s, p + 3) | 0x20) == 'o' &&
++            (http_prefix_byte(s, p + 4) | 0x20) == 's' &&
++            (http_prefix_byte(s, p + 5) | 0x20) == 't' &&
++            http_prefix_byte(s, p + 6) == ':') {
++            host_val = p + 7;
++            break;
++        }
++    }
++
++    if (!host_val)
++        return 0;   // no Host in the prefix: emit with an empty host.
++
++    if (host_val > data_len)
++        host_val = data_len;
++    // Leading/trailing OWS around the Host value is stripped in userspace
++    // (handleHTTPRequestSample), not here: an in-kernel skip capped at a fixed
++    // width would leave residual leading whitespace, and trailing whitespace
++    // would survive to the copy — both let an attacker dodge a `host == "..."`
++    // rule. Userspace trims all of it after decode.
++    s->host_val = host_val;
++    s->have_host = 1;
++    return 0;
++}
++
++// Step: find the Host value term
+[truncated]
+
+--- internal/agent/bpf/http_hooks.bpf.h
+@@ -0,0 +1,66 @@
++// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++#pragma once
++
++// http_hooks.bpf.h — cleartext HTTP request-line capture.
++//
++// The parse is split once with a tail call (see http_helpers.bpf.h and the
++// design doc). The entry program below is the only one attached to tcp_sendmsg;
++// userspace installs the parse target in http_stages. The verifier reset keeps
++// the whole parse loadable on Linux 5.15 / 6.6 / 6.18; a single monolithic
++// program exceeds the verifier instruction budget. The target copies only the
++// bounded path/host fields into the sample.
++//
++//   kernel: tcp_sendmsg
++//      |  (only this program is attached)
++//      v
++//   entry ─── cgroup gate → capture ≤256B prefix → parse request line
++//      |
++//      |  bpf_tail_call(http_stages[0]); a missing target drops the capture.
++//      v
++//   [0] parse      path scan → Host scan → reserve/copy/submit
++//
++// Both programs share the per-CPU http_scratch workspace because tail calls do
++// not migrate execution to another CPU. They carry the same
++// SEC("fentry/tcp_sendmsg") and signature not because both hook tcp_sendmsg,
++// but because bpf_tail_call requires a compatible target program.
++
++// Stage indices in the http_stages jump table.
++#define HTTP_STAGE_PARSE 0
++
++// Entry: content detection separates cleartext from ciphertext (a TLS write
++// starts with a record byte and never matches a method token; KTLS plaintext
++// is intercepted before tcp_sendmsg). On a match it copies the prefix into the
++// scratch map and parses the request line (one break-scan, for the ending
++// space), then tail-calls the parse target. Request-line work stays in
++// the entry because a tail call cannot target the attached entry program.
++SEC("fentry/tcp_sendmsg")
++int BPF_PROG(handle_tcp_sendmsg_http, struct sock *sk, struct msghdr *msg, size_t len)
++{
++    if (!cgroup_is_tracked(current_cgroup_id()))
++        return 0;
++    if (http_entry_capture(msg) < 0)
++        return 0;
++    struct http_scratch *s = http_scratch_get();
++    if (!s)
++        return 0;
++    if (http_step_reqline(s) < 0)
++        return 0;
++    bpf_tail_call(ctx, &http_stages, HTTP_STAGE_PARSE);
++    return 0;
++}
++
++SEC("fentry/tcp_sendmsg")
++int BPF_PROG(handle_tcp_sendmsg_http_parse, struct sock *sk, struct msghdr *msg, size_t len)
++{
++    struct http_scratch *s = http_scratch_get();
++    if (!s)
++        return 0;
++    if (http_step_path(s) < 0)
++        return 0;
++    if (http_step_hostfind(s) < 0)
++        return 0;
++    if (http_step_hostlen(s) < 0)
++        return 0;
++    http_step_emit(s, current_cgroup_id());
++    return 0;
++}
+
+--- internal/agent/bpf/kernel_samples.h
+@@ -26,6 +26,7 @@ enum agent_sample_kind {
+     SAMPLE_KIND_DNS = 12,
+     SAMPLE_KIND_UNIX_SOCKET_CONNECT = 13,
+     SAMPLE_KIND_MOUNT = 14,
++    SAMPLE_KIND_HTTP_REQUEST = 15,
+ };
+ 
+ // Field-size constants below define generated Go struct layout.
+@@ -42,10 +43,22 @@ enum agent_sample_kind {
+ #define ARGV_BLOB_LEN 2048
+ // DNS stores a prefix, not a full packet. The first question fits in this cap.
+ #define DNS_PAYLOAD_LEN 512
++// http_request_sample carries parsed fields only — never a raw request
++// prefix. The raw bytes may hold Authorization / Cookie and must not cross
++// the kernel boundary (redaction invariant).
++// Longest matched token is "OPTIONS" (7); 16 leaves headroom plus NUL.
++#define HTTP_METHOD_LEN 16
++#define HTTP_PATH_LEN 256
++// RFC 1035 name max (253) plus ":port" fits in 256.
++#define HTTP_HOST_LEN 256
+ 
+ // These capacities are used with masked indexes / fixed-size loops.
+ _Static_assert((DNS_PAYLOAD_LEN & (DNS_PAYLOAD_LEN - 1)) == 0,
+                "DNS_PAYLOAD_LEN must be a power of two");
++_Static_assert((HTTP_PATH_LEN & (HTTP_PATH_LEN - 1)) == 0,
++               "HTTP_PATH_LEN must be a power of two");
++_Static_assert((HTTP_HOST_LEN & (HTTP_HOST_LEN - 1)) == 0,
++               "HTTP_HOST_LEN must be a power of two");
+ _Static_assert((ARGV_BLOB_LEN & (ARGV_BLOB_LEN - 1)) == 0,
+                "ARGV_BLOB_LEN must be a power of two");
+ _Static_assert((FILE_PATH_LEN & (FILE_PATH_LEN - 1)) == 0,
+@@ -263,6 +276,24 @@ struct dns_sample {
+     __u8 payload[DNS_PAYLOAD_LEN];
+ };
+ 
++// HTTP request-line sample. method/path/host are the parsed fields only;
++// path is already query-stripped (terminated at '?') by the in-eBPF parse.
++// Shared by the cleartext tcp_sendmsg tap today and the SSL_write uprobe
++// tap later; source discriminates the channel.
++struct http_request_sample {
++    __u32 kind;
++    __u8 source;          // HTTP_SOURCE_*, mirrors kerneltracker.HTTPSource*.
++    __u8 _pad0[3];
++    __u64 ts_ns;
++    __u64 cgroup_id;
++    __u64 start_boottime;
++    __s32 tgid;
++    __u32 _pad1;
++    char method[HTTP_METHOD_LEN];
++    char path[HTTP_PATH_LEN];
++    char host[HTTP_HOST_LEN];
++};
++
+ /* Force BTF emission for bpf2go. */
+ const volatile struct fork_sample *unused_fork_sample;
+ const volatile struct cgroup_mkdir_sample *unused_cgroup_mkdir_sample;
+@@ -278,3 +309,4 @@ const volatile struct net_v4_sample *unused_net_v4_sample;
+ const volatile struct net_v6_sample *unused_net_v6_sample;
+ const volatile struct dns_sample *unused_dns_sample;
+ const volatile struct unix_socket_connect_sample *unused_unix_socket_connect_sample;
++const volatile struct http_request_sample *unused_http_request_sample;
+
+--- internal/agent/bpf/maps.bpf.h
+@@ -18,6 +18,42 @@ struct path_scratch {
+     char buf[FILE_PATH_LEN + DENTRY_NAME_BUF_LEN];
+ };
+ 
++// HTTP/1 parse prefix cap — the number of leading request bytes parsed.
++// Defined here because it sizes http_scratch. The prefix stays in this
++// per-CPU workspace; only parsed method/path/host are copied into the
++// ringbuf sample (redaction invariant).
++#define HTTP1_PREFIX_LEN 256
++_Static_assert((HTTP1_PREFIX_LEN & (HTTP1_PREFIX_LEN - 1)) == 0,
++               "HTTP1_PREFIX_LEN must be a power of two");
++_Static_assert(HTTP_PATH_LEN >= HTTP1_PREFIX_LEN &&
++               HTTP_HOST_LEN >= HTTP1_PREFIX_LEN,
++               "HTTP fields must hold any bounded prefix copy");
++
++// Per-CPU HTTP parse workspace, passed through the tail-call parse pipeline
++// (see http_helpers.bpf.h). The raw send prefix stays in this map; only parsed
++// method/path/host fields leave the kernel. Each pipeline stage re-reads its
++// inputs from here as unknown scalars and re-bounds them.
++struct http_scratch {
++    char prefix[HTTP1_PREFIX_LEN];   // raw request bytes (never leave kernel)
++    __u32 data_len;                  // bytes captured in prefix
++    __u32 pos;                       // path start (method_len + 1)
++    __u32 mlen;                      // method length (3..7)
++    __u32 line_end;                  // request-line space, or data_len
++    __u32 path_n;                    // path byte count
++    __u32 host_val;                  // host value start
++    __u32 host_n;                    // host byte count
++    __u32 have_host;                 // 1 = a host value was captured
++};
++
++// Tail-call jump table for the HTTP parser. Userspace installs the parse target
++// at index 0 before attaching the entry program.
++struct {
++    __uint(type, BPF_MAP_TYPE_PROG_ARRAY);
++    __uint(max_entries, 1);
++    __type(key, __u32);
++    __type(value, __u32);
++} http_stages SEC(".maps");
++
+ // The hook only checks staging_map lookup hits; this value is reserved for a
+ // future kernel path that may surface JobIdentity without userspace lookup.
+ struct staging_value {
+@@ -50,6 +86,13 @@ struct {
+     __type(value, struct path_scratch);
+ } path_scratch SEC(".maps");
+ 
++struct {
++    __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
++    __uint(max_entries, 1);
++    __type(key, __u32);
++    __type(value, struct http_scratch);
++} http_scratch SEC(".maps");
++
+ struct {
+     __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
+     __uint(max_entries, 1);
+
+--- internal/agent/bpf/program.bpf.c
+@@ -14,11 +14,13 @@
+ #include "cgroup_helpers.bpf.h"
+ #include "path_helpers.bpf.h"
+ #include "dns_helpers.bpf.h"
++#include "http_helpers.bpf.h"
+ #include "process_hooks.bpf.h"
+ #include "cgroup_hooks.bpf.h"
+ #include "file_hooks.bpf.h"
+ #include "mount_hooks.bpf.h"
+ #include "network_hooks.bpf.h"
+ #include "dns_hooks.bpf.h"
++#include "http_hooks.bpf.h"
+ 
+ char LICENSE[] SEC("license") = "Dual BSD/GPL";
+

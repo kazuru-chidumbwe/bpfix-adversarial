@@ -1,0 +1,91 @@
+repo: cilium/tetragon
+commit: feb0d4f101481eeee2f81c0d3fe4d1cfef9ff532
+rank: 2373
+
+bpf: reduce complexity in pfilter.h
+
+In a previous version of the PR this commit belongs to, we needed to
+decrease the complexity, especially for v511 eBPF objects.
+This commit is the result.
+
+We always mask the `index` variable before we use it to look things up
+in out filter already. This commit adds additional masking after we
+changed the variable so that the range the verifier needs to track is
+also bounded on all operations of this variable not only when it's used
+as lookup index.
+
+Before this commit, on a 6.17 kernel with ITER_NUM=0.
+
+File                             Program                              Insns
+-------------------------------  ----------------------------------  ------
+bpf_generic_rawtp_v511.o         generic_rawtp_process_filter        886480
+bpf_generic_tracepoint_v511.o    generic_tracepoint_filter           886480
+bpf_generic_usdt_v511.o          generic_usdt_process_filter         886480
+bpf_multi_usdt_v511.o            generic_usdt_process_filter         886480
+bpf_generic_rawtp_v61.o          generic_rawtp_process_filter        792864
+bpf_generic_tracepoint_v61.o     generic_tracepoint_filter           792864
+bpf_generic_usdt_v61.o           generic_usdt_process_filter         792864
+bpf_multi_usdt_v61.o             generic_usdt_process_filter         792864
+bpf_generic_rawtp_v53.o          generic_rawtp_process_filter        558264
+bpf_generic_tracepoint_v53.o     generic_tracepoint_filter           558264
+
+After this commit:
+
+File                             Program                              Insns
+-------------------------------  ----------------------------------  ------
+bpf_generic_rawtp_v511.o         generic_rawtp_process_filter        569560
+bpf_generic_tracepoint_v511.o    generic_tracepoint_filter           569560
+bpf_generic_usdt_v511.o          generic_usdt_process_filter         569560
+bpf_multi_usdt_v511.o            generic_usdt_process_filter         569560
+bpf_generic_rawtp_v61.o          generic_rawtp_process_filter        479193
+bpf_generic_tracepoint_v61.o     generic_tracepoint_filter           479193
+bpf_generic_usdt_v61.o           generic_usdt_process_filter         479193
+bpf_multi_usdt_v61.o             generic_usdt_process_filter         479193
+bpf_generic_retkprobe_v511.o     generic_retkprobe_filter_arg        408073
+bpf_generic_retuprobe_v511.o     generic_retuprobe_filter_arg        408073
+
+Signed-off-by: Leonard Cohnen <leonard.cohnen@gmail.com>
+
+--- bpf/process/pfilter.h
+@@ -690,7 +690,7 @@ selector_process_filter(void *ctx, __u32 *f, __u32 index, struct execve_map_valu
+ 
+ 	/* we can have only matchNamespace */
+ 	if (len > 4) {
+-		pid = (struct pid_filter *)((u64)f + index);
++		pid = (struct pid_filter *)((u64)f + (index & INDEX_MASK));
+ 		/* 12: op, flags, length */
+ 		index += sizeof(struct pid_filter);
+ 		struct selector_filter sel = {
+@@ -738,6 +738,7 @@ selector_process_filter(void *ctx, __u32 *f, __u32 index, struct execve_map_valu
+ 		if (res == PFILTER_REJECT)
+ 			return res;
+ 	}
++	index &= INDEX_MASK; /* reduce the number of states the verifier must track */
+ 
+ 	/* matchCapabilities */
+ 	/* (sizeof(cap1) + sizeof(cap2) + ... + 4) */
+@@ -753,6 +754,7 @@ selector_process_filter(void *ctx, __u32 *f, __u32 index, struct execve_map_valu
+ 	}
+ 	if (res == PFILTER_REJECT)
+ 		return res;
++	index &= INDEX_MASK; /* reduce the number of states the verifier must track */
+ 
+ #ifdef __NS_CHANGES_FILTER
+ 	/* matchNamespaceChanges */
+@@ -770,6 +772,7 @@ selector_process_filter(void *ctx, __u32 *f, __u32 index, struct execve_map_valu
+ 	}
+ 	if (res == PFILTER_REJECT)
+ 		return res;
++	index &= INDEX_MASK; /* reduce the number of states the verifier must track */
+ #endif
+ 
+ #ifdef __CAP_CHANGES_FILTER
+@@ -788,6 +791,7 @@ selector_process_filter(void *ctx, __u32 *f, __u32 index, struct execve_map_valu
+ 	}
+ 	if (res == PFILTER_REJECT)
+ 		return res;
++	index &= INDEX_MASK; /* reduce the number of states the verifier must track */
+ #endif
+ 
+ #ifdef __LARGE_BPF_PROG
+

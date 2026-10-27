@@ -1,0 +1,84 @@
+repo: microsoft/retina
+commit: 96d85f8ec5861cdf72ed6656a6fb4ba6a915ccec
+rank: 5350
+
+fix: convert kernel monotonic times to wall time (#268)
+
+# Description
+
+Adjusts timestamps from eBPF that use the kernel monotonic timer to UTC
+during Flow ingestion.
+
+This is done on a best-effort basis, because it is impossible to sample
+from the monotonic timer and the wall-clock at the same instant. The
+difference in the time it takes to execute these instructions should be
+small enough for our purposes in practice.
+
+## Related Issue
+
+Fixes #204 
+
+## Checklist
+
+- [x] I have read the [contributing
+documentation](https://retina.sh/docs/contributing).
+- [x] I signed and signed-off the commits (`git commit -S -s ...`). See
+[this
+documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification)
+on signing commits.
+- [x] I have correctly attributed the author(s) of the code.
+- [ ] I have tested the changes locally.
+- [x] I have followed the project's style guidelines.
+- [x] I have updated the documentation, if necessary.
+- [x] I have added tests, if applicable.
+
+## Screenshots (if applicable) or Testing Completed
+
+Please add any relevant screenshots or GIFs to showcase the changes
+made.
+
+## Additional Notes
+
+This is effectively only implemented for Unix builds as I don't know how
+Windows ktime behaves (and we're only compiling these plugins for Linux
+at the moment). It can be implemented on !unix in the future as
+necessary.
+
+---
+
+Please refer to the [CONTRIBUTING.md](../CONTRIBUTING.md) file for more
+information on how to contribute to this project.
+
+Signed-off-by: Evan Baker <rbtr@users.noreply.github.com>
+
+--- pkg/plugin/dropreason/_cprog/drop_reason.c
+@@ -184,7 +184,7 @@ static void get_packet_from_skb(struct packet *p, struct sk_buff *skb)
+     p->src_ip = iphdr.saddr;
+     p->dst_ip = iphdr.daddr;
+     // get current timestamp in ns
+-    p->ts = bpf_ktime_get_ns();
++    p->ts = bpf_ktime_get_boot_ns();
+ 
+     if (iphdr.protocol == IPPROTO_TCP)
+     {
+@@ -229,7 +229,7 @@ static void get_packet_from_sock(struct packet *p, struct sock *sk)
+ 	#endif
+ 
+     // get current timestamp in ns
+-    p->ts = bpf_ktime_get_ns();
++    p->ts = bpf_ktime_get_boot_ns();
+     p->in_filtermap = true;
+     p->src_ip = saddr;
+     p->dst_ip = daddr;
+
+--- pkg/plugin/packetparser/_cprog/packetparser.c
+@@ -147,7 +147,7 @@ static void parse(struct __sk_buff *skb, direction d)
+ 	__builtin_memset(&p, 0, sizeof(p));
+ 
+ 	// Get current time in nanoseconds.
+-	p.ts = bpf_ktime_get_ns();
++	p.ts = bpf_ktime_get_boot_ns();
+ 	
+ 	p.dir = d;
+ 	p.bytes = skb->len;
+

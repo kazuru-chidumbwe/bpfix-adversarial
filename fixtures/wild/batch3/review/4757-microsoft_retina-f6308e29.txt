@@ -1,0 +1,66 @@
+repo: microsoft/retina
+commit: f6308e298648c8d965a41f1318208d4cf16e5bcc
+rank: 4757
+
+fix: correctly determine traffic direction in conntrack (#721)
+
+# Description
+
+if `observation_point` is 0, and we compared it with
+`OBSERVATION_POINT_FROM_ENDPOINT`, which is also 0, this will evaluate
+to `false`, which is not what we want.
+## Related Issue
+
+If this pull request is related to any issue, please mention it here.
+Additionally, make sure that the issue is assigned to you before
+submitting this pull request.
+
+## Checklist
+
+- [ ] I have read the [contributing
+documentation](https://retina.sh/docs/contributing).
+- [ ] I signed and signed-off the commits (`git commit -S -s ...`). See
+[this
+documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification)
+on signing commits.
+- [ ] I have correctly attributed the author(s) of the code.
+- [ ] I have tested the changes locally.
+- [ ] I have followed the project's style guidelines.
+- [ ] I have updated the documentation, if necessary.
+- [ ] I have added tests, if applicable.
+
+## Screenshots (if applicable) or Testing Completed
+
+Logs show all flows with correct traffic direction
+```
+retina ts=2024-09-10T16:41:11.983Z level=info caller=packetparser/packetparser_linux.go:612 msg="Received flow event" flow="time:{seconds:1725986471 nanos:983049821} verdict:FORWARDED IP:{source:\"100.64.0.196\" destination:\"13.107.21.200\" ipVersion:IPv4} l4:{TCP:{source_port:50818 destination_port:80 flags:{SYN:true}}} Type:L3_L4 event_type:{type:4 sub_type:3} traffic_direction:EGRESS trace_observation_point:TO_STACK is_reply:{} extensions:{[type.googleapis.com/utils.RetinaMetadata]:{bytes:74}}"
+retina ts=2024-09-10T16:41:11.988Z level=info caller=packetparser/packetparser_linux.go:612 msg="Received flow event" flow="time:{seconds:1725986471 nanos:988443885} verdict:FORWARDED IP:{source:\"13.107.21.200\" destination:\"100.64.0.196\" ipVersion:IPv4} l4:{TCP:{source_port:80 destination_port:50818 flags:{SYN:true ACK:true}}} Type:L3_L4 event_type:{type:4} traffic_direction:EGRESS trace_observation_point:TO_ENDPOINT is_reply:{value:true} extensions:{[type.googleapis.com/utils.RetinaMetadata]:{bytes:66}}"
+retina ts=2024-09-10T16:41:11.988Z level=info caller=packetparser/packetparser_linux.go:612 msg="Received flow event" flow="time:{seconds:1725986471 nanos:988529786} verdict:FORWARDED IP:{source:\"100.64.0.196\" destination:\"13.107.21.200\" ipVersion:IPv4} l4:{TCP:{source_port:50818 destination_port:80 flags:{ACK:true}}} Type:L3_L4 event_type:{type:4 sub_type:3} traffic_direction:EGRESS trace_observation_point:TO_STACK is_reply:{} extensions:{[type.googleapis.com/utils.RetinaMetadata]:{bytes:54}}"
+retina ts=2024-09-10T16:41:11.988Z level=info caller=packetparser/packetparser_linux.go:612 msg="Received flow event" flow="time:{seconds:1725986471 nanos:988601387} verdict:FORWARDED IP:{source:\"100.64.0.196\" destination:\"13.107.21.200\" ipVersion:IPv4} l4:{TCP:{source_port:50818 destination_port:80 flags:{PSH:true ACK:true}}} Type:L3_L4 event_type:{type:4 sub_type:3} traffic_direction:EGRESS trace_observation_point:TO_STACK is_reply:{} extensions:{[type.googleapis.com/utils.RetinaMetadata]:{bytes:126}}"
+retina ts=2024-09-10T16:41:11.992Z level=info caller=packetparser/packetparser_linux.go:612 msg="Received flow event" flow="time:{seconds:1725986471 nanos:992436032} verdict:FORWARDED IP:{source:\"13.107.21.200\" destination:\"100.64.0.196\" ipVersion:IPv4} l4:{TCP:{source_port:80 destination_port:50818 flags:{PSH:true ACK:true}}} Type:L3_L4 event_type:{type:4} traffic_direction:EGRESS trace_observation_point:TO_ENDPOINT is_reply:{value:true} extensions:{[type.googleapis.com/utils.RetinaMetadata]:{bytes:278}}"
+retina ts=2024-09-10T16:41:11.992Z level=info caller=packetparser/packetparser_linux.go:612 msg="Received flow event" flow="time:{seconds:1725986471 nanos:992641835} verdict:FORWARDED IP:{source:\"100.64.0.196\" destination:\"13.107.21.200\" ipVersion:IPv4} l4:{TCP:{source_port:50818 destination_port:80 flags:{FIN:true ACK:true}}} Type:L3_L4 event_type:{type:4 sub_type:3} traffic_direction:EGRESS trace_observation_point:TO_STACK is_reply:{} extensions:{[type.googleapis.com/utils.RetinaMetadata]:{bytes:54}}"
+retina ts=2024-09-10T16:41:11.993Z level=info caller=packetparser/packetparser_linux.go:612 msg="Received flow event" flow="time:{seconds:1725986471 nanos:993067640} verdict:FORWARDED IP:{source:\"13.107.21.200\" destination:\"100.64.0.196\" ipVersion:IPv4} l4:{TCP:{source_port:80 destination_port:50818 flags:{FIN:true ACK:true}}} Type:L3_L4 event_type:{type:4} traffic_direction:EGRESS trace_observation_point:TO_ENDPOINT is_reply:{value:true} extensions:{[type.googleapis.com/utils.RetinaMetadata]:{bytes:54}}"
+```
+## Additional Notes
+
+Add any additional notes or context about the pull request here.
+
+---
+
+Please refer to the [CONTRIBUTING.md](../CONTRIBUTING.md) file for more
+information on how to contribute to this project.
+
+--- pkg/plugin/conntrack/_cprog/conntrack.c
+@@ -94,9 +94,9 @@ static inline void _ct_reverse_key(struct ct_v4_key *reverse_key, const struct c
+  * @arg observation_point The point in the network stack where the packet is observed.
+  */
+ static __always_inline __u8 _ct_get_traffic_direction(__u8 observation_point) {
+-    if (observation_point & (OBSERVATION_POINT_FROM_ENDPOINT | OBSERVATION_POINT_TO_NETWORK)) {
++    if (observation_point == OBSERVATION_POINT_FROM_ENDPOINT || observation_point == OBSERVATION_POINT_TO_NETWORK) {
+         return TRAFFIC_DIRECTION_EGRESS;
+-    } else if (observation_point & (OBSERVATION_POINT_TO_ENDPOINT | OBSERVATION_POINT_FROM_NETWORK)) {
++    } else if (observation_point == OBSERVATION_POINT_TO_ENDPOINT || observation_point == OBSERVATION_POINT_FROM_NETWORK) {
+         return TRAFFIC_DIRECTION_INGRESS;
+     } else {
+         return TRAFFIC_DIRECTION_UNKNOWN;
+

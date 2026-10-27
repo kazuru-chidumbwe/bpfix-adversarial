@@ -1,0 +1,69 @@
+repo: DataDog/datadog-agent
+commit: f90660235a002e398dc7a29177effbd5f3e0281c
+rank: 6554
+
+Use bpf_probe_read_user_str to reduce noisy error on EFAULT (#52361)
+
+### What does this PR do?
+
+Replaces the fixed-length `bpf_probe_read_user` with `bpf_probe_read_user_str` in `fill_lib_path` (shared-libraries eBPF program), and removes the now-irrelevant `fill_path` wrapper and `fill_path_safe` byte-by-byte fallback
+
+### Motivation
+
+`fill_lib_path` read a fixed 220 bytes (`LIB_PATH_MAX_SIZE`) regardless of the actual path length. When a short pathname sat near the end of a mapped page, the read crossed into unmapped memory and `bpf_probe_read_user` (nofault) failed with `EFAULT`. On kernels ≥5.6 the openat fexit probes fire on every open syscall, so this produced a constant ~5% (`220/4096`) stream of `error:efault, helper:bpf_probe_read_user` telemetry, drowning out real errors. No functional impact — the `fill_path_safe` fallback already produced correct paths — purely telemetry noise plus the wasted fallback work. `bpf_probe_read_user_str` stops at the `NUL` terminator, so it never over-reads; the `EFAULT` and the fallback both go away. Available since kernel 4.11, below our 4.14 floor for shared-libraries monitoring.
+
+### Describe how you validated your changes
+
+Built system-probe and ran `./pkg/network/usm/sharedlibraries/... (TestEbpfProgram`, which loads the program and exercises library detection) on a 5.15 arm64 kernel — passes, confirming the program still verifies and detection is unchanged.
+
+### Additional Notes
+[Deployment to staging](https://ddstaging.datadoghq.com/dashboard/kfn-zy2-t98/agent-system-probe-overview?fromUser=true&refresh_mode=paused&tpl_var_kube_cluster_name%5B0%5D=parent24&from_ts=1782142162656&to_ts=1782284299970&live=false)
+[Load Test](https://dddev.datadoghq.com/dashboard/gqu-2wz-asy/usm-performance-evaluation-20?fromUser=false&refresh_mode=paused&tpl_var_base_agent-env%5B0%5D=eyal-reduce-errors-base&tpl_var_client-service%5B0%5D=golang-k6-client-http&tpl_var_compare_agent-env%5B0%5D=eyal-reduce-errors-new&tpl_var_http.version%5B0%5D=http%2F1.1&tpl_var_kube_cluster_name%5B0%5D=usm3&tpl_var_server-service%5B0%5D=golang-httpbin&from_ts=1781769785422&to_ts=1781773385422&live=false)
+
+
+Co-authored-by: eyal.brami <eyal.brami@datadoghq.com>
+
+--- pkg/network/ebpf/c/shared-libraries/probes.h
+@@ -7,36 +7,14 @@
+ #include "pid_tgid.h"
+ #include "shared-libraries/types.h"
+ 
+-static __always_inline void fill_path_safe(lib_path_t *path, const char *path_argument) {
+-#pragma unroll
+-    for (int i = 0; i < LIB_PATH_MAX_SIZE; i++) {
+-        bpf_probe_read_user(&path->buf[i], 1, &path_argument[i]);
+-        if (path->buf[i] == 0) {
+-            path->len = i;
+-            break;
+-        }
+-    }
+-}
+-
+-static __always_inline long fill_path(lib_path_t *path, const char *path_argument) {
+-    return bpf_probe_read_user_with_telemetry(&path->buf, sizeof(path->buf), path_argument);
+-}
+-
+ static __always_inline bool fill_lib_path(lib_path_t *path, const char *path_argument) {
+     path->pid = GET_USER_MODE_PID(bpf_get_current_pid_tgid());
+-
+-    if (fill_path(path, path_argument) >= 0) {
+-#pragma unroll
+-        for (int i = 0; i < LIB_PATH_MAX_SIZE; i++) {
+-            if (path->buf[i] == 0) {
+-                path->len = i;
+-                break;
+-            }
+-        }
+-    } else {
+-        fill_path_safe(path, path_argument);
++    // Using bpf_probe_read_user_str ensures safe reads by stopping at the string's NUL terminator, 
++    // preventing over-reads and unnecessary faults; avoid fixed-length reads that might touch unmapped memory.
++    long ret = bpf_probe_read_user_str_with_telemetry(path->buf, sizeof(path->buf), path_argument);
++    if (ret > 0) {
++        path->len = ret - 1; // ret includes the NUL terminator
+     }
+-
+     return path->len > 0;
+ }
+ 
+

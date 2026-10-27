@@ -1,0 +1,53 @@
+repo: cilium/cilium
+commit: 424f14c184fb984f7c8eb9900f8d36f0f092ca77
+rank: 2472
+
+policy: add aggregation test
+
+This ensures that the userspace and bpf implementation of identity
+aggregation match exactly.
+
+The userspace test outputs a C array of inputs and outputs. The C test
+includes this and verifies that the results match.
+
+Signed-off-by: Casey Callendrello <cdc@isovalent.com>
+
+--- bpf/tests/network_policy.c
+@@ -12,6 +12,7 @@
+ #include <lib/policy.h>
+ 
+ #include "lib/policy.h"
++#include "network_policy_tuples.h"
+ 
+ #define REMOTE_IDENTITY		112233
+ 
+@@ -268,5 +269,11 @@ int network_policy_egress_allow_check(struct __ctx_buff *ctx)
+ 		assert(aggregate_for_identity(33554432) == n);
+ 	});
+ 
++    /* tests that aggregates match the userspace implementation */
++	TEST("aggregate-for-id-userspace", {
++		for (unsigned long i = 0; i < ARRAY_SIZE(aggregate_nid_in); i++)
++			assert(aggregate_for_identity(aggregate_nid_in[i]) == aggregate_nid_out[i]);
++	});
++
+ 	test_finish();
+ }
+
+--- bpf/tests/network_policy_tuples.h
+@@ -0,0 +1,14 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++/* Copyright Authors of Cilium */
++
++#pragma once
++
++/* Arrays are generated in pkg/policy/aggregate_test.go */
++
++static __u32 aggregate_nid_in[] = {
++#include "aggregate_nid_in.txt"
++};
++
++static __u32 aggregate_nid_out[] = {
++#include "aggregate_nid_out.txt"
++};
+

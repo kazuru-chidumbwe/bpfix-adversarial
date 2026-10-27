@@ -1,0 +1,70 @@
+repo: DataDog/datadog-agent
+commit: b57163186ad251945b2cea5081209c67c9dfa81c
+rank: 2446
+
+Fix fd_by_ssl_bio map leak by adding BIO_free cleanup hook (#45877)
+
+### What does this PR do?
+This PR adds `uprobe__BIO_free` to delete entries when BIO is freed, ensuring cleanup happens regardless of whether `SSL_set_bio` was called.
+
+Changes:
+- Add `uprobe__BIO_free` hook in `native-tls.h`
+- Register `bioFreeProbe` in `ebpf_ssl.go`
+- Add `TestFdBySSLBioMapLeak` test with Docker-based C helper
+
+### Motivation
+The `fd_by_ssl_bio` eBPF map stores BIO pointer to socket fd mappings. Entries were added by `uretprobe__BIO_new_socket` but only deleted by `uprobe__SSL_set_bio`. If SSL_set_bio was never called (e.g., error paths where BIO_free is called directly), entries would leak and eventually exhaust the map's 1024 entry limit.
+
+### Describe how you validated your changes
+#### Unit Test: `TestFdBySSLBioMapLeak`                                                                                                                                             
+                                                                                                                                                                                     
+  Added a new test in `pkg/network/usm/ebpf_ssl_test.go` that validates the fix by:                                                                                                  
+                                                                                                                                                                                     
+  1. Starting a TLS server and USM monitor                                                                                                                                           
+  2. Running a Docker-based helper program (`bio_leak.c`) that:                                                                                                                      
+     - Calls `BIO_new_socket()` 50 times (which triggers `uretprobe__BIO_new_socket` adding entries to `fd_by_ssl_bio`)                                                              
+     - Does NOT call `SSL_set_bio()` (simulating error paths)                                                                                                                        
+     - Calls `BIO_free()` on each BIO (which now triggers `uprobe__BIO_free` to clean up entries)                                                                                    
+  3. Verifying that `fd_by_ssl_bio` map entries do not accumulate                                                                                                                    
+                                                                                                                                                                                     
+  **Test results:**                                                                                                                                                                  
+  === RUN   TestFdBySSLBioMapLeak                                                                                                                                                    
+      ebpf_ssl_test.go:402: fd_by_ssl_bio entries before: 0                                                                                                                          
+      ebpf_ssl_test.go:410: fd_by_ssl_bio entries after: 0 (attempted to create 50 stale entries)                                                                                    
+  --- PASS: TestFdBySSLBioMapLeak (100.25s)                                                                                                                                          
+                                                                                                                                                                                     
+  #### Before the fix (without `uprobe__BIO_free`)                                                                                                                                    
+                                                                                                                                                                                     
+  The test would show entries leaking into the map:                                                                                                                                  
+  fd_by_ssl_bio entries before: 0                                                                                                                                                    
+  fd_by_ssl_bio entries after: 50 (attempted to create 50 stale entries)                                                                                                             
+                                                                                                                                                                                     
+  #### After the fix (with `uprobe__BIO_free`)                                                                                                                                        
+                                                                                                                                                                                     
+  Entries are cleaned up when `BIO_free()` is called:                                                                                                                                
+  fd_by_ssl_bio entries before: 0                                                                                                                                                    
+  fd_by_ssl_bio entries after: 0 (attempted to create 50 stale entries)
+
+### Additional Notes
+
+
+Co-authored-by: daniel.lavie <daniel.lavie@datadoghq.com>
+
+--- pkg/network/ebpf/c/protocols/tls/native-tls.h
+@@ -86,6 +86,15 @@ int BPF_BYPASSABLE_UPROBE(uprobe__SSL_set_bio, void *ssl_ctx, void *bio) {
+     return 0;
+ }
+ 
++// BIO_free cleanup hook: ensures fd_by_ssl_bio entries are deleted even when
++// SSL_set_bio is never called (e.g., error paths where BIO is freed directly).
++// This prevents map entry leaks that could exhaust the map's 1024 entry limit.
++SEC("uprobe/BIO_free")
++int BPF_BYPASSABLE_UPROBE(uprobe__BIO_free, void *bio) {
++    bpf_map_delete_elem(&fd_by_ssl_bio, &bio);
++    return 0;
++}
++
+ SEC("uprobe/SSL_read")
+ int BPF_BYPASSABLE_UPROBE(uprobe__SSL_read) {
+     ssl_read_args_t args = { 0 };
+

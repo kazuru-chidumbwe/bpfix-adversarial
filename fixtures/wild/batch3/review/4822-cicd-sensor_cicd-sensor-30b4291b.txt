@@ -1,0 +1,358 @@
+repo: cicd-sensor/cicd-sensor
+commit: 30b4291b769607cb0eaaf253747a5c25cf859ec8
+rank: 4822
+
+feat(agent): capture Go net/http requests (#173)
+
+* feat(agent): capture Go net/http requests
+
+* fix(bpf): split Go HTTP capture for verifier portability
+
+* test(agent): separate Go coverage from first-request timing
+
+* docs(ebpf): mark gh HTTP coverage verified
+
+* docs(ebpf): link Go resolver implementation
+
+* refactor(agent): clarify HTTP uprobe target handling
+
+--- internal/agent/bpf/go_http_uprobe_hooks.bpf.h
+@@ -0,0 +1,188 @@
++// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++#pragma once
++
++// Go net/http capture at Transport.roundTrip entry. The selected Go versions
++// use ABIInternal: the receiver is the first integer argument and *Request is
++// the second (RBX on amd64, R1 on arm64). Go does not promise this ABI or these
++// object offsets; unsupported layouts must fail validation without emitting.
++
++#define GO_HTTP_REQUEST_METHOD_OFFSET 0
++#define GO_HTTP_REQUEST_URL_OFFSET    16
++#define GO_HTTP_REQUEST_HOST_OFFSET   128
++#define GO_HTTP_URL_SCHEME_OFFSET     0
++#define GO_HTTP_URL_HOST_OFFSET       40
++#define GO_HTTP_URL_PATH_OFFSET       56
++
++struct go_string_abi {
++    const __u8 *data;
++    __u64 len;
++};
++
++_Static_assert(sizeof(struct go_string_abi) == 16,
++               "Go string ABI must remain two 64-bit words");
++
++static __always_inline const void *go_http_request_argument(struct pt_regs *ctx)
++{
++#if defined(__TARGET_ARCH_x86)
++    return (const void *)ctx->bx;
++#elif defined(__TARGET_ARCH_arm64)
++    return (const void *)((struct user_pt_regs *)ctx)->regs[1];
++#else
++#error "Go HTTP uprobe supports only amd64 and arm64"
++#endif
++}
++
++static __always_inline int go_http_read_string(const void *base, __u32 offset,
++                                                struct go_string_abi *value)
++{
++    if (!base)
++        return -1;
++    return bpf_probe_read_user(value, sizeof(*value), (const char *)base + offset);
++}
++
++static __always_inline int go_http_is_https(const struct go_string_abi *scheme)
++{
++    if (!scheme->data || scheme->len != 5)
++        return 0;
++    char value[5];
++    if (bpf_probe_read_user(value, sizeof(value), scheme->data) < 0)
++        return 0;
++    return value[0] == 'h' && value[1] == 't' && value[2] == 't' &&
++           value[3] == 'p' && value[4] == 's';
++}
++
++SEC("uprobe/go_net_http_round_trip")
++int handle_go_net_http_round_trip(struct pt_regs *ctx)
++{
++    __u64 cgroup_id = current_cgroup_id();
++    if (!cgroup_is_tracked(cgroup_id))
++        return 0;
++
++    const void *request = go_http_request_argument(ctx);
++    if (!request)
++        return 0;
++
++    const void *url = NULL;
++    if (bpf_probe_read_user(&url, sizeof(url),
++                            (const char *)request + GO_HTTP_REQUEST_URL_OFFSET) < 0 || !url)
++        return 0;
++
++    struct go_string_abi scheme = {};
++    if (go_http_read_string(url, GO_HTTP_URL_SCHEME_OFFSET, &scheme) < 0 ||
++        !go_http_is_https(&scheme))
++        return 0;
++
++    struct go_string_abi method = {};
++    if (go_http_read_string(request, GO_HTTP_REQUEST_METHOD_OFFSET, &method) < 0)
++        return 0;
++
++    struct go_string_abi path = {};
++    if (go_http_read_string(url, GO_HTTP_URL_PATH_OFFSET, &path) < 0)
++        return 0;
++
++    struct go_string_abi host = {};
++    if (go_http_read_string(request, GO_HTTP_REQUEST_HOST_OFFSET, &host) < 0)
++        return 0;
++    if (host.len == 0 && go_http_read_string(url, GO_HTTP_URL_HOST_OFFSET, &host) < 0)
++        return 0;
++
++    struct http_scratch *s = http_scratch_get();
++    if (!s)
++        return 0;
++    s->go_http_method = (__u64)method.data;
++    s->go_http_path = (__u64)path.data;
++    s->go_http_host = (__u64)host.data;
++    s->go_http_method_len = method.len;
++    s->go_http_path_len = path.len;
++    s->go_http_host_len = host.len;
++    bpf_tail_call(ctx, &http_uprobe_stages, HTTP_UPROBE_STAGE_GO_HTTP_REQUIRED);
++    return 0;
++}
++
++// Validate the required request fields in a fresh verifier state. Empty method
++// and path values use net/http's GET and "/" defaults in the emit stage.
++SEC("uprobe/go_net_http_round_trip")
++int handle_go_net_http_required(struct pt_regs *ctx)
++{
++    struct http_scratch *s = http_scratch_get();
++    if (!s)
++        return 0;
++
++    const __u8 *method = (const __u8 *)s->go_http_method;
++    __u32 method_n = 0;
++    if (s->go_http_method_len > 0 &&
++        http_user_field_length(method, s->go_http_method_len,
++                               HTTP_METHOD_LEN, 0, &method_n) < 0)
++        return 0;
++
++    const __u8 *path = (const __u8 *)s->go_http_path;
++    __u32 path_n = 0;
++    if (s->go_http_path_len > 0) {
++        if (http_user_field_length(path, s->go_http_path_len,
++                                   HTTP_PATH_LEN, 0, &path_n) < 0)
++            return 0;
++        __u8 first;
++        if (bpf_probe_read_user(&first, sizeof(first), path) < 0 || first != '/')
++            return 0;
++    }
++
++    s->go_http_method_n = method_n;
++    s->go_http_path_n = path_n;
++    bpf_tail_call(ctx, &http_uprobe_stages, HTTP_UPROBE_STAGE_GO_HTTP_EMIT);
++    return 0;
++}
++
++// Validate the optional host and emit only method, path, and host.
++SEC("uprobe/go_net_http_round_trip")
++int handle_go_net_http_emit(struct pt_regs *ctx)
++{
++    struct http_scratch *s = http_scratch_get();
++    if (!s)
++        return 0;
++
++    const __u8 *method = (const __u8 *)s->go_http_method;
++    const __u8 *path = (const __u8 *)s->go_http_path;
++    const __u8 *host = (const __u8 *)s->go_http_host;
++    __u32 host_n = 0;
++    int have_host = s->go_http_host_len > 0 &&
++                    http_user_field_length(host, s->go_http_host_len,
++                                           HTTP_HOST_LEN, 0, &host_n) == 0;
++
++    __u64 cgroup_id = current_cgroup_id();
++    struct http_request_sample *sample =
++        bpf_ringbuf_reserve(&events, sizeof(*sample), 0);
++    if (!sample) {
++        note_ringbuf_drop();
++        return 0;
++    }
++    sample->kind = SAMPLE_KIND_HTTP_REQUEST;
++    sample->source = HTTP_SOURCE_GO_NET_HTTP;
++    sample->_pad0[0] = 0;
++    sample->_pad0[1] = 0;
++    sample->_pad0[2] = 0;
++    SET_TASK_HEADER(sample, cgroup_id);
++    sample->_pad1 = 0;
++    zero_http_request_fields(sample);
++
++    if (s->go_http_method_len == 0) {
++        sample->method[0] = 'G';
++        sample->method[1] = 'E';
++        sample->method[2] = 'T';
++    } else if (http_copy_user_method(sample->method, method, s->go_http_method_n) < 0) {
++        bpf_ringbuf_discard(sample, 0);
++        return 0;
++    }
++    if (s->go_http_path_len == 0) {
++        sample->path[0] = '/';
++    } else if (http_copy_user_value(sample->path, path, s->go_http_path_n) < 0) {
++        bpf_ringbuf_discard(sample, 0);
++        return 0;
++    }
++    if (have_host && http_copy_user_value(sample->host, host, host_n) < 0) {
++        bpf_ringbuf_discard(sample, 0);
++        return 0;
++    }
++
++    bpf_ringbuf_submit(sample, 0);
++    return 0;
++}
+
+--- internal/agent/bpf/http_helpers.bpf.h
+@@ -17,6 +17,7 @@
+ #define HTTP_SOURCE_CLEARTEXT 0
+ #define HTTP_SOURCE_OPENSSL   1
+ #define HTTP_SOURCE_NGHTTP2   2
++#define HTTP_SOURCE_GO_NET_HTTP 3
+ 
+ // Shortest acceptable request line: "GET / HTTP/1.0" (14 bytes).
+ #define HTTP_MIN_REQUEST_LINE 14
+
+--- internal/agent/bpf/http_uprobe_capture_hooks.bpf.h
+@@ -55,6 +55,8 @@ struct user_pt_regs {
+ #define HTTP_UPROBE_STAGE_OPENSSL_PARSE     0
+ #define HTTP_UPROBE_STAGE_NGHTTP2_REQUIRED  1
+ #define HTTP_UPROBE_STAGE_NGHTTP2_EMIT      2
++#define HTTP_UPROBE_STAGE_GO_HTTP_REQUIRED  3
++#define HTTP_UPROBE_STAGE_GO_HTTP_EMIT      4
+ 
+ // Entry: PARM2 is the plaintext buffer, PARM3 its length, for both
+ // SSL_write(SSL*, const void*, int) and
+@@ -198,9 +200,9 @@ static __always_inline int nghttp2_pseudo_header_kind(const struct nghttp2_nv_ab
+ // controls, DEL, and field overflow; path stops at '?', so query data never
+ // crosses the kernel boundary. A value that does not fit completely within the
+ // field cap is rejected rather than exposed as a silently truncated value.
+-static __always_inline int nghttp2_field_length(const __u8 *value, __u64 value_len,
+-                                                 __u32 field_len, int strip_query,
+-                                                 __u32 *result)
++static __always_inline int http_user_field_length(const __u8 *value, __u64 value_len,
++                                                   __u32 field_len, int strip_query,
++                                                   __u32 *result)
+ {
+     if (!value || value_len == 0)
+         return -1;
+@@ -228,7 +230,7 @@ static __always_inline int nghttp2_field_length(const __u8 *value, __u64 value_l
+ 
+ // The comparison enforces the field contract; the opaque mask separately gives
+ // older verifiers a durable variable-length userspace-read bound.
+-static __always_inline int nghttp2_copy_method(char *dst, const __u8 *src, __u32 n)
++static __always_inline int http_copy_user_method(char *dst, const __u8 *src, __u32 n)
+ {
+     if (!src || n == 0 || n >= HTTP_METHOD_LEN)
+         return -1;
+@@ -238,7 +240,7 @@ static __always_inline int nghttp2_copy_method(char *dst, const __u8 *src, __u32
+ }
+ 
+ // Path and authority share the same fixed field size and verifier proof.
+-static __always_inline int nghttp2_copy_value(char *dst, const __u8 *src, __u32 n)
++static __always_inline int http_copy_user_value(char *dst, const __u8 *src, __u32 n)
+ {
+     if (!src || n == 0 || n >= HTTP_PATH_LEN)
+         return -1;
+@@ -323,12 +325,12 @@ int BPF_UPROBE(handle_nghttp2_required)
+     const __u8 *method = (const __u8 *)s->nghttp2_method;
+     const __u8 *path = (const __u8 *)s->nghttp2_path;
+     __u32 method_n = 0;
+-    if (nghttp2_field_length(method, s->nghttp2_method_len,
+-                             HTTP_METHOD_LEN, 0, &method_n) < 0)
++    if (http_user_field_length(method, s->nghttp2_method_len,
++                               HTTP_METHOD_LEN, 0, &method_n) < 0)
+         return 0;
+     __u32 path_n = 0;
+-    if (nghttp2_field_length(path, s->nghttp2_path_len,
+-                             HTTP_PATH_LEN, 1, &path_n) < 0)
++    if (http_user_field_length(path, s->nghttp2_path_len,
++                               HTTP_PATH_LEN, 1, &path_n) < 0)
+         return 0;
+ 
+     // Standard HTTP/2 CONNECT intentionally has no :path and is dropped by the
+@@ -359,8 +361,8 @@ int BPF_UPROBE(handle_nghttp2_emit)
+     // becomes an empty host; method and path remain useful rule evidence.
+     __u32 authority_n = 0;
+     int have_authority = 0;
+-    if (authority && nghttp2_field_length(authority, s->nghttp2_authority_len,
+-                                          HTTP_HOST_LEN, 0, &authority_n) == 0) {
++    if (authority && http_user_field_length(authority, s->nghttp2_authority_len,
++                                            HTTP_HOST_LEN, 0, &authority_n) == 0) {
+         have_authority = 1;
+     }
+ 
+@@ -380,13 +382,13 @@ int BPF_UPROBE(handle_nghttp2_emit)
+     sample->_pad1 = 0;
+     zero_http_request_fields(sample);
+ 
+-    if (nghttp2_copy_method(sample->method, method, s->nghttp2_method_n) < 0 ||
+-        nghttp2_copy_value(sample->path, path, s->nghttp2_path_n) < 0) {
++    if (http_copy_user_method(sample->method, method, s->nghttp2_method_n) < 0 ||
++        http_copy_user_value(sample->path, path, s->nghttp2_path_n) < 0) {
+         bpf_ringbuf_discard(sample, 0);
+         return 0;
+     }
+     if (have_authority &&
+-        nghttp2_copy_value(sample->host, authority, authority_n) < 0) {
++        http_copy_user_value(sample->host, authority, authority_n) < 0) {
+         bpf_ringbuf_discard(sample, 0);
+         return 0;
+     }
+
+--- internal/agent/bpf/kernel_samples.h
+@@ -279,8 +279,8 @@ struct dns_sample {
+ 
+ // HTTP request-line sample. method/path/host are the parsed fields only;
+ // path is already query-stripped (terminated at '?') by the in-eBPF parse.
+-// Shared by the cleartext, OpenSSL, and nghttp2 taps; source discriminates the
+-// capture channel.
++// Shared by cleartext, OpenSSL, nghttp2, and Go net/http taps; source
++// discriminates the capture channel.
+ struct http_request_sample {
+     __u32 kind;
+     __u8 source;          // HTTP_SOURCE_*, mirrors kerneltracker.HTTPSource*.
+
+--- internal/agent/bpf/maps.bpf.h
+@@ -54,6 +54,17 @@ struct http_scratch {
+     __u64 nghttp2_authority_len;
+     __u32 nghttp2_method_n;
+     __u32 nghttp2_path_n;
++
++    // Go net/http pointers and lengths carried across verifier-split targets.
++    // Raw Go string bytes stay in userspace until selected fields are emitted.
++    __u64 go_http_method;
++    __u64 go_http_path;
++    __u64 go_http_host;
++    __u64 go_http_method_len;
++    __u64 go_http_path_len;
++    __u64 go_http_host_len;
++    __u32 go_http_method_n;
++    __u32 go_http_path_n;
+ };
+ 
+ // Tail-call jump table for the HTTP parser. Userspace installs the parse target
+@@ -71,7 +82,7 @@ struct {
+ // is not reusable.
+ struct {
+     __uint(type, BPF_MAP_TYPE_PROG_ARRAY);
+-    __uint(max_entries, 3);
++    __uint(max_entries, 5);
+     __type(key, __u32);
+     __type(value, __u32);
+ } http_uprobe_stages SEC(".maps");
+
+--- internal/agent/bpf/program.bpf.c
+@@ -23,6 +23,7 @@
+ #include "dns_hooks.bpf.h"
+ #include "http_hooks.bpf.h"
+ #include "http_uprobe_capture_hooks.bpf.h"
++#include "go_http_uprobe_hooks.bpf.h"
+ #include "http_uprobe_discovery_hooks.bpf.h"
+ 
+ char LICENSE[] SEC("license") = "Dual BSD/GPL";
+

@@ -1,0 +1,123 @@
+repo: projectcalico/calico
+commit: 462f9d6c0e01d977efbc22d095059dd2965bd605
+rank: 4890
+
+felix: strip trace-printk from main BPF programs under lockdown via prog_flags
+
+The preamble fix stops the constant per-attach dmesg spew, but the main
+dataplane programs still reference bpf_trace_printk unconditionally
+(skb_log, the policy Log action, is gated at runtime rather than by
+BPFLogLevel, so it survives into the no_log builds). Loading the main
+program set therefore still emits a one-off "could not enable
+bpf_trace_printk events" burst on every Felix program-load cycle under
+kernel lockdown=confidentiality.
+
+Rather than doubling the compiled program matrix with _notrace variants,
+give each program a small struct prog_flags in its own frozen
+.rodata.prog_flags section (kept apart from the node-wide globals so it
+does not perturb their layout). prog_flags is the vehicle for per-program
+load-time feature flags. When Felix detects confidentiality lockdown it
+sets no_trace_printk before load (SetNoTracePrintk -> Map.SetProgFlags,
+wired through loadObject); the bpf_log macro and skb_log guard on it.
+Because the section is read-only and frozen, the verifier folds the flag
+to a constant and dead-code-eliminates the guarded branches, so the
+loaded program references no trace helper and its load is silent.
+
+Verified with a new bpf/ut load test that loads a main program with the
+flag set and clear and asserts the trace-printk call instructions are
+present only when clear.
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+--- felix/bpf-gpl/globals.h
+@@ -86,6 +86,27 @@ struct cali_xdp_preamble_globals {
+ 	struct cali_xdp_globals v6;
+ };
+ 
++/* prog_flags holds per-program, load-time feature flags, distinct from the
++ * node-wide globals above: it lives in its own frozen read-only section so it
++ * does not disturb their layout, and Felix sets it per program at load. Because
++ * the section is frozen, the verifier folds each field to a constant and
++ * dead-code-eliminates the guarded branches (e.g. a program can load with no
++ * reference to the bpf_trace_printk helper at all). New per-program load-time
++ * flags belong here — append fields as needed.
++ */
++struct prog_flags {
++	/* no_trace_printk, when set, drops the code paths that call
++	 * bpf_trace_printk/bpf_trace_vprintk. Felix sets it on nodes running with
++	 * kernel lockdown=confidentiality, where ftrace is disabled and loading any
++	 * program that references the helper spams the kernel log on every load. */
++	__u8 no_trace_printk;
++};
++
++/* Instance lives in its own .rodata section; only objects that reference it get
++ * the map. Declared volatile const so the compiler emits real loads that the
++ * verifier can fold against the frozen map. */
++__attribute__((section(".rodata.prog_flags"))) volatile const struct prog_flags PROG_FLAGS;
++
+ struct cali_ct_cleanup_globals {
+     __u64 creation_grace;
+ 
+
+--- felix/bpf-gpl/log.h
+@@ -24,9 +24,16 @@
+ #define IPVER_PFX	""
+ #endif
+ 
++/* The no_trace_printk guard lets Felix strip every bpf_trace_printk reference
++ * from a program at load time (see struct prog_flags): the flag lives in
++ * frozen .rodata, so the verifier folds it and dead-code-eliminates the call.
++ * When the flag is clear (the normal case) the condition folds to always-true,
++ * so there is no runtime cost. */
+ #define bpf_log(__fmt, ...) do { \
+-		__attribute__((section(".rodata.cali_debug"))) static const char fmt[] = IPVER_PFX __fmt; \
+-		bpf_trace_printk(fmt, sizeof(fmt), ## __VA_ARGS__); \
++		if (!PROG_FLAGS.no_trace_printk) { \
++			__attribute__((section(".rodata.cali_debug"))) static const char fmt[] = IPVER_PFX __fmt; \
++			bpf_trace_printk(fmt, sizeof(fmt), ## __VA_ARGS__); \
++		} \
+ } while (0)
+ 
+ #ifndef CALI_LOG
+
+--- felix/bpf-gpl/skb.h
+@@ -208,6 +208,17 @@ static CALI_BPF_INLINE void skb_set_mark(struct __sk_buff *skb, __u32 mark)
+ 
+ static CALI_BPF_INLINE void skb_log(struct cali_tc_ctx *ctx, bool accepted)
+ {
++	/* skb_log's bpf_trace_vprintk/bpf_log calls are the only unconditional
++	 * reference to the trace-printk helpers in the main programs (they are gated
++	 * at runtime by CALI_ST_LOG_PACKET, not by CALI_LOG_LEVEL, so they survive
++	 * into the no_log builds). When Felix sets no_trace_printk (kernel
++	 * lockdown=confidentiality), this constant read folds and the verifier
++	 * dead-code-eliminates the rest of the function, so the loaded program
++	 * carries no trace-printk reference and its load does not spam the kernel
++	 * log. The policy Log action cannot work under that lockdown level anyway. */
++	if (PROG_FLAGS.no_trace_printk) {
++		return;
++	}
+ 	if (ctx->state->flags & CALI_ST_LOG_PACKET) {
+ 		if (bpf_core_enum_value_exists(enum bpf_func_id, BPF_FUNC_trace_vprintk)) {
+ #if CALI_F_XDP
+
+--- felix/bpf/libbpf/libbpf_api.h
+@@ -360,6 +360,18 @@ void bpf_ct_cleanup_set_globals(
+ 	set_errno(bpf_map__set_initial_value(map, (void*)(&data), sizeof(data)));
+ }
+ 
++// bpf_set_prog_flags sets the per-object load-time feature flags in the
++// program's .rodata.prog_flags section (see struct prog_flags). Kept
++// separate from the main globals so it does not perturb their layout.
++void bpf_set_prog_flags(struct bpf_map *map, uint8_t no_trace_printk)
++{
++	struct prog_flags data = {
++		.no_trace_printk = no_trace_printk,
++	};
++
++	set_errno(bpf_map__set_initial_value(map, (void*)(&data), sizeof(data)));
++}
++
+ int bpf_xdp_program_id(int ifIndex) {
+ 	__u32 prog_id = 0, flags = 0;
+ 	int err;
+

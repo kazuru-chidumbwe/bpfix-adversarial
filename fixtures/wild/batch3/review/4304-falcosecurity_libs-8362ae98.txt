@@ -1,0 +1,88 @@
+repo: falcosecurity/libs
+commit: 8362ae98938d85d5b60152728df62a37efdf10ca
+rank: 4304
+
+fix(driver/modern_bpf): avoid `bpf_loop()` helper.
+
+We can't use bpf_loop() helper since the `bpf_core_enum_value_exists` check
+triggers a verifier failure on kernels prior to 5.13 that hadn't got `PTR_TO_FUNC` support.
+See https://lore.kernel.org/bpf/CAGQdkDt9zyQwr5JyftXqL=OLKscNcqUtEteY4hvOkx2S4GdEkQ@mail.gmail.com/T/#u.
+
+Instead, loop up to 16 messages.
+
+Signed-off-by: Federico Di Pierro <nierro92@gmail.com>
+
+Co-authored-by: Andrea Terzolo <andreaterzolo3@gmail.com>
+
+--- driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/recvmmsg.bpf.c
+@@ -42,7 +42,7 @@ typedef struct {
+ 	void *ctx;
+ } recvmmsg_data_t;
+ 
+-static long handle_exit(uint32_t index, void *ctx) {
++static __always_inline long handle_exit(uint32_t index, void *ctx) {
+ 	recvmmsg_data_t *data = (recvmmsg_data_t *)ctx;
+ 	struct mmsghdr mmh = {0};
+ 	if(bpf_probe_read_user((void *)&mmh,
+@@ -159,14 +159,17 @@ int BPF_PROG(recvmmsg_x, struct pt_regs *regs, long ret) {
+ 	        .ctx = ctx,
+ 	};
+ 
+-	if(bpf_core_enum_value_exists(enum bpf_func_id, BPF_FUNC_loop)) {
+-		uint32_t nr_loops = ret < 1024 ? ret : 1024;
+-		bpf_loop(nr_loops, handle_exit, &data, 0);
+-	} else {
+-		for(int i = 0; i < ret && i < MAX_IOVCNT; i++) {
+-			handle_exit(i, &data);
+-		}
++	// We can't use bpf_loop() helper since the below check triggers a verifier failure:
++	// see
++	// https://lore.kernel.org/bpf/CAGQdkDt9zyQwr5JyftXqL=OLKscNcqUtEteY4hvOkx2S4GdEkQ@mail.gmail.com/T/#u
++	/*if(bpf_core_enum_value_exists(enum bpf_func_id, BPF_FUNC_loop)) {
++	    uint32_t nr_loops = ret < 1024 ? ret : 1024;
++	    bpf_loop(nr_loops, handle_exit, &data, 0);
++	} else {*/
++	for(int i = 0; i < ret && i < MAX_SENDMMSG_RECVMMSG_SIZE; i++) {
++		handle_exit(i, &data);
+ 	}
++	//}
+ 
+ 	return 0;
+ }
+
+--- driver/modern_bpf/programs/tail_called/events/syscall_dispatched_events/sendmmsg.bpf.c
+@@ -42,7 +42,7 @@ typedef struct {
+ 	void *ctx;
+ } sendmmsg_exit_t;
+ 
+-static long handle_exit(uint32_t index, void *ctx) {
++static __always_inline long handle_exit(uint32_t index, void *ctx) {
+ 	sendmmsg_exit_t *data = (sendmmsg_exit_t *)ctx;
+ 	struct mmsghdr mmh = {0};
+ 
+@@ -152,14 +152,17 @@ int BPF_PROG(sendmmsg_x, struct pt_regs *regs, long ret) {
+ 	        .ctx = ctx,
+ 	};
+ 
+-	if(bpf_core_enum_value_exists(enum bpf_func_id, BPF_FUNC_loop)) {
+-		uint32_t nr_loops = ret < 1024 ? ret : 1024;
+-		bpf_loop(nr_loops, handle_exit, &data, 0);
+-	} else {
+-		for(int i = 0; i < ret && i < MAX_IOVCNT; i++) {
+-			handle_exit(i, &data);
+-		}
++	// We can't use bpf_loop() helper since the below check triggers a verifier failure:
++	// see
++	// https://lore.kernel.org/bpf/CAGQdkDt9zyQwr5JyftXqL=OLKscNcqUtEteY4hvOkx2S4GdEkQ@mail.gmail.com/T/#u
++	/*if(bpf_core_enum_value_exists(enum bpf_func_id, BPF_FUNC_loop)) {
++	    uint32_t nr_loops = ret < 1024 ? ret : 1024;
++	    bpf_loop(nr_loops, handle_exit, &data, 0);
++	} else {*/
++	for(int i = 0; i < ret && i < MAX_SENDMMSG_RECVMMSG_SIZE; i++) {
++		handle_exit(i, &data);
+ 	}
++	//}
+ 
+ 	return 0;
+ }
+

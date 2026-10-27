@@ -1,0 +1,271 @@
+repo: alibaba/loongcollector
+commit: f441a0525e958c62b472ced623122cd6b183d20f
+rank: 4114
+
+perf(ebpf): zero-copy agentsight FFI payloads via arena
+
+Follow-up on the coolbpf bump report (ANOLISA #7112 M4): the C++ side
+copied every FFI payload twice - once into std::string record members
+inside the callback, then again via SetContent into the event group's
+SourceBuffer. Large messages/body JSON (up to MiB) peaked at ~2x.
+
+Records now own a per-record SourceBuffer arena: the callback copies
+FFI bytes exactly once, StringView members alias the arena, and
+HandleLlmEvent/HandleHttpsEvent hand it to the PipelineEventGroup as
+its main buffer (network_observer pattern). Record fields are emitted
+with SetContentNoCopy; computed values still copy into the same arena.
+Also drop the dead mInputMessageDeltaJson field (never read; the delta
+is recomputed locally) and add a CalcSHA256Hex(data, len) overload so
+hashing the tools JSON needs no materialized copy.
+
+Output fields, tags and drop semantics are byte-identical. Verified
+with agentsight events/message-util/manager unittests (6+26+42) under
+Debug+ASAN, including new pointer-equality and record-death contract
+tests. Trade-off documented in code: filtered-out sensitive header
+bytes now live in the arena until flush instead of batch end.
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+--- core/ebpf/plugin/agentsight/AgentsightEvents.h
+@@ -16,27 +16,53 @@
+ 
+ #include <cstdint>
+ 
++#include <memory>
+ #include <string>
+ 
+ #include "agentsight.h"
++#include "common/StringView.h"
++#include "common/memory/SourceBuffer.h"
+ #include "ebpf/include/export.h"
+ #include "ebpf/type/CommonDataEvent.h"
+ 
+ namespace logtail::ebpf {
+ 
++/// First-chunk size of the per-record arena. 1 KiB (kDefaultNodeSourceBufferSize, the same size
++/// AggTree/StaticDataRow nodes use) covers a record's small identity/metadata strings in one
++/// block; large JSON payloads take SourceBuffer's direct-allocation path (one heap block each,
++/// equivalent to the previous per-field std::string malloc). The default 4 KiB would inflate
++/// every queued record — the common-event queue holds up to ~8192 of them.
++inline constexpr uint32_t kAgentsightRecordChunkSize = 1024;
++
++/// One LLM record handed over by the AgentSight FFI.
++///
++/// Construction (on the AgentSight poller thread, inside the FFI callback) copies every FFI
++/// string exactly once into mSourceBuffer and keeps StringView members aliasing it; the FFI
++/// pointers die when the callback returns and are never retained. HandleLlmEvent then hands the
++/// arena to the PipelineEventGroup as its main SourceBuffer, so emitted log contents alias these
++/// bytes with no second copy (SetContentNoCopy) and the arena outlives the record until flush.
+ class AgentsightLlmRecord : public CommonEvent {
+ public:
+     AgentsightLlmRecord(std::string pipelineConfigName, const AgentsightLLMData& d);
++    // StringView members over a shared arena make a shallow copy a lifetime hazard; records are
++    // only ever handled through shared_ptr<CommonEvent>.
++    AgentsightLlmRecord(const AgentsightLlmRecord&) = delete;
++    AgentsightLlmRecord& operator=(const AgentsightLlmRecord&) = delete;
+ 
+     PluginType GetPluginType() const override { return PluginType::AGENTSIGHT_OBSERVE; }
+ 
+     const std::string& GetPipelineConfigName() const { return mPipelineConfigName; }
+ 
++    /// Arena backing every StringView member. Valid for the record's lifetime; after HandleLlmEvent
++    /// the event group co-owns it, keeping the bytes alive until the group is flushed.
++    const std::shared_ptr<SourceBuffer>& GetSourceBuffer() const { return mSourceBuffer; }
++
+     std::string mPipelineConfigName;
++    std::shared_ptr<SourceBuffer> mSourceBuffer;
+ 
+-    std::string mSessionId;
+-    std::string mConversationId;
+-    std::string mResponseId;
++    StringView mSessionId{kEmptyStringView};
++    StringView mConversationId{kEmptyStringView};
++    StringView mResponseId{kEmptyStringView};
+     int32_t mPid = 0;
+     uint64_t mTimestampNs = 0;
+     uint64_t mDurationNs = 0;
+@@ -48,30 +74,33 @@ class AgentsightLlmRecord : public CommonEvent {
+     uint32_t mTotalTokens = 0;
+     uint32_t mCacheCreationInputTokens = 0;
+     uint32_t mCacheReadInputTokens = 0;
+-    std::string mProcessName;
++    StringView mProcessName{kEmptyStringView};
+     // Space-joined process command line (argv), truncated to 127 bytes; empty when the
+     // process has already exited. Maps to AgentsightLLMData.cmdline (char[128]).
+-    std::string mCmdline;
+-    std::string mAgentType;
++    StringView mCmdline{kEmptyStringView};
++    StringView mAgentType{kEmptyStringView};
+     // Container id resolved from the pid on the agentsight side; empty when the process is
+     // not in a container (or resolution failed). Maps to AgentsightLLMData.container_id.
+-    std::string mContainerId;
+-    std::string mRequestUrl;
+-    std::string mProvider;
+-    std::string mModel;
+-    std::string mFinishReason;
+-    std::string mRequestMessagesJson;
+-    // Incremental ("latest round") input messages: system messages dropped and only the
+-    // messages from the last `user` message onward are kept. Maps to AgentsightLLMData.input_message_delta.
+-    std::string mInputMessageDeltaJson;
+-    std::string mResponseMessagesJson;
+-    std::string mToolDefinitionsJson;
++    StringView mContainerId{kEmptyStringView};
++    StringView mRequestUrl{kEmptyStringView};
++    StringView mProvider{kEmptyStringView};
++    StringView mModel{kEmptyStringView};
++    StringView mFinishReason{kEmptyStringView};
++    // NOTE: AgentsightLLMData.input_message_delta is deliberately NOT retained — the delta is
++    // recomputed locally (ComputeInputMessagesDelta) and nothing ever read the FFI copy; keeping
++    // it would pin one of the largest JSON blobs per record until the group is flushed.
++    StringView mRequestMessagesJson{kEmptyStringView};
++    StringView mResponseMessagesJson{kEmptyStringView};
++    StringView mToolDefinitionsJson{kEmptyStringView};
+ };
+ 
+ /// Raw HTTP exchange reported when AgentSight could not parse the traffic into LLM semantics
+ /// (unknown API path or unrecognised body shape). Requires `RawHttpsFallback: true` plus
+ /// libagentsight >= 0.9.0; see AgentsightManager::OnHttpsCallback.
+ ///
++/// Memory model matches AgentsightLlmRecord: one arena copy at construction (FFI callback),
++/// StringView members aliasing it, arena handed to the PipelineEventGroup in HandleHttpsEvent.
++///
+ /// Emitted as an `http.request` / `http.response` pair sharing one `http.exchange.id` (the pairing
+ /// key; each log keeps its own unique `event.id`, and `event.sequence` orders the two). The response
+ /// half is omitted only when the response side is genuinely empty (no body and no headers) — not
+@@ -87,15 +116,20 @@ class AgentsightLlmRecord : public CommonEvent {
+ class AgentsightHttpsRecord : public CommonEvent {
+ public:
+     AgentsightHttpsRecord(std::string pipelineConfigName, const AgentsightHttpsData& d);
++    AgentsightHttpsRecord(const AgentsightHttpsRecord&) = delete;
++    AgentsightHttpsRecord& operator=(const AgentsightHttpsRecord&) = delete;
+ 
+     PluginType GetPluginType() const override { return PluginType::AGENTSIGHT_OBSERVE; }
+ 
+     const std::string& GetPipelineConfigName() const { return mPipelineConfigName; }
+ 
++    const std::shared_ptr<SourceBuffer>& GetSourceBuffer() const { return mSourceBuffer; }
++
+     std::string mPipelineConfigName;
++    std::shared_ptr<SourceBuffer> mSourceBuffer;
+ 
+     int32_t mPid = 0;
+-    std::string mProcessName;
++    StringView mProcessName{kEmptyStringView};
+     // Same semantics as the identically-named AgentsightLlmRecord members: cmdline is space-joined
+     // argv truncated to 127 bytes (empty once the process exits), mContainerId is empty outside a
+     // container, mAgentType is the config-matched agent name (lowercased by agentsight) and falls
+@@ -104,32 +138,35 @@ class AgentsightHttpsRecord : public CommonEvent {
+     // mAgentType is emitted as `agent.type`, NOT `gen_ai.agent.type` — a raw event has no GenAI
+     // semantics, so it emits nothing in that namespace. Same value, different key; see
+     // FillAgentsightHttpCommon.
+-    std::string mCmdline;
+-    std::string mAgentType;
+-    std::string mContainerId;
++    StringView mCmdline{kEmptyStringView};
++    StringView mAgentType{kEmptyStringView};
++    StringView mContainerId{kEmptyStringView};
+     uint64_t mTimestampNs = 0;
+     uint64_t mDurationNs = 0;
+-    std::string mMethod;
+-    std::string mPath;
++    StringView mMethod{kEmptyStringView};
++    StringView mPath{kEmptyStringView};
+     uint16_t mStatusCode = 0;
+     uint8_t mIsSse = 0;
+     // Length-delimited payloads: AgentsightHttpsData reports these as (ptr, len) pairs and they may
+-    // contain embedded NULs (compressed or binary bodies), so they are copied by length, not by
+-    // NUL scan, and may not be valid UTF-8.
++    // contain embedded NULs (compressed or binary bodies), so they are copied by length into the
++    // record's arena, not by NUL scan, and may not be valid UTF-8. Consumers must stay
++    // length-bounded (StringView / rapidjson two-argument Parse).
+     //
+     // Filtered through an ALLOWLIST (kAllowedRequestHeaders) before anything is emitted, because this
+     // is where credentials live — Authorization / x-api-key / cookie — and this path does no
+     // redaction. Survivors go out as `http.request.header.<name>`; host and user-agent are salvaged
+     // into `server.address` / `server.port` / `user_agent.original` instead. Anything unrecognised is
+-    // dropped. See ExtractRequestHeaderFields / FillAgentsightHttpRequestLog.
+-    std::string mRequestHeaders;
+-    std::string mRequestBody;
++    // dropped from the output. See ExtractRequestHeaderFields / FillAgentsightHttpRequestLog.
++    // Note: filtered-out bytes are still present in the arena until the event group is flushed
++    // (zero-copy trade-off) — they are never referenced by any emitted view.
++    StringView mRequestHeaders{kEmptyStringView};
++    StringView mRequestBody{kEmptyStringView};
+     // Mirror image: filtered through a DENYLIST (kSensitiveResponseHeaders — set-cookie,
+     // www-authenticate, ...) and otherwise emitted as `http.response.header.<name>`. An allowlist here
+     // would hide most of what makes this fallback diagnostically useful, and the credential-bearing
+     // response header names are a short, known set. See EmitHttpResponseHeaders.
+-    std::string mResponseHeaders;
+-    std::string mResponseBody;
++    StringView mResponseHeaders{kEmptyStringView};
++    StringView mResponseBody{kEmptyStringView};
+ };
+ 
+ } // namespace logtail::ebpf
+
+--- core/ebpf/plugin/agentsight/AgentsightMessageUtil.h
+@@ -18,6 +18,8 @@
+ 
+ #include <string>
+ 
++#include "common/StringView.h"
++
+ namespace logtail::ebpf {
+ 
+ /// Cached per `gen_ai.session.id` (see `ResolveSessionStateKey`): last completed LLM round for delta/dedup
+@@ -35,24 +37,29 @@ struct AgentsightSessionInputState {
+     size_t nextEventSequence = 1;
+ };
+ 
++// All JSON inputs below are StringView: they may point into a record's SourceBuffer arena (no NUL
++// termination guaranteed by the view contract) and must be consumed with length-bounded APIs only
++// (rapidjson two-argument Parse, CalcSHA256Hex(data, len)). Returned std::strings are freshly
++// computed values owned by the caller.
++
+ /// Delta/dedup LRU key: `session_id`, or `turn.id` when session is absent.
+-std::string ResolveSessionStateKey(const std::string& sessionId, const std::string& turnId);
++std::string ResolveSessionStateKey(StringView sessionId, StringView turnId);
+ 
+ /// `{turn.id}:s{N}` (e.g. `278a5a71…:s2`); empty when `turnId` is empty.
+-std::string FormatGenAiStepId(const std::string& turnId, size_t stepNumber);
++std::string FormatGenAiStepId(StringView turnId, size_t stepNumber);
+ 
+-std::string ExtractSystemInstructionsJson(const std::string& requestMessagesJson);
++std::string ExtractSystemInstructionsJson(StringView requestMessagesJson);
+ 
+ /// SHA-256 (hex) of `ExtractSystemInstructionsJson` output.
+-std::string ComputeSystemInstructionsHash(const std::string& requestMessagesJson);
++std::string ComputeSystemInstructionsHash(StringView requestMessagesJson);
+ 
+ /// SHA-256 (hex) of the raw tool-definitions JSON string.
+-std::string ComputeToolDefinitionsHash(const std::string& toolDefinitionsJson);
++std::string ComputeToolDefinitionsHash(StringView toolDefinitionsJson);
+ 
+ /// Builds `gen_ai.response.finish_reasons` as a JSON string array, e.g. `["stop"]`.
+ /// Collects `finish_reason` from each object in `responseMessagesJson`; uses
+ /// `fallbackFinishReason` when the array is empty or unparsable.
+-std::string FormatFinishReasonsJson(const std::string& responseMessagesJson, const std::string& fallbackFinishReason);
++std::string FormatFinishReasonsJson(StringView responseMessagesJson, StringView fallbackFinishReason);
+ 
+ /// Derives `gen_ai.input.messages_delta` locally (does not use AgentSight FFI delta).
+ /// `previousState` stores the last round's **request** (`messageCount` / `messagesHash`) and
+@@ -61,14 +68,13 @@ std::string FormatFinishReasonsJson(const std::string& responseMessagesJson, con
+ /// (H_in: role+parts-only per message), skip `outputMessageCount` messages only if
+ /// `hash(cur[idxAfterIn:idxAfterIn+N_out]) == outputMessagesHash`; otherwise delta starts at `idxAfterIn`.
+ /// H_in uses role+parts normalization; H_out uses role-only normalization. System messages are omitted from delta.
+-std::string ComputeInputMessagesDelta(const std::string& fullMessagesJson,
+-                                      const AgentsightSessionInputState* previousState);
++std::string ComputeInputMessagesDelta(StringView fullMessagesJson, const AgentsightSessionInputState* previousState);
+ 
+ /// After each emit: `messageCount` / `messagesHash` cover **non-system request** messages only;
+ /// response replay state is stored in `outputMessageCount` / `outputMessagesHash`.
+-void CommitSessionStateAfterEmit(const std::string& requestMessagesJson,
+-                                 const std::string& responseMessagesJson,
+-                                 const std::string& toolDefinitionsJson,
++void CommitSessionStateAfterEmit(StringView requestMessagesJson,
++                                 StringView responseMessagesJson,
++                                 StringView toolDefinitionsJson,
+                                  AgentsightSessionInputState& state);
+ 
+ } // namespace logtail::ebpf
+

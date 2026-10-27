@@ -1,0 +1,111 @@
+repo: bpftrace/bpftrace
+commit: f57772cbfa9982998849df0d27f4f6020c217d2d
+rank: 4467
+
+stdlib: add str_concat() to concatenate two strings (#5265)
+
+Concatenate two strings into a new string, example:
+
+    $new = str_concat("hello", " world");
+    $new = str_concat($new, "!!!");
+    $new = str_concat("INFO: ", $new);
+
+    printf("%s\n", $new);
+
+    INFO: hello world!!!
+
+To allow the external interface function __bpf_strnlen to be called
+by other functions in strings.bpf.c and to solve the problem of
+`The sequence of xxxx jumps is too complex`, a bpf_loop is used
+instead of a for loop.
+
+If __bpf_strnlen() is use c-for-loop and is called within
+__bpf_str_concat(), the verifier will complain about the following error
+(Linux v5.14.0 on CentOS-Stream9, higher kver maybe):
+
+    ;  @ strings.bpf.c:21
+    436: (07) r0 += 1                     ; R0_w=1023
+    437: (15) if r0 == 0x400 goto pc+14   ; R0_w=1023
+    438: (05) goto pc-7
+    ;  @ strings.bpf.c:22
+    432: (bf) r1 = r8                     ; R1_w=map_value(map=.data.var_buf,ks=4,vs=32768,off=4096,smin=smin32=0,smax=umax=smax32=umax32=24576,var_off=(0x0; 0x6000)) R8=map_value(map=.data.var_buf,ks=4,vs=32768,off=4096,smin=smin32=0,smax=umax=smax32=umax32=24576,var_off=(0x0; 0x6000))
+    433: (0f) r1 += r0                    ; R0_w=1023 R1_w=map_value(map=.data.var_buf,ks=4,vs=32768,off=5119,smin=smin32=0,smax=umax=smax32=umax32=24576,var_off=(0x0; 0x6000))
+    434: (71) r1 = *(u8 *)(r1 +0)         ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+    435: (15) if r1 == 0x0 goto pc+8
+    The sequence of 8193 jumps is too complex.
+    processed 57607 insns (limit 1000000) max_states_per_insn 4 total_states 1196 peak_states 1196 mark_read 897
+
+Link: https://github.com/bpftrace/bpftrace/pull/5231
+Signed-off-by: Rong Tao <rongtao@cestc.cn>
+
+--- src/stdlib/strings/strings.bpf.c
+@@ -12,19 +12,46 @@
+ 
+ extern int bpf_strnlen(const char *s__ign, size_t count) __ksym __weak;
+ 
++struct strnlen_ctx {
++  const char *str;
++  __u32 sz;
++};
++
++static int strnlen_cb(__u32 index, void *data)
++{
++  struct strnlen_ctx *ctx = data;
++  if (index >= ctx->sz) {
++    return 1;
++  }
++  char ch;
++  bpf_probe_read_kernel(&ch, sizeof(char), (void *)(ctx->str + index));
++  if (ch == '\0') {
++    // terminate the bpf_loop()
++    return 1;
++  }
++  return 0;
++}
++
+ long __bpf_strnlen(const char *ptr, size_t max_size)
+ {
+   if (bpf_strnlen) {
+     return bpf_strnlen(ptr, max_size);
+   }
+-  long sz = 0;
+-  for (size_t i = 0; i < max_size; ++i) {
+-    if (ptr[i] == 0) {
+-      break;
+-    }
+-    ++sz;
++  // To allow the external interface function __bpf_strnlen to be called by
++  // other functions in strings.bpf.c and to solve the problem of
++  // `The sequence of xxxx jumps is too complex`, bpf_loop() first is used
++  // instead of a for loop.
++  // TODO: use bpf_for() macro instead of bpf_loop() since linux >= v6.4
++  struct strnlen_ctx ctx = {
++    .str = ptr,
++    .sz = max_size,
++  };
++  int len = bpf_loop(max_size, strnlen_cb, &ctx, 0);
++  if (len <= 0) {
++    return len;
+   }
+-  return sz;
++  // The string length does not include the null terminator '\0'.
++  return (len == max_size && ptr[len - 1] != '\0') ? len : len - 1;
+ }
+ 
+ extern int bpf_strnstr(const char *s1__ign,
+@@ -67,6 +94,14 @@ int __bpf_strnstr(const char *haystack,
+   return -1;
+ }
+ 
++long __bpf_str_concat(char *dst, size_t dst_sz, const char *src)
++{
++  long dst_len = __bpf_strnlen(dst, dst_sz);
++  if (dst_len < 0 || dst_len >= dst_sz)
++    return 0;
++  return bpf_probe_read_kernel_str(dst + dst_len, dst_sz - dst_len, src);
++}
++
+ int __strerror(int errno, err_str *out) {
+   if (errno < 0) {
+     errno = -errno;
+

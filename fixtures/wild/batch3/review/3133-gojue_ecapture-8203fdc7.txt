@@ -1,0 +1,149 @@
+repo: gojue/ecapture
+commit: 8203fdc7c57fa8eb34d0807a6235db11e9c949e9
+rank: 3133
+
+fix(gotls): 单次 hook 按 16KB 分段输出 BPF perf 事件 (#1020)
+
+* fix(gotls): emit payloads in 16KB BPF segments per hook
+
+Loop bpf_perf_event_output when writeRecordLocked/Read exceeds
+MAX_DATA_SIZE_OPENSSL so tail bytes are not dropped. Cap at 16
+segments (256KB) per hook for BPF verifier.
+
+* fix(gotls): manually unroll segment emit for BPF verifier
+
+Replace #pragma loop unroll that fails on Android CI with GOTLS_EMIT_SEG
+macro expansion. Bound chunk size with u32 total and (u64)base+off reads.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+---------
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+--- kern/gotls_kern.c
+@@ -24,6 +24,8 @@
+ #define EVP_MAX_MD_SIZE 64
+ #define GOTLS_EVENT_TYPE_WRITE 0
+ #define GOTLS_EVENT_TYPE_READ 1
++// Max bpf_perf_event_output calls per hook (16 * 16KB = 256KB); must fully unroll for verifier.
++#define GOTLS_MAX_SEGMENTS 16
+ 
+ // // TLS record types in golang tls package
+ #define recordTypeApplicationData 23
+@@ -247,6 +249,62 @@ static __always_inline void fill_fd_and_addr_from_tls_conn(void *tls_conn_ptr,
+     extract_addr_from_netfd_ptr(netfd_ptr, src_ip, src_port, dst_ip, dst_port, ip_version);
+ }
+ 
++// Emit one 16KB segment; seg_idx must be a compile-time constant for verifier bounds.
++#define GOTLS_EMIT_SEG(ctx, event, base, total, max_chunk, seg_idx)               \
++    do {                                                                           \
++        const u32 _off = (u32)(seg_idx) * (max_chunk);                             \
++        if (_off < (total)) {                                                      \
++            u32 _remain = (total) - _off;                                          \
++            u32 _chunk = _remain < (max_chunk) ? (_remain & ((max_chunk) - 1))     \
++                                             : (max_chunk);                        \
++            if (_chunk > 0) {                                                      \
++                (event)->data_len = (s32)_chunk;                                   \
++                if (bpf_probe_read_user(&(event)->data, _chunk,                   \
++                                        (void *)((u64)(base) + (u64)_off)) == 0) { \
++                    bpf_perf_event_output(ctx, &events, BPF_F_CURRENT_CPU, event,  \
++                                          sizeof(struct go_tls_event));            \
++                }                                                                  \
++            }                                                                      \
++        }                                                                          \
++    } while (0)
++
++static __always_inline int gotls_emit_payload(struct pt_regs *ctx,
++                                              struct go_tls_event *event,
++                                              const char *base,
++                                              s32 total_len,
++                                              u8 event_type) {
++    if (!base || total_len <= 0) {
++        return 0;
++    }
++
++    const u32 max_chunk = MAX_DATA_SIZE_OPENSSL;
++    const u32 max_total = max_chunk * GOTLS_MAX_SEGMENTS;
++    u32 total = (u32)total_len;
++    if (total > max_total) {
++        total = max_total;
++    }
++
++    event->event_type = event_type;
++
++    GOTLS_EMIT_SEG(ctx, event, base, total, max_chunk, 0);
++    GOTLS_EMIT_SEG(ctx, event, base, total, max_chunk, 1);
++    GOTLS_EMIT_SEG(ctx, event, base, total, max_chunk, 2);
++    GOTLS_EMIT_SEG(ctx, event, base, total, max_chunk, 3);
++    GOTLS_EMIT_SEG(ctx, event, base, total, max_chunk, 4);
++    GOTLS_EMIT_SEG(ctx, event, base, total, max_chunk, 5);
++    GOTLS_EMIT_SEG(ctx, event, base, total, max_chunk, 6);
++    GOTLS_EMIT_SEG(ctx, event, base, total, max_chunk, 7);
++    GOTLS_EMIT_SEG(ctx, event, base, total, max_chunk, 8);
++    GOTLS_EMIT_SEG(ctx, event, base, total, max_chunk, 9);
++    GOTLS_EMIT_SEG(ctx, event, base, total, max_chunk, 10);
++    GOTLS_EMIT_SEG(ctx, event, base, total, max_chunk, 11);
++    GOTLS_EMIT_SEG(ctx, event, base, total, max_chunk, 12);
++    GOTLS_EMIT_SEG(ctx, event, base, total, max_chunk, 13);
++    GOTLS_EMIT_SEG(ctx, event, base, total, max_chunk, 14);
++    GOTLS_EMIT_SEG(ctx, event, base, total, max_chunk, 15);
++    return 0;
++}
++
+ static __always_inline int gotls_write(struct pt_regs *ctx, bool is_register_abi) {
+     if (!passes_filter(ctx)) {
+         return 0;
+@@ -277,23 +335,14 @@ static __always_inline int gotls_write(struct pt_regs *ctx, bool is_register_abi
+     if (!event) {
+         return 0;
+     }
+-
+     fill_fd_and_addr_from_tls_conn(tls_conn_ptr, &event->fd,
+                                     event->src_ip, &event->src_port,
+                                     event->dst_ip, &event->dst_port,
+                                     &event->ip_version, "WRITE");
+ 
+-    event->data_len =
+-        (len < MAX_DATA_SIZE_OPENSSL ? (len & (MAX_DATA_SIZE_OPENSSL - 1))
+-                                     : MAX_DATA_SIZE_OPENSSL);
+-    int ret = bpf_probe_read_user(&event->data, event->data_len, (void *)str);
+-    if (ret < 0) {
+-        return 0;
+-    }
+     debug_bpf_printk("gotls_write: pid=%u fd=%u ip_version=%u\n",
+                      event->pid, event->fd, event->ip_version);
+-    bpf_perf_event_output(ctx, &events, BPF_F_CURRENT_CPU, event, sizeof(struct go_tls_event));
+-    return 0;
++    return gotls_emit_payload(ctx, event, str, len, GOTLS_EVENT_TYPE_WRITE);
+ }
+ 
+ // capture golang tls plaintext, supported golang stack-based ABI (go version
+@@ -344,25 +393,14 @@ static __always_inline int gotls_read(struct pt_regs *ctx, bool is_register_abi)
+     if (!event) {
+         return 0;
+     }
+-
+     fill_fd_and_addr_from_tls_conn(tls_conn_ptr, &event->fd,
+                                     event->src_ip, &event->src_port,
+                                     event->dst_ip, &event->dst_port,
+                                     &event->ip_version, "READ");
+ 
+-    event->data_len =
+-        (ret_len < MAX_DATA_SIZE_OPENSSL ? (ret_len & (MAX_DATA_SIZE_OPENSSL - 1))
+-                                     : MAX_DATA_SIZE_OPENSSL);
+-    event->event_type = GOTLS_EVENT_TYPE_READ;
+-    int ret = bpf_probe_read_user(&event->data, event->data_len, (void *)str);
+-    if (ret < 0) {
+-        return 0;
+-    }
+     debug_bpf_printk("gotls_read: pid=%u fd=%u ip_version=%u\n",
+                      event->pid, event->fd, event->ip_version);
+-
+-    bpf_perf_event_output(ctx, &events, BPF_F_CURRENT_CPU, event, sizeof(struct go_tls_event));
+-    return 0;
++    return gotls_emit_payload(ctx, event, str, ret_len, GOTLS_EVENT_TYPE_READ);
+ }
+ 
+ // capture golang tls plaintext, supported golang stack-based ABI (go version
+

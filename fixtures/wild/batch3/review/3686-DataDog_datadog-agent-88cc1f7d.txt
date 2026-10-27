@@ -1,0 +1,120 @@
+repo: DataDog/datadog-agent
+commit: 88cc1f7db7325c97f29cd5eb4d7ef767337a8eaf
+rank: 3686
+
+[CWS] Remove kernel-side DNS event sampling (#55967)
+
+## What does this PR do?
+
+Removes the kernel-side DNS event sampling mechanism in CWS.
+
+## Motivation
+
+Fix a regression: Enabling security profile v2 by default (#55662) caused DNS security rules (e.g. mining-pool domain rules) to stop matching. Bisecting pointed at that PR even though its diff only flips config defaults.
+
+Root cause: enabling v2 force-enables DNS event sampling (`EventSamplingDNSEnabled`). In the kernel, DNS request events are **always** delivered to user space (unlike `open`/`bind`/`connect` syscall events, which are dropped in-kernel unless a rule approver or the sampler admits them). Despite that, the DNS sampler marked admitted events with `EVENT_FLAGS_SAVED_BY_AD`, and the rule engine skips any event carrying that flag:
+
+```go
+// pkg/security/rules/engine.go
+if event.IsSavedByActivityDumps() {
+    return
+}
+```
+
+So DNS sampling reduced no kernel→user-space volume and only hid a slice of DNS traffic (up to the sampler's per-period budget) from rule evaluation. In low-volume scenarios essentially every DNS query fell inside the budget, so rules never matched.
+
+## Change
+
+- Drop the `approve_dns_sample` branch in `reset_dns_event` (the traced-PID activity-dump branch, which only sets `ACTIVITY_DUMP_SAMPLE` and never `SAVED_BY_AD`, is kept, so manual/traced dumps still capture DNS).
+- Remove the `approve_dns_sample` helper, the `DNS_SAMPLE_LIMITER` rate-limiter slot (and shrink `global_rate_limiters`), and the `event_sampling.dns.*` config surface + eBPF constants.
+- Security profile v2 already inserts DNS into profiles from the always-delivered user-space event (`ManagerV2.ProcessEvent` filters on container + configured event types, not on the AD-sample flag), so profile collection is unaffected.
+- DNS probe activation for profiles now derives from `SecurityProfileV2EventTypes` via `isNeededForSecurityProfile`, instead of piggybacking on the sampler.
+
+Response-side rcode discarders (short vs full DNS responses) are untouched.
+
+## Describe how you validated your changes
+
+- `dda inv system-probe.build-sysprobe-binary` compiles.
+- `bazel build //pkg/security/ebpf/c/prebuilt:runtime-security{,-syscall-wrapper,-fentry}` compiles and links.
+- Manual/functional verification that DNS rules match with security profile v2 enabled: deployed to staging and validated that DNS events are back.
+
+## Possible Drawbacks / Trade-offs
+
+## Additional Notes
+
+
+Co-authored-by: marcio.kovags <marcio.kovags@datadoghq.com>
+
+--- pkg/security/ebpf/c/include/constants/custom.h
+@@ -350,7 +350,6 @@ enum global_rate_limiter_type {
+     RAW_PACKET_ACTION_LIMITER,
+     OPEN_SAMPLE_LIMITER,
+     BIND_SAMPLE_LIMITER,
+-    DNS_SAMPLE_LIMITER,
+     CONNECT_SAMPLE_LIMITER,
+ };
+ 
+
+--- pkg/security/ebpf/c/include/helpers/approvers.h
+@@ -187,33 +187,6 @@ static enum SYSCALL_STATE __attribute__((always_inline)) approve_bind_sample(str
+     return SAMPLED;
+ }
+ 
+-static enum SYSCALL_STATE __attribute__((always_inline)) approve_dns_sample(u32 pid) {
+-    u64 event_sampling_dns_enabled = 0;
+-    LOAD_CONSTANT("event_sampling_dns_enabled", event_sampling_dns_enabled);
+-    u64 event_sampling_dns_rate = 0;
+-    LOAD_CONSTANT("event_sampling_dns_rate", event_sampling_dns_rate);
+-    u64 event_sampling_dns_threshold = 60;
+-    LOAD_CONSTANT("event_sampling_dns_threshold", event_sampling_dns_threshold);
+-
+-    if (!event_sampling_dns_enabled) {
+-        return DISCARDED;
+-    }
+-
+-    // ignore kworkers
+-    if (IS_KERNEL_THREAD(pid)) {
+-        return DISCARDED;
+-    }
+-
+-    monitor_event_sample_total(EVENT_DNS);
+-
+-    if (!sampling_admission_check(DNS_SAMPLE_LIMITER, event_sampling_dns_rate, (u8)event_sampling_dns_threshold)) {
+-        return DISCARDED;
+-    }
+-
+-    monitor_event_sample_sampled(EVENT_DNS);
+-    return SAMPLED;
+-}
+-
+ static enum SYSCALL_STATE __attribute__((always_inline)) approve_connect_sample(struct bind_connect_sample_key_t *key, struct syscall_cache_t *syscall) {
+     u64 event_sampling_connect_enabled = 0;
+     LOAD_CONSTANT("event_sampling_connect_enabled", event_sampling_connect_enabled);
+
+--- pkg/security/ebpf/c/include/helpers/network/dns.h
+@@ -52,13 +52,6 @@ __attribute__((always_inline)) struct dns_event_t *reset_dns_event(struct __sk_b
+         }
+     }
+ 
+-    // rate limit only
+-    if (!(evt->event.flags & EVENT_FLAGS_ACTIVITY_DUMP_SAMPLE)) {
+-        if (approve_dns_sample(evt->process.pid) == SAMPLED) {
+-            evt->event.flags |= EVENT_FLAGS_ACTIVITY_DUMP_SAMPLE | EVENT_FLAGS_SAVED_BY_AD;
+-        }
+-    }
+-
+     return evt;
+ }
+ 
+
+--- pkg/security/ebpf/c/include/maps.h
+@@ -46,7 +46,7 @@ BPF_ARRAY_MAP(go_labels_ctx_gen_id, u32, 1)
+ BPF_ARRAY_MAP(go_labels_ctx, struct go_labels_ctx_entry_t, GO_LABELS_CTX_MAX_ENTRIES)
+ BPF_ARRAY_MAP(otel_attrs_gen_id, u32, 1)
+ BPF_ARRAY_MAP(otel_span_attrs, struct otel_span_attrs_t, OTEL_SPAN_ATTRS_MAX_ENTRIES)
+-BPF_ARRAY_MAP(global_rate_limiters, struct rate_limiter_ctx, 6)
++BPF_ARRAY_MAP(global_rate_limiters, struct rate_limiter_ctx, 5)
+ BPF_ARRAY_MAP(filtered_dns_rcodes, u16, 1)
+ BPF_ARRAY_MAP(in_upper_layer_approvers, struct event_mask_filter_t, 1)
+ 
+

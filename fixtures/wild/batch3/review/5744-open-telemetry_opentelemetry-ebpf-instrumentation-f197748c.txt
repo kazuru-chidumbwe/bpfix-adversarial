@@ -1,0 +1,77 @@
+repo: open-telemetry/opentelemetry-ebpf-instrumentation
+commit: f197748c6d449b2ece05735e3ab999edee66682d
+rank: 5744
+
+fix(bpf): write Go string reads in the form old verifiers can bound (#3576)
+
+* fix(gotracer): zero string fields instead of storing a terminator at a variable offset
+
+Signed-off-by: Giuseppe Ognibene <giuseppe.ognibene@coralogix.com>
+
+* fix(gotracer): clamp the string read size at the read instead of min()
+
+Signed-off-by: Giuseppe Ognibene <giuseppe.ognibene@coralogix.com>
+
+* Apply review feedback
+
+Signed-off-by: Giuseppe Ognibene <giuseppe.ognibene@coralogix.com>
+
+---------
+
+Signed-off-by: Giuseppe Ognibene <giuseppe.ognibene@coralogix.com>
+
+--- bpf/gotracer/go_kafka_go.c
+@@ -116,7 +116,6 @@ int GUARDED_PROG(obi_uprobe_writer_produce, struct pt_regs *, ctx) {
+             }
+ 
+             bpf_probe_read_user(&topic.name, topic_len, topic_ptr);
+-            topic.name[topic_len] = '\0';
+             bpf_map_update_elem(&ongoing_produce_topics, &g_key, &topic, BPF_ANY);
+         }
+         bpf_map_delete_elem(&produce_traceparents, &p_key);
+
+--- bpf/gotracer/go_str.h
+@@ -26,17 +26,16 @@
+ 
+ static __always_inline int
+ read_go_str_n(char *name, void *base_ptr, u64 len, void *field, u64 max_size) {
+-    const u64 size = min(max_size, len);
++    __builtin_memset(field, 0, max_size);
++
++    u64 size = len;
++    bpf_clamp_umax(size, max_size);
++
+     if (bpf_probe_read(field, size, base_ptr)) {
+         bpf_dbg_printk("can't read string for %s", name);
+         return 0;
+     }
+ 
+-    // put in a null terminator if we are not at max_size
+-    if (size < max_size) {
+-        ((char *)field)[size] = 0;
+-    }
+-
+     return 1;
+ }
+ 
+@@ -55,18 +54,7 @@ read_go_str(char *name, void *base_ptr, u8 offset, void *field, u64 max_size) {
+         return 0;
+     }
+ 
+-    const u64 size = min(max_size, len);
+-    if (bpf_probe_read(field, size, ptr)) {
+-        bpf_dbg_printk("can't read string for %s", name);
+-        return 0;
+-    }
+-
+-    // put in a null terminator if we are not at max_size
+-    if (size < max_size) {
+-        ((char *)field)[size] = 0;
+-    }
+-
+-    return 1;
++    return read_go_str_n(name, ptr, len, field, max_size);
+ }
+ 
+ static __always_inline u64 peek_go_str_len(const char *name, const void *base_ptr, u8 offset) {
+

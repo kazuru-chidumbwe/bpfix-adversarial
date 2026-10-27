@@ -1,0 +1,446 @@
+repo: DataDog/datadog-agent
+commit: 71105da122b192dbfa026abe09ba1d0a6bfd1662
+rank: 3026
+
+dyninst: any/all predicates over collections (#50722)
+
+
+
+
+### What does this PR do?
+
+Add any(coll, pred) and all(coll, pred) to the dyninst expression language for use in probe `when:` clauses. Supports slices, arrays, and Go 1.24+ swiss-table maps.
+
+Inside the predicate body, the iteration variable is `@it`. For maps, `@it` is the current key (with `@key` as an accepted synonym) and `@value` is the current value — each its own loop variable anchored at a different offset in the per-iteration scratch slot, so a body like `{@key == "match" && @value == 42}` splits across the two without any synthetic struct.
+
+The body's scope is closed: only `@it` (and `@key` / `@value` for maps) and literal constants may be referenced — outer-scope variables and nested any/all are rejected as typed Issues.
+
+Iteration is capped at 4096 elements per call. Larger collections still short-circuit normally (the cap only matters if no short-circuit fires); when iteration exhausts the capped budget without a short-circuit result, the surrounding condition reports an eval error.
+
+Null comparison on a member-access chain (e.g. `m.ptrField != null`, `@value != null` for a map of `*T`) preserves the pointer rather than auto-derefing it. The general resolveExpression path always auto-derefs trailing pointers to provide capture semantics, which would otherwise strip the byte the null comparison needs.
+
+The lowering uses single-step `pc -=` back-jumps in the existing sm_loop rather than a nested bpf_loop, staying within the BPF verifier's call-depth budget. Collections stream from user memory one element at a time into a per-loop scratch slot; the collection itself never enters scratch. Iteration state lives on the SM struct, not the data stack, to keep verifier combined-stack usage low (especially for swiss-map walks, which use sm_swissmap_step_advance / sm_swissmap_read_current_slot helpers sharing state through swissmap_loop_state).
+
+New stack-machine opcodes: ExprLoadAddress, {Array,Slice,SwissMap}Loop- {Begin,End}, ExprAdvanceOffset. Body-side faults (nil deref / OOB) call sm_return as usual, unwinding the enclosing condition with condition_eval_error armed — surfaced as a probe error in the event header.
+
+### Motivation
+
+These are useful and lay the groundwork for `contains` on slices and for `filter`
+
+### Describe how you validated your changes
+
+There's testing.
+
+### Additional Notes
+
+Old-style hmap (Go 1.23) is not supported; affected map probes are tagged to skip on go1.23.11.
+
+https://datadoghq.atlassian.net/browse/DEBUG-5595
+
+
+Co-authored-by: andrew.werner <andrew.werner@datadoghq.com>
+
+--- pkg/dyninst/ebpf/context.h
+@@ -312,6 +312,79 @@ typedef struct stack_machine {
+     // in sm_loop's CHECK_SLOT case (reduces combined stack usage).
+     swiss_map_slot_params_t slot_params;
+   } swiss_map_state;
++
++  // Slice-loop iteration state for any/all over a slice or array. Only one
++  // such loop can be active at a time (irgen rejects nested any/all), so a
++  // single set of fields suffices.
++  //
++  // `capped` is set true when the collection's length exceeded the
++  // iteration cap and we truncated `remaining` to the cap; if the loop
++  // exhausts the capped count without short-circuiting, the end op trips
++  // eval_error to signal "result inconclusive due to cap".
++  struct {
++    target_ptr_t data_ptr;
++    // Raw 64-bit length read from the collection header. The executable
++    // iteration count below is capped before it is stored in remaining.
++    uint64_t initial_len;
++    uint32_t remaining;
++    buf_offset_t accumulator_off;
++    uint32_t elem_size;
++    uint8_t quantifier;
++    bool capped;
++  } slice_loop_state;
++
++  // Swiss-map any/all iteration state. Holds the streaming-walk position
++  // (dir_idx, group_idx, slot_idx) plus cached layout parameters and the
++  // synthetic @it scratch slot location.
++  struct {
++    target_ptr_t dir_ptr;
++    target_ptr_t prev_table_ptr;     // dedup consecutive aliased table pointers
++    target_ptr_t groups_data;
++    target_ptr_t length_mask;
++    uint64_t ctrl;                    // cached ctrl bytes for current group
++    target_ptr_t tmp_table_ptr;       // scratch for step_advance, avoids stack local
++    uint32_t dir_len;
++    uint32_t table_idx;
++    uint32_t group_idx;
++    uint8_t slot_idx;
++    uint8_t loaded_table;             // 1 if (groups_data, length_mask) populated
++    // phase encodes whether the next entry to the Begin/End SM_OP handler
++    // is a "first entry" (needs init / body-result check) or a back-edge
++    // retry from a previous step that returned "keep stepping" (r==2). The
++    // SM_OP handlers use `sm->pc -=` to retry themselves while the cursor
++    // walks empty slots, so phase distinguishes the two paths without
++    // requiring a separate Advance opcode.
++    //   0 = fresh entry (Begin: needs init; End: needs short-circuit check)
++    //   1 = back-edge retry (skip init / short-circuit, just step again)
++    uint8_t phase;
++    uint32_t iterations;             // successful body invocations so far
++    uint32_t scan_steps;             // cumulative single-step calls; eval_error guard
++    buf_offset_t accumulator_off;
++    uint32_t end_label_pc;           // jump target on exhaustion / nil-map / short-circuit
++    uint32_t body_label_pc;          // jump target on the next found slot (End handler)
++    uint32_t key_byte_size;
++    uint32_t val_byte_size;
++    uint8_t quantifier;
++
++    // Cached layout (re-read on each Begin from the op params).
++    uint8_t dir_ptr_offset;
++    uint8_t dir_len_offset;
++    uint8_t ctrl_offset;
++    uint8_t slots_offset;
++    uint8_t key_in_slot_offset;
++    uint16_t val_in_slot_offset;
++    uint16_t slot_size;
++    uint16_t group_byte_size;
++    uint8_t table_groups_field_offset;
++    uint8_t groups_data_field_offset;
++    uint8_t groups_len_mask_field_offset;
++  } swissmap_loop_state;
++
++  // Scratch offset where the active any/all loop placed its @it bytes.
++  // Set by the loop's Begin op and consumed by ExprAdvanceOffsetOp so a
++  // body sub-expression can re-anchor sm->offset on @it regardless of
++  // where the previous body op left it.
++  buf_offset_t cur_loop_it_start;
+ } stack_machine_t;
+ 
+ struct {
+
+--- pkg/dyninst/ebpf/stack_machine.h
+@@ -25,6 +25,27 @@
+ // (used by condition expressions which report errors via condition_eval_error).
+ #define EXPR_STATUS_IDX_NONE 0xFFFFFFFF
+ 
++// Maximum number of iterations any single any/all loop may perform. Going
++// over this aborts the loop and sets condition_eval_error so the surrounding
++// condition reports the failure.
++//
++// Must stay in sync with ir.CollectionPredicateMaxIterations.
++#define COLLECTION_PREDICATE_MAX_ITERATIONS 4096
++
++// Maximum Swiss-map cursor-advance steps while looking for the next occupied
++// slot. Cursor advancement scans empty structural slots too, so keep this
++// separate from the visited-element cap above.
++#define COLLECTION_PREDICATE_MAX_SWISSMAP_SCAN_STEPS \
++  (COLLECTION_PREDICATE_MAX_ITERATIONS * 16)
++
++// Maximum @it scratch slot size for one iteration. Slice/array elem_size
++// and (key + 8-byte-aligned padding + val) for swiss maps must fit. Irgen
++// rejects oversized types upfront with a typed Issue; this BPF-side check
++// is defensive (we shouldn't see oversized values at runtime).
++//
++// Must stay in sync with ir.CollectionPredicateMaxElemBytes.
++#define COLLECTION_PREDICATE_MAX_ELEM_BYTES 256
++
+ // expr_status_write writes a status value into the packed expression status
+ // array for the given expression index.
+ static __always_inline void expr_status_write(
+@@ -2466,6 +2487,411 @@ sm_resolve_time_offset(scratch_buf_t* buf, buf_offset_t base_offset,
+   return resolved;
+ }
+ 
++
++// Loop-helper return codes.
++//   0 = ok, body should run; sm->offset == it_start
++//   1 = loop done (empty / short-circuited); sm->offset == accumulator_off
++//   3 = loop done with eval_error armed; caller should sm_return so the
++//       surrounding ConditionCheck doesn't clear the flag
++//  -1 = fatal error; caller should `return 1` from sm_loop
++
++// Reads `len` bytes from user memory at addr into scratch at offset.
++// Thin wrapper around scratch_buf_dereference: that helper already
++// dispatches to noinline per-size-class functions (64/256/1024/4096/
++// 8192) which is the established verifier-friendly pattern in this
++// codebase. We mirror its `nonzero return = ok` convention by
++// translating `true`->0, `false`->-1 so callers can compare to 0.
++__attribute__((always_inline)) static long
++sm_read_user_into_scratch(scratch_buf_t* buf, buf_offset_t off,
++                          target_ptr_t addr, uint32_t len) {
++  return scratch_buf_dereference(buf, off, len, addr) ? 0 : -1;
++}
++
++// sm_slice_loop_begin: global noinline impl of SM_OP_SLICE_LOOP_BEGIN.
++// Isolated from sm_loop so the verifier evaluates it independently.
++// All inputs come from sm->slice_loop_state which callers populate before
++// invoking (data_ptr / initial_len / elem_size / quantifier).
++// This avoids the BPF 5-arg limit.
++__attribute__((noinline)) int
++sm_slice_loop_begin(scratch_buf_t* buf, stack_machine_t* sm) {
++  if (!buf || !sm) return -1;
++  uint32_t elem_size = sm->slice_loop_state.elem_size;
++  target_ptr_t data_ptr = sm->slice_loop_state.data_ptr;
++  uint64_t len = sm->slice_loop_state.initial_len;
++  uint8_t quantifier = sm->slice_loop_state.quantifier;
++  if (elem_size == 0 || elem_size > COLLECTION_PREDICATE_MAX_ELEM_BYTES) {
++    LOG(1, "slice_loop_begin: invalid elem_size %d", elem_size);
++    sm->condition_eval_error = true;
++    return -1;
++  }
++  // Cap large collections to MAX_ITERATIONS. We don't trip eval_error
++  // upfront here because the body may still short-circuit before reaching
++  // the cap; the end op trips eval_error only if iteration exhausts the
++  // capped count without a short-circuit result.
++  uint64_t initial_len = len;
++  if (initial_len > COLLECTION_PREDICATE_MAX_ITERATIONS) {
++    len = COLLECTION_PREDICATE_MAX_ITERATIONS;
++  }
++  buf_offset_t accumulator_off = sm->offset;
++  buf_offset_t it_start = accumulator_off + 1;
++  // Layout: [accumulator: 1][@it: elem_size, ≤256][body scratch: ≤16 for cmp].
++  if (!scratch_buf_bounds_check(&accumulator_off, 1 + COLLECTION_PREDICATE_MAX_ELEM_BYTES + 16)) {
++    sm->condition_eval_error = true;
++    return -1;
++  }
++  (*buf)[accumulator_off] = (quantifier == 2 /* All */) ? 1 : 0;
++
++  if (len == 0) {
++    sm->offset = accumulator_off;
++    return 1; // jump to end
++  }
++
++  sm->slice_loop_state.data_ptr = data_ptr;
++  sm->slice_loop_state.remaining = (uint32_t)len;
++  sm->slice_loop_state.accumulator_off = accumulator_off;
++  sm->slice_loop_state.elem_size = elem_size;
++  sm->slice_loop_state.capped = (initial_len > COLLECTION_PREDICATE_MAX_ITERATIONS);
++  sm->cur_loop_it_start = it_start;
++
++  if (!scratch_buf_bounds_check(&it_start, COLLECTION_PREDICATE_MAX_ELEM_BYTES)) {
++    sm->condition_eval_error = true;
++    return -1;
++  }
++  long rd = sm_read_user_into_scratch(buf, it_start, data_ptr, elem_size);
++  if (rd != 0) {
++    sm->condition_eval_error = true;
++    sm->condition_nil_deref = true;
++    sm->offset = accumulator_off;
++    return 3;
++  }
++  sm->offset = it_start;
++  return 0;
++}
++
++// sm_slice_loop_end: global noinline impl of SM_OP_SLICE_LOOP_END.
++// Return codes match the shared "Loop-helper return codes" convention
++// defined above sm_slice_loop_begin.
++__attribute__((noinline)) int
++sm_slice_loop_end(scratch_buf_t* buf, stack_machine_t* sm) {
++  if (!buf || !sm) return -1;
++  uint8_t quantifier = sm->slice_loop_state.quantifier;
++  uint32_t elem_size = sm->slice_loop_state.elem_size;
++  if (elem_size == 0 || elem_size > COLLECTION_PREDICATE_MAX_ELEM_BYTES) {
++    LOG(1, "slice_loop_end: invalid stashed elem_size %u", elem_size);
++    sm->condition_eval_error = true;
++    return -1;
++  }
++  buf_offset_t accumulator_off = sm->slice_loop_state.accumulator_off;
++  target_ptr_t data_ptr = sm->slice_loop_state.data_ptr;
++  uint32_t remaining = sm->slice_loop_state.remaining;
++
++  buf_offset_t result_off = sm->offset;
++  if (!scratch_buf_bounds_check(&result_off, 1)) {
++    sm->condition_eval_error = true;
++    return -1;
++  }
++  uint8_t body_result = (*buf)[result_off];
++
++  // No explicit eval-error handling here: a body op that faults (nil
++  // deref / OOB) calls sm_return, unwinding the enclosing condition's
++  // SM function before this end op ever runs. condition_eval_error is
++  // already set on that path, surfaces in the event header, and the
++  // probe reports the error. The end op only runs on clean bodies.
++
++  bool exit_loop = false;
++  uint8_t exit_value = 0;
++  if (quantifier == 1 /* Any */) {
++    if (body_result != 0) { exit_loop = true; exit_value = 1; }
++  } else {
++    if (body_result == 0) { exit_loop = true; exit_value = 0; }
++  }
++
++  if (exit_loop || remaining <= 1) {
++    buf_offset_t acc_buf_off = accumulator_off;
++    if (scratch_buf_bounds_check(&acc_buf_off, 1)) {
++      if (exit_loop) {
++        (*buf)[acc_buf_off] = exit_value;
++      }
++    }
++    sm->offset = accumulator_off;
++    // If we exhausted the capped iteration budget without a short-circuit
++    // result, the answer is inconclusive: trip eval_error and tell the
++    // dispatcher to sm_return so the surrounding ConditionCheck doesn't
++    // clear the flag.
++    if (!exit_loop && sm->slice_loop_state.capped) {
++      sm->condition_eval_error = true;
++      return 3;
++    }
++    return 1;
++  }
++
++  data_ptr += elem_size;
++  remaining -= 1;
++  sm->slice_loop_state.data_ptr = data_ptr;
++  sm->slice_loop_state.remaining = remaining;
++
++  buf_offset_t it_start = (buf_offset_t)accumulator_off + 1;
++  if (!scratch_buf_bounds_check(&it_start, COLLECTION_PREDICATE_MAX_ELEM_BYTES)) {
++    sm->condition_eval_error = true;
++    return -1;
++  }
++  long rd = sm_read_user_into_scratch(buf, it_start, data_ptr, elem_size);
++  if (rd != 0) {
++    sm->condition_eval_error = true;
++    sm->condition_nil_deref = true;
++    sm->offset = accumulator_off;
++    return 3;
++  }
++  sm->offset = it_start;
++  return 0;
++}
++
++// sm_swissmap_step: advances the iteration cursor by a single step.
++//
++// Returns:
++//   1  = occupied slot found; @it scratch populated; cursor past this slot
++//   2  = made progress but no slot yet (empty group / empty dir entry /
++//        aliased table); caller should call again
++//   0  = exhausted (table_idx >= dir_len)
++//  -1  = fatal read error
++//
++// Splitting this into a single-step function keeps verifier path
++// complexity bounded — each call is one short linear flow.
++// sm_swissmap_step_advance: single step that doesn't read the slot
++// (returns 2 = continue, 0 = exhausted, -1 = error, 3 = slot ready).
++// Reading the slot is split into a separate function to keep stack use
++// per noinline function under the BPF combined-stack budget.
++__attribute__((noinline)) int
++sm_swissmap_step_advance(scratch_buf_t* buf, stack_machine_t* sm) {
++  if (!buf || !sm) return -1;
++  #define ST sm->swissmap_loop_state
++  if (ST.table_idx >= ST.dir_len) {
++    return 0;
++  }
++  if (!ST.loaded_table) {
++    if (bpf_probe_read_user(&ST.tmp_table_ptr, 8,
++                            (void*)(ST.dir_ptr + (target_ptr_t)ST.table_idx * 8)) != 0) {
++      return -1;
++    }
++    if (ST.tmp_table_ptr == 0 || ST.tmp_table_ptr == ST.prev_table_ptr) {
++      ST.table_idx++;
++      ST.group_idx = 0;
++      ST.slot_idx = 0;
++      return 2;
++    }
++    ST.prev_table_ptr = ST.tmp_table_ptr;
++    ST.tmp_table_ptr += ST.table_groups_field_offset;
++    if (bpf_probe_read_user(&ST.groups_data, 8,
++                            (void*)(ST.tmp_table_ptr + ST.groups_data_field_offset)) != 0) {
++      return -1;
++    }
++    if (bpf_probe_read_user(&ST.length_mask, 8,
++                            (void*)(ST.tmp_table_ptr + ST.groups_len_mask_field_offset)) != 0) {
++      return -1;
++    }
++    ST.loaded_table = 1;
++    ST.group_idx = 0;
++    ST.slot_idx = 0;
++    return 2;
++  }
++  if ((uint64_t)ST.group_idx > ST.length_mask) {
++    ST.table_idx++;
++    ST.loaded_table = 0;
++    return 2;
++  }
++  if (ST.slot_idx == 0) {
++    if (bpf_probe_read_user(&ST.ctrl, 8,
++                            (void*)(ST.groups_data +
++                                    (target_ptr_t)ST.group_idx * ST.group_byte_size +
++                                    ST.ctrl_offset)) != 0) {
++      return -1;
++    }
++  }
++  #pragma unroll
++  for (int s = 0; s < 8; s++) {
++    if (s < ST.slot_idx) continue;
++    if (((ST.ctrl >> (s * 8)) & 0x80) == 0) {
++      ST.slot_idx = (uint8_t)s; // remember which slot we found
++      return 3;
++    }
++  }
++  ST.group_idx++;
++  ST.slot_idx = 0;
++  return 2;
++  #undef ST
++}
++
++// sm_swissmap_read_current_slot: read (key, value) for the slot currently
++// pointed to by ST.slot_idx into @it scratch, then advance slot_idx so
++// the next step skips this slot. Returns 0 on success, -1 on error.
++__attribute__((noinline)) int
++sm_swissmap_read_current_slot(scratch_buf_t* buf, stack_machine_t* sm) {
++  if (!buf || !sm) return -1;
++  #define ST sm->swissmap_loop_state
++  uint32_t key_size = ST.key_byte_size;
++  uint32_t val_size = ST.val_byte_size;
++  // Go's swiss-map runtime stores keys/values >128 bytes out-of-line as
++  // pointers, so inline key_size and val_size are each at most 128. Irgen
++  // also verifies that key + 8-byte-aligned key padding + val fits in the
++  // overall scratch budget. The per-component check below is defensive.
++  if (key_size == 0 || key_size > 128 || val_size == 0 || val_size > 128) {
++    return -1;
++  }
++  uint32_t val_off_in_it = (key_size + 7) & 0x7F8u;
++  buf_offset_t it_start = (ST.accumulator_off & 0x3FFFu) + 1;
++  if (!scratch_buf_bounds_check(&it_start, 512)) {
++    return -1;
++  }
++  target_ptr_t slot_base = ST.groups_data +
++                           (target_ptr_t)ST.group_idx * ST.group_byte_size +
++                           ST.slots_offset +
++                           (target_ptr_t)ST.slot_idx * ST.slot_size;
++  if (sm_read_user_into_scratch(buf, it_start,
++                                slot_base + ST.key_in_slot_offset, key_size) != 0) {
++    return -1;
++  }
++  if (sm_read_user_into_scratch(buf, it_start + val_off_in_it,
++                   
+[truncated]
+
+--- pkg/dyninst/ebpf/types.h
+@@ -181,6 +181,19 @@ typedef enum sm_opcode {
+   // seconds, written in place of the loc pointer. See
+   // pkg/dyninst/compiler/ops.go: ProcessGoTimeOp.
+   SM_OP_PROCESS_GO_TIME = 49,
++  // Collection-predicate (any/all) opcodes. See ir.ExprLoadAddressOp,
++  // ir.{Array,Slice,SwissMap}Loop{Begin,End}Op.
++  SM_OP_EXPR_LOAD_ADDRESS = 50,
++  SM_OP_ARRAY_LOOP_BEGIN = 51,
++  SM_OP_ARRAY_LOOP_END = 52,
++  SM_OP_SLICE_LOOP_BEGIN = 53,
++  SM_OP_SLICE_LOOP_END = 54,
++  SM_OP_SWISS_MAP_LOOP_BEGIN = 55,
++  SM_OP_SWISS_MAP_LOOP_END = 56,
++  // Shifts sm->offset by a compile-time immediate. Used by LocationOp
++  // lowering for @it to position sm->offset at a field within the loop's
++  // @it scratch slot before the body's PushOffset/CmpBase sequence.
++  SM_OP_EXPR_ADVANCE_OFFSET = 57,
+ } sm_opcode_t;
+ 
+ // cmp_op_t identifies which comparison SM_OP_EXPR_CMP_BASE /
+

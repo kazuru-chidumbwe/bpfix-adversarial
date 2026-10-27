@@ -1,0 +1,65 @@
+repo: inspektor-gadget/inspektor-gadget
+commit: e4745197c79803e6d2d09fd3d2e1bc255b303934
+rank: 5167
+
+trace_dns: convert domain to dot notation (without wasm)
+
+$ sudo -E ig run ghcr.io/inspektor-gadget/gadget/trace_dns:latest --verify-image=false
+INFO[0000] Experimental features enabled
+WARN[0000] you set --verify-image=false, image will not be verified
+WARN[0001] you set --verify-image=false, image will not be verified
+RUNTIME.CONTAINERN… SRC… SRC… DST… DST… MNTNS_ID NETNS   PID        TID        UID        GID        TASK       ID         QTYPE      … PKT_… RCODE LATE… NAME               ANCOUNT    ANADDRCOU… ANADDR     TIMESTAMP  SRC.ADDRE… DST.ADDRE…
+busybox             565… 17   53   17   40265327 4026533 2869179    2869179    0          0          wget       48138      1          0 4     0     0     www.wikipedia.org  0          0          <16 bytes> 2024-05-14 172.17.0.4 192.168.0.
+busybox             565… 17   53   17   40265327 4026533 2869179    2869179    0          0          wget       58639      28         0 4     0     0     www.wikipedia.org  0          0          <16 bytes> 2024-05-14 172.17.0.4 192.168.0.
+busybox             53   17   565… 17   40265327 4026533 2869179    2869179    0          0          wget       48138      1          1 0     0     17880 www.wikipedia.org  2          0          <16 bytes> 2024-05-14 192.168.0. 172.17.0.4
+busybox             53   17   565… 17   40265327 4026533 2869179    2869179    0          0          wget       58639      28         1 0     0     20834 www.wikipedia.org  2          0          <16 bytes> 2024-05-14 192.168.0. 172.17.0.4
+busybox             548… 17   53   17   40265327 4026533 2869179    2869179    0          0          wget       58969      1          0 4     0     0     www.wikipedia.org  0          0          <16 bytes> 2024-05-14 172.17.0.4 192.168.0.
+busybox             548… 17   53   17   40265327 4026533 2869179    2869179    0          0          wget       15719      28         0 4     0     0     www.wikipedia.org  0          0          <16 bytes> 2024-05-14 172.17.0.4 192.168.0.
+busybox             53   17   548… 17   40265327 4026533 2869179    2869179    0          0          wget       58969      1          1 0     0     16420 www.wikipedia.org  2          0          <16 bytes> 2024-05-14 192.168.0. 172.17.0.4
+busybox             53   17   548… 17   40265327 4026533 2869179    2869179    0          0          wget       15719      28         1 0     0     18310 www.wikipedia.org  2          0          <16 bytes> 2024-05-14 192.168.0. 172.17.0.4
+ubuntu              463… 17   53   17   40265336 4026534 2869330    2869330    100        65534      http       62504      1          0 4     0     0     archive.ubuntu.com 0          0          <16 bytes> 2024-05-14 172.17.0.4 192.168.0.
+ubuntu              559… 17   53   17   40265336 4026534 2869329    2869329    100        65534      http       20280      1          0 4     0     0     security.ubuntu.co 0          0          <16 bytes> 2024-05-14 172.17.0.4 192.168.0.
+ubuntu              53   17   463… 17   40265336 4026534 2869330    2869330    100        65534      http       62504      1          1 0     0     19688 archive.ubuntu.com 5          1          <16 bytes> 2024-05-14 192.168.0. 172.17.0.4
+ubuntu              53   17   559… 17   40265336 4026534 2869329    2869329    100        65534      http       20280      1          1 0     0     21438 security.ubuntu.co 5          1          <16 bytes> 2024-05-14 192.168.0. 172.17.0.4
+
+Signed-off-by: Alban Crequy <albancrequy@linux.microsoft.com>
+
+--- gadgets/trace_dns/program.bpf.c
+@@ -54,7 +54,7 @@ struct event_t {
+ 
+ 	__u64 latency_ns; // Set only if qr is 1 (response) and pkt_type is 0 (Host).
+ 
+-	__u8 name[MAX_DNS_NAME];
++	char name[MAX_DNS_NAME];
+ 
+ 	__u16 ancount;
+ 	__u16 anaddrcount;
+@@ -343,6 +343,27 @@ static __always_inline int output_dns_event(struct __sk_buff *skb,
+ 	bpf_skb_load_bytes(skb, DNS_OFF + sizeof(struct dnshdr), event->name,
+ 			   name_len);
+ 
++	// Convert DNS string to dot notation
++	// "\^Cwww\u0009wikipedia\^Corg\^@"
++	// "www.wikipedia.org"
++	unsigned int i;
++	unsigned int remaining = event->name[0];
++	if (remaining == 0)
++		goto out;
++	for (i = 0; i < MAX_DNS_NAME - 1; i++) {
++		if (remaining == 0) {
++			remaining = event->name[i + 1];
++			if (remaining == 0) {
++				event->name[i] = '\0';
++				break;
++			}
++			event->name[i] = '.';
++			continue;
++		}
++		event->name[i] = event->name[i + 1];
++		remaining--;
++	}
++
+ 	event->pkt_type = skb->pkt_type;
+ 
+ 	// Read QTYPE right after the QNAME (name_len + the zero length octet)
+

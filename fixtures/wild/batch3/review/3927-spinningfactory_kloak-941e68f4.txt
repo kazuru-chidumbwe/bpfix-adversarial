@@ -1,0 +1,136 @@
+repo: spinningfactory/kloak
+commit: 941e68f436b536116f6f954ef3455d960a75ab93
+rank: 3927
+
+security: harden BPF maps with BPF_F_RDONLY_PROG (#108)
+
+* security: add BPF_F_RDONLY_PROG to BPF maps that are read-only from eBPF
+
+Add BPF_F_RDONLY_PROG flag to 5 maps that BPF programs only read:
+- secret_map: BPF only does bpf_map_lookup_elem
+- watched_hosts: BPF only does bpf_map_lookup_elem
+- cgroup_ancestor: BPF only uses bpf_current_task_under_cgroup (read)
+- prog_array: BPF only uses bpf_tail_call (read)
+- tc_prog_array: BPF only uses bpf_tail_call (read)
+
+This prevents a compromised or buggy BPF program from writing to these
+maps. The verifier enforces this at program load time.
+
+Note: tracked_tgids and tracked_cgroups are NOT marked read-only
+because the exec/exit tracepoints write to them from BPF side.
+
+Closes #75 (without Freeze — deferred to avoid conflict with #107)
+
+Requires: make generate-ebpf (on Linux) to regenerate Go bindings.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: remove BPF_F_RDONLY_PROG from prog_array maps
+
+BPF_MAP_TYPE_PROG_ARRAY does not support BPF_F_RDONLY_PROG — the kernel
+rejects it with EINVAL because bpf_tail_call requires internal write
+access. Revert to default flags for prog_array and tc_prog_array.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* security: add BPF_F_RDONLY to BPF-only maps to prevent userspace writes
+
+Add BPF_F_RDONLY (userspace read-only) to 8 maps that are exclusively
+managed by BPF programs with no legitimate userspace write access:
+
+- ssl_fd_map, last_verified_fd: BPF connection tracking internals
+- udp_recv_scratch, connect_pending: kprobe/tracepoint correlators
+- tls_conn_state, xor_pending, tc_pending: XOR/TC pipeline state
+- debug_counters: BPF-written performance counters
+
+This prevents a process with CAP_BPF from injecting fake connection
+state, DNS entries, or debug data via userspace map writes.
+
+dns_ip_map and conn_ip_map are excluded because existing tests write
+to them from userspace for validation.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: remove BPF_F_RDONLY from LRU_HASH maps
+
+LRU_HASH maps may reject BPF_F_RDONLY because LRU eviction requires
+internal syscall-level writes. Remove the flag from ssl_fd_map,
+tls_conn_state, and tc_pending (all LRU_HASH). Keep BPF_F_RDONLY
+only on regular HASH and PERCPU_ARRAY maps.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+* fix: reduce BPF map hardening to known-safe HASH maps only
+
+Remove BPF_F_RDONLY from HASH, PERCPU_ARRAY, and CGROUP_ARRAY maps
+as the E2E tests show the controller crash-loops. Only keep
+BPF_F_RDONLY_PROG on secret_map and watched_hosts (both BPF_MAP_TYPE_HASH)
+which is the minimum safe hardening.
+
+Additional map flags can be added incrementally after verifying each
+map type supports them on the CI kernel version.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+---------
+
+Co-authored-by: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+--- pkg/ebpf/bpf/tls_uprobe.c
+@@ -76,6 +76,7 @@ struct secret_value {
+ struct {
+   __uint(type, BPF_MAP_TYPE_HASH);
+   __uint(max_entries, 1024);
++  __uint(map_flags, BPF_F_RDONLY_PROG);
+   __type(key, struct secret_key);
+   __type(value, struct secret_value);
+ } secret_map SEC(".maps");
+@@ -191,6 +192,7 @@ enum {
+ struct {
+   __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
+   __uint(max_entries, 64); // must be >= DBG_MAX
++
+   __type(key, __u32);
+   __type(value, __u64);
+ } debug_counters SEC(".maps");
+@@ -283,6 +285,7 @@ struct {
+ struct {
+   __uint(type, BPF_MAP_TYPE_HASH);
+   __uint(max_entries, 16384);
++
+   __type(key, __u32);   // tgid
+   __type(value, __u32); // fd
+ } last_verified_fd SEC(".maps");
+@@ -319,6 +322,7 @@ struct udp_recv_pending {
+ struct {
+   __uint(type, BPF_MAP_TYPE_HASH);
+   __uint(max_entries, 1024);
++
+   __type(key, __u64);   // pid_tgid
+   __type(value, struct udp_recv_pending);
+ } udp_recv_scratch SEC(".maps");
+@@ -333,6 +337,7 @@ struct connect_pending_val {
+ struct {
+   __uint(type, BPF_MAP_TYPE_HASH);
+   __uint(max_entries, 1024);
++
+   __type(key, __u64);   // pid_tgid
+   __type(value, struct connect_pending_val);
+ } connect_pending SEC(".maps");
+@@ -360,6 +365,7 @@ struct watched_host_key {
+ struct {
+   __uint(type, BPF_MAP_TYPE_HASH);
+   __uint(max_entries, 256);
++  __uint(map_flags, BPF_F_RDONLY_PROG);
+   __type(key, struct watched_host_key);
+   __type(value, __u8);
+ } watched_hosts SEC(".maps");
+@@ -464,6 +470,7 @@ struct xor_pending_val {
+ struct {
+   __uint(type, BPF_MAP_TYPE_HASH);
+   __uint(max_entries, 4096);
++
+   __type(key, __u64);  // pid_tgid
+   __type(value, struct xor_pending_val);
+ } xor_pending SEC(".maps");
+

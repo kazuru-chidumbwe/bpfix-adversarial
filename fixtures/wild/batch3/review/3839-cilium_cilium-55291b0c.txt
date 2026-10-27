@@ -1,0 +1,136 @@
+repo: cilium/cilium
+commit: 55291b0c717c91146fbb70170c874b43bd94234c
+rank: 3839
+
+bpf: Reduce stack usage and complexity of `tail_handle_snat_fwd_ipv6`
+
+The goal of this commit it to reduce the stack usage of the
+`tail_handle_snat_fwd_ipv6` tailcall. To do so we move a number of
+larger variables such as `struct ipv6_ct_tuple` and
+`struct ipv6_nat_target` to per-CPU map values.
+
+Moving variables to aux data on its own would reduce stack usage at the
+cost of complexity. Likely due to the verifier not being able to track
+the state of these variables anymore, requiring more states to be
+explored. A big reason for the complexity in  `nodeport_snat_fwd_ipv6`
+is due to the number of different permutations of code paths before we
+get to `snat_v6_nat`.
+
+By moving `snat_v6_nat` to a global function we reduce the number of
+state permutations to 1 upon entering the function, leading to a
+combined reduction in both stack usage and complexity.
+
+Signed-off-by: Dylan Reimerink <dylan.reimerink@isovalent.com>
+
+--- bpf/lib/nat.h
+@@ -1813,6 +1813,12 @@ struct {
+ 	__type(key, int);
+ 	__type(value, struct ipv6_nat_target);
+ } nat_target_storage __section_maps_btf;
++struct {
++	__uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
++	__uint(max_entries, 1);
++	__type(key, int);
++	__type(value, struct trace_ctx);
++} trace_ctx_storage __section_maps_btf;
+ 
+ __noinline __weak int
+ snat_v6_needs_masquerade(struct __ctx_buff *ctx __maybe_unused,
+@@ -1952,18 +1958,34 @@ __snat_v6_nat(struct __ctx_buff *ctx, struct ipv6_ct_tuple *tuple,
+ 	return ret;
+ }
+ 
+-static __always_inline __maybe_unused int
+-snat_v6_nat(struct __ctx_buff *ctx, struct ipv6_ct_tuple *tuple,
+-	    struct ipv6hdr *ip6, fraginfo_t fraginfo,
+-	    int off, struct ipv6_nat_target *target,
+-	    struct trace_ctx *trace, __s8 *ext_err)
++__noinline __weak int
++snat_v6_nat(struct __ctx_buff *ctx, fraginfo_t fraginfo, int off, __s8 *ext_err)
+ {
+ 	struct ipv6_nat_entry *state = NULL;
++	struct ipv6_nat_target *target;
++	struct ipv6_ct_tuple *tuple;
++	struct trace_ctx *trace;
++	void *data, *data_end;
++	struct ipv6hdr *ip6;
+ 	__u16 port_off = 0;
++	int zero = 0;
+ 	int ret;
+ 
++	tuple = map_lookup_elem(&ct_tuple_storage, &zero);
++	if (!tuple)
++		return DROP_INVALID;
++	target = map_lookup_elem(&nat_target_storage, &zero);
++	if (!target)
++		return DROP_INVALID;
++	trace = map_lookup_elem(&trace_ctx_storage, &zero);
++	if (!trace)
++		return DROP_INVALID;
++
+ 	build_bug_on(sizeof(struct ipv6_nat_entry) > 64);
+ 
++	if (!revalidate_data(ctx, &data, &data_end, &ip6))
++		return DROP_INVALID;
++
+ 	switch (tuple->nexthdr) {
+ 	case IPPROTO_TCP:
+ 	case IPPROTO_UDP:
+
+--- bpf/lib/nodeport_egress.h
+@@ -56,7 +56,6 @@ nodeport_has_nat_conflict_ipv6(const struct __ctx_buff *ctx __maybe_unused,
+ 
+ static __always_inline int nodeport_snat_fwd_ipv6(struct __ctx_buff *ctx,
+ 						  union v6addr *saddr,
+-						  struct trace_ctx *trace,
+ 						  __s8 *ext_err)
+ {
+ 	int hdrlen, l4_off, ret = NAT_PUNT_TO_STACK;
+@@ -119,8 +118,7 @@ static __always_inline int nodeport_snat_fwd_ipv6(struct __ctx_buff *ctx,
+ 
+ apply_snat:
+ 	ipv6_addr_copy(saddr, &tuple->saddr);
+-	ret = snat_v6_nat(ctx, tuple, ip6, fraginfo, l4_off,
+-			  target, trace, ext_err);
++	ret = snat_v6_nat(ctx, fraginfo, l4_off, ext_err);
+ 	if (IS_ERR(ret))
+ 		goto out;
+ 
+@@ -139,15 +137,22 @@ __declare_tail(CILIUM_CALL_IPV6_NODEPORT_SNAT_FWD)
+ int tail_handle_snat_fwd_ipv6(struct __ctx_buff *ctx)
+ {
+ 	__u32 src_id = ctx_load_and_clear_meta(ctx, CB_SRC_LABEL);
+-	struct trace_ctx trace = {
+-		.reason = TRACE_REASON_UNKNOWN,
+-		.monitor = 0,
+-	};
++	struct trace_ctx *trace;
+ 	union v6addr saddr = {};
+ 	int ret;
+ 	__s8 ext_err = 0;
++	__u32 zero = 0;
++
++	trace = map_lookup_elem(&trace_ctx_storage, &zero);
++	if (!trace)
++		return DROP_INVALID;
++
++	*trace = (struct trace_ctx){
++		.reason = TRACE_REASON_UNKNOWN,
++		.monitor = 0,
++	};
+ 
+-	ret = nodeport_snat_fwd_ipv6(ctx, &saddr, &trace, &ext_err);
++	ret = nodeport_snat_fwd_ipv6(ctx, &saddr, &ext_err);
+ 	if (IS_ERR(ret))
+ 		return send_drop_notify_error_ext(ctx, src_id, ret, ext_err, METRIC_EGRESS);
+ 
+@@ -159,7 +164,7 @@ int tail_handle_snat_fwd_ipv6(struct __ctx_buff *ctx)
+ 	if (ret == CTX_ACT_OK)
+ 		send_trace_notify6(ctx, NODEPORT_OBS_POINT_EGRESS, src_id, UNKNOWN_ID,
+ 				   &saddr, TRACE_EP_ID_UNKNOWN, CONFIG(interface_ifindex),
+-				   trace.reason, trace.monitor);
++				   trace->reason, trace->monitor);
+ 
+ 	return ret;
+ }
+

@@ -1,0 +1,51 @@
+repo: DataDog/datadog-agent
+commit: 0dd17eb8d00dca8e01d20cb2bc5d5288a2e9c46a
+rank: 4984
+
+[WP] Add metric for dropped packets (#52965)
+
+### What does this PR do?
+Adds a per-rule metric to track how many packets are dropped by WP network isolation rules (network_filter with drop action).
+
+When a packet matches a drop filter in the eBPF TC program, the filter increments a kernel-side BPF map directly. A new user-space monitor reads that map periodically and emits deltas to StatsD, tagged by rule_id.
+
+**Changes**
+Kernel (eBPF):
+- Added a new BPF `PER_CPU_ARRAY_MAP` `dropped_packets` to store drop counters keyed by filter index.
+- Extended raw packet drop filter compilation (FilterToInsts) so that matching drop filters increment the map in-kernel.
+- Added `WithDropStatsMapFd` to ProgOpts to wire the map into generated programs.
+
+**User-space:**
+Added a rawpacketdrop monitor that:
+- Iterates the dropped_packets map on each stats tick.
+- Maps filter indices back to rule_id via a maintained index-to-rule mapping.
+- Emits count deltas to StatsD.
+- Clears the map when drop action filters are reapplied (e.g. on ruleset reload).
+- Integrated the monitor into the existing probe stats pipeline.
+
+New metric: `datadog.runtime_security.network.raw_packet.dropped`
+Tag: `rule_id:<rule_id>
+`
+### Motivation
+When a client applies network isolation via WP rules, there is currently no visibility into how many packets are being blocked. This metric provides feedback on the impact of each isolation rule, making it easier to validate that rules are working as expected and to detect unexpected traffic being filtered.
+
+### Describe how you validated your changes
+- Added eBPF unit test (TestRawPacketDropAction) verifying that drop stats are incremented in the dropped_packets map when WithDropStatsMapFd is enabled.
+
+ - Extended TestRawPacketAction integration test to assert the new metric is emitted with the correct rule_id tag.
+
+- Manually validated with a local setup: confirmed the metric appears in StatsD when packets are dropped by a network isolation rule.
+
+
+Co-authored-by: theo.putegnat <theo.putegnat@datadoghq.com>
+
+--- pkg/security/ebpf/c/include/maps.h
+@@ -139,6 +139,7 @@ BPF_PERCPU_ARRAY_MAP(raw_packet_enabled, u32, 1)
+ BPF_PERCPU_ARRAY_MAP(sysctl_event_gen, struct sysctl_event_t, 1)
+ BPF_PERCPU_ARRAY_MAP(on_demand_event_gen, struct on_demand_event_t, 1)
+ BPF_PERCPU_ARRAY_MAP(setsockopt_event, struct setsockopt_event_t, 1)
++BPF_PERCPU_ARRAY_MAP(dropped_packets, u32, 256)
+ 
+ BPF_PROG_ARRAY(args_envs_progs, 3)
+ BPF_PROG_ARRAY(dentry_resolver_kprobe_or_fentry_callbacks, EVENT_MAX)
+

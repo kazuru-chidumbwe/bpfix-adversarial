@@ -1,0 +1,93 @@
+repo: iopsystems/rezolus
+commit: e8e0213aacf17c18edd8f9bb1de04b6b079537b7
+rank: 2594
+
+feat(agent): cgroup_attribution option for ext4_ops and xfs_log, off by default (#1359)
+
+* feat(agent): cgroup_attribution option for ext4_ops and xfs_log, off by default
+
+The per-cgroup path in these samplers' end hooks (the cgroup serial
+check and two atomics on shared per-cgroup counters) measured 265 ns of
+the hook's 535 ns on the null_blk fsync bench, half its cost, and the
+bench ran 15% more fsyncs per second without it. It is now the config
+option `cgroup_attribution` in the sampler's section (or `[defaults]`),
+off by default.
+
+The switch is a `const volatile` global in each BPF program, written
+into the skeleton's read-only data before load through a new
+`BpfBuilder::pre_load` hook, so with it off the verifier removes the
+path from the loaded program rather than testing a flag on every run.
+The cgroup maps and ringbuf handler are registered only when it is on,
+so the cgroup_ext4_* and cgroup_xfs_log_* series are absent, not zero.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013nTpBtKuULfSb5sPW1W5Z6
+
+* docs: record the cgroup_attribution decision; assert the read-only data exists
+
+The backlog and the gaps entry described the per-cgroup decision as pending; this branch makes it (opt-in, off by default), so they now say so, and what remains of the default-on question is the 1.13 us per pair that stays. The pre_load closures assert the program's read-only data exists instead of silently loading with the switch off when the config says on (unreachable with libbpf-cargo 0.26, which builds the field from a NonNull, but an invariant is better stated).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+Claude-Session: https://claude.ai/code/session_013nTpBtKuULfSb5sPW1W5Z6
+
+---------
+
+Co-authored-by: Claude Fable 5.1 <noreply@anthropic.com>
+
+--- src/agent/samplers/ext4/linux/ops/mod.bpf.c
+@@ -33,6 +33,14 @@
+ #define HISTOGRAM_POWER 3
+ #define MAX_CPUS 1024
+ 
++// Per-cgroup attribution is the config option `cgroup_attribution`, off by
++// default: the serial check and two atomics it adds to the end hook measured
++// 265 ns of the hook's 535 ns on the null_blk fsync bench, half the hook.
++// Userspace writes the switch into read-only data before load, so with it
++// off the verifier removes the path from the program rather than testing a
++// flag on every run.
++const volatile __u8 cgroup_attribution = 0;
++
+ // The operations, in the order of the `op` label's histograms and of the
+ // per-op counter runs below.
+ #define OP_FSYNC 0
+@@ -227,6 +235,10 @@ static __always_inline void op_begin(u32 op, u32 dev) {
+ }
+ 
+ static __always_inline void cgroup_account(struct task_struct* task, u32 op, u64 lat) {
++    if (!cgroup_attribution) {
++        return;
++    }
++
+     // runtime NULL check (bpf_core_field_exists is a compile-time BTF check)
+     void* task_group = BPF_CORE_READ(task, sched_task_group);
+     if (!task_group) {
+
+--- src/agent/samplers/xfs/linux/log/mod.bpf.c
+@@ -30,6 +30,14 @@
+ #define HISTOGRAM_POWER 3
+ #define MAX_CPUS 1024
+ 
++// Per-cgroup attribution is the config option `cgroup_attribution`, off by
++// default: the serial check and two atomics it adds to the end hook measured
++// 265 ns of the hook's 535 ns on the null_blk fsync bench, half the hook.
++// Userspace writes the switch into read-only data before load, so with it
++// off the verifier removes the path from the program rather than testing a
++// flag on every run.
++const volatile __u8 cgroup_attribution = 0;
++
+ // XFS's mount and log structs, as CO-RE flavors: the vendored vmlinux.h
+ // headers were generated from kernels with XFS as a module and carry neither,
+ // and libbpf strips the ___rz suffix when relocating against the running
+@@ -198,6 +206,10 @@ static __always_inline void wait_begin(u32 pair, u32 dev) {
+ }
+ 
+ static __always_inline void cgroup_account(struct task_struct* task, u32 wait, u64 lat) {
++    if (!cgroup_attribution) {
++        return;
++    }
++
+     // runtime NULL check (bpf_core_field_exists is a compile-time BTF check)
+     void* task_group = BPF_CORE_READ(task, sched_task_group);
+     if (!task_group) {
+

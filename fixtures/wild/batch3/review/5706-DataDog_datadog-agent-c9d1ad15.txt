@@ -1,0 +1,822 @@
+repo: DataDog/datadog-agent
+commit: c9d1ad1501b1d0ad8d67cc2bd27b27f1f40c46cf
+rank: 5706
+
+dyninst: handle more than 32KiB of data per event (#49555)
+
+### What does this PR do?
+
+Adds infrastructure to send probe-event payloads larger than the per-CPU
+scratch buffer (32 KiB) by splitting them across multiple ringbuf
+submissions and reassembling them in user-space. Also adds a
+side-channel for the BPF program to notify user-space when data was
+dropped, so user-space can render partial events instead of silently
+discarding them.
+
+### Commits (in order)
+
+This is best reviewed commit-by-commit; the descriptions are detailed
+and each commit is self-contained.
+
+1. **`dyninst: add entry_ktime_ns correlation ID to event header`** —
+   adds an 8-byte invocation ID (the entry probe's `start_ns`) to
+   `di_event_header_t`. User-space uses it to pair entry/return events
+   and to disambiguate rapid sequential calls whose
+   `(goid, depth, probeID)` keys would otherwise collide.
+
+2. **`dyninst: add continuation/streaming protocol in BPF`** —
+   when a probe invocation overflows the scratch buffer, BPF emits
+   multiple ringbuf submissions carrying `continuation_seq` and
+   `continuation_flags` in the header; the final fragment has
+   `flags = 0`. Continuation state lives on `stack_machine_t` (a per-CPU
+   map value), not on `global_ctx`, to stay within the verifier's
+   512-byte nested-stack budget for `probe_run_with_cookie -> sm_loop ->
+   sm_swiss_map_aese`.
+
+3. **`dyninst/output: introduce FragmentedEvent abstraction`** —
+   user-space type that yields an `iter.Seq[Event]`. `SingleEvent`
+   adapts a single event for backward compatibility. `EventHeader`
+   gains `IsContinuation()` / `HasMoreFragments()` helpers.
+
+4. **`dyninst/decode: iterate fragments when decoding events`** —
+   the decoder walks all fragments, merging `(itemType, address)` data
+   items and keeping the longest byte length so a continuation that
+   extends a pointer chase is observed.
+
+5. **`dyninst: drop notifications, eventbuf package, and continuation
+   testprogs`** — bundles the user-space half:
+   - `pkg/dyninst/eventbuf` — unified `Buffer` state machine that
+     reassembles fragments, pairs entry+return invocations, applies
+     drop-notification truncation flags, and tracks a shared byte
+     budget with time-based eviction.
+   - BPF drop-notification protocol (`drop_notify_ringbuf` side
+     channel, `di_drop_notification_t`,
+     `DROP_REASON_RETURN_LOST/PARTIAL_*`,
+     `drop_notify_lost_at` single-slot map, emission at the three
+     failure sites in `event.c`).
+   - Loader / dispatcher / actuator wiring (`DropNotifyReader`,
+     `runDropNotify` goroutine, `EvictOlderThan` forwarder,
+     `evaluateDropNotifyEviction` loop).
+   - Module sink rewired to `eventbuf.Buffer`.
+   - Continuation sample testprogs (`manyPointers`, `manyStrings`),
+     `sample.yaml` probe configs, JSON snapshot redactor.
+   - Snapshot regen across toolchains/architectures.
+
+6. **`dyninst: drop_tester program and TestDropNotifications
+   integration test`** — synthetic HTTP-server testprog with `/bytes`,
+   `/bytes_return`, `/chain` endpoints, plus scenarios S1–S7 covering
+   baseline, multi-fragment, partial-entry under ringbuf pressure,
+   partial-return, return-lost, linked-list chase, and concurrent
+   clients.
+
+7. **`dyninst: jsonprune package for post-serialization snapshot
+   pruning`** — small package for keeping snapshots stable when payload
+   sizes vary.
+
+### Follow-up commits added during review
+
+The remaining commits address review feedback (a uint16-overflow bug
+Grant flagged, plus reasonable bounds on what BPF can actually emit)
+and add the regression tests that pin the new behavior.
+
+8. **`dyninst: deterministic test harness for first-flush-fails PARTIAL bug`** —
+   adds three `TestingKnobs` (`SinkOverride`, `OnLoaderReady`,
+   `OnProgramLoaded`) plus a `controlledSink` that wraps the
+   production sink and can block `HandleEvent` on demand. Blocking
+   stalls the dispatcher's output-reader goroutine and saturates the
+   output ringbuf without affecting the drop-notify reader, so tests
+   can deterministically observe drop notifications under simulated
+   ringbuf pressure. Includes a placeholder test gated behind
+   `t.Skip` so CI is green at this commit.
+
+9. **`dyninst/testprogs: add CaptureChainReturn and CaptureStringChain
+   to drop_tester`** — pure testprog addition. `CaptureChainReturn`
+   has independently controllable entry-side and return-side chain
+   lengths (used by the first-flush-fails test). `CaptureStringChain`
+   is a chain whose nodes carry strings — used by the fragment-cap
+   test to push past `MAX_CONTINUATION_FRAGMENTS * SCRATCH_BUF_LEN`
+   (a plain Node chain can't reach the cap because each Node consumes
+   a chased-pointers trie slot and the trie tops out at ~1024
+   entries; strings flow through `chased_slices` instead).
+
+10. **`dyninst/ebpf: remove broken early-exit ringbuf-availability check`** —
+    deletes the `out_ringbuf_avail_space < SCRATCH_BUF_LEN` check at
+    the top of `probe_run`. It computed available ringbuf space using
+    `RINGBUF_CAPACITY` (hardcoded 8 MiB) rather than the actual map
+    size, so it didn't fire for shrunken ringbufs in tests and gave
+    wrong answers for any capacity != 8 MiB. The remaining
+    `bpf_ringbuf_output` failure paths (continuation_aborted,
+    RETURN_LOST on final-submit failure) cover the cases this guard
+    was trying to short-circuit.
+
+11. **`dyninst/ebpf: fix continuation_aborted PARTIAL with last_seq=0xFFFF`** —
+    the bug Grant flagged. When the *very first*
+    `scratch_buf_flush_and_continue` fails (ringbuf saturated at the
+    moment of the first mid-chase flush), the previous code in the
+    `continuation_aborted` branch sent `PARTIAL_*` with
+    `last_submitted_seq` still `LAST_SUBMITTED_SEQ_NONE` (`0xFFFF`).
+    Userspace's `NotePartial` does `entryExpected = lastSeq + 1` with
+    uint16, wrapping to 0, which `buffer.go:144` semantics treat as
+    "still assembling, total unknown" — the entry sits in eventbuf
+    until eviction, defeating the notification. Fix mirrors the
+    final-submit branch: gate `PARTIAL_*` on
+    `last_submitted_seq != LAST_SUBMITTED_SEQ_NONE`, fall through to
+    `RETURN_LOST` for return-side / no-op for entry-side when no
+    fragments were submitted. Removes the `t.Skip` from the test
+    added in commit 8 and restructures it to use the new
+    `capture_chain_return` probe with precise saturation math (64 KiB
+    ringbuf, free-space window targeting), per-variant assertions,
+    `tracePipeCollector` wiring, and a `t.Cleanup(sink.stopBlocking)`
+    so a `t.Fatalf` mid-test doesn't deadlock the dispatcher's
+    `flushAndWait`.
+
+12. **`dyninst/ebpf: cap continuation fragments at 16 per probe invocation`** —
+    adds `MAX_CONTINUATION_FRAGMENTS = 16` in `scratch.h` and rejects
+    flushes past the cap from `scratch_buf_flush_and_continue`. The
+    caller's existing failure path (`continuation_aborted = true`)
+    handles this identically to a ringbuf-full failure: `probe_run`
+    emits a `PARTIAL_*` notification and userspace finalizes the 16
+    fragments already in flight as a truncated event. Sizing
+    rationale: 16 × 32 KiB = 512 KiB raw payload ceiling per
+    invocation; with ~2× JSON-serialization blowup, that maps to
+    roughly the backend's 1 MiB serialized-snapshot ceiling. Includes
+    `TestFragmentCap` as a regression test using the new
+    `capture_string_chain` probe with 128 nodes × 4 KiB strings
+    (~530 KiB raw, well over the cap).
+
+13. **`dyninst: clamp captured-item size to the largest BPF size class`** —
+    `scratch_buf_serialize_whole`'s size-class dispatch tops out at
+    8192 bytes. Items configured larger fail the dispatch entirely
+    and are silently skipped via the "item too large for single
+    buffer, skipping" path in `stack_machine.h`, so e.g. a configured
+    `maxLength: 65536` doesn't capture more than 8192 — anything
+    between 8192 and 65536 bytes gets dropped instead of truncated.
+    Adds `MAX_DATA_ITEM_SIZE` (8192, kept in sync with `SIZE_LIST`)
+    and clamps `serialize_len` to it before the dispatch. Strings
+    and slices that exceed the ceiling now produce a truncated
+    capture rather than a silent skip. The change is observable in
+    the `testManyStrings` snapshot regen: a 40960-byte string
+    element previously omitted with `notCapturedReason=depth` now
+    captures 8192 bytes with `truncated=true`.
+
+### Motivation
+
+Some probes (long strings, deep pointer chases, large slices/maps) want
+to emit substantially more than 32 KiB per invocation. Before this PR
+the BPF program would silently drop the tail; with continuation +
+drop notifications, user-space gets either a complete payload or a
+clearly-marked truncated one, never a silently truncated one.
+
+### Describe how you validated your changes
+
+- Snapshot tests across toolchains and architectures
+  (go1.23.11 / 1.24.3 / 1.25.0 / 1.26rc1 × amd64 / arm64), regenerated
+  for every changed binary layout.
+- Property tests and YAML snapshot tests for `eventbuf.Buffer`
+  (fragment reassembly, entry/return pairing, drop-notification
+  truncation, byte-budget eviction).
+- `TestDropNotifications` integration test (scenarios S1–S7) against
+  the new `drop_tester` testprog, asserting structural invariants on
+  the snapshots collected via fakeintake.
+- `TestFirstFlushFailDropNotification` (variants A and B) —
+  deterministic regression test for the `last_seq=0xFFFF` PARTIAL
+  bug. Verified on the KMT VM that the test passes with the fix and
+  fails (catching `last_seq=65535`) when the fix is reverted.
+- `TestFragmentCap` — pins the 16-fragment cap. Verified that with
+  the cap raised to 256 the test fails (no PARTIAL_ENTRY observed),
+  confirming the test really pins the cap and not just any
+  truncation behavior.
+- Benchmarks for `eventbuf.Buffer`.
+
+### Additional Notes
+
+Part of https://datadoghq.atlassian.net/browse/DEBUG-4188
+
+Co-authored-by: andrew.werner <andrew.werner@datadoghq.com>
+
+--- pkg/dyninst/ebpf/context.h
+@@ -49,6 +49,11 @@ typedef struct pointers_queue_item {
+ 
+ DEFINE_QUEUE(pointers, pointers_queue_item_t, 128);
+ 
++// Sentinel for stack_machine_t::last_submitted_seq meaning "no fragment
++// has been submitted yet for this probe invocation". continuation_seq is
++// uint16, so 0xFFFF can never collide with a real sequence number.
++#define LAST_SUBMITTED_SEQ_NONE ((uint16_t)0xFFFF)
++
+ #define ENQUEUE_STACK_DEPTH 32
+ typedef struct stack_machine {
+   // Initialized on every entry point.
+@@ -109,12 +114,45 @@ typedef struct stack_machine {
+   // condition evaluation to abort. Used together with condition_eval_error
+   // to distinguish nil-caused failures from other evaluation errors.
+   bool condition_nil_deref;
++  // Set to true by sm_chase_pointer when scratch_buf_serialize fails due to
++  // insufficient buffer space. Checked and cleared by SM_OP_CHASE_POINTERS
++  // to trigger a flush-and-continue.
++  bool buffer_full;
+ 
+   // Dictionary pointer for generic shape functions. Set by
+   // SM_OP_PROCESS_GO_DICT_TYPE on entry, propagated through call context
+   // for return probes.
+   uint64_t saved_dict_ptr;
+ 
++  // Continuation state. These live in stack_machine_t (which is backed by
++  // a per-CPU array map) rather than on global_ctx (which is a stack local
++  // in probe_run) because the verifier's combined stack budget across
++  // nested subprog calls is 512 bytes and we have very little slack on
++  // the probe_run_with_cookie -> sm_loop -> sm_swiss_map_aese path.
++  //
++  // continuation_seq: how many fragments have been submitted so far.
++  uint16_t continuation_seq;
++  // continuation_seq of the last *successfully* submitted fragment, or
++  // LAST_SUBMITTED_SEQ_NONE if no fragment has been submitted yet. Used to
++  // fill last_seq on drop notifications so userspace knows exactly how
++  // many fragments to expect when it reconstructs a truncated event.
++  uint16_t last_submitted_seq;
++  // Set true when a mid-chase flush failed: some fragments reached
++  // userspace but a later fragment couldn't be written. probe_run checks
++  // this flag after chasing completes and, if set, sends a PARTIAL_*
++  // notification and skips the final submit rather than emit a fragment
++  // with a gap.
++  bool continuation_aborted;
++  // Original probe invocation timestamp, shared across all continuation
++  // fragments for correlation.
++  uint64_t start_ns;
++  // Invocation ID. For entry / line / inlined / no-body probes, this is
++  // the probe's own start_ns. For return probes, it is the entry's
++  // start_ns, pulled from in_progress_calls via call_depths_delete. Drop
++  // notifications carry this so userspace can key them by the same
++  // invocation identifier as the main-channel fragments.
++  uint64_t entry_ktime_ns;
++
+   // Temporary data, stored here to save on stack space.
+   uint64_t value_0;
+   resolved_go_any_type_t resolved_0, resolved_1;
+@@ -210,6 +248,10 @@ static stack_machine_t* stack_machine_ctx_load(const probe_params_t* probe_param
+   stack_machine->string_size_limit = probe_params->string_size_limit;
+   stack_machine->pointers_queue.len = 0;
+   stack_machine->saved_dict_ptr = 0;
++  stack_machine->continuation_seq = 0;
++  stack_machine->last_submitted_seq = LAST_SUBMITTED_SEQ_NONE;
++  stack_machine->continuation_aborted = false;
++  // start_ns and entry_ktime_ns are set explicitly by probe_run before use.
+   return stack_machine;
+ }
+ 
+@@ -262,6 +304,11 @@ typedef struct call_depths_entry {
+   uint32_t depth;
+   uint32_t probe_id;
+   uint64_t dict_ptr; // dictionary pointer for generic shape functions (0 if N/A)
++  // Timestamp of the entry event that established this call. Returned to the
++  // return probe via call_depths_delete and stamped as entry_ktime_ns on the
++  // return event header so userspace can correlate entry and return for the
++  // same invocation.
++  uint64_t entry_ktime_ns;
+ } call_depths_entry_t;
+ 
+ #define CALL_DEPTHS_SIZE 8
+@@ -281,12 +328,14 @@ struct {
+ } in_progress_calls SEC(".maps");
+ 
+ static inline __attribute__((always_inline)) bool call_depths_insert(
+-    call_depths_t* depths, uint32_t depth, uint32_t probe_id, uint64_t dict_ptr) {
++    call_depths_t* depths, uint32_t depth, uint32_t probe_id,
++    uint64_t dict_ptr, uint64_t entry_ktime_ns) {
+   for (int i = 0; i < CALL_DEPTHS_SIZE; i++) {
+     if (depths->depths[i].depth == 0 && depths->depths[i].probe_id == 0) {
+       depths->depths[i].depth = depth;
+       depths->depths[i].probe_id = probe_id;
+       depths->depths[i].dict_ptr = dict_ptr;
++      depths->depths[i].entry_ktime_ns = entry_ktime_ns;
+       return true;
+     }
+   }
+@@ -295,16 +344,20 @@ static inline __attribute__((always_inline)) bool call_depths_insert(
+ 
+ static inline __attribute__((always_inline)) bool call_depths_delete(
+     call_depths_t* depths, uint32_t depth, uint32_t probe_id,
+-    int* remaining, uint64_t* out_dict_ptr) {
++    int* remaining, uint64_t* out_dict_ptr, uint64_t* out_entry_ktime_ns) {
+   bool found = false;
+   for (int i = 0; i < CALL_DEPTHS_SIZE; i++) {
+     if (depths->depths[i].depth == depth && depths->depths[i].probe_id == probe_id) {
+       if (out_dict_ptr) {
+         *out_dict_ptr = depths->depths[i].dict_ptr;
+       }
++      if (out_entry_ktime_ns) {
++        *out_entry_ktime_ns = depths->depths[i].entry_ktime_ns;
++      }
+       depths->depths[i].depth = 0;
+       depths->depths[i].probe_id = 0;
+       depths->depths[i].dict_ptr = 0;
++      depths->depths[i].entry_ktime_ns = 0;
+       found = true;
+     } else if (depths->depths[i].depth != 0 || depths->depths[i].probe_id != 0) {
+       (*remaining)++;
+
+--- pkg/dyninst/ebpf/event.c
+@@ -81,18 +81,13 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
+     return;
+   }
+   global_ctx.regs = NULL;
+-
+-  // TODO: Move this check to after we've interacted with the call state.
+-  const int64_t out_ringbuf_avail_data =
+-      bpf_ringbuf_query(&out_ringbuf, BPF_RB_AVAIL_DATA);
+-  const int64_t out_ringbuf_avail_space =
+-      (int64_t)(RINGBUF_CAPACITY)-out_ringbuf_avail_data;
+-  if (out_ringbuf_avail_space < (int64_t)SCRATCH_BUF_LEN) {
+-    LOG(1, "probe_run: out_ringbuf_avail_space < SCRATCH_BUF_LEN: %lld < %d",
+-        out_ringbuf_avail_space, SCRATCH_BUF_LEN);
+-    // TODO: Report dropped events metric.
+-    return;
+-  }
++  // Continuation state lives in stack_machine_t (a per-CPU map value) so
++  // it does not bloat probe_run_with_cookie's stack frame. stack_machine_ctx_load
++  // initializes continuation_seq / last_submitted_seq / continuation_aborted.
++  global_ctx.stack_machine->start_ns = start_ns;
++  // entry_ktime_ns defaults to this probe's own start_ns. Return probes
++  // overwrite this with the entry's timestamp after call_depths_delete.
++  global_ctx.stack_machine->entry_ktime_ns = start_ns;
+ 
+   di_event_header_t* header = events_scratch_buf_init(&global_ctx.buf);
+   if (!header) {
+@@ -102,6 +97,10 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
+       .data_byte_len = sizeof(di_event_header_t),
+       .stack_byte_len = 0, // set this if we collect stacks
+       .ktime_ns = start_ns,
++      // Default to start_ns (the invocation ID for entry / line / inlined /
++      // no-body events). For return events, this is overwritten below with
++      // the value pulled from in_progress_calls.
++      .entry_ktime_ns = start_ns,
+       .prog_id = prog_id,
+       .probe_id = params->probe_id,
+   };
+@@ -128,7 +127,10 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
+     }
+     int remaining;
+     uint64_t saved_dict_ptr = 0;
+-    if (!call_depths_delete(depths, header->stack_byte_depth, params->probe_id, &remaining, &saved_dict_ptr)) {
++    uint64_t entry_ktime_ns = 0;
++    if (!call_depths_delete(
++            depths, header->stack_byte_depth, params->probe_id,
++            &remaining, &saved_dict_ptr, &entry_ktime_ns)) {
+       // Somewhat common case where the goroutine has open calls, but it's not
+       // this one.
+       LOG(4, "failed to delete in_progress_calls %lld (%lld): %d",
+@@ -138,6 +140,11 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
+     // Restore the dict pointer saved at entry time so the stack machine
+     // can resolve generic shape types on the return path.
+     global_ctx.stack_machine->saved_dict_ptr = saved_dict_ptr;
++    // Stamp the entry's timestamp on the return event so userspace can
++    // correlate entry and return for the same invocation. Also record it
++    // on stack_machine for any drop notifications this probe sends.
++    header->entry_ktime_ns = entry_ktime_ns;
++    global_ctx.stack_machine->entry_ktime_ns = entry_ktime_ns;
+     // If we're the last call for this goid, delete the entry.
+     if (remaining == 0) {
+       int ret = bpf_map_delete_elem(&in_progress_calls, &header->goid);
+@@ -237,10 +244,14 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
+       header->data_byte_len = sizeof(di_event_header_t);
+       header->stack_byte_len = 0;
+       header->event_pairing_expectation = EVENT_PAIRING_EXPECTATION_CONDITION_FAILED;
+-      // TODO: If the ring buffer is full here, we leak the entry event in
+-      // userspace. We accept this as a known limitation for now.
+-      if (!events_scratch_buf_submit(global_ctx.buf)) {
++      if (!events_scratch_buf_submit(global_ctx.buf, start_ns)) {
++        // The condition-failed signal couldn't reach userspace. Notify via
++        // the side channel so the buffered entry can be emitted alone rather
++        // than leaking until process shutdown.
+         LOG(1, "probe_run: failed to submit condition-failed signal for return event");
++        send_drop_notification(
++            prog_id, params->probe_id, header->goid, header->stack_byte_depth,
++            0, global_ctx.stack_machine->entry_ktime_ns, DROP_REASON_RETURN_LOST);
+       }
+     }
+     // Entry: in_progress_calls insertion was deferred, so nothing to clean up.
+@@ -254,8 +265,11 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
+       header->data_byte_len = sizeof(di_event_header_t);
+       header->stack_byte_len = 0;
+       header->event_pairing_expectation = EVENT_PAIRING_EXPECTATION_CONDITION_FAILED;
+-      if (!events_scratch_buf_submit(global_ctx.buf)) {
++      if (!events_scratch_buf_submit(global_ctx.buf, start_ns)) {
+         LOG(1, "probe_run: failed to submit throttled condition-failed signal");
++        send_drop_notification(
++            prog_id, params->probe_id, header->goid, header->stack_byte_depth,
++            0, global_ctx.stack_machine->entry_ktime_ns, DROP_REASON_RETURN_LOST);
+       }
+     }
+     // Entry: in_progress_calls insertion was deferred, so nothing to clean up.
+@@ -271,6 +285,7 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
+     depths->depths[0].depth = header->stack_byte_depth;
+     depths->depths[0].probe_id = params->probe_id;
+     depths->depths[0].dict_ptr = global_ctx.stack_machine->saved_dict_ptr;
++    depths->depths[0].entry_ktime_ns = start_ns;
+     int ret = bpf_map_update_elem(&in_progress_calls, &header->goid, depths, BPF_NOEXIST);
+     if (ret != 0) {
+       if (ret == -E2BIG) {
+@@ -282,18 +297,67 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
+           return;
+         }
+         if (!call_depths_insert(depths, header->stack_byte_depth, params->probe_id,
+-                                global_ctx.stack_machine->saved_dict_ptr)) {
++                                global_ctx.stack_machine->saved_dict_ptr, start_ns)) {
+           header->event_pairing_expectation = EVENT_PAIRING_EXPECTATION_CALL_COUNT_EXCEEDED;
+         }
+       }
+     }
+   }
+   chase_steps = stack_machine_chase_pointers(&global_ctx);
+-  if (!events_scratch_buf_submit(global_ctx.buf)) {
+-    // TODO: Report dropped events metric.
++  stack_machine_t* sm = global_ctx.stack_machine;
++  if (sm->continuation_aborted) {
++    // A mid-chase flush failed. Skip the final submit — sending it now
++    // would leave a gap in the fragment sequence — and notify userspace
++    // so it can finalize whatever (if anything) reached it.
++    if (sm->last_submitted_seq != LAST_SUBMITTED_SEQ_NONE) {
++      // Earlier fragments reached userspace; tell it to emit them as
++      // truncated.
++      uint8_t reason = (params->kind == EVENT_KIND_RETURN)
++                           ? DROP_REASON_PARTIAL_RETURN
++                           : DROP_REASON_PARTIAL_ENTRY;
++      send_drop_notification(
++          prog_id, params->probe_id, header->goid, header->stack_byte_depth,
++          sm->last_submitted_seq, sm->entry_ktime_ns, reason);
++    } else if (params->kind == EVENT_KIND_RETURN) {
++      // The very first flush failed; no return fragments are in flight.
++      // Tell userspace to emit the matching entry alone.
++      send_drop_notification(
++          prog_id, params->probe_id, header->goid, header->stack_byte_depth,
++          0, sm->entry_ktime_ns, DROP_REASON_RETURN_LOST);
++    }
++    // Entry probe with no fragments: no userspace state to clean up.
++    LOG(1, "probe_run: continuation aborted at seq=%d", sm->last_submitted_seq);
++    return;
++  }
++  // Set final fragment metadata. If continuation_seq > 0, earlier fragments
++  // were already submitted inline by SM_OP_CHASE_POINTERS.
++  di_event_header_t* final_header = (di_event_header_t*)global_ctx.buf;
++  final_header->continuation_seq = sm->continuation_seq;
++  final_header->continuation_flags = 0; // final fragment
++  if (!events_scratch_buf_submit(global_ctx.buf, start_ns)) {
+     LOG(1, "probe_run output dropped");
+-  } else if (stack_hash != 0) {
+-    upsert_stack_hash(stack_hash);
++    if (sm->last_submitted_seq != LAST_SUBMITTED_SEQ_NONE) {
++      // Some fragments already reached userspace; this final fragment is
++      // lost. Notify userspace to emit the partial event as truncated.
++      uint8_t reason = (params->kind == EVENT_KIND_RETURN)
++                           ? DROP_REASON_PARTIAL_RETURN
++                           : DROP_REASON_PARTIAL_ENTRY;
++      send_drop_notification(
++          prog_id, params->probe_id, header->goid, header->stack_byte_depth,
++          sm->last_submitted_seq, sm->entry_ktime_ns, reason);
++    } else if (params->kind == EVENT_KIND_RETURN) {
++      // No fragments were submitted; the return probe produced nothing in
++      // userspace. Tell userspace to emit the matching entry alone.
++      send_drop_notification(
++          prog_id, params->probe_id, header->goid, header->stack_byte_depth,
++          0, sm->entry_ktime_ns, DROP_REASON_RETURN_LOST);
++    }
++    // Entry probe with no fragments: no userspace state to clean up.
++  } else {
++    sm->last_submitted_seq = sm->continuation_seq;
++    if (stack_hash != 0) {
++      upsert_stack_hash(stack_hash);
++    }
+   }
+   LOG(1, "probe_run done: %d steps", process_steps + chase_steps);
+   return;
+
+--- pkg/dyninst/ebpf/framing.h
+@@ -57,13 +57,32 @@ typedef struct di_event_header {
+   // (e.g. nil pointer in the dereference chain). The event is still emitted
+   // (condition error treated as pass) but userspace should report the error.
+   unsigned char condition_eval_error;
+-  char __padding[4];
++
++  // Continuation support for events that exceed the 32KiB scratch buffer.
++  // When an event is split across multiple ringbuf submissions:
++  //   seq=0, flags=0: single-fragment event (legacy, backward compatible)
++  //   seq=0, flags&1: first fragment, more to follow
++  //   seq>0, flags&1: middle fragment
++  //   seq>0, flags=0: final fragment
++  // All fragments share the same (goid, stack_byte_depth, probe_id, ktime_ns).
++  uint16_t continuation_seq;
++  // Bit 0: more fragments follow (1 = not final).
++  unsigned char continuation_flags;
++  char __padding[1];
+ 
+   // Hash of the stack trace that follows this header.
+   uint64_t stack_hash;
+ 
+   // The timestamp of the event according to CLOCK_MONOTONIC.
+   uint64_t ktime_ns;
++
++  // Invocation ID: for entry events, equals ktime_ns (the entry probe's own
++  // start_ns). For return events, equals the entry probe's ktime_ns (pulled
++  // from in_progress_calls at return time). Continuation fragments inherit
++  // the value from fragment 0. Userspace uses this to correlate entry and
++  // return for a single invocation, and to disambiguate rapid sequential
++  // calls with the same (goid, stack_byte_depth, probe_id).
++  uint64_t entry_ktime_ns;
+ }
+ // Use aligned attribute to ensure that the size of the structure is a multiple
+ // of 8 bytes; the attribute leads to the compiler adding padding.
+@@ -90,4 +109,43 @@ typedef struct di_data_item_header {
+   uint64_t address;
+ } __attribute__((aligned(8))) di_data_item_header_t;
+ 
++// Reasons a drop notification is sent on the side channel. Describe what
++// userspace state a drop affected, not which BPF failure site caused it.
++//
++//  RETURN_LOST    — return-side submit failed with no fragments sent; the
++//                   matching entry sits in userspace's pairing store. Userspace
++//                   should emit the entry alone.
++//  PARTIAL_ENTRY  — entry submit succeeded for fragments [0..last_seq], then
++//                   subsequently failed. Userspace has or will receive exactly
++//                   last_seq+1 entry fragments; treat them as a truncated
++//                   complete entry.
++//  PARTIAL_RETURN — same as PARTIAL_ENTRY, but for the return side.
++typedef enum drop_reason {
++  DROP_REASON_RETURN_LOST    = 1,
++  DROP_REASON_PARTIAL_ENTRY  = 2,
++  DROP_REASON_PARTIAL_RETURN = 3,
++} drop_reason_t;
++
++// Side-channel message published to drop_notify_ringbuf to inform userspace
++// that a drop has affected buffered state for one invocation.
++//
++// Fixed 32-byte layout, kept in sync with ../output/drop_notification_linux.go.
++typedef struct di_drop_notification {
++  uint32_t prog_id;
++  uint32_t probe_id;
++  uint64_t goid;
++  uint32_t stack_byte_depth;
++  // drop_reason_t value; stored as uint8_t for compactness.
++  uint8_t drop_reason;
++  uint8_t __padding[1];
++  // continuation_seq of the last successfully submitted fragment. Ignored
++  // when drop_reason == DROP_REASON_RETURN_LOST (no fragments exist).
++  uint16_t last_seq;
++  // Invocation ID. For return-side drops, the entry's start_ns (pulled from
++  // in_progress_calls). For entry-side drops, the entry's own start_ns. This
++  // matches the entry_ktime_ns field on the main-channel event header so
++  // userspace can correlate notifications with fragments by key.
++  uint64_t entry_ktime_ns;
++} __attribute__((aligned(8))) di_drop_notification_t;
++
+ #endif // __FRAMING_H__
+
+--- pkg/dyninst/ebpf/scratch.h
+@@ -29,11 +29,87 @@ typedef uint64_t buf_offset_t;
+ #define RINGBUF_CAPACITY ((uint64_t)1 << 23)
+ #define SCRATCH_BUF_LEN ((uint64_t)1 << 15) // 32KiB
+ 
++// MAX_CONTINUATION_FRAGMENTS caps the number of fragments BPF will emit
++// per probe invocation. Once we've submitted this many fragments,
++// subsequent flush attempts are rejected and probe_run takes the
++// continuation_aborted path (userspace is notified that the event is
++// truncated).
++//
++// 16 fragments × SCRATCH_BUF_LEN = 512 KiB raw payload ceiling per
++// invocation. The choice comes from the userspace upload path: snapshots
++// are JSON-serialized before upload and we expect at least ~2x size
++// blowup from binary-to-JSON encoding (escaping, base64, type tags), and
++// the serialized snapshot has a 1 MiB ceiling. Capping raw bytes at
++// 512 KiB keeps us comfortably below that limit even for the worst-case
++// blowup. This bound exists separately from the per-fragment ringbuf
++// pressure check — even a fully drained ringbuf will not accept more
++// than this many fragments for a single invocation.
++#define MAX_CONTINUATION_FRAGMENTS 16
++
++// Side-channel for drop notifications. Notifications are 32 bytes each; at
++// 16 KiB the side channel holds ~500 notifications — far more than the
++// number of concurrently-buffered events userspace can hold, so the side
++// channel is very unlikely to fill even when out_ringbuf is saturated.
++#define DROP_NOTIFY_RINGBUF_CAPACITY ((uint64_t)1 << 14) // 16KiB
++
+ struct {
+   __uint(type, BPF_MAP_TYPE_RINGBUF);
+   __uint(max_entries, RINGBUF_CAPACITY);
+ } out_ringbuf SEC(".maps");
+ 
++struct {
++  __uint(type, BPF_MAP_TYPE_RINGBUF);
++  __uint(max_entries, DROP_NOTIFY_RINGBUF_CAPACITY);
++} drop_notify_ringbuf SEC(".maps");
++
++// drop_notify_lost_at records the kernel-monotonic ktime_ns of the most
++// recent attempt to publish a drop notification that failed because the
++// drop_notify_ringbuf was itself full. Userspace reads this value on its
++// periodic stats poll; when it increases, and once the value has been in
++// the past for longer than a grace window, userspace evicts buffered
++// eventbuf entries whose invocation predates the fault.
++//
++// Writes are lossy (last-writer wins across CPUs); the semantics we want
++// are "some CPU saw a failure at-or-after this time", so racing writes
++// simply converge to the latest ktime.
++struct {
++  __uint(type, BPF_MAP_TYPE_ARRAY);
++  __uint(max_entries, 1);
++  __type(key, uint32_t);
++  __type(value, uint64_t);
++} drop_notify_lost_at SEC(".maps");
++
++// send_drop_notification publishes a drop notification to the side channel.
++// On failure (drop_notify_ringbuf full), stamps drop_notify_lost_at with
++// the current ktime so userspace can later reconcile the stuck eventbuf
++// entry.
++static inline void send_drop_notification(
++    uint32_t prog_id,
++    uint32_t probe_id,
++    uint64_t goid,
++    uint32_t stack_byte_depth,
++    uint16_t last_seq,
++    uint64_t entry_ktime_ns,
++    uint8_t drop_reason) {
++  di_drop_notification_t notif = {
++      .prog_id = prog_id,
++      .probe_id = probe_id,
++      .goid = goid,
++      .stack_byte_depth = stack_byte_depth,
++      .drop_reason = drop_reason,
++      .last_seq = last_seq,
++      .entry_ktime_ns = entry_ktime_ns,
++  };
++  if (bpf_ringbuf_output(&drop_notify_ringbuf, &notif, sizeof(notif), 0) !=
++      0) {
++    uint32_t zero = 0;
++    uint64_t* slot = bpf_map_lookup_elem(&drop_notify_lost_at, &zero);
++    if (slot) {
++      *slot = bpf_ktime_get_ns();
++    }
++  }
++}
++
+ // A helper to check if the scratch buffer has enough space.
+ static bool scratch_buf_bounds_check(buf_offset_t* offset, uint64_t len) {
+   return *(volatile buf_offset_t*)(offset) <
+@@ -73,16 +149,75 @@ static di_event_header_t* events_scratch_buf_init(scratch_buf_t** scratch_buf) {
+   return (di_event_header_t*)*scratch_buf;
+ }
+ 
+-static bool events_scratch_buf_submit(scratch_buf_t* scratch_buf) {
++static bool events_scratch_buf_submit(scratch_buf_t* scratch_buf,
++                                      uint64_t ktime_ns) {
+   di_event_header_t* header = (di_event_header_t*)scratch_buf;
+-  header->ktime_ns = bpf_ktime_get_ns();
++  header->ktime_ns = ktime_ns;
+   uint64_t len = scratch_buf_len(scratch_buf);
+   if (len > SCRATCH_BUF_LEN) {
+     len = SCRATCH_BUF_LEN;
+   }
+   return bpf_ringbuf_output(&out_ringbuf, scratch_buf, len, 0) == 0;
+ }
+ 
++// Flush the current scratch buffer as a continuation fragment and reinitialize
++// for the next fragment. Returns true on success, false if the flush couldn't
++// be submitted — either because the ringbuf is full or because we've reached
++// MAX_CONTINUATION_FRAGMENTS. start_ns is the original probe invocation
++// timestamp, used to correlate all fragments of a single logical event.
++// last_submitted_seq is updated on success so probe_run can fill last_seq on
++// any subsequent drop notification.
++static bool scratch_buf_flush_and_continue(scratch_buf_t* scratch_buf,
++                                           uint16_t* continuation_seq,
++                                           uint16_t* last_submitted_seq,
++                                           uint64_t start_ns,
++                                           uint64_t entry_ktime_ns) {
++  // Reject flushes once we'd cross the per-invocation fragment cap. The
++  // caller will set continuation_aborted and probe_run will emit the
++  // appropriate PARTIAL_* / RETURN_LOST notification — userspace already
++  // has fragments [0..MAX_CONTINUATION_FRAGMENTS-1] and is told to
++  // finalize them as a truncated event.
++  if (*continuation_seq >= MAX_CONTINUATION_FRAGMENTS) {
++    LOG(1, "flush: hit MAX_CONTINUATION_FRAGMENTS (%d), aborting continuation",
++        MAX_CONTINUATION_FRAGMENTS);
++    return false;
++  }
++
++  di_event_header_t* header = (di_event_header_t*)scratch_buf;
++  header->continuation_seq = *continuation_seq;
++  header->continuation_flags = 1; // more fragments follow
++
++  // Save header fields before submit.
++  uint32_t prog_id = header->prog_id;
++  uint64_t goid = header->goid;
++  uint32_t stack_byte_depth = header->stack_byte_depth;
++  uint32_t probe_id = header->probe_id;
++  unsigned char event_pairing_expectation = header->event_pairing_expectation;
++
++  if (!events_scratch_buf_submit(scratch_buf, start_ns)) {
++    return false;
++  }
++
++  *last_submitted_seq = *continuation_seq;
++  (*continuation_seq)++;
++
++  // Reinitialize the buffer with a continuation header.
++  scratch_buf_set_len(scratch_buf, sizeof(di_event_header_t));
++  di_event_header_t* new_header = (di_event_header_t*)scratch_buf;
++  *new_header = (di_event_header_t){
++      .data_byte_len = sizeof(di_event_header_t),
++      .prog_id = prog_id,
++      .goid = goid,
++      .stack_byte_depth = stack_byte_depth,
++      .probe_id = probe_id,
++      .stack_byte_len = 0, // no stack trace in continuations
++      .event_pairing_expectation = event_pairing_expectation,
++      .ktime_ns = start_ns, // same timestamp for fragment correlation
++      .entry_ktime_ns = entry_ktime_ns,
++  };
++  return true;
++}
++
+ typedef struct copy_stack_loop_ctx {
+   stack_pcs_t* stack;
+   scratch_buf_t* buf;
+@@ -190,6 +325,17 @@ scratch_buf_serialize_bounded(scratch_buf_t* scratch_buf,
+   X(4096)         \
+   X(8192)
+ 
++// MAX_DATA_ITEM_SIZE is the maximum number of payload bytes the
++// scratch_buf_serialize_whole dispatcher can serialize in a single
++// data item — i.e., the largest entry in SIZE_LIST. Items larger
++// than this can't be serialized in one shot; the BPF stack machine
++// clamps serialize_len to this value before calling serialize_whole
++// so an oversized maxLength / collection size produces a truncated
++// capture rather than a silent skip (see stack_machine.h).
++//
++// Keep in sync with SIZE_LIST above.
++#define MAX_DATA_ITEM_SIZE 8192
++
+ #define X(max_size)                                                          \
+   buf_offset_t CONCAT(scratch_buf_serialize_, max_size)(                     \
+       scratch_buf_t * scratch_buf, di_data_item_header_t * data_item_header, \
+
+--- pkg/dyninst/ebpf/stack_machine.h
+@@ -315,9 +315,28 @@ sm_chase_pointer(global_ctx_t* ctx, pointers_queue_item_t item) {
+     }
+     break;
+   }
+-  sm->offset = scratch_buf_serialize(ctx->buf, &item.di, byte_len);
++  // For dynamically-sized objects (strings, slices), byte_len is the
++  // configured upper limit (e.g. maxLength). Clamp it to the actual runtime
++  // length so the size-class dispatch picks an appropriate class. Without
++  // this, a large maxLength (e.g. 65536) would fail the size-class lookup
++  // even for short strings.
++  uint32_t serialize_len = byte_len;
++  if (item.di.length != ENQUEUE_LEN_SENTINEL && item.di.length < serialize_len) {
++    serialize_len = item.di.length;
++  }
++  // Clamp to the largest size class. scratch_buf_serialize_whole's
++  // dispatch table tops out at MAX_DATA_ITEM_SIZE; without this clamp
++  // an oversized configured maxLength (or a slice whose
++  // collection_size_limit * elem_byte_len exceeds the ceiling) would
++  // be silently skipped (serialize_whole returns 0 for any len above
++  // the largest size class) instead of producing a truncated capture.
++  if (serialize_len > MAX_DATA_ITEM_SIZE) {
++    serialize_len = MAX_DATA_ITEM_SIZE;
++  }
++  sm->offset = scratch_buf_serialize(ctx->buf, &item.di, serialize_len);
+   if (!sm->offset) {
+-    LOG(3, "chase: failed to serialize type %d", item.di.type);
++    LOG(3, "chase: buffer full for type %d", item.di.type);
++    sm->buffer_full = true;
+     return true;
+   }
+ 
+@@ -2244,6 +2263,30 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+       LOG(4, "chasing pointer @%llx", item->di.address);
+       sm->pc--;
+       sm_chase_pointer(ctx, *item);
++
++      if (sm->buffer_full) {
++        sm->buffer_full = false;
++        // Scratch buffer is full. Flush it as a continuation fragment
++        // and retry this item in the fresh buffer.
++        if (!scratch_buf_flush_and_continue(
++                ctx->buf, &sm->continuation_seq,
++                &sm->last_submitted_seq, sm->start_ns,
++                sm->entry_ktime_ns)) {
++          // Ringbuf is full during a mid-chase flush. probe_run will send
++          // a PARTIAL_ENTRY/PARTIAL_RETURN notification and skip the final
++          // submit so userspace can emit the fragments already in flight.
++          sm->continuation_aborted = true;
++          return 1;
++        }
++        sm_chase_pointer(ctx, *item);
++        if (sm->buffer_full) {
++          // The item itself is larger than an empty scratch buffer can hold
++          // (e.g. a slice whose collection_size_limit * element_byte_size
++          // exceeds ~32KiB minus headers). Skip it.
++          LOG(2, "chase: item too large for single buffer, skipping");
++          sm->buffer_full = false;
++        }
++      }
+     }
+   } break;
+ 
+

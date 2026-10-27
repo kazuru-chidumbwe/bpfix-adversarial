@@ -1,0 +1,388 @@
+repo: open-telemetry/opentelemetry-ebpf-instrumentation
+commit: 16c17d37f68f93f49741e08a1feb1545f8196969
+rank: 4919
+
+Decode HTTP/2 headers in capture order (#3039)
+
+* Decode HTTP/2 headers in capture order
+
+HTTP/2 streams can complete in an order that differs from the order in
+which their header blocks were observed. Decoding at completion can then
+apply connection-scoped HPACK state in the wrong order.
+
+Decode each direction when HEADERS are captured and retain bounded stream
+metadata for completion. Mark decoder state unreliable whenever capture
+loss, truncation, eviction, or bounded scanning makes its history
+incomplete.
+
+* Fix HTTP/2 CI regressions
+
+Format the HTTP/2 transform and remove dead test code so both lint jobs accept the capture-order fix.
+
+Allow the relay propagation test to recognize the fail-closed wildcard used when instrumentation attaches after an HPACK table is populated. Keep the assertion strict by accepting only the expected RPC name or the wildcard and by verifying every client-to-server parent link.
+
+* Preserve HPACK state across coalesced data
+
+Only coalesced frames that carry another HPACK block can desynchronize
+the decoder. DATA frames after HEADERS now leave the active connection
+state intact, while skipped HEADERS and PUSH_PROMISE frames still fail
+closed.
+
+Limit poisoning to the affected request or response direction. Cover
+reused connections where DATA shares the initial capture.
+
+* Preserve spans when HTTP/2 metadata is missing
+
+Emit completed HTTP/2 spans with a wildcard operation when an observed
+header block cannot produce trustworthy request metadata. Previously,
+the completion path discarded those spans.
+
+Restore relay span-count checks for both decoded and wildcard operation
+names so the integration test detects future drops.
+
+--- bpf/common/event_defs.h
+@@ -29,3 +29,5 @@
+ #define EVENT_GO_AUTO_ACTIVATED 22
+ #define EVENT_NODEJS_EVENTLOOP 23
+ #define EVENT_NODE_SPAN 24
++#define EVENT_K_HTTP2_REQUEST_HEADERS 25
++#define EVENT_K_HTTP2_RESPONSE_HEADERS 26
+
+--- bpf/common/http_types.h
+@@ -103,10 +103,9 @@ typedef struct http2_grpc_request {
+     unsigned char data[k_kprobes_http2_buf_size];
+     unsigned char ret_data[k_kprobes_http2_ret_buf_size];
+     int len;
+-    // per-connection ordinal; a gap tells user space an event was lost.
+-    // 0 = unnumbered, k_h2_seq_unreliable = numbering unavailable
+-    u32 seq;
+-    u32 _pad1;
++    u32 stream_id;
++    u8 hpack_flags;
++    u8 _pad1[3];
+     // we need this to filter traces from unsolicited processes that share the executable
+     // with other instrumented processes
+     pid_info pid;
+
+--- bpf/generictracer/maps/http2_seq_claims.h
+@@ -1,32 +0,0 @@
+-// Copyright The OpenTelemetry Authors
+-// SPDX-License-Identifier: Apache-2.0
+-
+-#pragma once
+-
+-#include <bpfcore/vmlinux.h>
+-#include <bpfcore/bpf_helpers.h>
+-
+-#include <common/map_sizing.h>
+-#include <common/pin_internal.h>
+-
+-// ordinals claimed via BPF_NOEXIST: the only atomic RMW kprobes have on 5.8
+-typedef struct http2_seq_claim {
+-    u64 conn_id;
+-    u32 seq;
+-    u32 _pad;
+-} http2_seq_claim_t;
+-
+-enum {
+-    // how many taken slots one claimer steps past before giving up
+-    k_seq_claim_attempts = 8,
+-    // no ordinal claimed: user space must distrust the decoders
+-    k_h2_seq_unreliable = 0xffffffff,
+-};
+-
+-struct {
+-    __uint(type, BPF_MAP_TYPE_LRU_HASH);
+-    __type(key, http2_seq_claim_t);
+-    __type(value, u8);
+-    __uint(max_entries, MAX_CONCURRENT_REQUESTS);
+-    __uint(pinning, OBI_PIN_INTERNAL);
+-} http2_seq_claims SEC(".maps");
+
+--- bpf/generictracer/protocol_http2.h
+@@ -25,7 +25,6 @@
+ #include <generictracer/types/http2_conn_info_data.h>
+ 
+ #include <generictracer/maps/grpc_frames_ctx_mem.h>
+-#include <generictracer/maps/http2_seq_claims.h>
+ #include <generictracer/maps/http2_info_mem.h>
+ 
+ #include <generictracer/maps/ongoing_http2_grpc.h>
+@@ -37,8 +36,9 @@
+ enum {
+     http2_conn_flag_ssl = WITH_SSL,
+     http2_conn_flag_new = 0x2,
+-    // numbering ran out: sentinel every later event on this connection
+-    http2_conn_flag_seq_poisoned = 0x4,
++    h2_hpack_req_unreliable = 0x1,
++    h2_hpack_resp_unreliable = 0x2,
++    h2_hpack_new_connection = 0x4,
+ };
+ 
+ // decoder scratch buffers, kept off the BPF stack
+@@ -57,10 +57,6 @@ static __always_inline u8 http2_flag_new(u8 flags) {
+     return flags & http2_conn_flag_new;
+ }
+ 
+-static __always_inline u8 http2_flag_seq_poisoned(u8 flags) {
+-    return flags & http2_conn_flag_seq_poisoned;
+-}
+-
+ static __always_inline http2_grpc_request_t *empty_http2_info() {
+     http2_grpc_request_t *value = http2_info_mem();
+     if (value) {
+@@ -119,34 +115,77 @@ static __always_inline u32 h2_hpack_window(const http2_grpc_request_t *h2g_info,
+     return raw_len > skip ? raw_len - skip : 0;
+ }
+ 
+-// Numbers each emitted exchange so user space can spot a lost one by its gap.
+-// A run of failed claims poisons the connection: from then on every event
+-// carries the sentinel, so a later dropped event still can't look contiguous.
+-static __always_inline void http2_alloc_seq(http2_conn_info_data_t *h2g,
+-                                            http2_grpc_request_t *h2g_info) {
+-    h2g_info->seq = k_h2_seq_unreliable;
+-    if (!h2g || http2_flag_seq_poisoned(h2g->flags)) {
+-        return;
++static __always_inline void
++http2_poison_hpack(http2_conn_stream_t *stream, http2_grpc_request_t *info, u8 flags) {
++    http2_conn_info_data_t *conn =
++        bpf_map_lookup_elem(&ongoing_http2_connections, &stream->pid_conn);
++    http2_grpc_request_t *stored = bpf_map_lookup_elem(&ongoing_http2_grpc, stream);
++    if (flags & h2_hpack_req_unreliable) {
++        if (conn) {
++            conn->req_hpack_poisoned = 1;
++        }
++        if (info) {
++            info->hpack_flags |= h2_hpack_req_unreliable;
++        }
++        if (stored) {
++            stored->hpack_flags |= h2_hpack_req_unreliable;
++        }
+     }
+-
+-    // BPF_NOEXIST is the only atomic claim kprobes have on every kernel; a
+-    // taken slot means a racing claimer, so step the hint past it and retry
+-    const u8 claimed = 1;
+-    for (u8 i = 0; i < k_seq_claim_attempts; i++) {
+-        const u32 base = h2g->req_seq;
+-        const u32 candidate = base + 1;
+-        http2_seq_claim_t claim = {.conn_id = h2g->id, .seq = candidate};
+-        if (bpf_map_update_elem(&http2_seq_claims, &claim, &claimed, BPF_NOEXIST) == 0) {
+-            h2g_info->seq = candidate;
+-            h2g->req_seq = candidate;
+-            return;
++    if (flags & h2_hpack_resp_unreliable) {
++        if (conn) {
++            conn->resp_hpack_poisoned = 1;
++        }
++        if (info) {
++            info->hpack_flags |= h2_hpack_resp_unreliable;
+         }
+-        if (h2g->req_seq == base) {
+-            h2g->req_seq = candidate;
++        if (stored) {
++            stored->hpack_flags |= h2_hpack_resp_unreliable;
++        }
++    }
++}
++
++static __always_inline u8 http2_emit_hpack_event(grpc_frames_ctx_t *g_ctx,
++                                                 const frame_header_t *frame,
++                                                 u8 event_type) {
++    http2_grpc_request_t *event = bpf_ringbuf_reserve(&events, sizeof(http2_grpc_request_t), 0);
++    if (!event) {
++        return 0;
++    }
++
++    bpf_memset(event, 0, __builtin_offsetof(http2_grpc_request_t, data));
++    bpf_memset(&event->data, 0, sizeof(*event) - __builtin_offsetof(http2_grpc_request_t, data));
++    event->flags = event_type;
++    event->ssl = g_ctx->args.ssl;
++    event->type = request_type_by_direction(
++        g_ctx->args.direction,
++        event_type == EVENT_K_HTTP2_REQUEST_HEADERS ? PACKET_TYPE_REQUEST : PACKET_TYPE_RESPONSE);
++    task_pid(&event->pid);
++    event->stream_id = frame->stream_id;
++    event->len = g_ctx->args.bytes_len - g_ctx->pos;
++    event->hpack_flags = 0;
++
++    http2_conn_info_data_t *conn =
++        bpf_map_lookup_elem(&ongoing_http2_connections, &g_ctx->stream.pid_conn);
++    event->new_conn_id = conn ? conn->id : 0;
++    if (conn) {
++        event->hpack_flags = (conn->req_hpack_poisoned * h2_hpack_req_unreliable) |
++                             (conn->resp_hpack_poisoned * h2_hpack_resp_unreliable);
++        if (http2_flag_new(conn->flags)) {
++            event->hpack_flags |= h2_hpack_new_connection;
++            conn->flags &= ~http2_conn_flag_new;
+         }
++    } else {
++        event->hpack_flags |= h2_hpack_req_unreliable | h2_hpack_resp_unreliable;
+     }
+ 
+-    h2g->flags |= http2_conn_flag_seq_poisoned;
++    const void *buf = (const unsigned char *)g_ctx->args.u_buf + g_ctx->pos;
++    if (event_type == EVENT_K_HTTP2_REQUEST_HEADERS) {
++        bpf_probe_read(event->data, sizeof(event->data), buf);
++    } else {
++        bpf_probe_read(event->ret_data, sizeof(event->ret_data), buf);
++    }
++    bpf_ringbuf_submit(event, get_flags());
++    return 1;
+ }
+ 
+ // SERVER finalize: shared post-branch tail of http2_grpc_start. h2g_info /
+@@ -223,11 +262,18 @@ static __always_inline void http2_grpc_start(void *ctx,
+     }
+ 
+     h2g_info->new_conn_id = 0;
+-    h2g_info->seq = 0;
++    h2g_info->stream_id = s_key->stream_id;
++    h2g_info->hpack_flags = 0;
+     http2_conn_info_data_t *h2g = bpf_map_lookup_elem(&ongoing_http2_connections, &s_key->pid_conn);
+-    if (h2g && http2_flag_new(h2g->flags)) {
++    if (h2g) {
+         h2g_info->new_conn_id = h2g->id;
+     }
++    if (h2g) {
++        h2g_info->hpack_flags = (h2g->req_hpack_poisoned * h2_hpack_req_unreliable) |
++                                (h2g->resp_hpack_poisoned * h2_hpack_resp_unreliable);
++    } else {
++        h2g_info->hpack_flags = h2_hpack_req_unreliable | h2_hpack_resp_unreliable;
++    }
+ 
+     const u8 is_client = (meta->type == EVENT_HTTP_CLIENT);
+     fixup_connection_info(&h2g_info->conn_info, is_client, orig_dport);
+@@ -308,11 +354,16 @@ http2_grpc_end(http2_conn_stream_t *stream, http2_grpc_request_t *prev_info, voi
+         bpf_dbg_printk("stream_id = %d", stream->stream_id);
+         //dbg_print_http_connection_info(&stream->pid_conn.conn); // commented out since GitHub CI doesn't like this call
+ 
+-        http2_conn_info_data_t *h2g =
++        http2_conn_info_data_t *conn =
+             bpf_map_lookup_elem(&ongoing_http2_connections, &stream->pid_conn);
+-        http2_alloc_seq(h2g, prev_info);
++        if (conn) {
++            prev_info->hpack_flags = (conn->req_hpack_poisoned * h2_hpack_req_unreliable) |
++                                     (conn->resp_hpack_poisoned * h2_hpack_resp_unreliable);
++        } else {
++            prev_info->hpack_flags |= h2_hpack_req_unreliable | h2_hpack_resp_unreliable;
++        }
+ 
+-        http2_grpc_request_t *trace = bpf_ringbuf_reserve(&events, sizeof(http2_grpc_request_t), 0);
++        http2_grpc_request_t *trace = bpf_ringbuf_reserve(&events, sizeof(*trace), 0);
+         if (trace) {
+             bpf_probe_read(prev_info->ret_data, k_kprobes_http2_ret_buf_size, u_buf);
+             __builtin_memcpy(trace, prev_info, sizeof(http2_grpc_request_t));
+@@ -358,19 +409,32 @@ static __always_inline frame_header_t next_frame(const grpc_frames_ctx_t *g_ctx)
+ }
+ 
+ static __always_inline void update_prev_info(grpc_frames_ctx_t *g_ctx) {
+-    if (g_ctx->has_prev_info) {
+-        return;
+-    }
+-
+     const http2_grpc_request_t *prev_info =
+         bpf_map_lookup_elem(&ongoing_http2_grpc, &g_ctx->stream);
+ 
++    g_ctx->has_prev_info = 0;
+     if (prev_info) {
+         g_ctx->prev_info = *prev_info;
+         g_ctx->has_prev_info = 1;
+     }
+ }
+ 
++static __always_inline u8 h2_next_frame_changes_hpack(const grpc_frames_ctx_t *g_ctx,
++                                                      const frame_header_t *frame) {
++    const u32 frame_size = frame->length + k_frame_header_len;
++    if (frame_size >= g_ctx->args.bytes_len || g_ctx->pos >= g_ctx->args.bytes_len - frame_size) {
++        return 0;
++    }
++
++    frame_header_t next = {0};
++    const void *offset = (const unsigned char *)g_ctx->args.u_buf + g_ctx->pos + frame_size;
++    if (bpf_probe_read(&next, sizeof(next), offset) != 0) {
++        return 1;
++    }
++
++    return next.type == FrameHeaders || next.type == FramePushPromise;
++}
++
+ static __always_inline int
+ handle_headers_frame(void *ctx, grpc_frames_ctx_t *g_ctx, const frame_header_t *frame) {
+     g_ctx->stream.stream_id = frame->stream_id;
+@@ -382,7 +446,24 @@ handle_headers_frame(void *ctx, grpc_frames_ctx_t *g_ctx, const frame_header_t *
+         g_ctx->saved_stream_id = g_ctx->stream.stream_id;
+         g_ctx->saved_buf_pos = g_ctx->pos;
+ 
++        const u8 response_type =
++            request_type_by_direction(g_ctx->args.direction, PACKET_TYPE_RESPONSE);
++        const u8 response = response_type == g_ctx->prev_info.type;
++        const u8 event_type =
++            response ? EVENT_K_HTTP2_RESPONSE_HEADERS : EVENT_K_HTTP2_REQUEST_HEADERS;
++        const u8 poison = response ? h2_hpack_resp_unreliable : h2_hpack_req_unreliable;
++        if (!http2_emit_hpack_event(g_ctx, frame, event_type)) {
++            http2_poison_hpack(&g_ctx->stream, &g_ctx->prev_info, poison);
++        }
++        const u32 capture_size = response ? k_kprobes_http2_ret_buf_size : k_kprobes_http2_buf_size;
++        if (frame->length + k_frame_header_len > capture_size) {
++            http2_poison_hpack(&g_ctx->stream, &g_ctx->prev_info, poison);
++        }
++
+         if (http_grpc_stream_ended(frame)) {
++            if (h2_next_frame_changes_hpack(g_ctx, frame)) {
++                http2_poison_hpack(&g_ctx->stream, &g_ctx->prev_info, poison);
++            }
+             preempt_guarded_tail_call(
+                 ctx, &jump_table, k_tail_protocol_http2_grpc_handle_end_frame);
+             return 0; // normally unreachable
+@@ -391,6 +472,15 @@ handle_headers_frame(void *ctx, grpc_frames_ctx_t *g_ctx, const frame_header_t *
+         // Not starting new grpc request, found end frame in a start, likely
+         // just terminating prev connection
+         if (!(is_flags_only_frame(frame) && http_grpc_stream_ended(frame))) {
++            if (!http2_emit_hpack_event(g_ctx, frame, EVENT_K_HTTP2_REQUEST_HEADERS)) {
++                http2_poison_hpack(&g_ctx->stream, 0, h2_hpack_req_unreliable);
++            }
++            if (frame->length + k_frame_header_len > k_kprobes_http2_buf_size) {
++                http2_poison_hpack(&g_ctx->stream, 0, h2_hpack_req_unreliable);
++            }
++            if (h2_next_frame_changes_hpack(g_ctx, frame)) {
++                http2_poison_hpack(&g_ctx->stream, 0, h2_hpack_req_unreliable);
++            }
+             preempt_guarded_tail_call(
+                 ctx, &jump_table, k_tail_protocol_http2_grpc_handle_start_frame);
+             return 0; // normally unreachable
+@@ -718,6 +808,14 @@ int GUARDED_PROG(obi_protocol_http2_grpc_frames, void *, ctx) {
+ 
+         const frame_header_t frame = next_frame(g_ctx);
+ 
++        if (frame.type == FramePushPromise) {
++            g_ctx->stream.stream_id = frame.stream_id;
++            update_prev_info(g_ctx);
++            http2_poison_hpack(&g_ctx->stream,
++                               g_ctx->has_prev_info ? &g_ctx->prev_info : 0,
++                               h2_hpack_resp_unreliable);
++        }
++
+         // if handle_headers_frame returns 0, it means bpf_tail_call has
+         // failed and something is very wrong, so we just bail...
+         if (is_headers_frame(&frame) && !handle_headers_frame(ctx, g_ctx, &frame)) {
+@@ -735,16 +833,16 @@ int GUARDED_PROG(obi_protocol_http2_grpc_frames, void *, ctx) {
+             break;
+         }
+ 
+-        if (frame.length + k_frame_header_len >= g_ctx
+[truncated]
+
+--- bpf/generictracer/types/http2_conn_info_data.h
+@@ -7,7 +7,8 @@
+ 
+ typedef struct http2_conn_info_data {
+     u64 id;
+-    u32 req_seq; // allocation hint; racy reads only cost claim retries
+     u8 flags;
+-    u8 _pad[3];
++    u8 req_hpack_poisoned;
++    u8 resp_hpack_poisoned;
++    u8 _pad[5];
+ } http2_conn_info_data_t;
+

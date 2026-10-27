@@ -1,0 +1,155 @@
+repo: qpoint-io/qtap
+commit: 1c28ea269b34e1930b98f66d9424bbdf163a8e39
+rank: 4361
+
+feat: add MySQL-over-TLS support via STARTTLS (#263)
+
+* feat: add MySQL-over-TLS support via STARTTLS
+
+Add STARTTLS support for MySQL connections:
+- Hook SSL_set_fd to pre-populate ssl-to-fd mapping before TLS upgrade
+- Detect TLS upgrade on MySQL connections (re-emit IsTLS protocol event)
+- Handle TLS upgrade event in Go reader (preserve parser state)
+- Add /lib64, /usr/lib64, /opt to library search paths for RHEL/Oracle
+
+MySQL performs a plaintext handshake then upgrades to TLS mid-connection.
+Without SSL_set_fd pre-population, the first SSL_read after upgrade has
+no fd mapping and data is lost.
+
+* fix: re-emit protocol event on STARTTLS TLS upgrade
+
+When a STARTTLS protocol (MySQL, Postgres) upgrades to TLS mid-connection,
+the socket-level TLS detection in init_conn sets is_ssl=true but never
+re-emits the protocol event with IsTLS=true. This means userspace never
+learns the connection upgraded to TLS, so tlsProbeIntrospected stays false
+even though SSL_read/SSL_write data is being captured.
+
+Fix: after detecting TLS on a connection with tls_upgrade_pending, re-emit
+the protocol event so userspace gets the IsTLS=true flag. This allows the
+reporter to correctly set tlsProbeIntrospected=true when data events exist.
+
+Verified with MySQL 8.4 (TLS 1.3), MySQL 8.0, and MariaDB 11.
+
+* fix: address review - drop /opt, use tls_upgraded field
+
+- Remove /opt from commonLibDirs (too broad)
+- Use tls_upgraded=true field instead of duplicate is_tls on STARTTLS upgrade
+
+---------
+
+Co-authored-by: OpenClaw AI Assistant <devin+openclaw@qpoint.io>
+
+--- bpf/tap/openssl.bpf.c
+@@ -173,6 +173,25 @@ int BPF_UPROBE(openssl_probe_entry_SSL_free) {
+ 	return 0;
+ }
+ 
++// Hook SSL_set_fd to pre-populate ssl_to_fd_map
++// This fixes STARTTLS protocols (MySQL, Postgres, SMTP) where
++// SSL_read fires before the ssl→fd mapping is established
++SEC("uprobe/SSL_set_fd")
++int BPF_UPROBE(openssl__probe_entry_SSL_set_fd, void *ssl, int fd) {
++	// extract the pid
++	uint32_t pid = bpf_get_current_pid_tgid() >> 32;
++
++	uintptr_t ssl_ptr = (uintptr_t)ssl;
++	int32_t fd32 = (int32_t)fd;
++
++	if (fd32 >= 3) {
++		bpf_map_update_elem(&ssl_to_fd_map, &ssl_ptr, &fd32, BPF_ANY);
++		TRACE_OPENSSL(pid, "openssl/set_fd", TRACE_INT("fd", fd32), TRACE_POINTER("ssl", (void *)ssl_ptr));
++	}
++
++	return 0;
++}
++
+ SEC("uprobe/SSL_read")
+ int BPF_UPROBE(openssl__probe_entry_SSL_read, void *ssl, void *buf, int num) {
+ 	// get the pid_tgid
+
+--- bpf/tap/protocol.bpf.c
+@@ -328,6 +328,8 @@ static bool detect_mysql(struct conn_info *conn_info, struct buf_info *buf_info,
+ 	}
+ 
+ 	conn_info->protocol = P_MYSQL;
++	// Watch for STARTTLS upgrade on MySQL connections
++	conn_info->tls_upgrade_pending = true;
+ 	return true;
+ }
+ 
+
+--- bpf/tap/socket.bpf.c
+@@ -598,7 +598,11 @@ static void init_conn(struct socket_ctx *ctx, enum DIRECTION direction, const st
+ 
+ 	// checks that no ingress reads or egress writes have happened yet, indicating a new connection
+ 	bool is_new_connection = (direction == D_INGRESS && conn_info->rd_bytes == 0) || (direction == D_EGRESS && conn_info->wr_bytes == 0);
+-	if (!is_new_connection)
++
++	// For STARTTLS protocols (MySQL, Postgres), keep checking for TLS upgrade
++	bool check_for_tls = is_new_connection || (conn_info->tls_upgrade_pending && !conn_info->is_ssl);
++
++	if (!check_for_tls)
+ 		return;
+ 
+ 	// initialize the buf_info struct
+@@ -607,9 +611,17 @@ static void init_conn(struct socket_ctx *ctx, enum DIRECTION direction, const st
+ 		.iovcnt = args->iovcnt,
+ 	};
+ 
+-	// detect tls if not already detected and the connection is new
++	// detect tls if not already detected
+ 	detect_tls(conn_info, &buf_info, bytes);
+ 
++	// clear the pending flag once TLS is detected
++	// Re-emit protocol event so userspace gets IsTLS=true for STARTTLS protocols
++	if (conn_info->is_ssl && conn_info->tls_upgrade_pending) {
++		conn_info->tls_upgrade_pending = false;
++		if (conn_info->protocol != P_UNKNOWN)
++			submit_proto_event(ctx, conn_info);
++	}
++
+ 	if (!conn_info->is_ssl)
+ 		return;
+ 
+@@ -702,8 +714,15 @@ static __noinline void process_data(struct socket_ctx *ctx, enum DIRECTION direc
+ 	}
+ 
+ 	// set ssl right away if provided
+-	if (ssl && !conn_info->is_ssl)
++	// Track whether this is a new TLS upgrade (for STARTTLS protocols like MySQL)
++	bool tls_just_upgraded = false;
++	if (ssl && !conn_info->is_ssl) {
+ 		conn_info->is_ssl = true;
++		// If the protocol was already detected during plaintext (STARTTLS),
++		// we need to re-emit the protocol event with the updated is_ssl flag
++		if (conn_info->protocol != P_UNKNOWN)
++			tls_just_upgraded = true;
++	}
+ 
+ 	// once we're ssl, don't process unless from ssl functions
+ 	if (!ssl && conn_info->is_ssl) {
+@@ -756,6 +775,11 @@ static __noinline void process_data(struct socket_ctx *ctx, enum DIRECTION direc
+ 	if (protocol == P_UNKNOWN && conn_info->protocol != P_UNKNOWN)
+ 		submit_proto_event(ctx, conn_info);
+ 
++	// if TLS was just upgraded on an already-known protocol (STARTTLS),
++	// re-emit the protocol event so userspace gets the updated is_ssl flag
++	if (tls_just_upgraded)
++		submit_proto_event(ctx, conn_info);
++
+ 	// we only stream data if we know the protocol
+ 	if (conn_info->protocol == P_UNKNOWN) {
+ 		TRACE_IF_ENABLED(ctx->trace_mod, ctx->id->pid, "process_data (protocol = UNKNOWN, ignore = true)", TRACE_STRING("caller", ctx->trace_id),
+
+--- bpf/tap/tap.bpf.h
+@@ -113,6 +113,9 @@ struct conn_info {
+ 	enum PROTOCOL protocol;
+ 	// Conditions were met to ignore this connection
+ 	bool ignore;
++	// Watch for TLS upgrade (STARTTLS) on this connection
++	// Set when MySQL/Postgres detected, cleared when TLS detected or connection closes
++	bool tls_upgrade_pending;
+ };
+ 
+ // Minimum size of an event
+

@@ -1,0 +1,43 @@
+repo: DataDog/datadog-agent
+commit: bb838acd48b5526ff3e7ee31e7b508aca60867cf
+rank: 3139
+
+Enhance BSOD reports with callstack and agent version (#41434)
+
+### What does this PR do?
+This PR enhances Windows BSOD reports to include the crash callstack and version of the Agent found in the dump.
+The callstack does not have resolved symbols and should remain so per legal consultation.
+
+Originally the driver version was intended to be reported as well, but the driver modules do not include embedded resource tables that have the version information. However, the Agent does have the resource table with version information and it can be queried from a system crash dump.
+In any case, the Agent version is more meaningful than the driver version, as it better identifies the fuller end-to-end context (e.g. combination of features).
+
+### Motivation
+https://datadoghq.atlassian.net/browse/WINA-1869
+
+### Describe how you validated your changes
+Queried system-probe to report a prepared crash dump.
+Utilized a VM with a prepared MEMORY.DMP, installed the agent, and verified the BSOD report was exercised. Verified that the notification was sent.
+CI/CD, verified crash reporting related tests.
+
+--- pkg/collector/corechecks/system/wincrashdetect/probe/crashdump.h
+@@ -19,7 +19,10 @@ typedef enum _readCrashDumpErrors {
+     RCD_OPEN_DUMP_FILE_FAILED = 4,
+     RCD_WAIT_FOR_EVENT_FAILED = 5,
+     RCD_EXECUTE_FAILED = 6,
+-    RCD_INVALID_ARG = 7
++    RCD_INVALID_ARG = 7,
++    RCD_QUERY_SYMBOLS_INTERFACE_FAILED = 8,
++    RCD_DD_MODULE_NOT_FOUND = 9,
++    RCD_GET_MODULE_VERSION_INFO_FAILED = 10,
+ } READ_CRASH_DUMP_ERROR;
+ 
+ typedef struct _bugCheckInfo {
+@@ -28,6 +31,7 @@ typedef struct _bugCheckInfo {
+     ULONG64 arg2;
+     ULONG64 arg3;
+     ULONG64 arg4;
++    char agentVersion[64];
+ } BUGCHECK_INFO;
+ 
+ READ_CRASH_DUMP_ERROR readCrashDump(char* fname, void* ctx, BUGCHECK_INFO* bugCheckInfo, long* extendedError);
+

@@ -1,0 +1,346 @@
+repo: eunomia-bpf/bpftime
+commit: fac864e5c0775756323794ff44e03ab79a11e753
+rank: 3486
+
+[+] Feat: Support dynamic attach (#542)
+
+* [+] Feat: Support dynamic attach
+
+* [~] Revert: rollback some comments modifications
+
+* ci: unshallow recursive submodule checkouts
+
+Set actions/checkout fetch-depth to 0 for workflows that use recursive submodules.
+This prevents nested submodule checkout failures when the referenced commit isn't
+reachable from a shallow clone.
+
+* ci: avoid recursive submodule checkout
+
+Use non-recursive submodule checkout in CI workflows to avoid failures from
+nested verifier submodules that reference unavailable commits.
+
+* ci: apt-get update before installing llvm tools
+
+The PTX pass workflow was failing with 404s from Ubuntu mirrors.
+Run apt-get update before apt-get install to refresh package indexes.
+
+* ci: init bpftool submodules for libbpf
+
+Workflows build with BPFTIME_BUILD_WITH_LIBBPF=ON by default, but non-recursive
+submodule checkout doesn't fetch bpftool's nested libbpf. Explicitly init only
+third_party/bpftool recursively to keep libbpf available without pulling other
+nested submodules.
+
+* ci: clean bpftool/libbpf before submodule update
+
+Self-hosted runners may keep a non-empty bpftool/libbpf directory across runs,
+causing nested submodule init to fail. Remove the directory before updating.
+
+* ci: init ubpf bpf_conformance submodule
+
+Non-recursive submodule checkout leaves ubpf's bpf_conformance missing, but the
+ubpf ExternalProject depends on it. Explicitly init only third_party/ubpf
+recursively (with cleanup for self-hosted runners).
+
+* ci(gpu): init bpftool libbpf for example builds
+
+GPU example Makefiles build libbpf/bpftool from third_party. Ensure bpftool's
+nested libbpf submodule is initialized in the test job as well.
+
+* fix(gpu): inject kretprobe before PTX exit/ret
+
+Some PTX kernels terminate with `exit;` (and predicated forms), so the kretprobe
+pass must inject before both `ret;` and `exit;` to ensure the probe runs.
+
+Also update host_map_test to size per-thread buffers based on
+BPFTIME_MAP_GPU_THREAD_COUNT (default 1024) instead of a fixed 1<<20.
+
+* fix(gpu): handle labeled ret/exit in kretprobe PTX pass
+
+Some PTX kernels place labels on the same line as ret/exit (e.g. '$L0: ret;'),
+so the kretprobe pass must match that form to reliably inject the retprobe call.
+
+* fix(cuda): rerun late bootstrap when adding hooks
+
+nv_attach_impl runs late bootstrap once to patch existing fatbins.
+When multiple hooks are attached sequentially (e.g. kprobe then kretprobe),
+bootstrap could complete after the first hook, leaving subsequent hooks
+unpatched. Reset bootstrap state when a new hook is added after bootstrap,
+so all passes apply to existing modules.
+
+* fix(gpu): count cutlass launches once per kernel
+
+Update the cutlass kretprobe program to increment the GPU array map once per
+kernel launch (thread0/block0) via bpf_map_update_elem for reliable host
+visibility and reduced contention.
+
+* fix(cuda): hook cuLaunchKernel for patched launches
+
+Some CUDA code paths may bypass cudaLaunchKernel hooks and launch via the driver
+API. Add a cuLaunchKernel replace hook that maps the CUfunction name to an
+already-loaded patched CUfunction so kprobe/kretprobe instrumentation can still
+trigger (e.g. CUTLASS).
+
+* fix(cuda): guard nv_attach_hook_state initialization
+
+Wrap the global nv_attach_hook_state in an optional + mutex holder to avoid
+racy first-use initialization and to make the publish order explicit.
+Also delay replacements_installed until hook installation completes.
+
+* fix(cuda): avoid locking nv_attach_hook_state on hot path
+
+Initialize the optional nv_attach_hook_state once (call_once) so runtime
+CUDA launch hooks do not pay a mutex lock on every invocation.
+
+* docs(example): explain preload vs dynamic attach
+
+Document the two execution modes used by examples (preload-at-start vs late
+attach via bpftime attach/trace). Add pointers to the GPU dynamic attach example.
+
+* ci(gpu): smoke test dynamic attach via bpftime trace
+
+Build and ship the bpftime CLI in the GPU workflow and add a dynamic-attach
+matrix entry that runs `bpftime trace` against a running target.
+
+* ci(gpu): fix bpftime CLI executable bit in artifacts
+
+GitHub artifact downloads may drop executable permissions. Ensure bpftime is
+chmod +x before running dynamic attach smoke tests.
+
+* ci(gpu): allow dynamic attach injection for threadscheduling
+
+Dynamic attach uses Frida injection which may be blocked by ptrace restrictions
+on some CI runners. Make the dynamic_hook victim optionally allow ptrace via
+BPFTIME_ALLOW_PTRACE=1, and run bpftime trace without sudo in the CI smoke test.
+
+* ci(gpu): fix expected output for dynamic threadscheduling
+
+The dynamic-attach threadscheduling variant prints a mapping report header
+instead of the legacy 'SM Utilization Histogram' string. Match a stable
+substring so the smoke test reflects actual output.
+
+* fix(trace): tighten global shm permissions for sudo trace
+
+Avoid making the global shared memory world-writable. When tracing under sudo,
+best-effort chown the existing shm segment to the target uid/gid and restrict
+permissions to owner read/write.
+
+* fix(cuda): retry late bootstrap and avoid strtok
+
+Let late bootstrap failures propagate through std::call_once so refresh can
+retry instead of permanently marking the session as done. Also replace strtok
+with a thread-safe colon splitter.
+
+* fix(gpu): correct next_key output and tighten docs/tests
+
+Fix nv_gpu_shared_array_map map_get_next_key writing to the next_key pointer
+instead of the output value. Document ptrace opt-in risk for dynamic hook
+example and add real assertions for nv_attach PTX filtering.
+
+* docs(review): add PR542 dynamic attach notes
+
+Add a structured, module-split review log for PR #542 under
+`docs/reviews/pr542_dynamic_attach/`, and whitelist `docs/reviews/**` from the
+repo-wide docs ignore rule.
+
+* ci(ptxpass): remove hardcoded proxy config
+
+Drop the workflow step that hard-coded internal proxy addresses and modified
+global git config. Proxy settings, if needed, should be provided by the runner
+environment.
+
+* fix(agent): fail closed on IPC auth and report refresh errors
+
+Reject agent IPC requests when SO_PEERCRED lookup fails, and return an explicit
+error response when refresh_attach_session fails so callers can detect it.
+
+* fix(shm): avoid fabricating stable epoch on retries
+
+When epoch stabilization retries are exhausted, return 0 instead of masking an
+odd writer-in-progress value into an even number.
+
+* fix(attach): handle missing CUDA shm and retry on epoch changes
+
+Avoid dereferencing a missing CUDA shared-mem context during attach ctx
+construction, and detect epoch changes during handler scans to prevent mixing
+sessions.
+
+* fix(trace): enforce drop-privileges and cleanup late PTX dirs
+
+Fail fast when dropping loader privileges fails, avoid sending SIGUSR1 to a
+non-injected target, parse agent IPC responses, and ensure temporary late-PTX
+extraction directories are removed.
+
+* fix: tighten epoch retry, PTX dir perms, and IPC detach status
+
+Treat epoch_seq=0 (unstable) after handler scans as retryable instead of
+success, tighten late-PTX extraction directory permissions (0700 + umask 077),
+return ok/err for agent IPC detach, and use _exit in forked child paths.
+
+* fix(shm): use explicit unstable sentinel for epoch_seq
+
+Epoch sequence can legitimately be 0 early in a session. Avoid using 0 as an
+"unstable" sentinel by returning UINT64_MAX when epoch_seq cannot be stabilized,
+and retry attach ctx scans only for that explicit value.
+
+* chore: improve epoch and IPC observability
+
+Introduce explicit epoch sentinels for missing/unstable states so epoch_seq=0
+remains a valid stable value. Rebind on seq changes including 0, print
+missing/unstable in agent IPC status, and include error codes in IPC
+refresh/detach responses.
+
+--- example/gpu/cutlass/counter/cutlass_launch_counter.bpf.c
+@@ -4,6 +4,10 @@
+ 
+ #define BPF_MAP_TYPE_GPU_ARRAY_MAP 1503
+ 
++// GPU helper functions (bpftime CUDA attach)
++static const u64 (*bpf_get_block_idx)(u64 *x, u64 *y, u64 *z) = (void *)503;
++static const u64 (*bpf_get_thread_idx)(u64 *x, u64 *y, u64 *z) = (void *)505;
++
+ struct {
+ 	__uint(type, BPF_MAP_TYPE_GPU_ARRAY_MAP);
+ 	__uint(max_entries, 1);
+@@ -15,9 +19,20 @@ SEC("kretprobe/_ZN7cutlass6KernelINS_4gemm6kernel4GemmINS1_11threadblock12MmaPip
+ int cuda__cutlass_launch(void *ctx)
+ {
+ 	u32 key = 0;
+-	u64 *cnt = bpf_map_lookup_elem(&cutlass_call_count, &key);
+-	if (cnt)
+-		__sync_fetch_and_add(cnt, 1);
++	// Count once per kernel launch to avoid massive contention and to ensure
++	// host visibility via map update (system-scope fence in trampoline).
++	u64 tx = 0, ty = 0, tz = 0;
++	u64 bx = 0, by = 0, bz = 0;
++	bpf_get_thread_idx(&tx, &ty, &tz);
++	bpf_get_block_idx(&bx, &by, &bz);
++	if (tx == 0 && ty == 0 && tz == 0 && bx == 0 && by == 0 && bz == 0) {
++		u64 *cnt = bpf_map_lookup_elem(&cutlass_call_count, &key);
++		u64 newv = 1;
++		if (cnt)
++			newv = *cnt + 1;
++		bpf_map_update_elem(&cutlass_call_count, &key, &newv,
++				    (u64)BPF_ANY);
++	}
+ 	return 0;
+ }
+ 
+
+--- example/gpu/threadscheduling_dynamic_hook/threadscheduling.bpf.c
+@@ -0,0 +1,114 @@
++// SM/Warp/Lane Mapping eBPF Probe for CUDA Kernels
++// Demonstrates how to read GPU thread scheduling information
++
++#define BPF_NO_GLOBAL_DATA
++#include <vmlinux.h>
++#include <bpf/bpf_helpers.h>
++#include <bpf/bpf_tracing.h>
++
++// bpftime custom GPU map types (see runtime/include/bpftime_shm.hpp)
++#define BPF_MAP_TYPE_GPU_HASH_MAP 1501
++
++// Thread-to-hardware mapping info
++struct thread_map {
++	u64 sm_id;
++	u64 warp_id;
++	u64 lane_id;
++	u64 block_x;
++	u64 block_y;
++	u64 block_z;
++	u64 thread_x;
++	u64 thread_y;
++	u64 thread_z;
++	u64 timestamp;
++};
++
++// Map to store per-thread SM/warp/lane mapping
++struct {
++	__uint(type, BPF_MAP_TYPE_GPU_HASH_MAP);
++	__uint(max_entries, 4096);
++	__type(key, u32);
++	__type(value, struct thread_map);
++} thread_mapping SEC(".maps");
++
++// SM distribution histogram (count threads per SM)
++struct {
++	__uint(type, BPF_MAP_TYPE_GPU_HASH_MAP);
++	__uint(max_entries, 128);
++	__type(key, u32);
++	__type(value, u64);
++} sm_histogram SEC(".maps");
++
++// Warp distribution per SM
++struct {
++	__uint(type, BPF_MAP_TYPE_GPU_HASH_MAP);
++	__uint(max_entries, 1024);
++	__type(key, u32);  // (sm_id << 16) | warp_id
++	__type(value, u64);
++} warp_histogram SEC(".maps");
++
++// GPU helper function declarations
++static const u64 (*bpf_get_globaltimer)(void) = (void *)502;
++static const u64 (*bpf_get_block_idx)(u64 *x, u64 *y, u64 *z) = (void *)503;
++static const u64 (*bpf_get_thread_idx)(u64 *x, u64 *y, u64 *z) = (void *)505;
++static const u64 (*bpf_get_sm_id)(void) = (void *)509;
++static const u64 (*bpf_get_warp_id)(void) = (void *)510;
++static const u64 (*bpf_get_lane_id)(void) = (void *)511;
++
++SEC("kprobe/_Z9vectorAddPKfS0_Pfi")
++int cuda__probe_threadscheduling()
++{
++	// Get hardware scheduling info
++	u64 sm_id = bpf_get_sm_id();
++	u64 warp_id = bpf_get_warp_id();
++	u64 lane_id = bpf_get_lane_id();
++
++	// Get logical thread/block indices
++	u64 block_x, block_y, block_z;
++	u64 thread_x, thread_y, thread_z;
++	bpf_get_block_idx(&block_x, &block_y, &block_z);
++	bpf_get_thread_idx(&thread_x, &thread_y, &thread_z);
++
++	// Create unique key from block and thread indices
++	// Key format: block_x in upper 16 bits, thread_x in lower 16 bits
++	u32 key = (u32)((block_x << 16) | (thread_x & 0xFFFF));
++
++	// Store mapping info
++	struct thread_map info = {
++		.sm_id = sm_id,
++		.warp_id = warp_id,
++		.lane_id = lane_id,
++		.block_x = block_x,
++		.block_y = block_y,
++		.block_z = block_z,
++		.thread_x = thread_x,
++		.thread_y = thread_y,
++		.thread_z = thread_z,
++		.timestamp = bpf_get_globaltimer(),
++	};
++	bpf_map_update_elem(&thread_mapping, &key, &info, BPF_ANY);
++
++	// Update SM histogram - atomically increment count
++	u32 sm_key = (u32)sm_id;
++	u64 *sm_count = bpf_map_lookup_elem(&sm_histogram, &sm_key);
++	if (sm_count) {
++		__sync_fetch_and_add(sm_count, 1);
++	} else {
++		u64 initial = 1;
++		bpf_map_update_elem(&sm_histogram, &sm_key, &initial, BPF_NOEXIST);
++	}
++
++	// Update warp histogram (composite key: sm_id << 16 | warp_id)
++	u32 warp_key = (u32)((sm_id << 16) | (warp_id & 0xFFFF));
++	u64 *warp_count = bpf_map_lookup_elem(&warp_histogram, &warp_key);
++	if (warp_count) {
++		__sync_fetch_and_add(warp_count, 1);
++	} else {
++		u64 initial = 1;
++		bpf_map_update_elem(&warp_histogram, &warp_key, &initial, BPF_NOEXIST);
++	}
++
++	return 0;
++}
++
++char LICENSE[] SEC("license") = "GPL";
+

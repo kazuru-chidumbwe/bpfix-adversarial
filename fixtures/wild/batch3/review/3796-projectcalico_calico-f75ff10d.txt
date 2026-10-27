@@ -1,0 +1,752 @@
+repo: projectcalico/calico
+commit: f75ff10d1d5a1e2f6b48da1c4916370de4d6f2af
+rank: 3796
+
+feat(bpf): implement connection limit enforcement (QoS max connections) (#12602)
+
+* feat(bpf): implement connection limit enforcement (QoS max connections)
+
+Implement per-workload TCP connection limiting for the BPF dataplane
+(CORE-11846). The BPF dataplane's bpf_redirect_peer optimization
+bypasses the to_wep TC hook for forwarded packets, so connection count
+is tied to CT entry lifecycle rather than packet observation.
+
+The BPF program atomically checks and increments a counter in the
+cali_qos map on new TCP SYN at both to_wep (ingress) and from_wep
+(egress). A Go-side ConnLimitScanner recounts established connections
+each CT scan cycle (~10s) and overwrites the counter, serving as the
+sole decrement mechanism. Connections that close or time out are simply
+not counted on the next scan.
+
+Extend the cali_qos map value with max_connections and current_count
+fields (24→32 bytes, version 1→2), reusing the existing map and
+spinlock rather than introducing a separate map. Connection limit config
+is merged into the per-direction QoS map handling in bpf_ep_mgr
+alongside packet rate, with a single read-compute-write per direction.
+
+Rejected SYNs are marked on the CT entry (CALI_CT_FLAG_CONNLIMIT_REJECTED)
+so retransmissions are unconditionally rejected even if the scanner has
+since decremented the count. Connlimited CT entries also set
+CALI_CT_FLAG_SKIP_REDIR_PEER so SYN retransmissions route through
+to_wep instead of bypassing via bpf_redirect_peer.
+
+FV tests use getBPFMaxConnections/getBPFCurrentCount helpers to poll the
+QoS map for config propagation and scanner convergence, matching the
+pattern used by the existing packet rate tests.
+
+* address review comments
+
+* make fix
+
+* SKIP_REDIR_PEER is not necessary, remove it
+
+* decrement connlimit counter on FIN/RST in CT lookup
+
+Decrement the connection limit counter immediately when a TCP connection
+closes (both FINs seen or RST), rather than waiting up to 10s for the
+Go-side scanner to recount. The decrement runs inside calico_ct_lookup()
+after ct_tcp_entry_update() processes TCP flags, which executes before
+bpf_redirect_peer — so it observes FIN/RST on all packet paths.
+
+Add CALI_CT_FLAG_CONNLIMIT_EGRESS to mark egress connections that were
+counted, and CALI_CT_FLAG_CONNLIMIT_DEC to prevent double-decrement
+when multiple BPF programs see the same close transition. The pod's
+ifindex is resolved from the CT entry using the opener bit (ingress:
+pod is responder; egress: pod is opener).
+
+The scanner remains as a safety net for LRU evictions, connection
+timeouts, and any missed decrements.
+
+* test(fv): add SendRST option to test-connection for RST close testing
+
+Add --send-rst flag to test-connection that sets SO_LINGER(0) before
+closing the TCP socket, causing the kernel to send RST instead of FIN.
+Plumb the option through PersistentConnectionOpts so FV tests can
+choose the close method per connection.
+
+Expand the connlimit FV test to exercise both close paths in the same
+test case: stop one connection with RST, verify a new connection can be
+established, re-fill the slot, then stop one with graceful FIN and
+verify again. This covers both the RST and FIN branches of the BPF
+connlimit decrement in calico_ct_lookup().
+
+* fix(bpf): scanner must skip CT entries with CONNLIMIT_DEC flag
+
+After RST close, ct_tcp_entry_update() clears the leg rst_seen bits
+when subsequent non-RST packets arrive (spurious RST handling). The
+scanner then sees RSTSeen()=false and Established()=true, recounting
+the entry and overwriting the BPF-decremented counter with a higher
+value.
+
+Fix by also skipping CT entries with CALI_CT_FLAG_CONNLIMIT_DEC set
+in the scanner's Check(). This flag is set atomically by the BPF fast
+path when it decrements, and is never cleared, so it reliably marks
+connections whose close was already accounted for.
+
+Add Go constants for all connlimit CT flags in the v4 package
+(FlagConnLimitIn, FlagConnLimitRej, FlagConnLimitOut, FlagConnLimitDec)
+and a unit test that verifies the scanner skips CONNLIMIT_DEC entries.
+
+* make fix-changed
+
+* run connlimit scanner every 6 ticks (60s), add more connlimit FV test cases
+
+* use batch updates on connlimit scanner
+
+* run connlimit scanner every 3 ticks (~30s)
+
+* decrement connlimit counter on conntrack cleanup
+
+* Address review comments:
+- remove unused ct_value_clear_flags
+- fix that connlimits and counters should be uint32
+- remove unneeded validation before jumping to TCP_RST program
+
+* maintain connlimit pod info incrementally instead of rebuilding per reconcile
+
+bpfEndpointManager was rebuilding the IP→ConnLimitPodInfo snapshot from
+allWEPs + nameToIface on every CompleteDeferredWork pass. The scanner
+reads this snapshot at most once per ~30s, so the per-reconcile rebuild
+was wasted work.
+
+Switch to event-driven maintenance:
+- onWorkloadEndpointUpdate refreshes entries for the WEP using the
+  current iface ifindex; defers when ifindex is still 0.
+- onWorkloadEndpointRemove drops the WEP's entries.
+- onInterfaceUpdate refreshes entries for the bound WEP after the
+  ifindex transitions, resolving the WEP-before-iface ordering.
+
+State changes:
+- Replace atomic.Pointer with an RWMutex-guarded map plus a
+  wlID → []ip secondary index so a WEP's entries can be removed
+  without scanning the map.
+- GetConnLimitedPodInfo takes the read lock briefly and returns a
+  shallow copy so the scanner iterates without holding the lock.
+
+Drop buildConnLimitPodInfo and the CompleteDeferredWork rebuild call.
+
+Add TestConnLimitPodInfoIncremental covering: WEP-before-iface
+ordering, IP change, limit removal, WEP remove + secondary-index
+pruning, iface flap with new ifindex, multi-IP WEP.
+
+* make egress connlimit decrement idempotent, add new UT cases
+
+* remove CT_RES_CONNLIMIT_FIRST_SYN, send RST on retransmissions of rejected SYNs
+
+The CT_RES_CONNLIMIT_FIRST_SYN result flag existed only because the CT
+lookup eagerly set CONNLIMIT_INGRESS on the entry before tc.c decided
+whether to count -- once set, tc.c had no way to distinguish "we just
+set it" from "we set it on a previous SYN", so it needed a separate
+signal across the lookup -> tc.c boundary.
+
+Defer the CONNLIMIT_INGRESS set to after a successful increment. Now
+the flag honestly means "this entry contributed to the counter":
+- conntrack.h just propagates INGRESS/REJECTED from the entry to
+  result.flags; no eager write.
+- tc.c reads result.flags, takes one of three paths:
+    INGRESS set    -> retransmission of accepted SYN, allow
+    REJECTED set   -> retransmission of rejected SYN, RST
+    neither set    -> first SYN: count, then set INGRESS on success
+                      or REJECTED on failure
+- Both reject arms now jump to PROG_INDEX_TCP_RST. Previously the
+  retransmission arm dropped silently (TC_ACT_SHOT, no RST), leaving
+  the client to wait out tcp_syn_retries before giving up. It now
+  gets an RST promptly, same as the first-SYN reject path.
+
+This also fixes a latent decrement-leak: previously a rejected SYN's
+CT entry carried both CONNLIMIT_INGRESS (set eagerly) and
+CONNLIMIT_REJECTED, so cleanup-time decrement would deduct a counter
+that was never incremented. With the deferred set, rejected entries
+carry only REJECTED and the cleanup-time decrement is correct.
+
+A concurrent-SYN race for the same 5-tuple can still leave an entry
+with both INGRESS and REJECTED set. The tc.c precedence rule (INGRESS
+checked first) treats this as "counted, allow" -- matches what the
+winning CPU's increment already recorded. Documented in tc.c.
+
+UT updates:
+- TestQoSConnLimitIngressRetransmissionOfRejected pre-populates the
+  CT entry with REJECTED only (not INGRESS+REJECTED), and asserts
+  TC_ACT_UNSPEC -- the TCP_RST tail call now dispatches in the UT
+  environment.
+- New TestQoSConnLimitIngressRetransmissionOfAccepted pins the
+  INGRESS-precedes-REJECTED precedence: a retransmission for an
+  already-accepted connection is allowed and the counter is unchanged.
+
+* add same-node connlimit FV test cases to verify that connection limiting works fine regardless of the CALI_CT_FLAG_SKIP_REDIR_PEER flag
+
+* guard ingress connlimit decrement against rejected entries; rename flag to CONNLIMIT_INGRESS_REJECTED; add FV test case
+
+* split BPF connlimit and packet rate per IP family to match iptables/nftables behaviour
+
+The cali_qos map was keyed by (ifindex, direction) only, so v4 and v6
+SYNs on the same veth direction incremented the same counter. That
+differs from iptables/nftables, where connlimit rules live in
+family-specific chains with independent counters per family. It also
+caused dual-stack scanner drift: v4 and v6 scanners both wrote to the
+same QoS entry, each overwriting the other's recount.
+
+Add family to the key (now {u32 ifindex, u16 ingress, u16 family}, 8
+bytes) and bump cali_qos to v3. BPF helpers pick family from the
+IPVER6 compile-time macro; Felix's bpf_ep_mgr writes one QoS entry
+per enabled family per (ifindex, direction); each per-family scanner
+writes only to its own family's entry, eliminating the drift. With
+this change a dual-stack pod gets up to N v4 connections AND up to N
+v6 connections — matching iptables/nftables.
+
+Also includes:
+
+- felix/Makefile: $(FV_BINARY) added to fv-prereqs with a phony rule
+  that recurses into ../cmd/calico, so the race binary used by FV
+  can never go stale relative to Go source changes.
+
+- qos_controls_test.go: same-node FV (w[2] on tc.Felixes[0]) for
+  ingress and egress; regression-guard for the rejected-SYN
+  cleanup path; all rejection/success connection checks switched
+  from Eventually(tryConnect(...)) to Eventually(CanConnectTo(...))
+  — the persistent-connection helper leaked SYN-SENT zombies on
+  failed connects, which raced the close-and-reopen logic for
+  freed slots in same-node tests. Bandwidth-test BeforeEach split
+  so the workload-mutation loop runs in JustBeforeEach (after the
+  outer JustBeforeEach has refreshed w[] for the current spec) —
+  fixes pre-existing panic from stale workload references.
+
+* move tests from bpf_ep_mgr_connlimit_test.go to bpf_ep_mgr_test.go
+
+delete bpf_ep_mgr_connlimit_test.go
+
+* let retransmissions of rejected SYNs re-run the ingress connlimit check
+
+A SYN rejected by the ingress connlimit used to leave a sticky
+CONNLIMIT_INGRESS_REJECTED flag on the CT entry, so every TCP SYN
+retransmission for the same 5-tuple was unconditionally RST'd —
+even if other connections had since closed and the counter was
+back under the limit. Now retransmissions re-run
+qos_connlimit_check_and_increment; on success the CT entry gets
+INGRESS set and REJECTED cleared (mandatory, since
+qos_connlimit_decrement_for_ct gates the close-time decrement on
+INGRESS && !REJECTED — leaving REJECTED set would leak the slot).
+
+The first-SYN branch and the REJECTED-retransmission branch are
+now unified: both run the limit check and react to its outcome.
+A `was_rejected` local controls the diagnostic path (log
+"limit still full" vs "exceeded") and the REJECTED stamp (skip
+when already set).
+
+Reintroduces ct_value_clear_flags in conntrack_types.h (deleted
+earlier in this PR as unused) — the second-chance path is its
+real consumer.
+
+UT changes:
+- TestQoSConnLimitIngressRetransmissionOfRejected renamed to
+  ...StillOverLimit; seeds CurrentCount=maxConnections so the
+  re-check still fails and the rejection persists.
+- New TestQoSConnLimitIngressRetransmissionOfRejectedSecondChance
+  seeds CurrentCount=maxConnections-1 and asserts the SYN is
+  accepted, counter incremented, INGRESS set, REJECTED cleared.
+
+A concurrent-retransmission race exists (two SYNs both passing
+the check and double-incrementing) — same shape as the first-SYN
+path. The Go-side scanner corrects drift within ~30s. Documented
+in the comment block.
+
+* gate ingress connlimit stamping on INGRESS_CONN_LIMIT_CONFIGURED
+
+* fix ifindex on connlimit code when netkit is enabled
+
+* make connlimit ingress code in tc.c a bit simpler
+
+* update map version
+
+--- felix/bpf-gpl/bpf.h
+@@ -343,6 +343,8 @@ extern const volatile struct cali_tc_preamble_globals __globals;
+ #define INGRESS_PACKET_RATE_CONFIGURED (GLOBAL_FLAGS & CALI_GLOBALS_INGRESS_PACKET_RATE_CONFIGURED)
+ #define EGRESS_PACKET_RATE_CONFIGURED (GLOBAL_FLAGS & CALI_GLOBALS_EGRESS_PACKET_RATE_CONFIGURED)
+ #define WORKLOAD_SRC_SPOOFING_CONFIGURED (GLOBAL_FLAGS & CALI_GLOBALS_WORKLOAD_SRC_SPOOFING_CONFIGURED)
++#define INGRESS_CONN_LIMIT_CONFIGURED (GLOBAL_FLAGS & CALI_GLOBALS_INGRESS_CONN_LIMIT_CONFIGURED)
++#define EGRESS_CONN_LIMIT_CONFIGURED (GLOBAL_FLAGS & CALI_GLOBALS_EGRESS_CONN_LIMIT_CONFIGURED)
+ 
+ #define MAP_VERSIONED(name, ver) name##ver
+ #define map_symbol(name, ver)  MAP_VERSIONED(name, ver)
+
+--- felix/bpf-gpl/conntrack.h
+@@ -11,6 +11,7 @@
+ #include "icmp.h"
+ #include "types.h"
+ #include "rpf.h"
++#include "qos.h"
+ 
+ #ifdef IPVER6
+ #define IPPROTO_ICMP_46	IPPROTO_ICMPV6
+@@ -195,7 +196,13 @@ static CALI_BPF_INLINE int calico_ct_v4_create_tracking(struct cali_tc_ctx *ctx,
+ 	src_to_dst->packets = 1;
+ 	src_to_dst->bytes = ctx->skb->len;
+ 	if (CALI_F_TO_HOST) {
+-		src_to_dst->ifindex = ctx->skb->ifindex;
++		/* Store the host-side primary ifindex. For netkit, skb->ifindex
++		 * is the peer (pod-side) ifindex; use host_ifindex from globals
++		 * so downstream consumers (connlimit decrement, redirect_peer)
++		 * see the primary that maps are keyed by.
++		 */
++		src_to_dst->ifindex = ctx->globals->data.host_ifindex ?
++			ctx->globals->data.host_ifindex : ctx->skb->ifindex;
+ 	} else {
+ 		src_to_dst->ifindex = CT_INVALID_IFINDEX;
+ 	}
+@@ -574,6 +581,60 @@ static CALI_BPF_INLINE bool tcp_recycled(bool syn, struct calico_ct_value *v)
+ 	return syn && (a->fin_seen || a->rst_seen) && (b->fin_seen || b->rst_seen);
+ }
+ 
++/* qos_connlimit_decrement_for_ct decrements the per-pod connlimit counter(s)
++ * for a CT entry that is closing or being purged. Reads the entry's
++ * CONNLIMIT_* flags and the per-leg ifindex fields to pick the right
++ * (ifindex, direction) pair(s). Idempotent: skips entries that already carry
++ * CONNLIMIT_DEC, and sets DEC before decrementing so a concurrent decrement
++ * on another CPU sees the flag and bails.
++ *
++ * Called from the packet path on FIN-FIN / RST close, and from
++ * conntrack_cleanup when an idle entry is purged with no close packet.
++ */
++static CALI_BPF_INLINE void qos_connlimit_decrement_for_ct(struct calico_ct_value *v)
++{
++	__u32 cl_flags = ct_value_get_flags(v);
++	if (cl_flags & CALI_CT_FLAG_CONNLIMIT_DEC) {
++		return;
++	}
++	if (!(cl_flags & (CALI_CT_FLAG_CONNLIMIT_INGRESS | CALI_CT_FLAG_CONNLIMIT_EGRESS))) {
++		return;
++	}
++	ct_value_set_flags(v, CALI_CT_FLAG_CONNLIMIT_DEC);
++
++	/* Skip the ingress decrement if the entry was rejected by the
++	 * ingress limit check.
++	 */
++	/* CT entries are family-typed (v4 BPF programs only see v4 CT entries,
++	 * v6 only sees v6), so the family is known at compile time via IPVER6.
++	 */
++#ifdef IPVER6
++	const __u16 family = 6;
++#else
++	const __u16 family = 4;
++#endif
++
++	if ((cl_flags & CALI_CT_FLAG_CONNLIMIT_INGRESS) &&
++			!(cl_flags & CALI_CT_FLAG_CONNLIMIT_INGRESS_REJECTED)) {
++		/* Ingress: pod is the responder (non-opener). */
++		__u32 pod_ifindex = v->a_to_b.opener
++			? v->b_to_a.ifindex
++			: v->a_to_b.ifindex;
++		if (pod_ifindex != CT_INVALID_IFINDEX) {
++			qos_connlimit_decrement(pod_ifindex, 1, family);
++		}
++	}
++	if (cl_flags & CALI_CT_FLAG_CONNLIMIT_EGRESS) {
++		/* Egress: pod is the opener. */
++		__u32 pod_ifindex = v->a_to_b.opener
++			? v->a_to_b.ifindex
++			: v->b_to_a.ifindex;
++		if (pod_ifindex != CT_INVALID_IFINDEX) {
++			qos_connlimit_decrement(pod_ifindex, 0, family);
++		}
++	}
++}
++
+ static CALI_BPF_INLINE struct calico_ct_result calico_ct_lookup(struct cali_tc_ctx *ctx)
+ {
+ 	struct ct_lookup_ctx ct_lookup_ctx = {
+@@ -731,6 +792,12 @@ static CALI_BPF_INLINE struct calico_ct_result calico_ct_lookup(struct cali_tc_c
+ 		}
+ 		if (tcp_recycled(syn, tracking_v)) {
+ 			CALI_CT_DEBUG("TCP SYN recycles entry, NEW flow.");
++			/* Decrement the connlimit counter before deleting so the
++			 * upcoming check_and_increment in new_flow_entrypoint
++			 * stays net-neutral. The helper is idempotent — bails if
++			 * CONNLIMIT_DEC is already set by the close-time path.
++			 */
++			qos_connlimit_decrement_for_ct(tracking_v);
+ 			cali_ct_delete_elem(&k);
+ 			cali_ct_delete_elem(&v->nat_rev_key);
+ 			goto out_lookup_fail;
+@@ -876,6 +943,12 @@ static CALI_BPF_INLINE struct calico_ct_result calico_ct_lookup(struct cali_tc_c
+ 		CALI_CT_DEBUG("Hit! NORMAL entry.");
+ 		if (tcp_recycled(syn, v)) {
+ 			CALI_CT_DEBUG("TCP SYN recycles entry, NEW flow.");
++			/* Decrement the connlimit counter before deleting so the
++			 * upcoming check_and_increment in new_flow_entrypoint
++			 * stays net-neutral. The helper is idempotent — bails if
++			 * CONNLIMIT_DEC is already set by the close-time path.
++			 */
++			qos_connlimit_decrement_for_ct(v);
+ 			cali_ct_delete_elem(&k);
+ 			goto out_lookup_fail;
+ 		}
+@@ -997,9 +1070,23 @@ static CALI_BPF_INLINE struct calico_ct_result calico_ct_lookup(struct cali_tc_c
+ 			}
+ 		}
+ 		ct_tcp_entry_update(ctx, tcp_header, src_to_dst, dst_to_src);
++
++		/* Decrement connlimit counter when a TCP connection closes
++		 * (both FINs seen or RST). The helper sets CONNLIMIT_DEC
++		 * before decrementing so concurrent paths bail.
++		 */
++		if ((src_to_dst->fin_seen && dst_to_src->fin_seen) || tcp_header->rst) {
++			qos_connlimit_decrement_for_ct(v);
++		}
+ 	}
+ 
+-	__u32 ifindex = CALI_F_TO_HOST ? ctx->skb->ifindex : skb_ingress_ifindex(ctx->skb);
++	/* host_ifindex fallback for netkit: skb->ifindex is the peer there;
++	 * we want to compare against the host-side primary that src_to_dst
++	 * stores.
++	 */
++	__u32 ifindex = CALI_F_TO_HOST
++		? (ctx->globals->data.host_ifindex ? ctx->globals->data.host_ifindex : ctx->skb->ifindex)
++		: skb_ingress_ifindex(ctx->skb);
+ 
+ 	if (src_to_dst->ifindex != ifindex) {
+ 		// Conntrack entry records a different ingress interface than the one the
+@@ -1097,8 +1184,24 @@ static CALI_BPF_INLINE struct calico_ct_result calico_ct_lookup(struct cali_tc_c
+ 	if (syn) {
+ 		CALI_CT_DEBUG("packet is SYN");
+ 		ct_result_set_flag(result.rc, CT_RES_SYN);
+-	}
+ 
++		/* For ingress connection limit, propagate the CT entry's
++		 * CONNLIMIT_INGRESS / CONNLIMIT_INGRESS_REJECTED flags to the result
++		 * so accepted_entrypoint can decide what to do without an
++		 * extra CT lookup. The flags themselves are written by
++		 * accepted_entrypoint after the limit check resolves —
++		 * INGRESS on success, REJECTED on failure, never both
++		 */
++		if (CALI_F_TO_WEP && INGRESS_CONN_LIMIT_CONFIGURED) {
++			__u32 cl = ct_value_get_flags(v);
++			if (cl & CALI_CT_FLAG_CONNLIMIT_INGRESS) {
++				result.flags |= CALI_CT_FLAG_CONNLIMIT_INGRESS;
++			}
++			if (cl & CALI_CT_FLAG_CONNLIMIT_INGRESS_REJECTED) {
++				result.flags |= CALI_CT_FLAG_CONNLIMIT_INGRESS_REJECTED;
++			}
++		}
++	}
+ 
+ 	CALI_CT_DEBUG("result: 0x%x", result.rc);
+ 
+
+--- felix/bpf-gpl/conntrack_cleanup.c
+@@ -41,6 +41,10 @@ static long process_ccq_entry(void *map, struct calico_ct_key *key, struct cali_
+ 	if (!value->rev_key.protocol) {
+ 		actual_ct_value = cali_ct_lookup_elem(key);
+ 		if (actual_ct_value && (actual_ct_value->last_seen == value->last_seen)) {
++			// Decrement the per-pod connlimit counter if this entry
++			// carried one of the CONNLIMIT_* flags and the packet
++			// path didn't already decrement.
++			qos_connlimit_decrement_for_ct(actual_ct_value);
+ 			if (!cali_ct_delete_elem(key)) {
+ 				ictx->num_cleaned++;
+ 			}
+@@ -58,6 +62,8 @@ static long process_ccq_entry(void *map, struct calico_ct_key *key, struct cali_
+ 		}
+ 		struct calico_ct_value *rev_ct_value = cali_ct_lookup_elem(rev_key);
+ 		if (rev_ct_value && (rev_ct_value->last_seen == value->rev_last_seen)) {
++			// The reverse leg holds the connlimit flags + ifindex.
++			qos_connlimit_decrement_for_ct(rev_ct_value);
+ 			if (!cali_ct_delete_elem(rev_key)) {
+ 				ictx->num_cleaned++;
+ 			}
+
+--- felix/bpf-gpl/conntrack_types.h
+@@ -42,6 +42,10 @@ enum cali_ct_type {
+ #define CALI_CT_FLAG_SET_DSCP	0x8000 /* marks connections that needs to set DSCP */
+ #define CALI_CT_FLAG_MAGLEV	0X10000 /* marks Maglev connections. Allows packets of an existing to arrive via a different tunnel after failover. */
+ #define CALI_CT_FLAG_SEND_RESET	0x20000 /* marks connections where we should send a TCP RST on behalf of the workload */
++#define CALI_CT_FLAG_CONNLIMIT_INGRESS	0x40000 /* marks connections counted against an ingress connection limit */
++#define CALI_CT_FLAG_CONNLIMIT_INGRESS_REJECTED	0x80000 /* marks connections rejected by the ingress connection limit */
++#define CALI_CT_FLAG_CONNLIMIT_EGRESS	0x100000 /* marks connections counted against an egress connection limit */
++#define CALI_CT_FLAG_CONNLIMIT_DEC	0x200000 /* marks connections already decremented from connlimit counter */
+ 
+ struct calico_ct_leg {
+ 	__u64 bytes;
+@@ -128,6 +132,13 @@ static CALI_BPF_INLINE void __xxx_compile_asserts(void) {
+ 	(v)->flags4 |= (((f) >> 24) & 0xff);	\
+ } while(0)
+ 
++#define ct_value_clear_flags(v, f) do {		\
++	(v)->flags &= ~((f) & 0xff);		\
++	(v)->flags2 &= ~(((f) >> 8) & 0xff);	\
++	(v)->flags3 &= ~(((f) >> 16) & 0xff);	\
++	(v)->flags4 &= ~(((f) >> 24) & 0xff);	\
++} while(0)
++
+ #define ct_value_get_flags(v) ({									\
+ 	__u32 ret = (v)->flags | ((v)->flags2 << 8) | ((v)->flags3 << 16) | ((v)->flags4 << 24);	\
+ 													\
+
+--- felix/bpf-gpl/globals.h
+@@ -67,6 +67,8 @@ enum cali_globals_flags {
+ 	CALI_GLOBALS_EGRESS_PACKET_RATE_CONFIGURED        = 0x00008000,
+ 	CALI_GLOBALS_UDP_GSO_LINEARIZE                    = 0x00010000,
+ 	CALI_GLOBALS_WORKLOAD_SRC_SPOOFING_CONFIGURED     = 0x00020000,
++	CALI_GLOBALS_INGRESS_CONN_LIMIT_CONFIGURED        = 0x00040000,
++	CALI_GLOBALS_EGRESS_CONN_LIMIT_CONFIGURED         = 0x00080000,
+ };
+ 
+ struct cali_ctlb_globals {
+
+--- felix/bpf-gpl/qos.h
+@@ -12,25 +12,31 @@
+ 
+ struct calico_qos_key {
+ 	__u32 ifindex;
+-	__u32 ingress; // 0=egress; 1=ingress;
++	__u16 ingress; // 0=egress; 1=ingress;
++	__u16 family;  // 4=IPv4, 6=IPv6
+ };
+ 
+ struct calico_qos_val {
+ 	struct bpf_spin_lock lock;
+-	// config
++	// packet rate config
+ 	__s16 packet_rate;
+ 	__s16 packet_burst;
+-	// state
++	// packet rate state
+ 	__s16 packet_rate_tokens;
+ 	__s16 padding[3]; // alignment
+ 	__u64 packet_rate_last_update;
++	// connection limit
++	__u32 max_connections; // 0 = no limit, >0 = limit
++	__u32 current_count;   // maintained by BPF (increment on SYN) and scanner (recount)
+ };
+ 
+-// 2*IFACE_STATE_MAP_SIZE because it will potentially have 2 entries for each interface (ingress/egress)
+-CALI_MAP(cali_qos,,
++// 4*IFACE_STATE_MAP_SIZE: up to 2 entries (ingress/egress) per interface and
++// per IP family (v4/v6). v4 and v6 traffic count against separate counters,
++// matching the per-family rule semantics of iptables and nftables modes.
++CALI_MAP(cali_qos, 2,
+ 		BPF_MAP_TYPE_HASH,
+ 		struct calico_qos_key, struct calico_qos_val,
+-		2*IFACE_STATE_MAP_SIZE, BPF_F_NO_PREALLOC)
++		4*IFACE_STATE_MAP_SIZE, BPF_F_NO_PREALLOC)
+ 
+ static CALI_BPF_INLINE int qos_enforce_packet_rate(struct cali_tc_ctx *ctx)
+ {
+@@ -57,6 +63,11 @@ static CALI_BPF_INLINE int qos_enforce_packet_rate(struct cali_tc_ctx *ctx)
+ 		.ingress = 1,
+ #else // CALI_F_EGRESS
+ 		.ingress = 0,
++#endif
++#ifdef IPVER6
++		.family = 6,
++#else
++		.family = 4,
+ #endif
+ 	};
+ 	if (!(qos = cali_qos_lookup_elem(&key))) {
+@@ -151,4 +162,95 @@ static CALI_BPF_INLINE bool qos_dscp_set(struct cali_tc_ctx *ctx, __s8 dscp)
+ 	return true;
+ }
+ 
++/* qos_connlimit_check_and_increment atomically checks the connection limit for
++ * the current interface and direction using the cali_qos map. If below the
++ * limit, increments the counter and returns 0 (allow). If at or above the
++ * limit, returns -1 (reject). Returns 0 if no limit is configured for this
++ * interface+direction (no map entry or max_connections <= 0).
++ *
++ * Only called for TCP SYN on WEP interfaces.
++ */
++static CALI_BPF_INLINE int qos_connlimit_check_and_increment(struct cali_tc_ctx *ctx)
++{
++	/* For netkit, skb->ifindex is the peer (pod-side) ifindex; the QoS
++	 * map is keyed by the host-side primary ifindex. Use host_ifindex
++	 * from globals when available.
++	 */
++	__u32 __qos_ifindex = ctx->globals->data.host_ifindex ?
++		ctx->globals->data.host_ifindex : ctx->skb->ifindex;
++	struct calico_qos_key key = {
++		.ifindex = __qos_ifindex,
++#if CALI_F_INGRESS
++		.ingress = 1,
++#else // CALI_F_EGRESS
++		.ingress = 0,
++#endif
++#ifdef IPVER6
++		.family = 6,
++#else
++		.family = 4,
++#endif
++	};
++
++	struct calico_qos_val *qos = cali_qos_lookup_elem(&key);
++	if (!qos || qos->max_connections <= 0) {
++		return 0;
++	}
++
++	int rc = 0;
++
++	bpf_spin_lock(&qos->lock);
++	if (qos->current_count >= qos->max_connections) {
++		rc = -1;
++	} else {
++		qos->current_count++;
++	}
++	bpf_spin_unlock(&qos->lock);
++
++	if (rc < 0) {
++		CALI_DEBUG("connlimit: over limit (%d >= %d), rejecting",
++			   qos->current_count, qos->max_connections);
++	} else {
++		CALI_DEBUG("connlimit: under limit (%d/%d), allowing",
++			   qos->current_count, qos->max_connections);
++	}
++
++	return rc;
++}
++
++/* qos_connlimit_decrement decrements the connection limit counter for the
++ * given interface, direction, and IP family. Called when a TCP connection
++ * closes (both FINs seen or RST) and from the cleanup program when a counted
++ * CT entry expires. Takes an explicit ifindex+direction+family because the
++ * decrement may run from any BPF program (from_hep, from_wep,
++ * conntrack_cleanup, ...), not just the pod's own WEP program. Family is
++ * compile-time-known at every call site (the BPF programs are family-typed
++ * via the IPVER6 macro), so callers pass it as a literal.
++ */
++static CALI_BPF_INLINE void qos_connlimit_decrement(__u32 ifindex, __u16 direction, __u16 family)
++{
++	struct calico_qos_key key = {
++		.ifindex = ifindex,
++		.ingress = direction,
++		.family = family,
++	};
++
++	struct calico_qos_val *qos = cali_qos_lookup_elem(&key);
++	if (!qos || qos->max_connections <= 0) {
++		return;
++	}
++
++	bpf_spin_lock(&qos->lock);
++	if (qos->current_count > 0) {
++		qos->current_count--;
++	}
++	bpf_spin_unlock(&qos->lock);
++
++	/* CALI_DEBUG_NO_FLAG (not CALI_DEBUG) — the TC programs' CALI_LOG
++	 * override reads ctx->globals which we don't have here.
++	 */
++	CALI_DEBUG_NO_FLAG("connlimit: decremented count to %d/%d",
++		   qos->current_count, qos->max_connections);
++}
++
+ #endif /* __CALI_QOS_H__ */
+
+--- felix/bpf-gpl/tc.c
+@@ -1416,6 +1416,76 @@ int calico_tc_skb_accepted_entrypoint(struct __sk_buff *skb)
+ 		skb_log(ctx, true);
+ 	}
+ 
++	/* Ingress connection limit for TCP SYN arriving at a WEP.
++	 *
++	 * The CT lookup propagates the CT entry's CONNLIMIT_INGRESS /
++	 * CONNLIMIT_INGRESS_REJECTED flags into result.flags. Two cases:
++	 *
++	 *   - INGRESS set: the connection was counted on its first SYN.
++	 *     This is a retransmission of an accepted SYN; the outer
++	 *     guard below filters it out so we don't re-count.
++	 *   - Otherwise (first SYN, OR retransmission of a previously-
++	 *     rejected SYN with REJECTED set): run
++	 *     qos_connlimit_check_and_increment. If it succeeds we stamp
++	 *     CONNLIMIT_INGRESS — and clear CONNLIMIT_INGRESS_REJECTED if
++	 *     this is a second-chance accept (a slot has freed up since
++	 *     the original rejection). If it still fails, stamp
++	 *     CONNLIMIT_INGRESS_REJECTED (idempotent if already set) and
++	 *     emit a TCP RST.
++	 *
++	 * Second-chance accept rationale: TCP retries SYNs on 1s/3s/7s/...
++	 * backoff. If the limit is saturated when the original SYN
++	 * arrives but capacity has freed by the time a retransmission
++	 * lands, accepting it gives the connection a chance to succeed
++	 * rather than waiting out tcp_syn_retries (~127s).
++	 *
++	 * Clearing REJECTED on second-chance accept is correctness, not
++	 * hygiene: qos_connlimit_decrement_for_ct gates the cleanup-time
++	 * decrement on (INGRESS && !INGRESS_REJECTED), so leaving REJECTED
++	 * set would leak one slot upward per accepted second-chance
++	 * connection.
++	 *
++	 * Concurrency: two retransmissions for the same 5-tuple can both
++	 * win the limit check (current_count < max twice in quick
++	 * succession) and double-increment. The cleanup-time decrement
++	 * only fires once, so the counter drifts +1 over that
++	 * connection's lifetime. Same race shape as the first-SYN path
++	 * today; the Go-side ConnLimitScanner corrects drift on its next
++	 * pass (~30s).
++	 */
++	if (CALI_F_TO_WEP && !policy_skipped && INGRESS_CONN_LIMIT_CONFIGURED &&
++			ct_result_is_syn(ctx->state->ct_result.rc) &&
++			!(ctx->state->ct_result.flags & CALI_CT_FLAG_CONNLIMIT_INGRESS)) {
++		/* First SYN OR retransmission of a previously-rejected SYN. */
++		struct calico_ct_key ck;
++		fill_ct_key(&ck,
++				src_lt_dest(&ctx->state->ip_src, &ctx->state->ip_dst,
++						ctx->state->sport, ctx->state->dport),
++				ctx->state->ip_proto,
++				&ctx->state->ip_src, &ctx->state->ip_dst,
++				ctx->state->sport, ctx->state->dport);
++		struct calico_ct_value *cv = cali_ct_lookup_elem(&ck);
++
++		if (qos_connlimit_check_and_increment(ctx) < 0) {
++			CALI_DEBUG("Ingress connection limit exceeded, rejecting with TCP RST");
++			if (cv) {
++				ct_value_set_flags(cv, CALI_CT_FLAG_CONNLIMIT_INGRESS_REJECTED);
++			}
++			ctx->state->ct_result.ifindex_fwd = CT_INVALID_IFINDEX;
++			CALI_JUMP_TO(ctx, PROG_INDEX_TCP_RST);
++			goto deny;
++		}
++
++		if (cv) {
++			if ((ctx->state->ct_result.flags &
++				CALI_CT_FLAG_CONNLIMIT_INGRESS_REJECTED) != 0) {
++				CALI_DEBUG("connlimit: retransmission of rejected SYN now under limit; accepting");
++				ct_value_clear_flags(cv, CALI_CT_FLAG_CONNLIMIT_INGRESS_REJECTED);
++			}
++			ct_value_set_flags(cv, CALI_CT_FLAG_CONNLIMIT_INGRESS);
++		}
++	}
++
+ 	if ((CALI_F_FROM_WEP || CALI_F_TO_HEP) && qos_dscp_needs_update(ctx) && !qos_dscp_set(ctx, EGRESS_DSCP)) {
+ 		goto deny;
+ 	}
+@@ -1490,6 +1560,20 @@ int calico_tc_skb_new_flow_entrypoint(struct __sk_buff *skb)
+ 		CALI_DEBUG("Allowed by policy: ACCEPT");
+ 	}
+ 
++	/* Check egress connection limit for new TCP connections from WEP.
++	 * Atomically check the limit and increment the counter in the QoS map.
++	 * The Go-side CT scanner periodically recounts and corrects drift.
++	 */
++	if (CALI_F_FROM_WEP && state->ip_proto == IPPROTO_TCP &&
++			!(state->flags & CALI_ST_SUPPRESS_CT_STATE)) {
++		if (qos_connlimit_check_and_increment(ctx) < 0) {
++			CALI_DEBUG("Egress connection limit exceeded, rejecting with TCP RST");
++			ctx->state->ct_result.ifindex_fwd = CT_INVALID_IFINDEX;
++			CALI_JUMP_TO(ctx, PROG_INDEX_TCP_RST);
++			goto deny;
++		}
++	}
++
+ 	if (CALI_F_FROM_WEP &&
+ 			CALI_DROP_WORKLOAD_TO_HOST &&
+ 			cali_rt_flags_local_host(
+@@ -1527,6 +1611,9 @@ int calico_tc_skb_new_flow_entrypoint(struct __sk_buff *skb)
+ 	if (state->flags & CALI_ST_SKIP_REDIR_PEER) {
+ 		ct_ctx_nat->flags |= CALI_CT_FLAG_SKIP_REDIR_PEER;
+ 	}
++	if (CALI_F_FROM_WEP && state->ip_proto == IPPROTO_TCP && EGRESS_CONN_LIMIT_CONFIGURED) {
++		ct_ctx_nat->flags |= CALI_CT_FLAG_CONNLIMIT_EGRESS;
++	}
+ 	if (CALI_F_TO_WEP) {
+ 		if (!(ctx->skb->mark & CALI_SKB_MARK_SEEN)) {
+ 			/* If the packet wasn't seen, must come from host. There is no
+

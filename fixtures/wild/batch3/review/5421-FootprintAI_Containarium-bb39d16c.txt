@@ -1,0 +1,466 @@
+repo: FootprintAI/Containarium
+commit: bb39d16c7a8e7403a803b84c0743ec6b8b1d8820
+rank: 5421
+
+feat(netpolicy): eBPF virtual patching Tier 2 PR-A — inbound signature scan (#661) (#665)
+
+* explore(netpolicy): Tier 2 verifier prototype for cleartext signature scan (#661)
+
+De-risks the make-or-break unknown for Tier 2 — can pure-kernel multi-signature
+payload substring matching pass the verifier? — before building any control
+plane on it. Standalone, not loaded by the daemon.
+
+Verifier journey (documented in the file header), validated on a Linux backend
+(kernel 6.8):
+- naive nested loops / full unrolling → 'infinite loop detected' + 600KB object
+  (dead ends)
+- WORKS: one bpf_loop() over a flattened (signature x offset) space, only the
+  pattern-compare loop unrolled, payload window in a per-CPU scratch map
+  re-looked-up in the callback (a stack pointer through the callback ctx loses
+  its bound), and a CONSTANT-size payload load (clang re-derives a variable
+  length straight from skb arithmetic past every guard → rejected).
+- Verifies at a useful scale: 256-byte window x 32 signatures x 32-byte patterns,
+  using ~2K of the 1M instruction budget (huge headroom).
+
+Known constraint surfaced: the constant-size load scans only packets carrying a
+full window — short packets need a tiered set of constant loads. Reinforces the
+issue's 'best-effort pre-filter, not a WAF' framing.
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+* feat(netpolicy): eBPF virtual patching Tier 2 PR-A — inbound signature scan (#661)
+
+Scan the INBOUND payload of a container's TCP connections (veth TC_EGRESS, the
+container-receive direction) for a curated set of cleartext exploit signatures
+and drop the packet before it reaches a vulnerable service — the WAF/IPS form of
+virtual patching (e.g. a ${jndi: Log4Shell request to an unpatched Java app).
+
+PR-A ships the kernel scan + loader + built-in signature set, enforce-gated.
+Operator signature CRUD (API/CLI) is PR-B.
+
+Kernel (verifier-validated on a Linux backend, kernel 6.8; three earlier shapes
+rejected — see sigscan-proto.bpf.c header):
+- one bpf_loop over the flattened (signature x offset) space, payload window in a
+  per-CPU scratch map re-looked-up in the callback, only the pattern-compare loop
+  unrolled, tiered CONSTANT-size bpf_skb_load_bytes (a variable length is
+  re-derived past every guard and rejected).
+- sig_config gate: the per-packet bpf_loop cost is only paid when scanning is
+  enabled; otherwise the egress hook stays pure accounting.
+- match emits deny_event{reason=SIGNATURE, sig_id}; TC_ACT_SHOT only in enforce.
+  deny_event grew a u16 sig_id tail; ParseDenyEvent stays tolerant of the older
+  20-byte sample.
+
+Go:
+- netbpf/sigmap.go: SetSignature/SetScanEnabled + HasSignatures (optional-map
+  safe), SignatureEntry serialization.
+- netpolicy/signatures.go: curated built-in set (Log4Shell, Shellshock,
+  Spring4Shell, path-traversal, /etc/passwd), stable nonzero ids.
+- enforcer: SetSignaturesEnabled opt-in; populate the built-ins + arm the gate
+  once at Start; OnDenyEvent labels a match network_policy.signature_match with
+  the signature name.
+- dual_server: CONTAINARIUM_NETWORK_POLICY_SIGNATURES=1 opt-in (independent of
+  the load and enforce gates).
+
+Best-effort by construction (documented): single packet (no reassembly ->
+segment-split evasion), cleartext only (TLS opaque), first 256 bytes only — the
+WAF-grade path is Tier 3 (#662). Pure-Go layers unit-tested; gosec G115 clean.
+
+Design + runbook: docs/security/VIRTUAL-PATCHING-TIER2.md,
+experimental/ebpf-phaseA/validate-signature-scan.sh.
+
+Part of the virtual-patching epic (#659).
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+---------
+
+Co-authored-by: hsinhoyeh <yhh92u@gmail.com>
+Co-authored-by: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+--- experimental/ebpf-phaseA/netpolicy.bpf.c
+@@ -38,6 +38,7 @@
+ // the struct's former pad, so the wire size is unchanged.
+ #define DENY_REASON_POLICY        0  // failed allow-list / intra-tenant / metadata
+ #define DENY_REASON_VIRTUAL_PATCH 1  // matched an explicit virtual-patch deny rule (#660)
++#define DENY_REASON_SIGNATURE     2  // matched a cleartext exploit signature (#661, Tier 2)
+ 
+ // Per-veth policy config, keyed by the veth's host ifindex. The loader writes
+ // one entry per managed container veth.
+@@ -184,8 +185,151 @@ struct deny_event {
+     __u16 dport;         // host byte order
+     __u8  proto;
+     __u8  reason;        // DENY_REASON_* (was pad; size unchanged) #660
++    __u16 sig_id;        // matched signature id when reason==SIGNATURE, else 0 (#661)
++    __u16 pad2;
+ };
+ 
++// --- Tier 2 (#661): cleartext exploit-signature scanning --------------------
++//
++// The container's INBOUND direction (host→container, seen on the veth TC_EGRESS
++// hook) is scanned for a small set of operator-curated cleartext signatures, to
++// virtually patch a vulnerable service in the container (a WAF-style block of
++// e.g. a Log4Shell `${jndi:` request) before the vendor fix ships.
++//
++// The verifier-feasible shape (proved out in sigscan-proto.bpf.c): one bpf_loop
++// over the flattened (signature × offset) space with only the pattern-compare
++// loop unrolled, the payload window in a per-CPU scratch map re-looked-up inside
++// the callback, and tiered CONSTANT-size payload loads (a variable length gets
++// re-derived from skb arithmetic past every guard and rejected). Best-effort by
++// construction: single packet (no reassembly), cleartext only (TLS is opaque),
++// first SCAN_WINDOW bytes only.
++#define SIG_MAX_LEN   32   // bytes per signature pattern
++#define SIG_MAX_COUNT 32   // signature slots scanned per packet
++#define SCAN_WINDOW   256  // payload bytes scanned (power of two for index masking)
++#define SIG_SCAN_MIN  32   // don't bother scanning a payload shorter than this
++
++struct signature {
++    __u8  len;                 // active bytes in pat, 1..SIG_MAX_LEN (0 = empty slot)
++    __u8  enabled;             // 1 = scan this slot
++    __u16 id;                  // signature id (>0), echoed on a match
++    __u8  pat[SIG_MAX_LEN];
++};
++
++struct {
++    __uint(type, BPF_MAP_TYPE_ARRAY);
++    __type(key, __u32);
++    __type(value, struct signature);
++    __uint(max_entries, SIG_MAX_COUNT);
++} signatures SEC(".maps");
++
++// Per-CPU scratch for the copied payload window (per-CPU so concurrent packets on
++// different CPUs don't clobber it; one entry suffices).
++struct scan_scratch {
++    __u8 buf[SCAN_WINDOW];
++};
++
++struct {
++    __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
++    __type(key, __u32);
++    __type(value, struct scan_scratch);
++    __uint(max_entries, 1);
++} scan_buf SEC(".maps");
++
++// sig_config[0] gates the whole scan: 0 = skip it entirely (the default, so the
++// bpf_loop cost is never paid on hosts that haven't opted into Tier 2). The
++// loader sets it to 1 only once signatures are populated.
++struct {
++    __uint(type, BPF_MAP_TYPE_ARRAY);
++    __type(key, __u32);
++    __type(value, __u32);
++    __uint(max_entries, 1);
++} sig_config SEC(".maps");
++
++static __always_inline int sig_scan_enabled(void) {
++    __u32 zero = 0;
++    __u32 *on = bpf_map_lookup_elem(&sig_config, &zero);
++    return on && *on;
++}
++
++struct sig_scan_ctx {
++    __u32 n;        // valid bytes in the window
++    __u32 match_id; // out: matched signature id, or 0
++};
++
++// sig_match_at is the bpf_loop callback over the flattened (signature, offset)
++// space. The verifier checks it ONCE regardless of trip count, so there is no
++// back-edge to mistake for an infinite loop.
++static long sig_match_at(__u32 idx, void *vctx) {
++    struct sig_scan_ctx *c = vctx;
++    if (c->match_id)
++        return 1; // already matched — stop
++
++    __u32 si = idx / SCAN_WINDOW;        // signature slot
++    __u32 i  = idx & (SCAN_WINDOW - 1);  // start offset in the window
++
++    struct signature *s = bpf_map_lookup_elem(&signatures, &si);
++    if (!s || !s->enabled)
++        return 0;
++    __u32 slen = s->len;
++    if (slen == 0 || slen > SIG_MAX_LEN || i + slen > c->n)
++        return 0;
++
++    __u32 zero = 0;
++    struct scan_scratch *sc = bpf_map_lookup_elem(&scan_buf, &zero);
++    if (!sc)
++        return 1;
++
++    int miss = 0;
++#pragma clang loop unroll(full)
++    for (__u32 j = 0; j < SIG_MAX_LEN; j++) {
++        if (j < slen) {
++            __u32 k = (i + j) & (SCAN_WINDOW - 1); // static bound; i+slen<=n<=WINDOW so never wraps a real compare
++            if (sc->buf[k] != s->pat[j])
++                miss = 1;
++        }
++    }
++    if (!miss) {
++        c->match_id = s->id;
++        return 1;
++    }
++    return 0;
++}
++
++// scan_inbound copies up to SCAN_WINDOW payload bytes (largest fitting power-of-
++// two via tiered constant loads) and searches for any enabled signature. Returns
++// the matched id, or 0.
++static __always_inline __u32 scan_inbound(struct __sk_buff *skb, __u32 off, __u32 avail) {
++    __u32 zero = 0;
++    struct scan_scratch *sc = bpf_map_lookup_elem(&scan_buf, &zero);
++    if (!sc)
++        return 0;
++    __u32 n;
++    // Each load size is a literal constant (a variable size is rejected — see the
++    // prototype notes). Largest window that fits the payload wins.
++    if (avail >= 256) {
++        if (bpf_skb_load_bytes(skb, off, sc->buf, 256) < 0)
++            return 0;
++        n = 256;
++    } else if (avail >= 128) {
++        if (bpf_skb_load_bytes(skb, off, sc->buf, 128) < 0)
++            return 0;
++        n = 128;
++    } else if (avail >= 64) {
++        if (bpf_skb_load_bytes(skb, off, sc->buf, 64) < 0)
++            return 0;
++        n = 64;
++    } else if (avail >= SIG_SCAN_MIN) {
++        if (bpf_skb_load_bytes(skb, off, sc->buf, SIG_SCAN_MIN) < 0)
++            return 0;
++        n = SIG_SCAN_MIN;
++    } else {
++        return 0; // too short to be worth scanning
++    }
++    struct sig_scan_ctx ctx = {.n = n, .match_id = 0};
++    bpf_loop(SIG_MAX_COUNT * SCAN_WINDOW, sig_match_at, &ctx, 0);
++    return ctx.match_id;
++}
++
+ static __always_inline void bump(__u32 idx) {
+     __u64 *v = bpf_map_lookup_elem(&stats, &idx);
+     if (v)
+@@ -407,9 +551,10 @@ int netpolicy_egress(struct __sk_buff *skb) {
+         return TC_ACT_OK;
+ 
+     // On the egress hook the veth is the transmit interface: skb->ifindex
+-    // (ingress_ifindex is 0 here). Only account managed veths.
++    // (ingress_ifindex is 0 here). Only manage known veths.
+     __u32 ifindex = skb->ifindex;
+-    if (!bpf_map_lookup_elem(&veth_policy, &ifindex))
++    struct policy_cfg *cfg = bpf_map_lookup_elem(&veth_policy, &ifindex);
++    if (!cfg)
+         return TC_ACT_OK;
+ 
+     __u16 sport = 0, dport = 0;
+@@ -434,6 +579,36 @@ int netpolicy_egress(struct __sk_buff *skb) {
+                   dport,      // sport (request) = reply dport = container port
+                   sport,      // dport (request) = reply sport = peer port
+                   ip->protocol);
++
++    // Tier 2 (#661): scan the INBOUND payload (peer→container) for cleartext
++    // exploit signatures and virtually-patch the container's service. TCP only,
++    // and only when the operator has enabled scanning (gates the bpf_loop cost).
++    if (ip->protocol == IPPROTO_TCP && sig_scan_enabled()) {
++        struct tcphdr *tcp = (void *)ip + sizeof(*ip);
++        if ((void *)(tcp + 1) <= data_end) {
++            __u32 tcp_hlen = tcp->doff * 4;
++            __u32 payload_off = sizeof(*eth) + sizeof(*ip) + tcp_hlen;
++            __u32 skb_len = skb->len;
++            if (tcp_hlen >= sizeof(*tcp) && payload_off < skb_len) {
++                __u32 sig = scan_inbound(skb, payload_off, skb_len - payload_off);
++                if (sig) {
++                    bump(STAT_WOULD_DENY);
++                    struct deny_event ev = {};
++                    ev.ifindex = ifindex;
++                    ev.tenant_id = cfg->tenant_id;
++                    ev.saddr = ip->saddr; // peer (the attacker)
++                    ev.daddr = ip->daddr; // the container
++                    ev.proto = ip->protocol;
++                    ev.dport = dport; // the container's service port (tcp->dest)
++                    ev.reason = DENY_REASON_SIGNATURE;
++                    ev.sig_id = (__u16)sig;
++                    bpf_perf_event_output(skb, &events, BPF_F_CURRENT_CPU, &ev, sizeof(ev));
++                    if (cfg->mode == MODE_ENFORCE)
++                        return TC_ACT_SHOT; // drop the exploit before it reaches the service
++                }
++            }
++        }
++    }
+     return TC_ACT_OK;
+ }
+ 
+
+--- experimental/ebpf-phaseA/sigscan-proto.bpf.c
+@@ -0,0 +1,172 @@
++// Tier 2 (#661) VERIFIER PROTOTYPE — bounded cleartext signature scanning.
++//
++// Standalone and NOT loaded by the daemon. Its only job is to prove the kernel
++// verifier accepts the risky core of Tier 2 — copying a payload window and
++// running a bounded substring search against a signature map — before we wire it
++// into the production netpolicy.bpf.c. eBPF can't run on the dev mac, so this is
++// validated on a Linux backend:
++//
++//   clang -O2 -g -target bpfel -I/usr/include/$(uname -m)-linux-gnu \
++//       -c sigscan-proto.bpf.c -o /tmp/sigscan.o
++//   sudo bpftool prog loadall /tmp/sigscan.o /sys/fs/bpf/sigscan type tc
++//   # LOADED OK => the verifier accepts the scan; clean up: sudo rm -rf /sys/fs/bpf/sigscan
++//
++// Design notes from three rejected attempts (kept so the next person doesn't
++// repeat them):
++//   - Naive nested loops with a variable inner bound  -> "infinite loop detected"
++//     (clang -O2 makes a back-edge the verifier can't prove terminates).
++//   - Fully unrolling the offset+pattern loops        -> still "infinite loop" on
++//     the signature counter AND a 600 KB object. Unrolling is a dead end here.
++//   - WORKS: a single bpf_loop() over the flattened (signature x offset) space,
++//     with only the tiny pattern-compare loop unrolled. bpf_loop is verified
++//     ONCE regardless of trip count, so there is no back-edge to mis-analyze. The
++//     payload window lives in a PER-CPU scratch map (not the stack), re-looked-up
++//     inside the callback, so the verifier always has a clean map-value pointer
++//     with a known bound — passing a stack pointer through the callback ctx loses
++//     that bound.
++
++#include <linux/bpf.h>
++#include <linux/if_ether.h>
++#include <linux/ip.h>
++#include <linux/in.h>
++#include <linux/tcp.h>
++#include <linux/pkt_cls.h>
++#include <bpf/bpf_helpers.h>
++#include <bpf/bpf_endian.h>
++
++// Tunables. SCAN_WINDOW must be a power of two (index masking). bpf_loop runs
++// SIG_MAX_COUNT * SCAN_WINDOW iterations worst case (8 * 64 = 512).
++#define SIG_MAX_LEN   32
++#define SIG_MAX_COUNT 32
++#define SCAN_WINDOW   256
++
++struct signature {
++    __u8  len;                 // active bytes in pat, 1..SIG_MAX_LEN (0 = empty)
++    __u8  enabled;             // 1 = scan this slot
++    __u16 id;                  // signature id (>0), echoed on a match
++    __u8  pat[SIG_MAX_LEN];
++};
++
++struct {
++    __uint(type, BPF_MAP_TYPE_ARRAY);
++    __type(key, __u32);
++    __type(value, struct signature);
++    __uint(max_entries, SIG_MAX_COUNT);
++} signatures SEC(".maps");
++
++// Per-CPU scratch for the copied payload window. Per-CPU so concurrent packets on
++// different CPUs don't clobber each other; a single entry is enough.
++struct scratch {
++    __u8 buf[SCAN_WINDOW];
++};
++
++struct {
++    __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
++    __type(key, __u32);
++    __type(value, struct scratch);
++    __uint(max_entries, 1);
++} scan_buf SEC(".maps");
++
++struct scan_ctx {
++    __u32 n;        // valid bytes in the window
++    __u32 match_id; // out: matched signature id, or 0
++};
++
++// match_at is the bpf_loop callback. idx flattens (signature, offset): the high
++// bits select the signature slot, the low log2(SCAN_WINDOW) bits the start offset.
++static long match_at(__u32 idx, void *vctx) {
++    struct scan_ctx *c = vctx;
++    if (c->match_id)
++        return 1; // already matched — stop the loop
++
++    __u32 si = idx / SCAN_WINDOW;          // signature slot
++    __u32 i  = idx & (SCAN_WINDOW - 1);    // start offset in the window
++
++    struct signature *s = bpf_map_lookup_elem(&signatures, &si);
++    if (!s || !s->enabled)
++        return 0;
++    __u32 slen = s->len;
++    if (slen == 0 || slen > SIG_MAX_LEN || i + slen > c->n)
++        return 0; // empty slot, or the pattern can't fit at this offset
++
++    __u32 zero = 0;
++    struct scratch *sc = bpf_map_lookup_elem(&scan_buf, &zero);
++    if (!sc)
++        return 1;
++
++    int miss = 0;
++#pragma clang loop unroll(full)
++    for (__u32 j = 0; j < SIG_MAX_LEN; j++) {
++        if (j < slen) {
++            __u32 k = (i + j) & (SCAN_WINDOW - 1); // static bound; i+slen<=n<=WINDOW so never wraps a real compare
++            if (sc->buf[k] != s->pat[j])
++                miss = 1;
++        }
++    }
++    if (!miss) {
++        c->match_id = s->id;
++        return 1;
++    }
++    return 0;
++}
++
++// scan_window copies up to SCAN_WINDOW payload bytes and searches for any enabled
++// signature. Returns the matched id, or 0.
++static __always_inline __u32 scan_window(struct __sk_buff *skb, __u32 off, __u32 avail) {
++    __u32 zero = 0;
++    struct scratch *sc = bpf_map_lookup_elem(&scan_buf, &zero);
++    if (!sc)
++        return 0;
++    // v1 uses a CONSTANT-size load: clang kept re-deriving a variable length
++    // straight from the skb arithmetic (bypassing every guard) and the verifier
++    // rejected the possibly-zero size. A constant size is verifier-trivial. The
++    // cost is that only packets carrying a full SCAN_WINDOW of payload are scanned
++    // — acceptable for a best-effort cleartext pre-filter (a real WAF is Tier 3),
++    // and revisited when porting (a tiered set of constant loads can cover short
++    // packets without a variable length).
++    if (avail < SCAN_WINDOW)
++        return 0;
++    if (bpf_skb_load_bytes(skb, off, sc->buf, SCAN_WINDOW) < 0)
++        return 0;
++
++    struct scan_ctx ctx = {.n = SCAN_WINDOW, .match_id = 0};
++    bpf_loop(SIG_MAX_COUNT * SCAN_WINDOW, match_at, &ctx, 0);
++    return ctx.match_id;
++}
++
++SEC("classifier/sigscan")
++int sigscan(struct __sk_buff *skb) {
++    void *data = (void *)(long)skb->data;
++    void *data_end = (void *)(long)skb->data_end;
++
++    struct ethhdr *eth = data;
++    if ((void *)(eth + 1) > data_end)
++        return TC_ACT_OK;
++    if (eth->h_proto != bpf_htons(ETH_P_IP))
++        return TC_ACT_OK;
++    struct iphdr *ip = (void *)(eth + 1);
++    if ((void *)(ip + 1) > data_end)
++        return TC_ACT_OK;
++    if (ip->protocol != IPPROTO_TCP)
++        return TC_ACT_OK;
++    struct tcphdr *tcp = (void *)ip + sizeof(*ip); // assumes ihl=5 (no IP options)
++    if ((void *)(tcp + 1) > data_end)
++        return TC_ACT_OK;
++
++    __u32 tcp_hlen = tcp->doff * 4;
++    if (tcp_hlen < sizeof(*tcp))
++        return TC_ACT_OK;
++    __u32 payload_off = sizeof(*eth) + sizeof(*ip) + tcp_hlen;
++    __u32 skb_len = skb->len;
++    if (payload_off >= skb_len)
++        return TC_ACT_OK; // no payload
++
++    __u32 id = scan_window(skb, payload_off, skb_len - payload_off);
++    // Prototype: prove it verifies; never actually drop. (Production wires id != 0
++    // into the would-deny path.)
++    if (id)
++        return TC_ACT_OK;
++    return TC_ACT_OK;
++}
++
++char LICENSE[] SEC("license") = "Dual MIT/GPL";
+

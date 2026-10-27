@@ -1,0 +1,637 @@
+repo: alibaba/loongcollector
+commit: f1b84ba7c90f2a759c9aed572ba67c4c2facce68
+rank: 3084
+
+feat(ebpf): report unparsable AgentSight traffic as raw HTTP (RawHttpsFallback) (#2671)
+
+* chore(ebpf): bump coolbpf submodule to agentsight 0.9.0
+
+Fast-forward core/_thirdparty/coolbpf from 3c21b6f (v1.0.1-650, agentsight
+0.8.1) to 0baba43 (v1.0.1-729, agentsight 0.9.0), 79 commits.
+
+Brings in the raw HTTPS FFI fallback the next commit wires up:
+  6d7a686 feat(sight): fall back to AgentsightHttpsData for unparsable LLM traffic
+  746b73a fix(sight): make raw HTTPS FFI output opt-in (#1665)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+* feat(ebpf): report unparsable AgentSight traffic as raw HTTP
+
+AgentSight只解析三种 LLM API path(Anthropic /v1/messages、OpenAI
+/v1/chat|completions|responses、SysOM Copilot),其余一律 warn 后丢弃。
+libagentsight 0.9.0 起支持把这类流量降级为 AgentsightHttpsData 上报,但
+LoongCollector 侧两处都没接:符号表没有 config_set_enable_raw_https
+(开关永远为 false),且 handle_read 的 https 回调传的是 nullptr(Rust 侧
+dispatch_event 直接丢弃)。本提交把这条链路接通。
+
+- EBPFAdapter: 新增 config_set_enable_raw_https 函数指针。作为**可选**符号
+  加载,刻意不进 `ok` 必需符号检查,否则旧版 libagentsight.so 会被判定
+  "符号不完整"导致整个插件不可用;用独立 error string 避免污染必需符号的
+  诊断信息。启动日志新增 raw_https_api 表示可用性。
+- Config: 新增 ProbeConfig.RawHttpsFallback(bool,默认 false)。
+- CommonDataEvent: 新增 KernelEventType::AGENTSIGHT_HTTPS_RECORD。
+- AgentsightEvents: 新增 AgentsightHttpsRecord。headers/body 是
+  (ptr, len) 长度分隔字段,可能含嵌入 NUL(压缩/二进制 body),因此用
+  CopyBuffer 按长度拷贝而非 CopyCStr。
+- AgentsightManager: 开关经 config_set_enable_raw_https 注入,并按库是否
+  真的接受来同步 mRawHttpsFallback,避免注册一个永远不会触发的回调;
+  DrainReadsLocked 据此传回调(关闭时传 nullptr 让 Rust 侧零分配丢弃);
+  HandleEvent 拆分为 HandleLlmEvent / HandleHttpsEvent。原始 HTTP 以
+  event.name=agentsight.http.raw 输出单条日志,不设任何 gen_ai.* 字段。
+
+默认关闭:原始 body 未做脱敏。AgentsightHttpsData 不携带 session id /
+turn id / agent type / container id,关联只能靠 (pid, comm);也没有完整
+URL,host 需从 http.request.headers 取。
+
+顺带修正文档 Https 默认值漂移(内置 6 条 -> 7 条,与
+AgentsightManager.cpp GetBuiltinHttpsAllowRules 一致)。
+
+未编译验证:本机缺 libbpf-devel 与 Rust 工具链。
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+* fix(ebpf): stop writing request headers to raw AgentSight HTTP logs
+
+RawHttpsFallback 原样上报、不做任何脱敏,因此输出 http.request.headers 等于把
+有效凭据写进磁盘。实测确认:采集日志里出现了 Authorization: Bearer <真实 token>
+明文,文件权限还是 root:root 0644,同机器其他用户可读。
+
+改为不输出请求头,只把其中的 host 提取出来,作为 server.address / server.port
+上报 —— 与 gen_ai.* 日志已有的字段名一致。之所以不是简单删掉:
+AgentsightHttpsData 不携带 request_url,url.path 又是相对路径,丢掉 host 就得到
+一条不知道发给谁的 HTTP 记录。请求头仍在内存中保留(供提取 host),只是不落盘。
+
+- AgentsightMessageUtil: 新增 ExtractHostFromHeadersJson()。先查 host,再查
+  HTTP/2 的 :authority,最后做大小写不敏感兜底扫描。
+- AgentsightManager: 删除 http.request.headers 输出;host 经合成 URL 复用既有
+  ParseHostAndPortFromRequestUrl,以便 IPv6 方括号和 :port 拆分只有一处实现。
+- AgentsightEvents: 注释说明 mRequestHeaders 捕获但永不输出。
+
+实测(langchain-anthropic → anthropic SDK → httpx → libssl):日志中
+authorization / x-api-key / http.request.headers 计数均为 0,raw 与 gen_ai 两条
+事件的 server.address 同为 idealab.alibaba-inc.com。
+
+未处理的残留风险:http.request.body 仍是原文,部分厂商在请求体内传凭据;
+http.response.headers 保留输出,含 set-cookie 时同样敏感。两者都是原始采集的
+固有性质,需要 body 级脱敏才能解决。
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+* refactor(ebpf): align raw HTTP events with upstream #2667, base64 binary bodies
+
+上游 PR alibaba/loongcollector#2667 "feat(agentsight): support raw HTTPS
+fallback events" 在做同一个功能,改动文件与本分支高度重合。为把将来合并的冲突
+降到最小,把事件形态和命名向它对齐;同时补上它没有处理的二进制 body 乱码。
+
+对齐上游的部分:
+- 单条 agentsight.http.raw 改为 http.request / http.response 两条事件,共享
+  一个 event.id 供下游配对;status_code == 0(未收到响应)时只发请求那条。
+- 耗时不再单独输出 http.response.duration,由两条事件的时间戳之差表示
+  (OTel semconv 无对应属性)。
+- 新增公共字段 url.scheme=https;body 字段改为 <prefix>.content / .size;
+  响应头字段名改为单数 http.response.header。
+- ParseHostAndPortFromRequestUrl 改名 ParseHostAndPortFromUrlOrAuthority
+  (函数体不变)。该函数本就接受裸 authority(scheme 可选),因此去掉了原先
+  "合成 https:// URL 再解析" 的多余做法,直接传 Host 头的值。
+- ExtractHostFromHeadersJson 从 AgentsightMessageUtil 移回 AgentsightManager
+  的匿名命名空间,与上游同位置。保留本实现多出的大小写不敏感兜底扫描
+  (上游只查小写 host 与 :authority)。
+
+上游未处理、本提交新增的部分:
+- 二进制 body 乱码。AgentSight 转发对端实际字节,不按 content-type 过滤,原样
+  写出会在日志里产生大段控制字符 —— 实测遇到 OTLP application/x-protobuf 的
+  指标上报被写成不可读的转义序列。新增 IsValidUtf8()(RFC 3629 严格校验,拒绝
+  overlong 编码、UTF-16 surrogate 和超 U+10FFFF),非法 UTF-8 的 body 改为
+  base64 输出并标记 <prefix>.encoding=base64。.size 始终是原始字节数。
+  判定只看字节本身,不看 content-type —— 后者可能缺失或不准。
+
+本分支相对上游保留的两处改进:请求头不落盘(见 6a8174d8),以及
+server.address / server.port —— 后者上游独立采用了同一方案。
+
+已知未解决:body 可能仍带 chunked 传输编码的框(形如 c3b CRLF ... 0 CRLF CRLF),
+raw 路径转发的是未解码缓冲,去框需在 AgentSight(Rust)侧修复。
+
+未编译验证。
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+* refactor(ebpf): drop unreachable base64 path for raw HTTP bodies
+
+上一个提交给 raw HTTP body 加了"非 UTF-8 则 base64"的分支。实测证明它**不可达**:
+二进制载荷在到达本插件之前就已被上游破坏,C++ 侧看到的永远是合法 UTF-8。
+
+证据:向一个不被任何 LLM parser 识别的 path POST 256 字节 0x00..0xFF,采到的
+http.request.body.size 是 512,content 是转义 ASCII 加一长串 U+FFFD。512 = 128 个
+ASCII 字节 + 128 个非法字节各膨胀为 3 字节的 U+FFFD。
+
+原因在 AgentSight(Rust)侧:
+  analyzer/result.rs      request_body / response_body 是 Option<String>,不是 Vec<u8>
+  analyzer/unified.rs     用 String::from_utf8_lossy 生成(约 931 / 979 / 1019 三处)
+  parser/http/response.rs 解压后同样 from_utf8_lossy
+  ffi.rs                  只是取那个 String 的 UTF-8 字节
+
+所以移除 IsValidUtf8() 与 base64 分支,EmitHttpBody 只输出 .content 与 .size,并在
+注释里写明为什么不做二进制处理、以及消费方必须知道的两个后果。
+
+同时更正文档:此前「body 的编码」一节承诺 base64 兜底,与实际行为不符。改为「body 的
+保真度」并给出实测对照 —— 文本(含 gzip、chunked)忠实且 .size 与 content-length 一致;
+二进制静默失真且 .size 虚高,没有任何字段标记这一点。
+
+根治需在上游把 body 改成 Option<Vec<u8>>。AgentsightHttpsData 的 ABI 已是 (ptr, len)
+形式,届时本插件侧无需改动,base64 分支可以恢复。已记录在 debug/TODO(含可直接使用的
+issue 文本)。
+
+未编译验证。
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+* docs(ebpf): clarify that AgentSight Https domains do not limit reporting
+
+The Https list only gates which processes get SSL probes attached. Once a
+process is attached -- via CmdlineWhitelist or via a domain rule -- all of its
+unparsable HTTPS traffic produces raw events regardless of the domain list.
+
+This is deliberate upstream: alibaba/anolisa#1665 removed HttpReportFilter so
+that domain rules never filter reporting. Narrowing the domain list therefore
+reduces the number of attached processes, not the blast radius of the ones
+already attached. CmdlineBlacklist, or disabling RawHttpsFallback, are what
+actually narrow scope.
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+* build: bump loongcollector-build-linux to 2.1.18 for AgentSight 0.9.0
+
+AgentSight 0.9.0 (coolbpf 0baba43) bumped openssl-src from 300.5.0+3.5.0 to
+300.6.1+3.6.3 via commit ccecbe0, and it builds OpenSSL from source
+(Cargo.toml: openssl = { features = ["vendored"] }). OpenSSL 3.6's Makefile.in
+added `use Time::Piece`, which 3.5.0 did not need.
+
+On the el7-based 2.1.17 image Time::Piece is absent -- it ships in the separate
+perl-Time-Piece subpackage, which the perl base package does not pull in.
+Verified in the image:
+
+    perl -MIPC::Cmd     -e1  OK
+    perl -MData::Dumper -e1  OK
+    perl -MTime::Piece  -e1  MISSING
+
+check-deps.sh passes anyway (it uses check_cmd, which only tests that
+/usr/bin/perl exists), so the build failed ~10 minutes in, at the openssl-src
+configure step:
+
+    Can't locate Time/Piece.pm in @INC ... at Makefile.in line 37
+    cargo:warning=openssl-src: failed to build OpenSSL from source
+
+2.1.18 preinstalls perl-Time-Piece. Changes:
+
+- 11 image references across 5 docker/ Dockerfiles, 2 devcontainers and the
+  development-environment doc: 2.1.17 -> 2.1.18
+- gen_build_scripts.sh: also verify Time::Piece, so a build container missing
+  it fails in seconds rather than after ten minutes of compilation
+- docker_build.sh: raise the fail-soft version floor to 2.1.18
+- Dockerfile_build: record why the dependency appeared
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+* chore(ebpf): bump coolbpf to synced agentsight 0.9.1
+
+Picks up the upstream sync of AgentSight (40 commits), which brings
+cmdline / agent_name / container_id on AgentsightHttpsData plus the
+same three fields on the generic AgentsightEvent JSON payload.
+
+The fields are appended to the struct tail, so this bump alone does
+not change any existing offset and the current C++ consumer keeps
+working unchanged. Reading the new fields comes in the next commit.
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+* feat(ebpf): report process metadata on raw HTTPS events
+
+Raw HTTPS fallback events carried only (pid, comm) for attribution,
+while gen_ai.* events on the same pipeline already reported agent
+type, cmdline and container id. Downstream could not group one agent
+process's raw traffic together with its LLM calls.
+
+AgentsightHttpsRecord now copies cmdline / agent_name / container_id
+off the C struct (reusing the CopyCmdline / CopyCStr helpers already
+written for the LLM record), and FillAgentsightHttpCommon emits them.
+
+The agent type is emitted as plain `agent.type`, NOT
+`gen_ai.agent.type`: this event kind exists precisely because the
+payload carried no GenAI semantics, so emitting into that namespace
+would misrepresent it. The key also matches the unprefixed pid /
+comm / cmdline / container.id this path already uses. The gen_ai.*
+path keeps gen_ai.agent.type, so a query spanning both streams has
+to coalesce the two names.
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+* style(ebpf): satisfy clang-format 18 on raw HTTPS code
+
+The CI static-check runs clang-format 18, which reflows three spots the
+local clang-format 15 could not even check (15 rejects .clang-format on
+the 16+ InsertNewlineAtEOF key): the tolower lambda in
+ExtractHostFromHeadersJson, the LOG_WARNING in HandleHttpsEvent, and the
+RawHttpsFallback GetOptionalBoolParam call.
+
+Verified with clang-format 18.1.8 --dry-run -Werror over every C++ file
+changed on this branch.
+
+* test(ebpf): cover the agentsight raw HTTPS fallback path
+
+Diff coverage on this branch was 22.7% (34/150 lines), below the 60%
+gate: the whole raw HTTP reporting path shipped untested. Nearly all of
+it is reachable through the existing fake symbol table, so this drives it
+end to end rather than testing the helpers in isolation.
+
+AgentsightManagerUnittest:
+- fake config_set_enable_raw_https, plus a flag to omit the symbol so the
+  libagentsight < 0.9.0 path is exercised: config still loads, raw
+  reporting stays off, no callback is registered.
+- handle_read read_mode 3 delivers a raw event, and the fake records
+  whether it was handed a non-null https callback -- that null callback
+  is the mechanism that makes the Rust side drop raw events when the
+  fallback is off.
+- registers a real poppable process queue so the emitted LogEvents are
+  read back and asserted, instead of only asserting the push succeeded:
+  request-only vs request/response pair, shared event.id, response
+  timestamp at request time + duration, empty optional fields omitted.
+- host extraction variants: host, :authority, precedence between them,
+  original-cased Host via the fallback scan, IPv6 literals, and the
+  no-host cases (absent, empty, non-string, non-object, malformed).
+- regression guard that request headers are never emitted and no
+  Authorization / x-api-key value appears in any field, since this path
+  reports verbatim bytes with no redaction.
+
+SecurityOptionsUnittest covers RawHttpsFallback parsing, including that
+it defaults off and that a wrong type warns and keeps the safe default.
+AgentsightEventsUnittest covers the record's payload copies, asserting
+bodies are copied by length so embedded NULs survive.
+
+Not covered: EBPFAdapter::tryLoadAgentSightDylib symbol resolution needs
+a real shared object, and HandleHttpsEvent's null-record guard is
+unreachable through the public HandleEvent entry point.
+
+* test(ebpf): reset agentsight fake globals before symbol table build
+
+makeFullSymbolTable() reads g_ut_omit_raw_https_symbol when it constructs
+the table, but SetUp() built the table before resetting that global. Since
+TestRawHttpsFallbackMissingSymbolDisablesReporting leaves it true, the next
+test (TestRawHttpsFallbackResetOnRemoveAndDestroy) got a table with a null
+config_set_enable_raw_https, so mRawHttpsFallback stayed false, handle_read
+was handed a null HTTPS callback, and the g_ut_last_read_had_https_cb
+assertion failed.
+
+Move the global resets ahead of the table construction so each test builds
+its symbol table from a clean state.
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+* chore(ebpf): bump coolbpf to latest agentsight sync
+
+Fast-forward coolbpf 72d9921 -> b893987 (14 commits, 7 anolisa sync
+batches). AgentSight stays at 0.9.1; the changes are fixes to GenAI
+turn tracking and SSE decoding:
+
+- treat pause_turn as a normal SSE finish (#2320)
+- add user_message_count to the turn.id bucket key
+- keep the turn open on tool-call stop (#2283)
+- stream-decode fragmented zstd SSE (#2297)
+- keep the session across cosh restarts (#2181)
+- improve QwenCode trace data accuracy
+- add qwencode allow rules to the agentsight config (#2207)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+* chore(ebpf): bump coolbpf for observer pidns fix
+
+Fast-forward coolbpf b893987 -> 01f4119 (10 commits). This picks up
+6f28f72 "fix(sight): report pids in the observer namespace (#2360)",
+which is the upstream landing of the pid-namespace fix previously
+carried as a local patch on yili/ebpf_opt_temp: BPF reported the
+target's innermost pid-namespace pid while user-space resolved it
+against its own /proc, so a hostPID:true DaemonSet read an unrelated
+host process and attached no uprobe to containerized agents.
+
+The upstream sources are byte-identical to the validated patched tree
+across all 11 files, and add docs plus an integration-test note. The
+local patch and its CMake application step are therefore obsolete.
+
+Also included: agentsight dashboard i18n and doc updates.
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+* fix(ebpf): address raw HTTP review findings on routing, pairing and headers
+
+Five findings from review of the AgentSight raw HTTP fallback. All are on
+the RawHttpsFallback path, which is unreleased (not on main), so the
+field-shape changes below cost nothing downstream.
+
+Stale-config routing (also affected the gen_ai path):
+HandleHttpsEvent/HandleLlmEvent only checked mPipelineCtx != nullptr, then
+used whatever mQueueKey was current. mCommonEventQueue is EBPFServer's
+shared 8192-entry queue drained by the handler thread, and no teardown path
+purges it, so "config A removed, B registered, A's events dequeue" is
+reachable and pushed A's un-redacted body into B's queue. Now compares
+rec->GetPipelineConfigName() against mConfigName and drops on mismatch,
+counting mLossKernelEventsTotal. Dropping before the session-cache update
+also keeps A's sessions out of B's delta state.
+
+Response suppressed on unparsable HTTP/2 status:
+logCount keyed off status_code == 0, but only agentsight's RequestOnly path
+means "no response" by that (it also clears headers/body).
+Http2StreamComplete reports 0 whenever the `:status` pseudo-header fails
+HPACK decode, with headers and body fully populated — so an entire h2
+response was silently dropped, reintroducing exactly what this fallback
+exists to prevent. Now keyed on the response payload being present.
+
+Inverted pairing semantics:
+the pair shared one event.id and carried no ordering, so downstream dedup
+or idempotent writes could discard one half as a duplicate. Split three
+ways as the gen_ai path already does: per-log event.id, shared
+http.exchange.id as the pairing key, event.sequence for order (needed
+because duration 0 makes both timestamps equal). Unprefixed keys, since raw
+events emit nothing in the gen_ai namespace.
+
+Credential-bearing headers:
+request headers were dropped wholesale and response headers emitted
+verbatim — two opposite decisions under one threat model. Both now
+filtered and emitted per header. Response side uses a denylist
+(kSensitiveResponseHeaders: set-cookie, www-authenticate, ...) because its
+diagnostic value is diffuse; request side an allowlist
+(kAllowedRequestHeaders: content-type, content-length, traceparent) because
+that is where credentials live. Host and user-agent are salvaged into
+server.address/.port and user_agent.original rather than the header
+namespace. Header names are lowercased locally rather than trusting the
+producer, since the match is what makes the filtering sound.
+ExtractHostFromHeadersJson became ExtractRequestHeaderFields, returning
+host plus the surviving headers from the DOM parse it already did.
+
+Tests: three new cases (stale-config drop, unparsable h2 status, response
+denylist) plus TestHttpsEventPairSharesEventId and
+TestHttpsEventNeverEmitsRequestHeaders rewritten — both were pinning
+behaviour this change corrects.
+
+NOT COMPILED: clang-format and the license check pass, but this has never
+been through a compiler. Four signatures changed and three test cases are
+new.
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+* fix(ebpf): harden raw HTTP header filtering and split its self-monitor metrics
+
+Second round of review findings on the AgentSight raw HTTP fallback.
+
+Denylist was systematically bypassable on HTTP/2:
+the response-header denylist matches decoded header names, but h2 names come
+from decode_headers_stateless(), which has no HPACK dynamic-table state. A name
+given as a dynamic-table index becomes the literal "<unknown:N>" while its value
+decodes for real; only fully-indexed fields degrade to "<dynamic:N>" and get
+dropped upstream. Of the ten denylisted names only set-cookie,
+www-authenticate, proxy-authenticate, authorization and proxy-authorization are
+in the static table, so on a long-lived connection the second and later
+"x-api-key: <secret>" arrived as "<unknown:62>" and sailed past the filter --
+the five that failed are exactly the five added to cover vendor tokens.
+Header names are now validated as RFC 7230 tokens and the whole entry is
+dropped, value included, when the name is untrustworthy: under a denylist a
+name you cannot read means you cannot tell whether the header is sensitive.
+This also drops Huffman-decode garbage and pseudo-headers like ":status",
+which was being echoed alongside http.response.status_code.
+
+Field-name cardinality:
+h2 has no upstream bound on header count (HTTP/1 gets 64 from httparse), and
+since headers became one field each, "<unknown:N>" was an unbounded field-name
+generator. Capped at 64 per log; non-token and over-cap drops are logged rather
+than silent.
+
+Metrics could not attribute raw HTTP vs gen_ai:
+both streams shared one counter set, so a jump could not be traced to enabling
+RawHttpsFallback rather than real LLM traffic growth, and a drop could not be
+traced to the stream that filled the shared queue. Raw HTTP volume is expected
+to dominate -- every non-LLM exchange of an attached process produces one. The
+manager-owned counters are now split by the existing record_type label
+(raw_http / gen_ai), following network_observer's AppDetail. The runner-level
+mLossKernelEventsTotal / mPushLogFailedTotal stay unlabelled -- they are
+EBPFServer's aggregates, shared with three other managers -- so drops now
+increment both the aggregate and a plugin-level labelled counter.
+
+Docs:
+.encoding never existed (left over from the base64 path removed in 7c28da3c);
+the cross-reference to a renamed section was stale too. The chunked framing
+claim contradicted the fidelity table: dechunking happens only on HTTP/1
+responses, since ParsedRequest has no dechunk or decompress accessor at all, so
+HTTP/1 request bodies always keep their framing. Documented as a four-way table
+with the two cases where framing survives. Also synced
+selfmonitor-cross-reference.md, whose maintenance note makes it a contract.
+
+NOT COMPILED: clang-format, line length, license headers and extern
+declaration/definition pairing all check out, but none of this has been through
+a compiler. Kept as one commit because the four findings interleave within the
+same functions and files.
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+* fix(ebpf): register the loss counter key so raw/gen_ai attribution works
+
+The per-stream loss counters added in 5c6b11a1 were dead code. AgentsightManager
+fetches METRIC_PLUGIN_EBPF_LOSS_KERNEL_EVENTS_TOTAL from the ref built by this
+input's kMetricKeys, but that map listed only in/out/out_groups.
+ReentrantMetricsRecord::Init creates counters solely for keys in the map,
+GetCounter returns nullptr for the rest, and ADD_COUNTER null-checks — so all
+four increments (OnLlmCallback, OnHttpsCallback, HandleHttpsEvent,
+HandleLlmEvent) were silent no-ops. No build error, no runtime error, the metric
+just stayed at zero, which is precisely the attribution the F7 review comment
+asked for: which stream filled the shared mCommonEventQueue.
+
+Registers the key, matching InputNetworkObserver's table, and comments the
+failure mode above kMetricKeys so the next metric added to the manager gets
+registered here too.
+
+The new test lives in InputAgentSightUnittest, not AgentsightManagerUnittest, on
+purpose: it asserts through this input's own kMetricKeys, so a missing key fails
+it. A copy of the key list in the manager's tests would have kept passing while
+production stayed broken — which is why the earlier metrics change shipped with
+no test at all.
+
+NOT COMPILED: clang-format, license headers, line length and the
+declaration/definition/UNIT_TEST_CASE triple all check out; a compiler has not
+run.
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+---------
+
+Co-authored-by: Claude <noreply@anthropic.com>
+
+--- core/ebpf/Config.h
+@@ -71,6 +71,10 @@ class SecurityOptions {
+     bool mAgentsightEventStreamFormat = true;
+     /// When true, omit system instructions, tool definitions, and full input messages (per dedup).
+     bool mAgentsightMessageDeltaOnly = true;
++    /// When true, traffic that AgentSight cannot parse into LLM semantics is reported as raw HTTP
++    /// (AgentsightHttpsData) instead of being dropped. Off by default: the payload is unredacted
++    /// request/response bytes, and it requires libagentsight >= 0.9.0.
++    bool mAgentsightRawHttpsFallback = false;
+ };
+ 
+ /////////////////////  /////////////////////
+
+--- core/ebpf/EBPFAdapter.h
+@@ -36,6 +36,9 @@ struct AgentSightSymbolTable {
+     void (*config_free)(AgentsightConfigHandle*) = nullptr;
+     void (*config_set_verbose)(AgentsightConfigHandle*, int) = nullptr;
+     void (*config_set_log_path)(AgentsightConfigHandle*, const char*) = nullptr;
++    /// Optional (libagentsight >= 0.9.0): opt into raw HTTPS fallback events (AgentsightHttpsData).
++    /// Left null by older libraries; callers must null-check before use.
++    void (*config_set_enable_raw_https)(AgentsightConfigHandle*, int) = nullptr;
+     void (*config_add_cmdline_rule)(AgentsightConfigHandle*, const char* const*, const char*, int) = nullptr;
+     void (*config_add_https)(AgentsightConfigHandle*, const char*) = nullptr;
+     int (*config_add_http)(AgentsightConfigHandle*, const char*) = nullptr;
+
+--- core/ebpf/plugin/agentsight/AgentsightEvents.h
+@@ -68,4 +68,68 @@ class AgentsightLlmRecord : public CommonEvent {
+     std::string mToolDefinitionsJson;
+ };
+ 
++/// Raw HTTP exchange reported when AgentSight could not parse the traffic into LLM semantics
++/// (unknown API path or unrecognised body shape). Requires `RawHttpsFallback: true` plus
++/// libagentsight >= 0.9.0; see AgentsightManager::OnHttpsCallback.
++///
++/// Emitted as an `http.request` / `http.response` pair sharing one `http.exchange.id` (the pairing
++/// key; each log keeps its own unique `event.id`, and `event.sequence` orders the two). The response
++/// half is omitted only when the response side is genuinely empty (no body and no headers) — not
++/// merely when mStatusCode == 0, which HTTP/2 also reports for a fully-populated response whose
++/// `:status` pseudo-header could not be HPACK-decoded. See HandleHttpsEvent.
++///
++/// Narrower than AgentsightLlmRecord, but not by as much as it used to be: process attribution
++/// (cmdline / agent type / container id) is now carried too, resolved on the agentsight side from
++/// the pid with the same ladder the LLM path uses. Still absent are session id and conversation id —
++/// a raw event is by definition traffic that could not be mapped onto LLM semantics, so it has no
++/// session to belong to. There is no request_url either — only method + path; the target host is
++/// inside mRequestHeaders.
++class AgentsightHttpsRecord : public CommonEvent {
++public:
++    AgentsightHttpsRecord(std::string pipelineConfigName, const AgentsightHttpsData& d);
++
++    PluginType GetPluginType() const override { return PluginType::AGENTSIGHT_OBSERVE; }
++
++    const std::string& GetPipelineConfigName() const { return mPipelineConfigName; }
++
++    std::string mPipelineConfigName;
++
++    int32_t mPid = 0;
++    std::string mProcessName;
++    // Same semantics as the identically-named AgentsightLlmRecord members: cmdline is space-joined
++    // argv truncated to 127 bytes (empty once the process exits), mContainerId is empty outside a
++    // container, mAgentType is the config-matched agent name (lowercased by agentsight) and falls
++    // back to the process comm when no rule matches.
++    //
++    // mAgentType is emitted as `agent.type`, NOT `gen_ai.agent.type` — a raw event has no GenAI
++    // semantics, so it emits nothing in that namespace. Same value, different key; see
++    // FillAgentsightHttpCommon.
++    std::string mCmdline;
++    std::string mAgentType;
++    std::string mContainerId;
++    uint64_t mTimestampNs = 0;
++    uint64_t mDurationNs = 0;
++    std::string mMethod;
++    std::string mPath;
++    uint16_t mStatusCode = 0;
++    uint8_t mIsSse = 0;
++    // Length-delimited payloads: AgentsightHttpsData reports these as (ptr, len) pairs and they may
++    // contain embedded NULs (compressed or binary bodies), so they are copied by length, not by
++    // NUL scan, and may not be valid UTF-8.
++    //
++    // Filtered through an ALLOWLIST (kAllowedRequestHeaders) before anything is emitted, because this
++    // is where credentials live — Authorization / x-api-key / cookie — and this path does no
++    // redaction. Survivors go out as `http.request.header.<name>`; host and user-agent are salvaged
++    // into `server.address` / `server.port` / `user_agent.original` instead. Anything unrecognised is
++    // dropped. See ExtractRequestHeaderFields / FillAgentsightHttpRequestLog.
++    std::string mRequestHeaders;
++    std::string mRequestBody;
++    // Mirror image: filtered through a DENYLIST (kSensitiveResponseHeaders — set-cookie,
++    // www-authenticate, ...) and otherwise emitted as `http.response.header.<name>`. An allowlist here
++    // would hide most of what makes this fallback diagnostically useful, and the credential-bearing
++    // response header names are a short, known set. See EmitHttpResponseHeaders.
++    std::string mResponseHeaders;
++    std::string mResponseBody;
++};
++
+ } // namespace logtail::ebpf
+
+--- core/ebpf/plugin/agentsight/AgentsightManager.h
+@@ -30,6 +30,10 @@
+ 
+ namespace logtail::ebpf {
+ 
++// Defined in AgentsightEvents.h; only used through pointers here.
++class AgentsightLlmRecord;
++class AgentsightHttpsRecord;
++
+ class AgentsightManager : public AbstractManager {
+ public:
+     AgentsightManager() = delete;
+@@ -94,6 +98,12 @@ class AgentsightManager : public AbstractManager {
+ 
+ private:
+     static void OnLlmCallback(const AgentsightLLMData* data, void* user_data);
++    /// Raw HTTP fallback for traffic AgentSight could not parse as an LLM call. Only registered with
++    /// handle_read when mRawHttpsFallback is on; otherwise the Rust side never emits these events.
++    static void OnHttpsCallback(const AgentsightHttpsData* data, void* user_data);
++
++    int HandleLlmEvent(AgentsightLlmRecord* rec);
++    int HandleHttpsEvent(const AgentsightHttpsRecord* rec);
+ 
+     void StopAgentSightLocked();
+     bool RestartAgentSightLocked(const SecurityOptions& opts);
+@@ -122,12 +132,37 @@ class AgentsightManager : public AbstractManager {
+     bool mRunning = false;
+     bool mEventStreamFormat = true;
+     bool mMessageDeltaOnly = true;
++    bool mRawHttpsFallback = false;
+ 
++    /// Runner-level aggregates owned by EBPFServer and shared with the other eBPF plugins, so they
++    /// stay unlabelled here — narrowing them would change a metric four managers report into.
+     CounterPtr mLossKernelEventsTotal;
+     CounterPtr mPushLogFailedTotal;
+-    CounterPtr mPluginInEventsTotal;
+-    CounterPtr mPushLogsTotal;
+-    CounterPtr mPushLogGroupTotal;
++
++    /// Per-stream counters, one set per `record_type` label value.
++    ///
++    /// AgentSight produces two streams of wildly different volume: once a process is attached, *every*
++    /// non-LLM HTTPS exchange it makes becomes a raw HTTP event, while gen_ai events are one per LLM
++    /// call. Sharing one counter set made it impossible to tell whether a jump came from enabling
++    /// RawHttpsFallback or from real LLM traffic growth, to size capacity for turning the switch on,
++    /// or — when events are dropped — to tell which stream filled the shared mCommonEventQueue.
++    struct StreamMetrics {
++        CounterPtr inEventsTotal;
++        CounterPtr pushLogsTotal;
++        CounterPtr pushLogGroupTotal;
++        /// Plugin-level counterpart of mLossKernelEventsTotal: same increments, but attributable.
++        CounterPtr lossEventsTotal;
++
++        void reset() {
++            inEventsTotal.reset();
++            pushLogsTotal.reset();
++            pushLogGroupTotal.reset();
++            lossEventsTotal.reset();
++        }
++    };
++    StreamMetrics mRawHttpMetrics;
++    StreamMetrics mGenAiMetrics;
++
+     std::vector<MetricLabels> mRefAndLabels;
+     PluginMetricManagerPtr mMetricMgr;
+ };
+
+--- core/ebpf/type/CommonDataEvent.h
+@@ -40,6 +40,7 @@ enum class KernelEventType {
+     FILE_PERMISSION_EVENT_READ,
+ 
+     AGENTSIGHT_LLM_RECORD,
++    AGENTSIGHT_HTTPS_RECORD,
+ };
+ 
+ class CommonEvent {
+

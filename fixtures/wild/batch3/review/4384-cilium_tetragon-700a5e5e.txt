@@ -1,0 +1,214 @@
+repo: cilium/tetragon
+commit: 700a5e5e1644dacea5b136ce2a2bde2213143c1a
+rank: 4384
+
+tetragon: Use process_call_heap in generic functions
+
+Using process_call_heap in generic functions directly, so we don't
+need to pass it as argument.
+
+Passing map pointer through argument might end up storing and loading
+it to/from heap which makes it scalar value and breaks verifier.
+
+Signed-off-by: Jiri Olsa <jolsa@kernel.org>
+
+--- bpf/process/bpf_generic_kprobe.c
+@@ -12,8 +12,6 @@
+ #include "retprobe_map.h"
+ #include "types/operations.h"
+ #include "types/basic.h"
+-#include "generic_calls.h"
+-#include "generic_maps.h"
+ #include "pfilter.h"
+ #include "policy_filter.h"
+ 
+@@ -42,6 +40,9 @@ struct {
+ 	},
+ };
+ 
++#include "generic_maps.h"
++#include "generic_calls.h"
++
+ static struct generic_maps maps = {
+ 	.heap = (struct bpf_map_def *)&process_call_heap,
+ 	.calls = (struct bpf_map_def *)&kprobe_calls,
+@@ -91,7 +92,7 @@ __attribute__((section("kprobe"), used)) int
+ generic_kprobe_setup_event(void *ctx)
+ {
+ 	return generic_process_event_and_setup(
+-		ctx, (struct bpf_map_def *)&process_call_heap,
++		ctx,
+ 		(struct bpf_map_def *)&kprobe_calls,
+ 		(struct bpf_map_def *)&config_map,
+ 		(struct bpf_map_def *)data_heap_ptr);
+@@ -101,7 +102,6 @@ __attribute__((section("kprobe"), used)) int
+ generic_kprobe_process_event(void *ctx)
+ {
+ 	return generic_process_event(ctx,
+-				     (struct bpf_map_def *)&process_call_heap,
+ 				     (struct bpf_map_def *)&kprobe_calls,
+ 				     (struct bpf_map_def *)&config_map,
+ 				     (struct bpf_map_def *)data_heap_ptr);
+
+--- bpf/process/bpf_generic_lsm_core.c
+@@ -15,8 +15,6 @@
+ #include "retprobe_map.h"
+ #include "types/operations.h"
+ #include "types/basic.h"
+-#include "generic_calls.h"
+-#include "generic_maps.h"
+ 
+ char _license[] __attribute__((section("license"), used)) = "Dual BSD/GPL";
+ 
+@@ -41,6 +39,9 @@ struct {
+ 	},
+ };
+ 
++#include "generic_maps.h"
++#include "generic_calls.h"
++
+ static struct generic_maps maps = {
+ 	.heap = (struct bpf_map_def *)&process_call_heap,
+ 	.calls = (struct bpf_map_def *)&lsm_calls,
+@@ -61,7 +62,7 @@ __attribute__((section("lsm"), used)) int
+ generic_lsm_setup_event(void *ctx)
+ {
+ 	return generic_process_event_and_setup(
+-		ctx, (struct bpf_map_def *)&process_call_heap,
++		ctx,
+ 		(struct bpf_map_def *)&lsm_calls,
+ 		(struct bpf_map_def *)&config_map,
+ 		(struct bpf_map_def *)data_heap_ptr);
+@@ -71,7 +72,6 @@ __attribute__((section("lsm"), used)) int
+ generic_lsm_process_event(void *ctx)
+ {
+ 	return generic_process_event(ctx,
+-				     (struct bpf_map_def *)&process_call_heap,
+ 				     (struct bpf_map_def *)&lsm_calls,
+ 				     (struct bpf_map_def *)&config_map,
+ 				     (struct bpf_map_def *)data_heap_ptr);
+
+--- bpf/process/bpf_generic_tracepoint.c
+@@ -13,8 +13,6 @@
+ #include "retprobe_map.h"
+ #include "types/operations.h"
+ #include "types/basic.h"
+-#include "generic_calls.h"
+-#include "generic_maps.h"
+ #include "pfilter.h"
+ #include "policy_filter.h"
+ #include "syscall64.h"
+@@ -40,6 +38,9 @@ struct {
+ 	},
+ };
+ 
++#include "generic_maps.h"
++#include "generic_calls.h"
++
+ static struct generic_maps maps = {
+ 	.heap = (struct bpf_map_def *)&process_call_heap,
+ 	.calls = (struct bpf_map_def *)&tp_calls,
+@@ -225,7 +226,7 @@ generic_tracepoint_event(struct generic_tracepoint_event_arg *ctx)
+ __attribute__((section("tracepoint"), used)) int
+ generic_tracepoint_process_event(void *ctx)
+ {
+-	return generic_process_event(ctx, (struct bpf_map_def *)&process_call_heap,
++	return generic_process_event(ctx,
+ 				     (struct bpf_map_def *)&tp_calls,
+ 				     (struct bpf_map_def *)&config_map, 0);
+ }
+
+--- bpf/process/bpf_generic_uprobe.c
+@@ -12,8 +12,6 @@
+ #include "retprobe_map.h"
+ #include "types/operations.h"
+ #include "types/basic.h"
+-#include "generic_calls.h"
+-#include "generic_maps.h"
+ #include "pfilter.h"
+ 
+ char _license[] __attribute__((section("license"), used)) = "Dual BSD/GPL";
+@@ -41,6 +39,9 @@ struct {
+ 	},
+ };
+ 
++#include "generic_maps.h"
++#include "generic_calls.h"
++
+ static struct generic_maps maps = {
+ 	.heap = (struct bpf_map_def *)&process_call_heap,
+ 	.calls = (struct bpf_map_def *)&uprobe_calls,
+@@ -64,7 +65,7 @@ __attribute__((section("uprobe"), used)) int
+ generic_uprobe_setup_event(void *ctx)
+ {
+ 	return generic_process_event_and_setup(
+-		ctx, (struct bpf_map_def *)&process_call_heap,
++		ctx,
+ 		(struct bpf_map_def *)&uprobe_calls,
+ 		(struct bpf_map_def *)&config_map, 0);
+ }
+@@ -73,7 +74,6 @@ __attribute__((section("uprobe"), used)) int
+ generic_uprobe_process_event(void *ctx)
+ {
+ 	return generic_process_event(ctx,
+-				     (struct bpf_map_def *)&process_call_heap,
+ 				     (struct bpf_map_def *)&uprobe_calls,
+ 				     (struct bpf_map_def *)&config_map, 0);
+ }
+
+--- bpf/process/generic_calls.h
+@@ -20,7 +20,7 @@ generic_start_process_filter(void *ctx, struct generic_maps *maps)
+ 	struct task_struct *task;
+ 	int i, zero = 0;
+ 
+-	msg = map_lookup_elem(maps->heap, &zero);
++	msg = map_lookup_elem(&process_call_heap, &zero);
+ 	if (!msg)
+ 		return 0;
+ 
+@@ -63,8 +63,7 @@ generic_start_process_filter(void *ctx, struct generic_maps *maps)
+ }
+ 
+ FUNC_INLINE int
+-generic_process_event(void *ctx, struct bpf_map_def *heap_map,
+-		      struct bpf_map_def *tailcals, struct bpf_map_def *config_map,
++generic_process_event(void *ctx, struct bpf_map_def *tailcals, struct bpf_map_def *config_map,
+ 		      struct bpf_map_def *data_heap)
+ {
+ 	struct msg_generic_kprobe *e;
+@@ -73,7 +72,7 @@ generic_process_event(void *ctx, struct bpf_map_def *heap_map,
+ 	unsigned long a;
+ 	long ty, total;
+ 
+-	e = map_lookup_elem(heap_map, &zero);
++	e = map_lookup_elem(&process_call_heap, &zero);
+ 	if (!e)
+ 		return 0;
+ 
+@@ -150,7 +149,6 @@ generic_process_init(struct msg_generic_kprobe *e, u8 op, struct event_config *c
+ 
+ FUNC_INLINE int
+ generic_process_event_and_setup(struct pt_regs *ctx,
+-				struct bpf_map_def *heap_map,
+ 				struct bpf_map_def *tailcals,
+ 				struct bpf_map_def *config_map,
+ 				struct bpf_map_def *data_heap)
+@@ -161,7 +159,7 @@ generic_process_event_and_setup(struct pt_regs *ctx,
+ 	long ty __maybe_unused;
+ 
+ 	/* Pid/Ktime Passed through per cpu map in process heap. */
+-	e = map_lookup_elem(heap_map, &zero);
++	e = map_lookup_elem(&process_call_heap, &zero);
+ 	if (!e)
+ 		return 0;
+ 
+@@ -219,7 +217,7 @@ generic_process_event_and_setup(struct pt_regs *ctx,
+ 	generic_process_init(e, MSG_OP_GENERIC_UPROBE, config);
+ #endif
+ 
+-	return generic_process_event(ctx, heap_map, tailcals, config_map, data_heap);
++	return generic_process_event(ctx, tailcals, config_map, data_heap);
+ }
+ 
+ #endif /* __GENERIC_CALLS_H__ */
+

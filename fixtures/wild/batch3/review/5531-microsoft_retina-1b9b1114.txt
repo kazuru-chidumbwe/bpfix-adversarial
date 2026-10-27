@@ -1,0 +1,58 @@
+repo: microsoft/retina
+commit: 1b9b11141e9bc0e210382d3ca81c501944f99532
+rank: 5531
+
+feat(conntrack): make report interval configurable (#2501)
+
+# Description
+
+Allow configuring the conntrack reporting interval as another
+performance tuning lever.
+
+## Related Issue
+
+https://github.com/microsoft/retina/issues/1760
+
+## Checklist
+
+- [X] I have read the [contributing
+documentation](https://retina.sh/docs/Contributing/overview).
+- [X] I signed and signed-off the commits (`git commit -S -s ...`). See
+[this
+documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification)
+on signing commits.
+- [X] I have correctly attributed the author(s) of the code.
+- [X] I have tested the changes locally.
+- [X] I have followed the project's style guidelines.
+- [X] I have updated the documentation, if necessary.
+- [X] I have added tests, if applicable.
+
+## Screenshots (if applicable) or Testing Completed
+
+Tested in a cluster with many connections where periodic reports
+contribute the majority of events, increasing the interval reports the
+same metrics with less dropped events and resource usage.
+
+---
+
+Please refer to the [CONTRIBUTING.md](../CONTRIBUTING.md) file for more
+information on how to contribute to this project.
+
+Signed-off-by: Matthew McKeen <matthew.mckeen@fastly.com>
+
+--- pkg/plugin/conntrack/_cprog/conntrack.h
+@@ -25,8 +25,6 @@
+ #define CT_CONNECTION_LIFETIME_NONTCP 60
+ // Define how long a TCP connection should be kept alive after receiving the first SYN
+ #define CT_SYN_TIMEOUT 60
+-// Define the interval at which a packet should be sent to the userspace
+-#define CT_REPORT_INTERVAL 30
+ // Define the maximum number of connections that can be stored in the conntrack table
+ #define CT_MAP_SIZE 262144
+ 
+
+--- pkg/plugin/conntrack/_cprog/dynamic.h
+@@ -1 +1,2 @@
+ #define ENABLE_CONNTRACK_METRICS 1
++#define CT_REPORT_INTERVAL 30
+

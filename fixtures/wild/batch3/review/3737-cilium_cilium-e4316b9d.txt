@@ -1,0 +1,22 @@
+repo: cilium/cilium
+commit: e4316b9d044ec2fe437ffc1b1094a4cb4c5a20d6
+rank: 3737
+
+bpf: Remove workaround for Clang 10
+
+After upgrade to Clang 17, the workaround to pass the verifier with
+Clang 10 became irrelevant.
+
+Signed-off-by: Maxim Mikityanskiy <maxim@isovalent.com>
+
+--- bpf/bpf_network.c
+@@ -27,8 +27,6 @@ int cil_from_network(struct __ctx_buff *ctx)
+ 
+ 	bpf_clear_meta(ctx);
+ 
+-	barrier_data(ctx);  /* clang-10 workaround */
+-
+ 	/* This program should be attached to the tc-ingress of
+ 	 * the network-facing device. Thus, as far as Cilium
+ 	 * knows, no one touches to the ctx->mark before this
+

@@ -1,0 +1,118 @@
+repo: cilium/cilium
+commit: 85bbaece9dd767915574be1bfb39eab48a89d571
+rank: 5197
+
+bpf: Fix should_redirect_peer under netkit
+
+Commit 210b5866e0 ("bpf: migrate netkit-specific runtime check to
+loadtime check") replaced the per-skb runtime check
+ctx_get_ingress_ifindex(ctx) > 0 in should_redirect_peer() with the
+loadtime !CONFIG(enable_netkit) check. The author's intent was to fold
+the netkit Pod -> Pod case (skip redirect_peer, let netkit's own xmit
+handle the ns switch) into a constant the verifier can fold away.
+
+But CONFIG(enable_netkit) is global - it is set true for every BPF
+program on a netkit node - all get it from lnc.DatapathIsNetkit). So
+the new clause also fires for the node-external -> local Pod path
+(bpf_host on the physical netdev), where we DO want redirect_peer on
+netkit: it deposits the packet straight into the target Pod netns RX
+side. Without redirect_peer there, the RX performance gains are gone.
+
+Fixes: 210b5866e0 ("bpf: migrate netkit-specific runtime check to loadtime check")
+Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
+
+--- bpf/bpf_lxc.c
+@@ -2065,7 +2065,7 @@ int tail_ipv6_policy(struct __ctx_buff *ctx)
+ 
+ 		if (do_redirect)
+ 			ret = redirect_ep(ctx, CONFIG(interface_ifindex),
+-					  should_redirect_peer(from_host),
++					  should_redirect_peer(ctx, from_host),
+ 					  from_tunnel);
+ 		break;
+ 	default:
+@@ -2392,7 +2392,7 @@ int tail_ipv4_policy(struct __ctx_buff *ctx)
+ 
+ 		if (do_redirect)
+ 			ret = redirect_ep(ctx, CONFIG(interface_ifindex),
+-					  should_redirect_peer(from_host),
++					  should_redirect_peer(ctx, from_host),
+ 					  from_tunnel);
+ 		break;
+ 	default:
+
+--- bpf/lib/local_delivery.h
+@@ -56,7 +56,7 @@ tail_call_policy(struct __ctx_buff *ctx, __u16 endpoint_id)
+ }
+ 
+ static __always_inline bool
+-should_redirect_peer(bool from_host)
++should_redirect_peer(struct __ctx_buff *ctx, bool from_host)
+ {
+ 	/* We should only do a redirect_peer() if BPF Host Routing is enabled,
+ 	 * otherwise we do a standard redirect().
+@@ -65,19 +65,25 @@ should_redirect_peer(bool from_host)
+ 	 * via redirect_peer() and instead need an ingress -> egress netns
+ 	 * traversal (or vice versa.)
+ 	 *
++	 * For phys dev -> Pod:
++	 * - on veth, we go ingress -> ingress so we can use redirect_peer()
++	 * - on netkit, we go ingress -> ingress so we can use it too
++	 *   (ingress ifindex is > 0 on ingress, and 0 on egress)
++	 *
+ 	 * Finally, in case of Pod -> Pod:
+ 	 * - on veth, we're on TC ingress and need a redirect_peer() to get
+-	 *   to the target namespace.
++	 *   to the target namespace. Same ingress -> ingress switch.
+ 	 * - on netkit, we're on TC egress and need a regular redirect() to
+-	 *   the peer device's ifindex. Netkit takes care of the namespace
+-	 *   switch for us.
++	 *   the peer device's ifindex. netkit takes care of the namespace
++	 *   switch for us. Here's it's egress -> ingress, therefore we must
++	 *   use redirect() instead of redirect_peer().
+ 	 *
+ 	 * Note: both redirect() and redirect_peer() only traverse the CPU
+ 	 * backlog queue once.
+ 	 */
+ 	return is_defined(ENABLE_HOST_ROUTING) &&
+ 	       !from_host &&
+-	       !CONFIG(enable_netkit);
++	       (!CONFIG(enable_netkit) || ctx_get_ingress_ifindex(ctx) > 0);
+ }
+ 
+ static __always_inline int redirect_ep(struct __ctx_buff *ctx,
+@@ -156,13 +162,19 @@ local_delivery(struct __ctx_buff *ctx, __u32 seclabel, __u32 magic,
+ 	 * this case the skb is delivered directly to pod's namespace and the ingress
+ 	 * policy (the cil_to_container BPF program) is bypassed.
+ 	 */
+-	use_redirect_peer = should_redirect_peer(from_host);
++	use_redirect_peer = should_redirect_peer(ctx, from_host);
+ 	if (is_defined(USE_BPF_PROG_FOR_INGRESS_POLICY) && !use_redirect_peer &&
+ 	    /* We need to enforce policies at the source in case of netkit
+ 	     * devices because we can't redirect to proxy from bpf_lxc. That
+-	     * needs a fix upstream.
++	     * needs a fix upstream. This must stay in sync with the predicate
++	     * in should_redirect_peer(): whenever we fall through to the policy
++	     * tail-call below and then do a plain redirect() into the lxc device
++	     * (should_redirect_peer() == false), endpoint routes would enforce
++	     * ingress policy a second time. On netkit that case is phys/host
++	     * ingress (ingress_ifindex > 0); there we must enforce at the source
++	     * here instead.
+ 	     */
+-	    !CONFIG(enable_netkit)) {
++	    (!CONFIG(enable_netkit) || ctx_get_ingress_ifindex(ctx) > 0)) {
+ 		set_identity_mark(ctx, seclabel, magic);
+ 
+ # if !defined(ENABLE_NODEPORT)
+
+--- bpf/tests/tc_redirect_host.h
+@@ -104,7 +104,7 @@ int mock_tail_policy(struct __ctx_buff *ctx)
+ 	/* We should always be from_host here. */
+ 	if (do_redirect && from_host)
+ 		return redirect_ep(ctx, CONFIG(interface_ifindex),
+-				   should_redirect_peer(from_host),
++				   should_redirect_peer(ctx, from_host),
+ 				   from_tunnel);
+ 
+ 	/* Failure path */
+

@@ -1,0 +1,44 @@
+repo: bpftrace/bpftrace
+commit: 25f0cf164cebabc367dd388aea3d74c531054572
+rank: 3457
+
+Add kfunc:: for calling kernel functions directly (#5360)
+
+Kernel functions can now be called from a script with a `kfunc::` prefix:
+
+    tracepoint:syscalls:sys_enter_read {
+      $t = kfunc::bpf_task_from_pid(1);
+      if ($t != 0) {
+        printf("pid 1 is %s\n", $t->comm);
+        kfunc::bpf_task_release($t);
+      }
+    }
+
+The call is emitted as a declaration in the ".ksyms" section, which is how
+libbpf recognises a kfunc.
+
+The namespace lets codegen tell a kfunc apart from a function linked in
+from an imported C file.
+
+Two compile-time checks keep the common mistakes out of the verifier log: the
+name must exist in kernel BTF, and `kfunc_allowed()` must confirm it is a real
+kfunc registered for the probe's program type.
+
+
+
+stack-info: PR: https://github.com/bpftrace/bpftrace/pull/5360, branch: user/jordalgo/kfunc-direct-calls/2
+
+Signed-off-by: Jordan Rome <jordalgo@meta.com>
+
+--- src/stdlib/test/test.bpf.c
+@@ -11,3 +11,9 @@ int __always_true() { return 1; }
+ struct task_struct *__test_get_current_task() {
+   return bpf_get_current_task_btf();
+ }
++
++// bpf_task_from_pid has the same name as a kfunc, to validate that
++// `kfunc::bpf_task_from_pid` is rejected when this file is imported.
++struct task_struct *bpf_task_from_pid(int pid) {
++  return 0;
++}
+

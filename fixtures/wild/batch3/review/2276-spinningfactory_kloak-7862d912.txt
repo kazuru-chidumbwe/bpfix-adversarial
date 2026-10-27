@@ -1,0 +1,642 @@
+repo: spinningfactory/kloak
+commit: 7862d912f0c950a74e8de319b3d479a550047864
+rank: 2276
+
+feat(boringssl): offset discovery + AES-based H recovery (#229) (#261)
+
+* feat(boringssl): offset discovery + AES-based H recovery (#229)
+
+Add BoringSSL support to kloak's TLS secret-rewrite path so BoringSSL-linked
+apps (the motivating case: Claude Code) can be intercepted, using the same
+offset-discovery automation pattern as the Go and OpenSSL work.
+
+Why this is harder than OpenSSL: kloak recomputes the AES-GCM auth tag from the
+raw 16-byte GHASH subkey H. OpenSSL persists H (gcm128_context.H) and kloak
+reads it directly. BoringSSL's GCM128_KEY persists only the precomputed,
+CPU-specific GHASH powers table (Htable) — the raw subkey is a discarded local.
+But BoringSSL keeps the AES round-key schedule and derives H = AES_encrypt(0)
+over it, so kloak does the same in-kernel: it walks SSL → s3 → aead_write_ctx →
+AES_KEY and recomputes H = AES_block(0). This is architecture- and
+GHASH-impl-independent (verified against real BoringSSL on amd64 + arm64).
+
+Offset chain (LP64, arch-independent; verified via pahole against tag
+0.20260616.0): SSL +48 →deref→ SSL3_STATE +272 →deref→ SSLAEADContext +288 →
+AES_KEY.rd_key; rounds at +240.
+
+Components:
+- tools/boringssl-offsets/: pahole-based discovery (Dockerfile, extract_offsets.sh,
+  discover.sh, apply-new-versions.sh) + committed results for amd64 + arm64,
+  mirroring tools/openssl-offsets/.
+- pkg/ebpf/boringssl_offsets.go (+test): BoringSSLOffsets, a "default" offset row
+  (BoringSSL embeds no resolvable version), DetectBoringSSL via .rodata markers,
+  and a table-vs-JSON drift test.
+- pkg/ebpf/bpf/helpers.h: AES single-block encrypt + aes_recover_h, with constant
+  round-count dispatch so the eBPF verifier can unroll. FIPS-197 KATs added to
+  helpers_test.c (make test-bpf-helpers).
+- pkg/ebpf/bpf/tls_uprobe.c: tls_lib discriminator + BoringSSL fields on
+  struct tls_offsets; BoringSSL branch in the kprobe H-walk.
+- pkg/ebpf/uprobe.go: bpfTLSOffsets matches the C struct; pushTLSOffsets detects
+  BoringSSL alongside OpenSSL and pushes the AES-recovery chain.
+- examples/demo-boringssl/ (C raw-TLS client) + TestEBPFBoringSSLHostFiltering.
+- .github/workflows/boringssl-versions-nightly.yml: discover/e2e/auto-PR keyed on
+  BoringSSL release tags (0.YYYYMMDD.0); Makefile wiring.
+
+Verified locally: go build/vet/test, FIPS-197 + empirical-H KATs (35/35 helper
+tests), discovery reproduces offsets on both arches, demo image builds. BPF
+compile + verifier + e2e run in CI.
+
+Closes #229.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+* fix(boringssl): move AES H recovery to a __noinline subprogram
+
+The BoringSSL H-walk inlined into bpf_kprobe_tcp_sendmsg blew the 512-byte BPF
+stack limit (the kprobe was already near it). Extract the walk + AES into a
+separate __noinline BPF-to-BPF subprogram (bssl_recover_h) so it gets its own
+stack frame, and rewrite the AES core to encrypt in place on a single
+caller-provided buffer (no 16-byte temporaries). Verified: clang -target bpf
+compiles tls_uprobe.c clean for both x86 and arm64.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+* style: combine pushOffsetVal uint64 params (gocritic)
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+* ci: build demo-boringssl image for the e2e job
+
+The standard e2e job builds demo images inline and runs the full e2e_ebpf
+suite, which now includes TestEBPFBoringSSLHostFiltering — so it needs the
+kloak-demo-boringssl image. Add it with registry build cache (it compiles
+BoringSSL from source, so caching keeps repeat runs cheap).
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+* fix(boringssl): detect via symbol tables; strip OpenSSL from demo image
+
+Two bugs surfaced by the first e2e run (the BoringSSL demo echoed the shadow
+placeholder unchanged — no rewrite):
+
+1. Detection scanned only .rodata/.data, but BoringSSL's identity lives in its
+   SYMBOL names (.dynstr): BORINGSSL_-prefixed FIPS entry points, the bssl::
+   namespace (mangled "N4bssl"), and the BoringSSL-only EVP_AEAD API. isBoringSSL
+   now scans .dynsym/.symtab for those, keeping the .rodata string check as a
+   fallback for the packaged (symbol-stripped) claude binary. Verified true for
+   real BoringSSL libssl.so+libcrypto.so and false for system OpenSSL.
+
+2. The demo image carried the system OpenSSL (libssl.so.3, pulled transitively),
+   so kloak detected OpenSSL first and never reached the bundled BoringSSL. The
+   client uses SSL_VERIFY_NONE, so drop ca-certificates and remove the system
+   libssl/libcrypto .so.3 — leaving exactly one TLS stack (BoringSSL).
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+* fix(boringssl): keep BoringSSL on kprobe-walk H strategy
+
+The second e2e run showed detection+offset push now work, but the demo still
+wasn't rewritten and the connection stayed intact (so the patch never applied,
+not a bad-MAC). Root cause: BoringSSL's libcrypto also exports EVP_CipherInit_ex,
+so attachLibcryptoCipherInit hooked it and set STRATEGY_LIBCRYPTO_HOOK — routing
+SSL_write to h_extract (the OpenSSL provider-chain cache path), which bails on
+ssl_to_wrl==0 for BoringSSL. The kprobe BoringSSL H-walk (bssl_recover_h) was
+never reached.
+
+Fix: attachLibcryptoCipherInit now returns early for BoringSSL processes
+(processUsesBoringSSL checks the exe + libssl/libcrypto via DetectBoringSSL), so
+they stay on STRATEGY_KPROBE_WALK where the AES-based H recovery runs.
+
+Also add KLOAK_DEBUG bpf_printk tracing inside bssl_recover_h (s3/aead reads,
+rounds, recovered H) so the data-plane path is visible in the e2e BPF trace.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+* debug(boringssl): add aggregate bssl_reached / bssl_h_ok counters
+
+The rolling BPF-trace and controller-log windows drown out the BoringSSL demo's
+sparse activity behind the flood of concurrent OpenSSL demos, so bpf_printk
+isn't enough to tell whether the BoringSSL kprobe branch runs. Add two aggregate
+debug counters — DBG_BSSL_REACHED (kprobe entered the BoringSSL branch) and
+DBG_BSSL_H_OK (bssl_recover_h recovered a non-zero H) — dumped as totals at the
+end of the e2e, to disambiguate strategy-routing vs H-recovery failures.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+* debug(boringssl): per-step counters in bssl_recover_h to pinpoint failing hop
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+* fix(boringssl): force AES-128-GCM in the demo client
+
+Run #5's per-step counters showed bssl_reached=38, bssl_rounds_bad=38 (all
+other steps 0): the s3 → aead_write_ctx walk succeeds, but AES_KEY.rounds isn't
+10/14 — i.e. the AEAD isn't AES-GCM. BoringSSL clients commonly negotiate
+ChaCha20-Poly1305, which kloak doesn't patch and whose state has no AES_KEY at
+that offset. Pin the demo client to AES-128-GCM (TLS 1.3 + TLS 1.2) and log the
+negotiated cipher so the AES-GCM H-recovery path is actually exercised.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+* fix(boringssl): use TLS1.2+AES128-GCM (BoringSSL lacks SSL_CTX_set_ciphersuites)
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+* debug(boringssl): capture x86 H-walk values + offset scan
+
+A userspace probe proved the SSL→s3→aead_write_ctx→AES_KEY chain and offset 288
+are correct at runtime on arm64 (rounds=10), yet the x86 CI kprobe reports
+bssl_rounds_bad. Since emulated x86 is unreliable to reproduce locally, capture
+the real CI values: add a bssl_probe map recording the aead pointer, the rounds
+read at the configured offset, and a scan of nearby offsets for where a valid
+AES round count (10/12/14) actually sits. The controller dumps this in
+DumpDebugCounters, so one CI run pins the exact x86 offset.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+* ci: re-trigger
+
+* ci: re-trigger buildx transient network failure
+
+* fix(boringssl): accept x86 AES-NI rounds (nr-1) in aes_recover_h
+
+x86 AES-NI stores AES_KEY.rounds as nr-1 rather than nr: AES-128 yields
+9 (not 10) and AES-256 yields 13 (not 14). aes_recover_h previously
+rejected these, causing every BoringSSL H-extraction attempt to fail on
+x86 hosts and the demo-boringssl e2e to time out.
+
+Accept both the canonical nr value and the AES-NI nr-1 value for each
+key size. The scan loop in bssl_recover_h (diagnostic path only) is
+updated to match. helpers_test.c is updated to verify rounds=9 succeeds.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+* address review: clamp snprintf, optimize MixColumns, use bytes.Contains
+
+- demo-boringssl/main.c: clamp plen to sizeof(payload)-1 if snprintf
+  truncates, preventing SSL_write buffer over-read
+- helpers.h: replace general kloak_aes_gmul 8-iter loop with specialized
+  aes_mul2/aes_mul3 inlines; MixColumns only needs ×2 and ×3, saving
+  thousands of eBPF instructions and reducing verifier complexity
+- boringssl_offsets.go: drop custom bytesContains in favour of
+  bytes.Contains from the standard library
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+* fix: update test to use bytes.Contains after removing bytesContains
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+---------
+
+Co-authored-by: Claude Opus 4.8 <noreply@anthropic.com>
+
+--- pkg/ebpf/bpf/helpers.h
+@@ -270,4 +270,125 @@ HELPER_INLINE int is_aes_gcm(__u32 cipher_type) {
+   return cipher_type == KLOAK_CIPHER_AES_GCM;
+ }
+ 
++// ============================================================================
++// AES single-block encryption — used to recover the GHASH subkey H for
++// BoringSSL.
++//
++// OpenSSL persists the raw GHASH subkey H (gcm128_context.H) which kloak reads
++// directly. BoringSSL does NOT: its GCM128_KEY keeps only the precomputed,
++// CPU-specific GHASH powers table. But BoringSSL itself derives the subkey as
++// H = AES_encrypt(0) over the AES round-key schedule it DOES persist
++// (gcm128_key_st.aes, an AES_KEY). So kloak reads that schedule and recomputes
++// H = AES_block(0) here. This is architecture- and GHASH-impl-independent.
++//
++// aes_block_encrypt operates on a standard FIPS-197 expanded key schedule
++// (rk = (nr+1) consecutive 16-byte round keys, column-major bytes) exactly as
++// BoringSSL's AES_KEY.rd_key stores it on a little-endian build (verified
++// empirically against BoringSSL on amd64 and arm64). Bounded loops keep it
++// eBPF-verifier-friendly; FIPS-197 known-answer tests live in helpers_test.c.
++// ============================================================================
++
++static const __u8 KLOAK_AES_SBOX[256] = {
++  0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76,
++  0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0,0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0,
++  0xb7,0xfd,0x93,0x26,0x36,0x3f,0xf7,0xcc,0x34,0xa5,0xe5,0xf1,0x71,0xd8,0x31,0x15,
++  0x04,0xc7,0x23,0xc3,0x18,0x96,0x05,0x9a,0x07,0x12,0x80,0xe2,0xeb,0x27,0xb2,0x75,
++  0x09,0x83,0x2c,0x1a,0x1b,0x6e,0x5a,0xa0,0x52,0x3b,0xd6,0xb3,0x29,0xe3,0x2f,0x84,
++  0x53,0xd1,0x00,0xed,0x20,0xfc,0xb1,0x5b,0x6a,0xcb,0xbe,0x39,0x4a,0x4c,0x58,0xcf,
++  0xd0,0xef,0xaa,0xfb,0x43,0x4d,0x33,0x85,0x45,0xf9,0x02,0x7f,0x50,0x3c,0x9f,0xa8,
++  0x51,0xa3,0x40,0x8f,0x92,0x9d,0x38,0xf5,0xbc,0xb6,0xda,0x21,0x10,0xff,0xf3,0xd2,
++  0xcd,0x0c,0x13,0xec,0x5f,0x97,0x44,0x17,0xc4,0xa7,0x7e,0x3d,0x64,0x5d,0x19,0x73,
++  0x60,0x81,0x4f,0xdc,0x22,0x2a,0x90,0x88,0x46,0xee,0xb8,0x14,0xde,0x5e,0x0b,0xdb,
++  0xe0,0x32,0x3a,0x0a,0x49,0x06,0x24,0x5c,0xc2,0xd3,0xac,0x62,0x91,0x95,0xe4,0x79,
++  0xe7,0xc8,0x37,0x6d,0x8d,0xd5,0x4e,0xa9,0x6c,0x56,0xf4,0xea,0x65,0x7a,0xae,0x08,
++  0xba,0x78,0x25,0x2e,0x1c,0xa6,0xb4,0xc6,0xe8,0xdd,0x74,0x1f,0x4b,0xbd,0x8b,0x8a,
++  0x70,0x3e,0xb5,0x66,0x48,0x03,0xf6,0x0e,0x61,0x35,0x57,0xb9,0x86,0xc1,0x1d,0x9e,
++  0xe1,0xf8,0x98,0x11,0x69,0xd9,0x8e,0x94,0x9b,0x1e,0x87,0xe9,0xce,0x55,0x28,0xdf,
++  0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68,0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16};
++
++// Specialized GF(2^8) multiply-by-2 and multiply-by-3 for AES MixColumns.
++// MixColumns only ever multiplies by 2 or 3, so these two inlines replace the
++// general 8-iteration loop, cutting thousands of eBPF instructions and keeping
++// verifier complexity low.
++HELPER_INLINE __u8 aes_mul2(__u8 x) {
++  return (__u8)((x << 1) ^ ((x & 0x80) ? 0x1b : 0));
++}
++HELPER_INLINE __u8 aes_mul3(__u8 x) {
++  return (__u8)(aes_mul2(x) ^ x);
++}
++
++// aes_shift_rows / aes_mix_columns operate IN PLACE on a column-major state
++// (byte index = row + 4*col), using only scalar temporaries — important because
++// this code is inlined into kloak's already stack-heavy kprobe, and the eBPF
++// stack limit is 512 bytes. No 16-byte working arrays.
++HELPER_INLINE void aes_shift_rows(__u8 s[16]) {
++  __u8 t;
++  // row 1: <<1
++  t = s[1]; s[1] = s[5]; s[5] = s[9]; s[9] = s[13]; s[13] = t;
++  // row 2: <<2 (swap pairs)
++  t = s[2]; s[2] = s[10]; s[10] = t;
++  t = s[6]; s[6] = s[14]; s[14] = t;
++  // row 3: <<3 (== >>1)
++  t = s[15]; s[15] = s[11]; s[11] = s[7]; s[7] = s[3]; s[3] = t;
++}
++HELPER_INLINE void aes_mix_columns(__u8 s[16]) {
++  for (int c = 0; c < 4; c++) {
++    __u8 a0 = s[4 * c + 0], a1 = s[4 * c + 1], a2 = s[4 * c + 2], a3 = s[4 * c + 3];
++    s[4 * c + 0] = (__u8)(aes_mul2(a0) ^ aes_mul3(a1) ^ a2 ^ a3);
++    s[4 * c + 1] = (__u8)(a0 ^ aes_mul2(a1) ^ aes_mul3(a2) ^ a3);
++    s[4 * c + 2] = (__u8)(a0 ^ a1 ^ aes_mul2(a2) ^ aes_mul3(a3));
++    s[4 * c + 3] = (__u8)(aes_mul3(a0) ^ a1 ^ a2 ^ aes_mul2(a3));
++  }
++}
++
++// aes_block_encrypt encrypts the 16-byte block in `state` IN PLACE under the
++// expanded key schedule `rk` ((nr+1)*16 bytes). nr in {10,12,14}. Operating in
++// place keeps the BPF stack frame flat (no 16-byte temporaries).
++HELPER_INLINE void aes_block_encrypt(const __u8 *rk, __u32 nr, __u8 state[16]) {
++  for (int i = 0; i < 16; i++) state[i] ^= rk[i]; // AddRoundKey 0
++
++  // Up to 13 mid rounds (AES-256 nr=14 → 13). Bounded by a constant so the
++  // eBPF verifier can unroll; `round < nr` gates the real per-key count.
++  for (__u32 round = 1; round < 14 && round < nr; round++) {
++    for (int i = 0; i < 16; i++) state[i] = KLOAK_AES_SBOX[state[i]];
++    aes_shift_rows(state);
++    aes_mix_columns(state);
++    const __u8 *k = rk + 16 * round;
++    for (int i = 0; i < 16; i++) state[i] ^= k[i];
++  }
++
++  // Final round (SubBytes + ShiftRows + AddRoundKey, no MixColumns).
++  for (int i = 0; i < 16; i++) state[i] = KLOAK_AES_SBOX[state[i]];
++  aes_shift_rows(state);
++  const __u8 *k = rk + 16 * nr;
++  for (int i = 0; i < 16; i++) state[i] ^= k[i];
++}
++
++// aes_recover_h recomputes the GHASH subkey H = AES_encrypt(0) from a persisted
++// AES round-key schedule, writing 16 bytes to h_out. Returns 1 on success, 0 if
++// `rounds` is not a TLS AES round count (a guard against a bogus offset read).
++// h_out doubles as the in-place AES state, so no scratch block is needed.
++//
++// Dispatch is on a COMPILE-TIME-CONSTANT round count so aes_block_encrypt
++// inlines with a constant `nr`: clang then fully unrolls its round loop into
++// constant-offset accesses into rd_key, which the eBPF verifier accepts
++// (a runtime `nr` would leave a variable-offset access the verifier rejects).
++// Only AES-128 (10) and AES-256 (14) are handled — TLS never negotiates
++// AES-192-GCM, so 12 is intentionally treated as unsupported.
++//
++// x86 AES-NI stores AES_KEY.rounds as nr-1 (9 for AES-128, 13 for AES-256),
++// so both the canonical and AES-NI values are accepted for each key size.
++HELPER_INLINE int aes_recover_h(const __u8 *rd_key, __u32 rounds, __u8 h_out[16]) {
++  for (int i = 0; i < 16; i++) h_out[i] = 0; // plaintext block = 0
++  if (rounds == 10 || rounds == 9) {  // 9 = x86 AES-NI stores nr-1 for AES-128
++    aes_block_encrypt(rd_key, 10, h_out);
++    return 1;
++  }
++  if (rounds == 14 || rounds == 13) {  // 13 = x86 AES-NI stores nr-1 for AES-256
++    aes_block_encrypt(rd_key, 14, h_out);
++    return 1;
++  }
++  return 0;
++}
++
+ #endif // KLOAK_HELPERS_H
+
+--- pkg/ebpf/bpf/helpers_test.c
+@@ -339,6 +339,74 @@ static void test_is_aes_gcm(void) {
+   assert(is_aes_gcm(99) == 0);
+ }
+ 
++// ============================================================================
++// AES (H recovery for BoringSSL)
++// ============================================================================
++
++// Standard FIPS-197 key expansion — only for the known-answer tests. The eBPF
++// data plane never expands a key; it reads BoringSSL's persisted AES_KEY.rd_key
++// (already expanded) and calls aes_block_encrypt directly.
++static void aes_kat_expand(const __u8 *key, int nk, __u8 *rk, int nr) {
++  static const __u8 rcon[] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40,
++                              0x80, 0x1b, 0x36, 0x6c, 0xd8, 0xab, 0x4d};
++  int total = 4 * (nr + 1);
++  for (int i = 0; i < 4 * nk; i++) rk[i] = key[i];
++  for (int i = nk; i < total; i++) {
++    __u8 t[4] = {rk[4 * (i - 1) + 0], rk[4 * (i - 1) + 1],
++                 rk[4 * (i - 1) + 2], rk[4 * (i - 1) + 3]};
++    if (i % nk == 0) {
++      __u8 tmp = t[0];
++      t[0] = KLOAK_AES_SBOX[t[1]] ^ rcon[i / nk - 1];
++      t[1] = KLOAK_AES_SBOX[t[2]];
++      t[2] = KLOAK_AES_SBOX[t[3]];
++      t[3] = KLOAK_AES_SBOX[tmp];
++    } else if (nk > 6 && i % nk == 4) {
++      for (int j = 0; j < 4; j++) t[j] = KLOAK_AES_SBOX[t[j]];
++    }
++    for (int j = 0; j < 4; j++) rk[4 * i + j] = rk[4 * (i - nk) + j] ^ t[j];
++  }
++}
++
++static void test_aes128_fips197(void) {
++  // FIPS-197 Appendix C.1: key 000102…0f, pt 00112233…ff.
++  __u8 key[16], block[16], rk[176], want[16];
++  for (int i = 0; i < 16; i++) {
++    key[i] = (__u8)i;
++    block[i] = (__u8)(i * 0x11); // plaintext, encrypted in place
++  }
++  hex_to_bytes("69c4e0d86a7b0430d8cdb78070b4c55a", want, 16);
++  aes_kat_expand(key, 4, rk, 10);
++  aes_block_encrypt(rk, 10, block);
++  assert(bytes_equal(block, want, 16));
++}
++
++static void test_aes256_fips197(void) {
++  // FIPS-197 Appendix C.3: key 000102…1f, pt 00112233…ff.
++  __u8 key[32], block[16], rk[240], want[16];
++  for (int i = 0; i < 32; i++) key[i] = (__u8)i;
++  for (int i = 0; i < 16; i++) block[i] = (__u8)(i * 0x11);
++  hex_to_bytes("8ea2b7ca516745bfeafc49904b496089", want, 16);
++  aes_kat_expand(key, 8, rk, 14);
++  aes_block_encrypt(rk, 14, block);
++  assert(bytes_equal(block, want, 16));
++}
++
++static void test_aes_recover_h(void) {
++  // H = AES_encrypt(0). For key 0102…10 BoringSSL yields this subkey (verified
++  // empirically against a real BoringSSL AES-GCM context on amd64 + arm64).
++  __u8 key[16], rk[176], h[16], want[16];
++  for (int i = 0; i < 16; i++) key[i] = (__u8)(i + 1);
++  hex_to_bytes("dbf184112eb9111659712bafcff2ab24", want, 16);
++  aes_kat_expand(key, 4, rk, 10);
++  assert(aes_recover_h(rk, 10, h) == 1);
++  assert(bytes_equal(h, want, 16));
++  // x86 AES-NI stores rounds as nr-1; both forms must work.
++  assert(aes_recover_h(rk, 9, h) == 1);
++  assert(bytes_equal(h, want, 16));
++  // Invalid round counts are rejected (guards against a bogus offset read).
++  assert(aes_recover_h(rk, 0, h) == 0);
++}
++
+ // ============================================================================
+ // main
+ // ============================================================================
+@@ -386,6 +454,11 @@ int main(void) {
+   RUN_TEST(test_gf128_h_power_table);
+   RUN_TEST(test_is_aes_gcm);
+ 
++  printf("aes (BoringSSL H recovery):\n");
++  RUN_TEST(test_aes128_fips197);
++  RUN_TEST(test_aes256_fips197);
++  RUN_TEST(test_aes_recover_h);
++
+   printf("\n%d/%d tests passed.\n", tests_passed, tests_run);
+   return 0;
+ }
+
+--- pkg/ebpf/bpf/tls_uprobe.c
+@@ -199,6 +199,13 @@ enum {
+   DBG_KPROBE_BRIDGE_FROM_PENDING, // kprobe used H carried via xor_pending (libcrypto-hook hot path)
+   DBG_KPROBE_WALK_LEGACY,     // kprobe walked SSL→wrl→enc_ctx→algctx→H (BoringSSL/cold-start path)
+   DBG_H_EXTRACT_LIVE_WALK,    // bpf_h_extract derived H live from enc_ctx→algctx→H on cache miss
++  DBG_BSSL_REACHED,           // kprobe entered the BoringSSL branch (tls_lib==BORINGSSL)
++  DBG_BSSL_H_OK,              // BoringSSL bssl_recover_h recovered a non-zero H
++  DBG_BSSL_S3_NULL,          // bssl: SSL→s3 read failed / null
++  DBG_BSSL_AEAD_NULL,        // bssl: s3→aead_write_ctx read failed / null
++  DBG_BSSL_RDKEY_FAIL,       // bssl: AES_KEY.rd_key read failed
++  DBG_BSSL_ROUNDS_BAD,       // bssl: AES_KEY.rounds not in {9,10,12,13,14}
++  DBG_BSSL_HZERO,            // bssl: recovered H was all-zero
+   DBG_MAX,
+ };
+ 
+@@ -568,7 +575,163 @@ struct tls_offsets {
+   // pushTLSOffsets per detected OpenSSL major.minor — 0 here means
+   // "unknown; ssl_read_fd should fall back to the legacy hardcoded 88".
+   __u32 ssl_to_wbio;
++
++  // tls_lib selects the H-extraction chain. The OpenSSL fields above (ssl_to_wrl
++  // …) are unused when tls_lib == TLS_LIB_BORINGSSL, and the BoringSSL fields
++  // below are unused when tls_lib == TLS_LIB_OPENSSL.
++  __u32 tls_lib;
++  // BoringSSL chain (no OSSL_RECORD_LAYER indirection):
++  //   SSL* + bssl_ssl_to_s3       → SSL3_STATE*     (pointer deref)
++  //        + bssl_s3_to_aead      → SSLAEADContext* (pointer deref, aead_write_ctx)
++  //        + bssl_aead_to_aeskey  → AES_KEY.rd_key  (direct read of round keys)
++  // BoringSSL persists no raw H — only the AES round-key schedule — so the
++  // walk lands on AES_KEY and the data plane recomputes H = AES_encrypt(0).
++  // AES_KEY.rounds sits BSSL_AESKEY_ROUNDS_OFF (240) past rd_key.
++  __u32 bssl_ssl_to_s3;
++  __u32 bssl_s3_to_aead;
++  __u32 bssl_aead_to_aeskey;
++};
++
++#define TLS_LIB_OPENSSL 0
++#define TLS_LIB_BORINGSSL 1
++#define BSSL_AESKEY_ROUNDS_OFF 240  // AES_KEY: uint32_t rd_key[60]; uint32_t rounds;
++#define BSSL_AES_RDKEY_BYTES 240    // (AES_MAXNR+1)*16 = 15*16
++
++// An offsets entry is uncalibrated (push not yet seen / wrong key) when neither
++// the OpenSSL chain (ssl_to_wrl) nor the BoringSSL chain (bssl_ssl_to_s3) is
++// populated. Used to gate the per-binary offset lookup + its exe_inode=0
++// fallback in the kprobe H-walk.
++#define OFFSETS_UNCALIBRATED(o)                                                 \
++  ((o)->ssl_to_wrl == 0 &&                                                      \
++   !((o)->tls_lib == TLS_LIB_BORINGSSL && (o)->bssl_ssl_to_s3 != 0))
++
++// Per-CPU scratch for reading BoringSSL's AES round-key schedule off the BPF
++// stack (240 bytes would otherwise crowd the kprobe stack frame).
++struct aes_scratch_buf {
++  __u8 rd_key[BSSL_AES_RDKEY_BYTES];
++};
++struct {
++  __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
++  __uint(max_entries, 1);
++  __type(key, __u32);
++  __type(value, struct aes_scratch_buf);
++} aes_scratch SEC(".maps");
++
++// Diagnostic capture for the BoringSSL H-walk (read by the controller). Records
++// the last walk's pointers + the rounds value read at the configured offset,
++// plus a scan that reports the offset where a valid AES round count (10/12/14)
++// actually sits — so a wrong AEADToAESKey on a given build/arch is visible
++// without local reproduction.
++struct bssl_probe_val {
++  __u64 ssl;
++  __u64 s3;
++  __u64 aead;
++  __u32 cfg_off;       // configured aead_to_aeskey
++  __u32 raw_rounds;    // rounds read at aead + cfg_off + 240
++  __u32 good_off;      // scanned offset where rounds ∈ {9,10,12,13,14} (0 if none)
++  __u32 good_rounds;
+ };
++struct {
++  __uint(type, BPF_MAP_TYPE_ARRAY);
++  __uint(max_entries, 1);
++  __type(key, __u32);
++  __type(value, struct bssl_probe_val);
++} bssl_probe SEC(".maps");
++
++// bssl_recover_h walks the BoringSSL chain SSL → s3 → aead_write_ctx → AES_KEY
++// and recomputes the GHASH subkey H = AES_encrypt(0), writing 16 bytes to
++// h_out. Returns 1 on success, 0 on any failure.
++//
++// Deliberately __noinline: the AES round function plus the 240-byte round-key
++// read need their own stack frame. Inlining this into the already stack-heavy
++// bpf_kprobe_tcp_sendmsg blows the 512-byte BPF stack limit; a BPF-to-BPF call
++// gives it a separate frame. Offsets are passed by value (not the map-value
++// pointer) to keep the verifier's job simple.
++static __attribute__((noinline)) int bssl_recover_h(__u64 ssl_ptr, __u32 ssl_to_s3,
++                                                    __u32 s3_to_aead,
++                                                    __u32 aead_to_aeskey,
++                                                    __u8 *h_out) {
++  __u64 s3 = 0, aead = 0;
++  if (bpf_probe_read_user(&s3, 8, (void *)(ssl_ptr + ssl_to_s3)) < 0 || !s3) {
++    dbg_inc(DBG_BSSL_S3_NULL);
++#ifdef KLOAK_DEBUG
++    bpf_printk("kloak [BSSL] s3 read fail ssl=%llx off=%u", ssl_ptr, ssl_to_s3);
++#endif
++    return 0;
++  }
++  if (bpf_probe_read_user(&aead, 8, (void *)(s3 + s3_to_aead)) < 0 || !aead) {
++    dbg_inc(DBG_BSSL_AEAD_NULL);
++#ifdef KLOAK_DEBUG
++    bpf_printk("kloak [BSSL] aead read fail s3=%llx off=%u", s3, s3_to_aead);
++#endif
++    return 0;
++  }
++
++  __u32 zk = 0;
++  struct aes_scratch_buf *ab = bpf_map_lookup_elem(&aes_scratch, &zk);
++  if (!ab)
++    return 0;
++
++  __u64 aeskey = aead + aead_to_aeskey;
++  if (bpf_probe_read_user(ab->rd_key, BSSL_AES_RDKEY_BYTES, (void *)aeskey) < 0) {
++    dbg_inc(DBG_BSSL_RDKEY_FAIL);
++#ifdef KLOAK_DEBUG
++    bpf_printk("kloak [BSSL] rd_key read fail aead=%llx off=%u", aead, aead_to_aeskey);
++#endif
++    return 0;
++  }
++  __u32 rounds = 0;
++  if (bpf_probe_read_user(&rounds, 4, (void *)(aeskey + BSSL_AESKEY_ROUNDS_OFF)) < 0) {
++    dbg_inc(DBG_BSSL_RDKEY_FAIL);
++    return 0;
++  }
++
++  // Diagnostic: record the walk + scan for where a valid AES round count
++  // actually sits (the SSLAEADContext is the heap object `aead` points to;
++  // scan a window of offsets within it). Helps pin AEADToAESKey per build/arch.
++  {
++    __u32 zero = 0;
++    struct bssl_probe_val *pv = bpf_map_lookup_elem(&bssl_probe, &zero);
++    if (pv) {
++      pv->ssl = ssl_ptr;
++      pv->s3 = s3;
++      pv->aead = aead;
++      pv->cfg_off = aead_to_aeskey;
++      pv->raw_rounds = rounds;
++      pv->good_off = 0;
++      pv->good_rounds = 0;
++      for (__u32 off = 16; off <= 400; off += 8) {
++        __u32 r = 0;
++        if (bpf_probe_read_user(&r, 4, (void *)(aead + off + BSSL_AESKEY_ROUNDS_OFF)) < 0)
++          continue;
++        if (r == 10 || r == 9 || r == 12 || r == 14 || r == 13) {  // 9/13 = x86 AES-NI nr-1
++          pv->good_off = off;
++          pv->good_rounds = r;
++          break;
++        }
++      }
++    }
++  }
++
++  // aes_recover_h validates rounds ∈ {10,14} and writes H to h_out in place.
++  if (!aes_recover_h(ab->rd_key, rounds, h_out)) {
++    dbg_inc(DBG_BSSL_ROUNDS_BAD);
++#ifdef KLOAK_DEBUG
++    bpf_printk("kloak [BSSL] aes_recover_h fail rounds=%u", rounds);
++#endif
++    return 0;
++  }
++
++  __u64 *bh = (__u64 *)h_out;
++  if (bh[0] == 0 && bh[1] == 0) {
++    dbg_inc(DBG_BSSL_HZERO);
++    return 0;
++  }
++#ifdef KLOAK_DEBUG
++  bpf_printk("kloak [BSSL] H ok rounds=%u h0=%llx h1=%llx", rounds, bh[0], bh[1]);
++#endif
++  return 1;
++}
+ 
+ // Shared key for per-binary TLS config maps (see tls_offset_config and
+ // go_tls_offset_config below). Keyed by (cgroup_id, exe_inode) rather than
+@@ -2394,10 +2557,10 @@ int bpf_kprobe_tcp_sendmsg(void *ctx) {
+     struct task_struct *ssl_task = (struct task_struct *)bpf_get_current_task();
+     bk.exe_inode = BPF_CORE_READ(ssl_task, mm, exe_file, f_inode, i_ino);
+     struct tls_offsets *offsets = bpf_map_lookup_elem(&tls_offset_config, &bk);
+-    if (!offsets || offsets->ssl_to_wrl == 0) {
++    if (!offsets || OFFSETS_UNCALIBRATED(offsets)) {
+       bk.exe_inode = 0;
+       offsets = bpf_map_lookup_elem(&tls_offset_config, &bk);
+-      if (!offsets || offsets->ssl_to_wrl == 0) {
++      if (!offsets || OFFSETS_UNCALIBRATED(offsets)) {
+ #ifdef KLOAK_DEBUG
+         bpf_printk("kloak [2-KPROBE] H-fail: no offsets cgid=%llx",
+                    bk.cgroup_id);
+@@ -2407,6 +2570,31 @@ int bpf_kprobe_tcp_sendmsg(void *ctx) {
+       }
+     }
+ 
++    if (offsets->tls_lib == TLS_LIB_BORINGSSL) {
++      // BoringSSL: recover H via the AES round-key schedule in a separate
++      // BPF-to-BPF subprogram (its own stack frame — see bssl_recover_h). The
++      // AES output is the raw subkey in the same byte layout the OpenSSL branch
++      // produces AFTER its bswap, so no bswap here.
++      dbg_inc(DBG_BSSL_REACHED);
++      if (!bssl_recover_h(ssl_ptr, offsets->bssl_ssl_to_s3,
++                          offsets->bssl_s3_to_aead, offsets->bssl_aead_to_aeskey,
++                          new_conn.ghash_h)) {
++        dbg_inc(DBG_KPROBE_BRIDGE_H_FAIL);
++        return 0;
++      }
++      dbg_inc(DBG_BSSL_H_OK);
++      new_conn.cipher_type = KLOAK_CIPHER_AES_GCM;
++      new_conn.wrl_ptr = 0;
++      if (offsets->ssl_to_version != 0xFFFFFFFF) {
++        __u32 ssl_ver = 0;
++        bpf_probe_read_user(&ssl_ver, 4, (void *)(ssl_ptr + offsets->ssl_to_version));
++        new_conn.nonce_len = (ssl_ver >= 0x0304) ? 0 : 8;
++      } else {
++        new_conn.nonce_len = 0xFF;
++      }
++      goto h_ready;
++    }
++
+     __u64 ptr = 0;
+     if (offsets->wrl_to_enc_ctx > 0) {
+       if (bpf_probe_read_user(&ptr, 8, (void *)(ssl_ptr + offsets->ssl_to_wrl)) < 0 || !ptr) {
+@@ -2473,6 +2661,7 @@ int bpf_kprobe_tcp_sendmsg(void *ctx) {
+     }
+   }
+ 
++h_ready:;
+   // H extraction succeeded — store connection state (only if H changed).
+   struct tls_conn_key ck = {};
+   ck.tgid = tgid;
+

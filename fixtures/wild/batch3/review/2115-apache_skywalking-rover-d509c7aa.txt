@@ -1,0 +1,95 @@
+repo: apache/skywalking-rover
+commit: d509c7aa18f821f9fec0c987b558a56530175d6c
+rank: 2115
+
+Reduce eBPF verifier complexity by converting hot inline helpers to BPF-to-BPF calls (#209)
+
+--- bpf/accesslog/common/connection.h
+@@ -285,7 +285,7 @@ static __always_inline void submit_new_connection(void* ctx, bool success, __u32
+     bpf_map_update_elem(&active_connection_map, &conid, &con, 0);
+ }
+ 
+-static __inline struct active_connection_t* get_or_create_active_conn(void *ctx, __u32 tgid, __u32 fd, __u32 func_name, __u8 role) {
++static __noinline struct active_connection_t* get_or_create_active_conn(void *ctx, __u32 tgid, __u32 fd, __u32 func_name, __u8 role) {
+     __u64 conid = gen_tgid_fd(tgid, fd);
+     struct active_connection_t *conn = bpf_map_lookup_elem(&active_connection_map, &conid);
+     if (conn != NULL) {
+
+--- bpf/include/api.h
+@@ -28,6 +28,16 @@
+ #include <bpf/bpf_tracing.h>
+ #include <bpf/bpf_core_read.h>
+ 
++// Force a function to be emitted as a real BPF-to-BPF call instead of being
++// inlined. The verifier checks a non-inlined sub-program only once, instead of
++// re-verifying every inlined copy on every code path, which dramatically lowers
++// the processed-instruction count for large programs (avoids the
++// "BPF program is too large" / 1M instruction limit). BPF-to-BPF calls require
++// kernel >= 4.16, which the network / access-log data path already mandates.
++#ifndef __noinline
++#define __noinline __attribute__((noinline))
++#endif
++
+ // Define types commonly needed but not in BPF headers
+ typedef __s64 ssize_t;
+ typedef __s8 int8_t;
+
+--- bpf/include/protocol_analyzer.h
+@@ -17,6 +17,8 @@
+ 
+ #pragma once
+ 
++#include "api.h"
++
+ #define CONNECTION_PROTOCOL_UNKNOWN 0
+ #define CONNECTION_PROTOCOL_HTTP1 1
+ #define CONNECTION_PROTOCOL_HTTP2 2
+@@ -178,7 +180,7 @@ static __inline __u32 infer_http2_message(const char* buf, size_t count) {
+ 	return CONNECTION_MESSAGE_TYPE_UNKNOWN;
+ }
+ 
+-static __inline __u32 analyze_protocol(char *buf, __u32 count, __u8 *protocol_ref) {
++static __noinline __u32 analyze_protocol(char *buf, __u32 count, __u8 *protocol_ref) {
+     __u32 protocol = CONNECTION_PROTOCOL_UNKNOWN, type = CONNECTION_MESSAGE_TYPE_UNKNOWN;
+ 
+     // support http 1.x and 2.x
+
+--- bpf/include/socket_data.h
+@@ -142,7 +142,7 @@ static __always_inline void __upload_socket_data_with_buffer(void *ctx, __u8 ind
+     rover_submit_buf(ctx, &socket_data_upload_queue, socket_data_event, sizeof(*socket_data_event));
+ }
+ 
+-static __always_inline void upload_socket_data_buf(void *ctx, char* buf, ssize_t size, struct upload_data_args *args, __u8 force_unfinished) {
++static __noinline void upload_socket_data_buf(void *ctx, char* buf, ssize_t size, struct upload_data_args *args, __u8 force_unfinished) {
+     ssize_t already_send = 0;
+ #pragma unroll
+     for (__u8 index = 0; index < SOCKET_UPLOAD_CHUNK_LIMIT; index++) {
+@@ -195,7 +195,7 @@ if (iov_index < iovlen) {                                                   \
+     loop_count++;                                                                                                                    \
+ }
+ 
+-static __always_inline void upload_socket_data_iov(void *ctx, struct iovec* iov, const size_t iovlen, ssize_t size, struct upload_data_args *args) {
++static __noinline void upload_socket_data_iov(void *ctx, struct iovec* iov, const size_t iovlen, ssize_t size, struct upload_data_args *args) {
+     ssize_t already_send = 0;
+     ssize_t cur_iov_sended = 0;
+     __u8 iov_index = 0;
+
+--- bpf/include/socket_reader.h
+@@ -17,6 +17,7 @@
+ 
+ #pragma once
+ 
++#include "api.h"
+ #include "socket_opts.h"
+ 
+ struct socket_buffer_reader_t {
+@@ -30,7 +31,7 @@ struct {
+     __uint(max_entries, 1);
+ } socket_buffer_reader_map SEC(".maps");
+ 
+-static __inline struct socket_buffer_reader_t* read_socket_data(char* buf, struct iovec *iovec, __u32 bytes_count) {
++static __noinline struct socket_buffer_reader_t* read_socket_data(char* buf, struct iovec *iovec, __u32 bytes_count) {
+     __u64 size = 0;
+     __u32 kZero = 0;
+     char* data_buf;
+

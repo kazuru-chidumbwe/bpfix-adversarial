@@ -1,0 +1,43 @@
+repo: gojue/ecapture
+commit: 5e7fb920944254be45dee6fafa98c21c59a4e182
+rank: 4509
+
+fix: use actual data_len while reading payload (#882)
+
+This PR fixes a bug in the Go TLS kernel tracing code where the wrong length was being used when reading payload data from user space. The fix ensures that only the actual data length (capped at the maximum buffer size) is read, rather than always reading the full buffer size.
+
+Replaces simple bit masking with proper length capping logic
+Uses calculated event->data_len instead of sizeof(event->data) in bpf_probe_read_user() calls
+Adopts the BPF-verifier-friendly length calculation pattern used in other SSL/TLS interception modules
+
+--- kern/gotls_kern.c
+@@ -109,9 +109,11 @@ static __always_inline int gotls_write(struct pt_regs *ctx, bool is_register_abi
+     if (!event) {
+         return 0;
+     }
+-    len = len & 0xFFFF;
+-    event->data_len = len;
+-    int ret = bpf_probe_read_user(&event->data, sizeof(event->data), (void *)str);
++
++    event->data_len =
++        (len < MAX_DATA_SIZE_OPENSSL ? (len & (MAX_DATA_SIZE_OPENSSL - 1))
++                                     : MAX_DATA_SIZE_OPENSSL);
++    int ret = bpf_probe_read_user(&event->data, event->data_len, (void *)str);
+     if (ret < 0) {
+         debug_bpf_printk("gotls_write bpf_probe_read_user_str failed, ret:%d, str:%d\n", ret, str);
+         return 0;
+@@ -163,9 +165,11 @@ static __always_inline int gotls_read(struct pt_regs *ctx, bool is_register_abi)
+         return 0;
+     }
+ 
+-    event->data_len = ret_len;
++    event->data_len =
++        (ret_len < MAX_DATA_SIZE_OPENSSL ? (ret_len & (MAX_DATA_SIZE_OPENSSL - 1))
++                                     : MAX_DATA_SIZE_OPENSSL);
+     event->event_type = GOTLS_EVENT_TYPE_READ;
+-    int ret = bpf_probe_read_user(&event->data, sizeof(event->data), (void *)str);
++    int ret = bpf_probe_read_user(&event->data, event->data_len, (void *)str);
+     if (ret < 0) {
+         debug_bpf_printk("gotls_text bpf_probe_read_user_str failed, ret:%d, str:%d\n", ret, str);
+         return 0;
+

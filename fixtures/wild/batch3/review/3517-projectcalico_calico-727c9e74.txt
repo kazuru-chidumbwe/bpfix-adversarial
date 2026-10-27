@@ -1,0 +1,100 @@
+repo: projectcalico/calico
+commit: 727c9e745ed412c53c48d56eff275d120cc44184
+rank: 3517
+
+Felix: avoid bpf_trace_printk dmesg spam under kernel lockdown=confidentiality (#13142)
+
+* Felix: avoid bpf_trace_printk dmesg spam under kernel lockdown=confidentiality
+
+On a kernel running with lockdown=confidentiality (e.g. Talos), ftrace is
+disabled at boot (tracer_alloc_buffers() returns -EPERM), so the verifier's
+attempt to enable the bpf_trace_printk trace event fails and the kernel logs
+"could not enable bpf_trace_printk events" on every load of a program that
+references the helper. Felix's TC/XDP preamble programs call bpf_trace_printk
+on their drop/error paths unconditionally (even at BPFLogLevel: Off) and are
+re-loaded on every interface attach, so the message is emitted constantly,
+tracking BPF reprogramming.
+
+Build trace-printk-free preamble variants (compiled with -DCALI_NO_TRACE_PRINTK)
+and load them when Felix detects lockdown=confidentiality at startup (via
+/sys/kernel/security/lockdown). The regular printk-carrying preambles remain in
+use on all other platforms and log levels. On confidentiality-lockdown nodes
+BPFLogLevel: Debug is forced to off, since BPF debug logging and the policy Log
+action cannot function while ftrace is disabled.
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+* Felix: skip debug conntrack cleanup program under lockdown=confidentiality
+
+The conntrack cleanup program's log level is selected from
+BPFConntrackLogLevel, a knob independent of BPFLogLevel. Under kernel
+lockdown=confidentiality ftrace is disabled, so loading the debug build
+(which references bpf_trace_printk) makes the kernel log "could not
+enable bpf_trace_printk events" on every load. Detect lockdown and pick
+the no-log cleanup build regardless of the configured level, mirroring
+the endpoint-manager forcing of BPFLogLevel off.
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+* Felix: make BPF log-level checks case-insensitive for lockdown override
+
+The parsed config canonicalises BPFLogLevel/BPFConntrackLogLevel to
+lower case, but callers that build Config directly (e.g. tests) may pass
+"Debug". Normalise before comparing so the lockdown=confidentiality
+override that forces debug programs off is not defeated by casing.
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+* node: mount securityfs into calico-node for lockdown detection
+
+Felix's KernelLockdownConfidentiality() reads
+/sys/kernel/security/lockdown, but calico-node only mounts /sys/fs
+(sysfs), not securityfs, so from inside the container the file is absent
+and detection always returns false — leaving the trace-printk-free
+preamble path inert on the very lockdown=confidentiality nodes it targets.
+
+Mount securityfs read-only at /sys/kernel/security. No hostPath type is
+set (as with the existing /proc mount) so nodes without securityfs still
+start; Felix already treats an unreadable lockdown file as "not locked
+down".
+
+Note: operator-managed installs need the equivalent mount added in the
+tigera/operator calico-node render (needs-operator-pr).
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+* felix: memoize kernel lockdown detection
+
+KernelLockdownConfidentiality is called from both NewIntDataplaneDriver
+and NewBPFEndpointManager during startup. Read the sysfs file once via
+sync.Once so every caller makes the same decision, even if the lockdown
+level is raised at runtime — the boot-time state is what governs ftrace,
+so first-read-wins is the correct semantic.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+---------
+
+Co-authored-by: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+Co-authored-by: sridhar <sridhar@tigera.io>
+
+--- felix/bpf-gpl/log.h
+@@ -30,8 +30,17 @@
+ } while (0)
+ 
+ #ifndef CALI_LOG
++#ifdef CALI_NO_TRACE_PRINTK
++// Programs built with CALI_NO_TRACE_PRINTK must not reference the
++// bpf_trace_printk helper at all: on a kernel with lockdown=confidentiality
++// ftrace is disabled at boot, so loading any program that references the
++// helper makes the kernel emit "could not enable bpf_trace_printk events" on
++// every load. Compile the default log macro out entirely for those builds.
++#define CALI_LOG(fmt, ...) do {} while (0)
++#else
+ #define CALI_LOG bpf_log
+ #endif
++#endif
+ 
+ #define CALI_INFO_NO_FLAG(fmt, ...)  CALI_LOG_IF(CALI_LOG_LEVEL_INFO, fmt, ## __VA_ARGS__)
+ #define CALI_DEBUG_NO_FLAG(fmt, ...) CALI_LOG_IF(CALI_LOG_LEVEL_DEBUG, fmt, ## __VA_ARGS__)
+

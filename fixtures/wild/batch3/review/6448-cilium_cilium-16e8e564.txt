@@ -1,0 +1,742 @@
+repo: cilium/cilium
+commit: 16e8e564d8ee6ea04ec2878ce705ceba4d915898
+rank: 6448
+
+bpf: use union v4addr for all ipv4 addresses, make addr[] first member
+
+For parsing v4addr into a Go type that can be assigned to with a byte slice,
+the byte array needs to be the first member in the union. bpf2go picks the first
+member since Go doesn't have unions. Otherwise, v4addr would become `struct
+{ be32 uint32; }`, which is not very convenient nor sound in Go.
+
+Also make sure structs embedding a v4/v6 union get zero-initialized correctly,
+since having implicit padding means uninitialized memory can get passed to map
+lookups which may upset the verifier.
+
+Signed-off-by: Timo Beckers <timo@isovalent.com>
+
+--- bpf/bpf_host.c
+@@ -806,7 +806,7 @@ handle_ipv4_cont(struct __ctx_buff *ctx, __u32 secctx, const bool from_host,
+ 		if (vtep && vtep->vtep_mac && vtep->tunnel_endpoint) {
+ 			if (eth_store_daddr(ctx, (__u8 *)&vtep->vtep_mac, 0) < 0)
+ 				return DROP_WRITE_ERROR;
+-			fake_info.tunnel_endpoint.ip4 = vtep->tunnel_endpoint;
++			fake_info.tunnel_endpoint.ip4.be32 = vtep->tunnel_endpoint;
+ 			fake_info.flag_has_tunnel_ep = true;
+ 			return __encap_and_redirect_with_nodeid(ctx, &fake_info,
+ 								secctx, WORLD_IPV4_ID,
+
+--- bpf/bpf_lxc.c
+@@ -951,7 +951,7 @@ static __always_inline int handle_ipv6_from_lxc(struct __ctx_buff *ctx, __u32 *d
+ 
+ 			auth_type = (__u8)*ext_err;
+ 			if (info)
+-				tunnel_endpoint = info->tunnel_endpoint.ip4;
++				tunnel_endpoint = info->tunnel_endpoint.ip4.be32;
+ 			verdict = auth_lookup(ctx, SECLABEL_IPV6, *dst_sec_identity,
+ 					      tunnel_endpoint, auth_type);
+ 		}
+@@ -1279,7 +1279,7 @@ ipv4_forward_to_destination(struct __ctx_buff *ctx, struct iphdr *ip4,
+ 		if (vtep && vtep->vtep_mac && vtep->tunnel_endpoint) {
+ 			if (eth_store_daddr(ctx, (__u8 *)&vtep->vtep_mac, 0) < 0)
+ 				return DROP_WRITE_ERROR;
+-			fake_info.tunnel_endpoint.ip4 = vtep->tunnel_endpoint;
++			fake_info.tunnel_endpoint.ip4.be32 = vtep->tunnel_endpoint;
+ 			fake_info.flag_has_tunnel_ep = true;
+ 			return __encap_and_redirect_with_nodeid(ctx, &fake_info,
+ 								SECLABEL_IPV4, WORLD_IPV4_ID,
+@@ -1321,7 +1321,7 @@ ipv4_forward_to_destination(struct __ctx_buff *ctx, struct iphdr *ip4,
+ 		if (ct_status == CT_REPLY) {
+ 			if (identity_is_remote_node(dst_sec_identity) && ct_state->from_tunnel) {
+ 				/* Do not modify [info], as this will update IPcache */
+-				fake_info.tunnel_endpoint.ip4 = ip4->daddr;
++				fake_info.tunnel_endpoint.ip4.be32 = ip4->daddr;
+ 				fake_info.flag_has_tunnel_ep = true;
+ 				info = &fake_info;
+ 			}
+@@ -1514,7 +1514,7 @@ static __always_inline int handle_ipv4_from_lxc(struct __ctx_buff *ctx, __u32 *d
+ 
+ 			auth_type = (__u8)*ext_err;
+ 			if (info)
+-				tunnel_endpoint = info->tunnel_endpoint.ip4;
++				tunnel_endpoint = info->tunnel_endpoint.ip4.be32;
+ 			verdict = auth_lookup(ctx, SECLABEL_IPV4, *dst_sec_identity,
+ 					      tunnel_endpoint, auth_type);
+ 		}
+@@ -1942,7 +1942,7 @@ ipv6_policy(struct __ctx_buff *ctx, struct ipv6hdr *ip6, __u32 src_label,
+ 			if (sep) {
+ 				auth_type = (__u8)*ext_err;
+ 				verdict = auth_lookup(ctx, SECLABEL_IPV6, src_label,
+-						      sep->tunnel_endpoint.ip4, auth_type);
++						      sep->tunnel_endpoint.ip4.be32, auth_type);
+ 			}
+ 		}
+ 
+@@ -2252,7 +2252,7 @@ ipv4_policy(struct __ctx_buff *ctx, struct iphdr *ip4, __u32 src_label,
+ 			if (sep) {
+ 				auth_type = (__u8)*ext_err;
+ 				verdict = auth_lookup(ctx, SECLABEL_IPV4, src_label,
+-						      sep->tunnel_endpoint.ip4, auth_type);
++						      sep->tunnel_endpoint.ip4.be32, auth_type);
+ 			}
+ 		}
+ 		/* Emit verdict if drop or if allow for CT_NEW. */
+
+--- bpf/bpf_overlay.c
+@@ -453,7 +453,7 @@ int tail_handle_arp(struct __ctx_buff *ctx)
+ 	if (unlikely(ret != 0))
+ 		return send_drop_notify_error(ctx, UNKNOWN_ID, ret, METRIC_EGRESS);
+ 	if (info->tunnel_endpoint) {
+-		fake_info.tunnel_endpoint.ip4 = info->tunnel_endpoint;
++		fake_info.tunnel_endpoint.ip4.be32 = info->tunnel_endpoint;
+ 		fake_info.flag_has_tunnel_ep = true;
+ 		ret = __encap_and_redirect_with_nodeid(ctx, &fake_info,
+ 						       LOCAL_NODE_ID, WORLD_IPV4_ID,
+
+--- bpf/lib/common.h
+@@ -63,8 +63,8 @@ enum {
+ typedef __u64 mac_t;
+ 
+ union v4addr {
+-	__be32 be32;
+ 	__u8 addr[4];
++	__be32 be32;
+ };
+ 
+ #define THIS_IS_L3_DEV		(ETH_HLEN == 0)
+
+--- bpf/lib/egress_gateway.h
+@@ -245,7 +245,7 @@ bool egress_gw_reply_needs_redirect_hook(struct iphdr *ip4, __u32 *tunnel_endpoi
+ 		if (!info || !info->flag_has_tunnel_ep)
+ 			return false;
+ 
+-		*tunnel_endpoint = info->tunnel_endpoint.ip4;
++		*tunnel_endpoint = info->tunnel_endpoint.ip4.be32;
+ 		*dst_sec_identity = info->sec_identity;
+ 
+ 		return true;
+@@ -437,7 +437,7 @@ bool egress_gw_reply_needs_redirect_hook_v6(struct ipv6hdr *ip6,
+ 		const struct remote_endpoint_info *egw_info;
+ 
+ 		egw_info = lookup_ip6_remote_endpoint((union v6addr *)&ip6->daddr, 0);
+-		if (!egw_info || egw_info->tunnel_endpoint.ip4 == 0)
++		if (!egw_info || egw_info->tunnel_endpoint.ip4.be32 == 0)
+ 			return false;
+ 
+ 		*info = egw_info;
+@@ -580,7 +580,7 @@ int egress_gw_handle_request(struct __ctx_buff *ctx, __be16 proto,
+ 		return CTX_ACT_OK;
+ 
+ 	/* Send the packet to egress gateway node through a tunnel. */
+-	fake_info.tunnel_endpoint.ip4 = gateway_ip;
++	fake_info.tunnel_endpoint.ip4.be32 = gateway_ip;
+ 	fake_info.flag_has_tunnel_ep = true;
+ 	return encap_and_redirect_with_nodeid(ctx, &fake_info,
+ 					      src_sec_identity, dst_sec_identity,
+
+--- bpf/lib/encap.h
+@@ -78,7 +78,7 @@ __encap_and_redirect_with_nodeid(struct __ctx_buff *ctx,
+ 					   trace->monitor, &ifindex, proto);
+ 	else
+ 		ret = __encap_with_nodeid4(ctx, 0, 0,
+-					   info->tunnel_endpoint.ip4, seclabel,
++					   info->tunnel_endpoint.ip4.be32, seclabel,
+ 					   dstid, vni, trace->reason,
+ 					   trace->monitor, &ifindex, proto);
+ 	if (ret != CTX_ACT_REDIRECT)
+
+--- bpf/lib/eps.h
+@@ -16,12 +16,7 @@
+  */
+ struct endpoint_key {
+ 	union {
+-		struct {
+-			__u32		ip4;
+-			__u32		pad1;
+-			__u32		pad2;
+-			__u32		pad3;
+-		};
++		union v4addr	ip4;
+ 		union v6addr	ip6;
+ 	};
+ 	__u8 family;
+@@ -62,7 +57,7 @@ struct {
+ static __always_inline __maybe_unused const struct endpoint_info *
+ __lookup_ip6_endpoint(const union v6addr *ip6)
+ {
+-	struct endpoint_key key = {};
++	struct endpoint_key key __align_stack_8 = {};
+ 
+ 	key.ip6 = *ip6;
+ 	key.family = ENDPOINT_KEY_IPV6;
+@@ -79,9 +74,9 @@ lookup_ip6_endpoint(const struct ipv6hdr *ip6)
+ static __always_inline __maybe_unused const struct endpoint_info *
+ __lookup_ip4_endpoint(__u32 ip)
+ {
+-	struct endpoint_key key = {};
++	struct endpoint_key key __align_stack_8 = {};
+ 
+-	key.ip4 = ip;
++	key.ip4.be32 = ip;
+ 	key.family = ENDPOINT_KEY_IPV4;
+ 
+ 	return map_lookup_elem(&cilium_lxc, &key);
+@@ -96,12 +91,7 @@ lookup_ip4_endpoint(const struct iphdr *ip4)
+ struct remote_endpoint_info {
+ 	__u32		sec_identity;
+ 	union {
+-		struct {
+-			__u32	ip4;
+-			__u32	pad1;
+-			__u32	pad2;
+-			__u32	pad3;
+-		};
++		union v4addr	ip4;
+ 		union v6addr	ip6;
+ 	} tunnel_endpoint;
+ 	__u16		pad;
+@@ -119,12 +109,7 @@ struct ipcache_key {
+ 	__u8 pad1;
+ 	__u8 family;
+ 	union {
+-		struct {
+-			__u32		ip4;
+-			__u32		pad4;
+-			__u32		pad5;
+-			__u32		pad6;
+-		};
++		union v4addr	ip4;
+ 		union v6addr	ip6;
+ 	};
+ } __packed;
+@@ -151,11 +136,11 @@ static __always_inline __maybe_unused const struct remote_endpoint_info *
+ ipcache_lookup6(const void *map, const union v6addr *addr,
+ 		__u32 prefix, __u32 cluster_id)
+ {
+-	struct ipcache_key key = {
+-		.lpm_key = { IPCACHE_PREFIX_LEN(prefix), {} },
+-		.family = ENDPOINT_KEY_IPV6,
+-		.ip6 = *addr,
+-	};
++	struct ipcache_key key = {};
++
++	key.lpm_key.prefixlen = IPCACHE_PREFIX_LEN(prefix);
++	key.family = ENDPOINT_KEY_IPV6;
++	key.ip6 = *addr;
+ 
+ 	/* Check overflow */
+ 	if (cluster_id > UINT16_MAX)
+@@ -172,19 +157,18 @@ ipcache_lookup6(const void *map, const union v6addr *addr,
+ static __always_inline __maybe_unused const struct remote_endpoint_info *
+ ipcache_lookup4(const void *map, __be32 addr, __u32 prefix, __u32 cluster_id)
+ {
+-	struct ipcache_key key = {
+-		.lpm_key = { IPCACHE_PREFIX_LEN(prefix), {} },
+-		.family = ENDPOINT_KEY_IPV4,
+-		.ip4 = addr,
+-	};
++	struct ipcache_key key = {};
++
++	key.lpm_key = (struct bpf_lpm_trie_key){ IPCACHE_PREFIX_LEN(prefix), {} };
++	key.family = ENDPOINT_KEY_IPV4;
++	key.ip4.be32 = addr & GET_PREFIX(prefix);
+ 
+ 	/* Check overflow */
+ 	if (cluster_id > UINT16_MAX)
+ 		return NULL;
+ 
+ 	key.cluster_id = (__u16)cluster_id;
+ 
+-	key.ip4 &= GET_PREFIX(prefix);
+ 	return map_lookup_elem(map, &key);
+ }
+ 
+
+--- bpf/lib/host_firewall.h
+@@ -83,7 +83,7 @@ __ipv6_host_policy_egress(struct __ctx_buff *ctx, bool is_host_id,
+ 		info = lookup_ip6_remote_endpoint((union v6addr *)&ip6->daddr, 0);
+ 		if (info) {
+ 			dst_sec_identity = info->sec_identity;
+-			tunnel_endpoint = info->tunnel_endpoint.ip4;
++			tunnel_endpoint = info->tunnel_endpoint.ip4.be32;
+ 		}
+ 		cilium_dbg(ctx, info ? DBG_IP_ID_MAP_SUCCEED6 : DBG_IP_ID_MAP_FAILED6,
+ 			   ip6->daddr.s6_addr32[3], dst_sec_identity);
+@@ -217,7 +217,7 @@ __ipv6_host_policy_ingress(struct __ctx_buff *ctx, struct ipv6hdr *ip6,
+ 	info = lookup_ip6_remote_endpoint((union v6addr *)&ip6->saddr, 0);
+ 	if (info) {
+ 		*src_sec_identity = info->sec_identity;
+-		tunnel_endpoint = info->tunnel_endpoint.ip4;
++		tunnel_endpoint = info->tunnel_endpoint.ip4.be32;
+ 	}
+ 	cilium_dbg(ctx, info ? DBG_IP_ID_MAP_SUCCEED6 : DBG_IP_ID_MAP_FAILED6,
+ 		   ip6->saddr.s6_addr32[3], *src_sec_identity);
+@@ -366,7 +366,7 @@ __ipv4_host_policy_egress(struct __ctx_buff *ctx, bool is_host_id,
+ 		info = lookup_ip4_remote_endpoint(ip4->daddr, 0);
+ 		if (info) {
+ 			dst_sec_identity = info->sec_identity;
+-			tunnel_endpoint = info->tunnel_endpoint.ip4;
++			tunnel_endpoint = info->tunnel_endpoint.ip4.be32;
+ 		}
+ 		cilium_dbg(ctx, info ? DBG_IP_ID_MAP_SUCCEED4 : DBG_IP_ID_MAP_FAILED4,
+ 			   ip4->daddr, dst_sec_identity);
+@@ -491,7 +491,7 @@ __ipv4_host_policy_ingress(struct __ctx_buff *ctx, struct iphdr *ip4,
+ 	info = lookup_ip4_remote_endpoint(ip4->saddr, 0);
+ 	if (info) {
+ 		*src_sec_identity = info->sec_identity;
+-		tunnel_endpoint = info->tunnel_endpoint.ip4;
++		tunnel_endpoint = info->tunnel_endpoint.ip4.be32;
+ 	}
+ 	cilium_dbg(ctx, info ? DBG_IP_ID_MAP_SUCCEED4 : DBG_IP_ID_MAP_FAILED4,
+ 		   ip4->saddr, *src_sec_identity);
+
+--- bpf/lib/ipsec.h
+@@ -221,7 +221,7 @@ ipsec_maybe_redirect_to_encrypt(struct __ctx_buff *ctx, __be16 proto,
+ 		 * set_ipsec_encrypt to obtain the correct node ID and spi.
+ 		 */
+ 		if (ctx_is_overlay(ctx)) {
+-			fake_info.tunnel_endpoint.ip4 = ip4->daddr;
++			fake_info.tunnel_endpoint.ip4.be32 = ip4->daddr;
+ 			fake_info.flag_has_tunnel_ep = true;
+ 
+ 			dst = &fake_info;
+
+--- bpf/lib/l2_responder.h
+@@ -8,7 +8,7 @@
+ #include <bpf/loader.h>
+ 
+ struct l2_responder_v4_key {
+-	__u32 ip4;
++	union v4addr ip4;
+ 	__u32 ifindex;
+ };
+ 
+@@ -77,7 +77,7 @@ int handle_l2_announcement(struct __ctx_buff *ctx, struct ipv6hdr *ip6)
+ 		if (!arp_validate(ctx, &mac, &smac, &sip, &tip))
+ 			return CTX_ACT_OK;
+ 
+-		key.ip4 = tip;
++		key.ip4.be32 = tip;
+ 		key.ifindex = ctx->ingress_ifindex;
+ 		stats = map_lookup_elem(&cilium_l2_responder_v4, &key);
+ 		if (!stats)
+
+--- bpf/lib/node.h
+@@ -14,12 +14,7 @@ struct node_key {
+ 	__u8 pad2;
+ 	__u8 family;
+ 	union {
+-		struct {
+-			__u32 ip4;
+-			__u32 pad4;
+-			__u32 pad5;
+-			__u32 pad6;
+-		};
++		union v4addr ip4;
+ 		union v6addr ip6;
+ 	};
+ };
+@@ -45,7 +40,7 @@ lookup_ip4_node(__be32 ip4)
+ 	struct node_key key = {};
+ 
+ 	key.family = ENDPOINT_KEY_IPV4;
+-	key.ip4 = ip4;
++	key.ip4.be32 = ip4;
+ 
+ 	return map_lookup_elem(&cilium_node_map_v2, &key);
+ }
+@@ -96,5 +91,5 @@ lookup_node(const struct remote_endpoint_info *info)
+ 	if (info->flag_ipv6_tunnel_ep)
+ 		return lookup_ip6_node(&info->tunnel_endpoint.ip6);
+ # endif /* ENABLE_IPV6 */
+-	return lookup_ip4_node(info->tunnel_endpoint.ip4);
++	return lookup_ip4_node(info->tunnel_endpoint.ip4.be32);
+ }
+
+--- bpf/lib/nodeport.h
+@@ -160,7 +160,7 @@ nodeport_add_tunnel_encap(struct __ctx_buff *ctx, __u32 src_ip, __be16 src_port,
+ 		return __encap_with_nodeid6(ctx, &info->tunnel_endpoint.ip6,
+ 					    src_sec_identity, info->sec_identity,
+ 					    ct_reason, monitor, ifindex, proto);
+-	return __encap_with_nodeid4(ctx, src_ip, src_port, info->tunnel_endpoint.ip4,
++	return __encap_with_nodeid4(ctx, src_ip, src_port, info->tunnel_endpoint.ip4.be32,
+ 				    src_sec_identity, info->sec_identity, NOT_VTEP_DST,
+ 				    ct_reason, monitor, ifindex, proto);
+ }
+@@ -194,7 +194,7 @@ nodeport_add_tunnel_encap_opt(struct __ctx_buff *ctx, __u32 src_ip, __be16 src_p
+ 						src_sec_identity, info->sec_identity,
+ 						opt, opt_len, ct_reason, monitor,
+ 						ifindex, proto);
+-	return __encap_with_nodeid_opt4(ctx, src_ip, src_port, info->tunnel_endpoint.ip4,
++	return __encap_with_nodeid_opt4(ctx, src_ip, src_port, info->tunnel_endpoint.ip4.be32,
+ 					src_sec_identity, info->sec_identity, NOT_VTEP_DST,
+ 					opt, opt_len, ct_reason, monitor, ifindex, proto);
+ }
+@@ -1057,7 +1057,7 @@ nodeport_rev_dnat_ipv6(struct __ctx_buff *ctx, enum ct_dir dir,
+ 		return ctx_redirect(ctx, ifindex, 0);
+ 
+ 	fib_params.l.ipv4_src = IPV4_DIRECT_ROUTING;
+-	fib_params.l.ipv4_dst = info->tunnel_endpoint.ip4;
++	fib_params.l.ipv4_dst = info->tunnel_endpoint.ip4.be32;
+ 	fib_params.l.family = AF_INET;
+ 
+ 	/* neigh map doesn't contain DMACs for other nodes */
+@@ -1829,7 +1829,7 @@ static __always_inline int encap_geneve_dsr_opt4(struct __ctx_buff *ctx, int l3_
+ 	if (!info || !info->flag_has_tunnel_ep)
+ 		return DROP_NO_TUNNEL_ENDPOINT;
+ 
+-	tunnel_endpoint = info->tunnel_endpoint.ip4;
++	tunnel_endpoint = info->tunnel_endpoint.ip4.be32;
+ 
+ 	if (ip4->protocol == IPPROTO_TCP) {
+ 		union tcp_flags tcp_flags = { .value = 0 };
+@@ -2384,7 +2384,7 @@ nodeport_rev_dnat_ipv4(struct __ctx_buff *ctx, struct trace_ctx *trace,
+ #if defined(TUNNEL_MODE)
+ 		info = lookup_ip4_remote_endpoint(ip4->daddr, 0);
+ 		if (info && info->flag_has_tunnel_ep && !info->flag_skip_tunnel) {
+-			tunnel_endpoint = info->tunnel_endpoint.ip4;
++			tunnel_endpoint = info->tunnel_endpoint.ip4.be32;
+ 			src_sec_identity = REMOTE_NODE_ID;
+ 			dst_sec_identity = info->sec_identity;
+ 		}
+@@ -2439,7 +2439,7 @@ nodeport_rev_dnat_ipv4(struct __ctx_buff *ctx, struct trace_ctx *trace,
+ 		struct remote_endpoint_info fake_info = {0};
+ 
+ 		/* Needed because info might be null while tunnel_endpoint isn't. */
+-		fake_info.tunnel_endpoint.ip4 = tunnel_endpoint;
++		fake_info.tunnel_endpoint.ip4.be32 = tunnel_endpoint;
+ 		fake_info.flag_has_tunnel_ep = true;
+ 		fake_info.sec_identity = dst_sec_identity;
+ 		ret = nodeport_add_tunnel_encap(ctx, IPV4_DIRECT_ROUTING, src_port,
+@@ -2642,7 +2642,7 @@ int tail_nodeport_nat_egress_ipv4(struct __ctx_buff *ctx)
+ #ifdef TUNNEL_MODE
+ 	info = lookup_ip4_remote_endpoint(ip4->daddr, cluster_id);
+ 	if (info && info->flag_has_tunnel_ep && !info->flag_skip_tunnel) {
+-		tunnel_endpoint = info->tunnel_endpoint.ip4;
++		tunnel_endpoint = info->tunnel_endpoint.ip4.be32;
+ 		dst_sec_identity = info->sec_identity;
+ 
+ 		target.addr = IPV4_GATEWAY;
+
+--- bpf/lib/static_data.h
+@@ -50,13 +50,13 @@
+ /* Hardcode config values at compile time, e.g. from per-endpoint headers.
+  * Can be used only once per config variable within a single compilation unit.
+  */
+-#define ASSIGN_CONFIG(type, name, value) \
++#define ASSIGN_CONFIG(type, name, ...) \
+ 	/* Emit a reference to the variable before assigning a value. Without
+ 	 * this, we risk silently declaring and defining a variable that didn't
+ 	 * exist before. */ \
+ 	void __check_##name(void) \
+ 	{ CONFIG(name); /* Error: variable was assigned before declaring. */ }; \
+-	volatile const type __config_##name = value;
++	volatile const type __config_##name = __VA_ARGS__;
+ 
+ /* Access a global configuration variable declared using DECLARE_CONFIG(). All
+  * accesses must be done through this macro to ensure the loader's dead code
+
+--- bpf/lib/subnet.h
+@@ -18,12 +18,7 @@ struct subnet_key {
+ 	__u8 pad1;
+ 	__u8 family;
+ 	union {
+-		struct {
+-			__u32		ip4;
+-			__u32		pad2;
+-			__u32		pad3;
+-			__u32		pad4;
+-		};
++		union v4addr	ip4;
+ 		union v6addr	ip6;
+ 	};
+ } __packed;
+@@ -66,11 +61,11 @@ static __always_inline __maybe_unused __u32
+ subnet_lookup6(const void *map, const union v6addr *addr)
+ {
+ 	__u32 prefix = V6_SUBNET_KEY_LEN;
+-	struct subnet_key key = {
+-		.lpm_key = { SUBNET_PREFIX_LEN(prefix), {} },
+-		.family = ENDPOINT_KEY_IPV6,
+-		.ip6 = *addr,
+-	};
++	struct subnet_key key = {};
++
++	key.lpm_key.prefixlen = SUBNET_PREFIX_LEN(prefix);
++	key.family = ENDPOINT_KEY_IPV6;
++	key.ip6 = *addr;
+ 
+ 	/* Normalize the key before lookup.
+ 	 * Clear the lower bits of the IPv6 address according to the prefix length.
+@@ -88,16 +83,15 @@ static __always_inline __maybe_unused __u32
+ subnet_lookup4(const void *map, __be32 addr)
+ {
+ 	__u32 prefix = V4_SUBNET_KEY_LEN;
+-	struct subnet_key key = {
+-		.lpm_key = { SUBNET_PREFIX_LEN(prefix), {} },
+-		.family = ENDPOINT_KEY_IPV4,
+-		.ip4 = addr,
+-	};
++	struct subnet_key key = {};
++
++	key.lpm_key.prefixlen = SUBNET_PREFIX_LEN(prefix);
++	key.family = ENDPOINT_KEY_IPV4;
+ 
+ 	/* Normalize the key before lookup.
+ 	 * Clear the lower bits of the IPv4 address according to the prefix length.
+ 	 */
+-	key.ip4 &= GET_PREFIX(prefix);
++	key.ip4.be32 = addr & GET_PREFIX(prefix);
+ 
+ 	return subnet_lookup(map, &key);
+ }
+
+--- bpf/lib/trace.h
+@@ -163,17 +163,12 @@ struct trace_notify {
+ 				*/
+ 	__u32		ifindex;
+ 	union {
+-		struct {
+-			__be32		orig_ip4;
+-			__u32		orig_pad1;
+-			__u32		orig_pad2;
+-			__u32		orig_pad3;
+-		};
++		union v4addr	orig_ip4;
+ 		union v6addr	orig_ip6;
+ 	};
+ 	__u64		ip_trace_id;
+ 	TRACE_EXTENSION
+-};
++} __align_stack_8;
+ 
+ #ifdef TRACE_NOTIFY
+ 
+@@ -226,7 +221,7 @@ _send_trace_notify(struct __ctx_buff *ctx, enum trace_point obs_point,
+ 	struct ratelimit_settings settings = {
+ 		.topup_interval_ns = NSEC_PER_SEC,
+ 	};
+-	struct trace_notify msg __align_stack_8;
++	struct trace_notify msg = {};
+ 	cls_flags_t flags = CLS_FLAG_NONE;
+ 
+ 	_update_trace_metrics(ctx, obs_point, reason, line, file);
+@@ -278,7 +273,7 @@ _send_trace_notify4(struct __ctx_buff *ctx, enum trace_point obs_point,
+ 	struct ratelimit_settings settings = {
+ 		.topup_interval_ns = NSEC_PER_SEC,
+ 	};
+-	struct trace_notify msg __align_stack_8;
++	struct trace_notify msg = {};
+ 	cls_flags_t flags = CLS_FLAG_NONE;
+ 
+ 	_update_trace_metrics(ctx, obs_point, reason, line, file);
+@@ -305,7 +300,7 @@ _send_trace_notify4(struct __ctx_buff *ctx, enum trace_point obs_point,
+ 		.reason		= reason,
+ 		.ifindex	= ifindex,
+ 		.flags		= flags,
+-		.orig_ip4	= orig_addr,
++		.orig_ip4.be32	= orig_addr,
+ 		.ip_trace_id	= ip_trace_id,
+ 	};
+ 
+@@ -330,7 +325,7 @@ _send_trace_notify6(struct __ctx_buff *ctx, enum trace_point obs_point,
+ 	struct ratelimit_settings settings = {
+ 		.topup_interval_ns = NSEC_PER_SEC,
+ 	};
+-	struct trace_notify msg __align_stack_8;
++	struct trace_notify msg = {};
+ 	cls_flags_t flags = CLS_FLAG_NONE;
+ 
+ 	_update_trace_metrics(ctx, obs_point, reason, line, file);
+
+--- bpf/lib/trace_sock.h
+@@ -59,12 +59,7 @@ enum xlate_point {
+ 
+ struct ip {
+ 	union {
+-		struct {
+-			__be32 ip4;
+-			__u32 pad1;
+-			__u32 pad2;
+-			__u32 pad3;
+-		};
++		union v4addr ip4;
+ 		union v6addr ip6;
+ 	} __packed;
+ };
+@@ -158,14 +153,14 @@ send_trace_sock_notify4(struct __ctx_sock *ctx,
+ 	}
+ 
+ 	msg = (typeof(msg)){
+-		.type		= CILIUM_NOTIFY_TRACE_SOCK,
+-		.xlate_point	= xlate_point,
+-		.dst_ip.ip4	= dst_ip,
+-		.dst_port	= dst_port,
+-		.sock_cookie	= sock_local_cookie(ctx),
+-		.cgroup_id	= get_current_cgroup_id(),
+-		.l4_proto	= parse_protocol(ctx->protocol),
+-		.ipv6		= 0,
++		.type		 = CILIUM_NOTIFY_TRACE_SOCK,
++		.xlate_point	 = xlate_point,
++		.dst_ip.ip4.be32 = dst_ip,
++		.dst_port	 = dst_port,
++		.sock_cookie	 = sock_local_cookie(ctx),
++		.cgroup_id	 = get_current_cgroup_id(),
++		.l4_proto	 = parse_protocol(ctx->protocol),
++		.ipv6		 = 0,
+ 	};
+ 
+ 	trace_sock_extension_hook(ctx, msg);
+
+--- bpf/tests/lib/endpoint.h
+@@ -25,10 +25,10 @@ static __always_inline void
+ endpoint_v4_add_entry(__be32 addr, __u32 ifindex, __u16 lxc_id, __u32 flags, __u32 sec_id,
+ 		      __u32 parent_ifindex, const __u8 *ep_mac_addr, const __u8 *node_mac_addr)
+ {
+-	struct endpoint_key key = {
+-		.ip4 = addr,
+-		.family = ENDPOINT_KEY_IPV4,
+-	};
++	struct endpoint_key key __align_stack_8 = {};
++
++	key.ip4.be32 = addr;
++	key.family = ENDPOINT_KEY_IPV4;
+ 
+ 	endpoint_add_entry(&key, ifindex, lxc_id, flags, sec_id, parent_ifindex,
+ 			   ep_mac_addr, node_mac_addr);
+@@ -37,10 +37,10 @@ endpoint_v4_add_entry(__be32 addr, __u32 ifindex, __u16 lxc_id, __u32 flags, __u
+ static __always_inline void
+ endpoint_v4_del_entry(__be32 addr)
+ {
+-	struct endpoint_key key = {
+-		.ip4 = addr,
+-		.family = ENDPOINT_KEY_IPV4,
+-	};
++	struct endpoint_key key __align_stack_8 = {};
++
++	key.ip4.be32 = addr;
++	key.family = ENDPOINT_KEY_IPV4;
+ 
+ 	map_delete_elem(&cilium_lxc, &key);
+ }
+@@ -50,9 +50,9 @@ endpoint_v6_add_entry(const union v6addr *addr, __u32 ifindex, __u16 lxc_id,
+ 		      __u32 flags, __u32 sec_id,
+ 		      const __u8 *ep_mac_addr, const __u8 *node_mac_addr)
+ {
+-	struct endpoint_key key = {
+-		.family = ENDPOINT_KEY_IPV6,
+-	};
++	struct endpoint_key key __align_stack_8 = {};
++
++	key.family = ENDPOINT_KEY_IPV6;
+ 
+ 	memcpy(&key.ip6, addr, sizeof(*addr));
+ 
+
+--- bpf/tests/lib/ipcache.h
+@@ -14,7 +14,7 @@ ipcache_add_entry(struct ipcache_key *key, __u32 sec_identity,
+ 		__bpf_memcpy_builtin(&value.tunnel_endpoint.ip6, tunnel_ep, sizeof(*tunnel_ep));
+ 		value.flag_ipv6_tunnel_ep = true;
+ 	} else {
+-		value.tunnel_endpoint.ip4 = tunnel_ep->p1;
++		value.tunnel_endpoint.ip4.be32 = tunnel_ep->p1;
+ 	}
+ 	value.key = spi;
+ 	value.flag_skip_tunnel = flag_skip_tunnel;
+@@ -29,12 +29,12 @@ __ipcache_v4_add_entry(__be32 addr, __u8 cluster_id, __u32 sec_identity,
+ 		       const union v6addr *tunnel_ep, __u8 spi, bool flag_skip_tunnel,
+ 		       bool ipv6_underlay, __u32 mask_size)
+ {
+-	struct ipcache_key key = {
+-		.lpm_key.prefixlen = IPCACHE_PREFIX_LEN(mask_size),
+-		.cluster_id = cluster_id,
+-		.family = ENDPOINT_KEY_IPV4,
+-		.ip4 = addr,
+-	};
++	struct ipcache_key key = {};
++
++	key.lpm_key.prefixlen = IPCACHE_PREFIX_LEN(mask_size);
++	key.cluster_id = cluster_id;
++	key.family = ENDPOINT_KEY_IPV4;
++	key.ip4.be32 = addr;
+ 
+ 	ipcache_add_entry(&key, sec_identity, tunnel_ep, spi,
+ 			  flag_skip_tunnel, ipv6_underlay);
+
+--- bpf/tests/lib/node.h
+@@ -15,21 +15,21 @@ node_add_entry(struct node_key *key, __u16 node_id, __u8 spi)
+ static __always_inline void
+ node_v4_add_entry(__be32 node_ip, __u16 node_id, __u8 spi)
+ {
+-	struct node_key key = {
+-		.family = ENDPOINT_KEY_IPV4,
+-		.ip4 = node_ip,
+-	};
++	struct node_key key = {};
++
++	key.family = ENDPOINT_KEY_IPV4;
++	key.ip4.be32 = node_ip;
+ 
+ 	node_add_entry(&key, node_id, spi);
+ }
+ 
+ static __always_inline void
+ node_v6_add_entry(const union v6addr *node_ip, __u16 node_id, __u8 spi)
+ {
+-	struct node_key key = {
+-		.family = ENDPOINT_KEY_IPV6,
+-		.ip6 = *node_ip,
+-	};
++	struct node_key key = {};
++
++	key.family = ENDPOINT_KEY_IPV6;
++	key.ip6 = *node_ip;
+ 
+ 	node_add_entry(&key, node_id, spi);
+ }
+
+--- bpf/tests/lib/subnet.h
+@@ -13,11 +13,11 @@ subnet_map_add_entry(struct subnet_key *key, __u32 identity)
+ static __always_inline void
+ __subnet_v4_add_entry(__be32 addr, __u32 identity, __u32 mask_size)
+ {
+-	struct subnet_key key = {
+-		.lpm_key.prefixlen = SUBNET_PREFIX_LEN(mask_size),
+-		.family = ENDPOINT_KEY_IPV4,
+-		.ip4 = addr,
+-	};
++    struct subnet_key key = {};
++
++    key.lpm_key.prefixlen = SUBNET_PREFIX_LEN(mask_size);
++    key.family = ENDPOINT_KEY_IPV4;
++    key.ip4.be32 = addr;
+ 
+     subnet_map_add_entry(&key, identity);
+ }
+@@ -31,10 +31,10 @@ subnet_v4_add_entry(__be32 addr, __u32 identity)
+ static __always_inline void
+ __subnet_v6_add_entry(const union v6addr *addr, __u32 identity, __u32 mask_size)
+ {
+-	struct subnet_key key __align_stack_8 = {
+-		.lpm_key.prefixlen = SUBNET_PREFIX_LEN(mask_size),
+-		.family = ENDPOINT_KEY_IPV6,
+-	};
++    struct subnet_key key __align_stack_8 = {};
++
++    key.lpm_key.prefixlen = SUBNET_PREFIX_LEN(mask_size);
++    key.family = ENDPOINT_KEY_IPV6;
+ 
+     memcpy(&key.ip6, addr, sizeof(*addr));
+ 
+
+--- bpf/tests/tc_l2_announcement.c
+@@ -101,7 +101,7 @@ int l2_announcement_arp_happy_path_setup(struct __ctx_buff *ctx)
+ 	struct l2_responder_stats value = {0};
+ 
+ 	key.ifindex = 0;
+-	key.ip4 = v4_svc_one;
++	key.ip4.be32 = v4_svc_one;
+ 	map_update_elem(&cilium_l2_responder_v4, &key, &value, BPF_ANY);
+ 
+ 	config_set(RUNTIME_CONFIG_AGENT_LIVENESS, ktime_get_ns());
+

@@ -1,0 +1,695 @@
+repo: aquasecurity/tracee
+commit: f806cb4b71b8f4082e182adf6c201c1e81f05753
+rank: 2332
+
+perf: use lazy program data initialization
+
+We currently initialize all task context related fields on the beginning
+of our BPF programs. Reading all the relevant fields takes some CPU
+cycles although these fields are not always used. In many cases, for
+example when filters are applied, the event is not sent to userspace and
+is just dropped without any side effects.
+
+Reading only the essential fields and leaving all other fields
+initialization to the submit stage will avoid wasting these cycles, and
+will also allow us to perform some of the event enrichment in userspace
+instead (not part of this PR).
+
+To do this change, we have to remove the matched_policies which were
+cached in task_info since we can't check if "context changed" anymore.
+Considering that the average user will only use one or two scope filters
+(e.g. container id or binary name), computing the scope on every run is
+not a big overhead - running BPF statistics with and without the
+change verified this is indeed the case, and with the change the
+performance is even slightly better.
+
+Although this change does not introduce a visible performance gain for
+most of the events, it is clear for some other specific event that it
+does. For example, the hidden_inode event which attach a program to the
+filldir64 function has a 50% performance gain.
+
+--- pkg/ebpf/c/common/buffer.h
+@@ -3,6 +3,7 @@
+ 
+ #include <vmlinux.h>
+ 
++#include <common/context.h>
+ #include <common/hash.h>
+ #include <common/network.h>
+ 
+@@ -448,6 +449,10 @@ statfunc int events_perf_submit(program_data_t *p, u32 id, long ret)
+     p->event->context.eventid = id;
+     p->event->context.retval = ret;
+ 
++    init_task_context(&p->event->context.task, p->event->task, p->config->options);
++    // keep task_info updated
++    bpf_probe_read_kernel(&p->task_info->context, sizeof(task_context_t), &p->event->context.task);
++
+     // Get Stack trace
+     if (p->config->options & OPT_CAPTURE_STACK_TRACES) {
+         int stack_id = bpf_get_stackid(p->ctx, &stack_addresses, BPF_F_USER_STACK);
+
+--- pkg/ebpf/c/common/context.h
+@@ -9,7 +9,7 @@
+ 
+ // PROTOTYPES
+ 
+-statfunc int init_context(void *, event_context_t *, struct task_struct *, u32);
++statfunc int init_task_context(task_context_t *, struct task_struct *, u32);
+ statfunc void init_proc_info_scratch(u32, scratch_t *);
+ statfunc proc_info_t *init_proc_info(u32, u32);
+ statfunc void init_task_info_scratch(u32, scratch_t *);
+@@ -21,74 +21,43 @@ statfunc void reset_event_args(program_data_t *);
+ 
+ // FUNCTIONS
+ 
+-statfunc int
+-init_context(void *ctx, event_context_t *context, struct task_struct *task, u32 options)
++statfunc int init_task_context(task_context_t *tsk_ctx, struct task_struct *task, u32 options)
+ {
+-    long ret = 0;
+-    u64 id = bpf_get_current_pid_tgid();
+-
+     // NOTE: parent is always a real process, not a potential thread group leader
+     struct task_struct *leader = get_leader_task(task);
+     struct task_struct *up_parent = get_leader_task(get_parent_task(leader));
+ 
+     // Task Info on Host
+-    context->task.host_tid = id;
+-    context->task.host_pid = id >> 32;
+-    context->task.host_ppid = get_task_pid(up_parent); // always a real process (not a lwp)
++    tsk_ctx->host_ppid = get_task_pid(up_parent); // always a real process (not a lwp)
+     // Namespaces Info
+-    context->task.tid = get_task_ns_pid(task);
+-    context->task.pid = get_task_ns_tgid(task);
++    tsk_ctx->tid = get_task_ns_pid(task);
++    tsk_ctx->pid = get_task_ns_tgid(task);
+ 
+     u32 task_pidns_id = get_task_pid_ns_id(task);
+     u32 up_parent_pidns_id = get_task_pid_ns_id(up_parent);
+ 
+     if (task_pidns_id == up_parent_pidns_id)
+-        context->task.ppid = get_task_ns_pid(up_parent); // e.g: pid 1 will have nsppid 0
++        tsk_ctx->ppid = get_task_ns_pid(up_parent); // e.g: pid 1 will have nsppid 0
+ 
+-    context->task.pid_id = task_pidns_id;
+-    context->task.mnt_id = get_task_mnt_ns_id(task);
++    tsk_ctx->pid_id = task_pidns_id;
++    tsk_ctx->mnt_id = get_task_mnt_ns_id(task);
+     // User Info
+-    context->task.uid = bpf_get_current_uid_gid();
++    tsk_ctx->uid = bpf_get_current_uid_gid();
+     // Times
+-    context->task.start_time = get_task_start_time(task);
+-    context->task.leader_start_time = get_task_start_time(leader);
+-    context->task.parent_start_time = get_task_start_time(up_parent);
+-
+-    context->task.flags = 0;
++    tsk_ctx->start_time = get_task_start_time(task);
++    tsk_ctx->leader_start_time = get_task_start_time(leader);
++    tsk_ctx->parent_start_time = get_task_start_time(up_parent);
+ 
+     if (is_compat(task))
+-        context->task.flags |= IS_COMPAT_FLAG;
++        tsk_ctx->flags |= IS_COMPAT_FLAG;
+ 
+     // Program name
+-    __builtin_memset(context->task.comm, 0, sizeof(context->task.comm));
+-    ret = bpf_get_current_comm(&context->task.comm, sizeof(context->task.comm));
+-    if (unlikely(ret < 0)) {
+-        tracee_log(ctx, BPF_LOG_LVL_ERROR, BPF_LOG_ID_GET_CURRENT_COMM, ret);
+-        return -1;
+-    }
++    bpf_get_current_comm(&tsk_ctx->comm, sizeof(tsk_ctx->comm));
+ 
+     // UTS Name
+     char *uts_name = get_task_uts_name(task);
+-    if (uts_name) {
+-        __builtin_memset(context->task.uts_name, 0, sizeof(context->task.uts_name));
+-        bpf_probe_read_str(&context->task.uts_name, TASK_COMM_LEN, uts_name);
+-    }
+-
+-    // Cgroup ID
+-    if (options & OPT_CGROUP_V1) {
+-        context->task.cgroup_id = get_cgroup_v1_subsys0_id(task);
+-    } else {
+-        context->task.cgroup_id = bpf_get_current_cgroup_id();
+-    }
+-
+-    // Context timestamp
+-    context->ts = bpf_ktime_get_ns();
+-    // Clean Stack Trace ID
+-    context->stack_id = 0;
+-    // Processor ID
+-    context->processor_id = (u16) bpf_get_smp_processor_id();
+-    // Syscall ID
+-    context->syscall = get_task_syscall_id(task);
++    if (uts_name)
++        bpf_probe_read_kernel_str(&tsk_ctx->uts_name, TASK_COMM_LEN, uts_name);
+ 
+     return 0;
+ }
+@@ -112,10 +81,7 @@ statfunc proc_info_t *init_proc_info(u32 pid, u32 scratch_idx)
+ 
+ statfunc void init_task_info_scratch(u32 tid, scratch_t *scratch)
+ {
+-    scratch->task_info.syscall_traced = false;
+-    scratch->task_info.policies_version = 0;
+-    scratch->task_info.recompute_scope = true;
+-    scratch->task_info.container_state = CONTAINER_UNKNOWN;
++    __builtin_memset(&scratch->task_info, 0, sizeof(task_info_t));
+     bpf_map_update_elem(&task_info_map, &tid, &scratch->task_info, BPF_NOEXIST);
+ }
+ 
+@@ -130,22 +96,13 @@ statfunc task_info_t *init_task_info(u32 tid, u32 scratch_idx)
+     return bpf_map_lookup_elem(&task_info_map, &tid);
+ }
+ 
+-statfunc bool context_changed(task_context_t *old, task_context_t *new)
+-{
+-    return (old->cgroup_id != new->cgroup_id) || old->uid != new->uid ||
+-           old->mnt_id != new->mnt_id || old->pid_id != new->pid_id ||
+-           *(u64 *) old->comm != *(u64 *) new->comm ||
+-           *(u64 *) &old->comm[8] != *(u64 *) &new->comm[8] ||
+-           *(u64 *) old->uts_name != *(u64 *) new->uts_name ||
+-           *(u64 *) &old->uts_name[8] != *(u64 *) &new->uts_name[8];
+-}
+-
+ // clang-format off
+ statfunc int init_program_data(program_data_t *p, void *ctx)
+ {
+-    long ret = 0;
+     int zero = 0;
+ 
++    p->ctx = ctx;
++
+     // allow caller to specify a stack/map based event_data_t pointer
+     if (p->event == NULL) {
+         p->event = bpf_map_lookup_elem(&event_data_map, &zero);
+@@ -157,19 +114,20 @@ statfunc int init_program_data(program_data_t *p, void *ctx)
+     if (unlikely(p->config == NULL))
+         return 0;
+ 
+-    p->event->task = (struct task_struct *) bpf_get_current_task();
+-    ret = init_context(ctx, &p->event->context, p->event->task, p->config->options);
+-    if (unlikely(ret < 0)) {
+-        // disable logging as a workaround for instruction limit verifier error on kernel 4.19
+-        // tracee_log(ctx, BPF_LOG_LVL_ERROR, BPF_LOG_ID_INIT_CONTEXT, ret);
+-        return 0;
+-    }
+-
+-    p->ctx = ctx;
+     p->event->args_buf.offset = 0;
+     p->event->args_buf.argnum = 0;
++    p->event->task = (struct task_struct *) bpf_get_current_task();
++
++    __builtin_memset(&p->event->context.task, 0, sizeof(p->event->context.task));
+ 
+-    bool container_lookup_required = true;
++    // get the minimal context required at this stage
++    // any other context will be initialized only if event is submitted
++    u64 id = bpf_get_current_pid_tgid();
++    p->event->context.task.host_tid = id;
++    p->event->context.task.host_pid = id >> 32;
++    p->event->context.ts = bpf_ktime_get_ns();
++    p->event->context.processor_id = (u16) bpf_get_smp_processor_id();
++    p->event->context.syscall = get_task_syscall_id(p->event->task);
+ 
+     u32 host_pid = p->event->context.task.host_pid;
+     p->proc_info = bpf_map_lookup_elem(&proc_info_map, &host_pid);
+@@ -186,29 +144,9 @@ statfunc int init_program_data(program_data_t *p, void *ctx)
+         if (unlikely(p->task_info == NULL))
+             return 0;
+ 
+-        // just initialized task info: recompute_scope is already set to true
+-        goto out;
+-    }
+-
+-    // in some places we don't call should_trace() (e.g. sys_exit) which also initializes
+-    // matched_policies. Use previously found scopes then to initialize it.
+-    p->event->context.matched_policies = p->task_info->matched_scopes;
+-
+-    // check if we need to recompute scope due to context change
+-    if (context_changed(&p->task_info->context, &p->event->context.task))
+-        p->task_info->recompute_scope = true;
+-
+-    u8 container_state = p->task_info->container_state;
+-
+-    // if task is already part of a container: no need to check if state changed
+-    switch (container_state) {
+-        case CONTAINER_STARTED:
+-        case CONTAINER_EXISTED:
+-            p->event->context.task.flags |= CONTAINER_STARTED_FLAG;
+-            container_lookup_required = false;
++        init_task_context(&p->task_info->context, p->event->task, p->config->options);
+     }
+ 
+-out:
+     if (unlikely(p->event->context.policies_version != p->config->policies_version)) {
+         // copy policies_config to event data
+         long ret = bpf_probe_read_kernel(
+@@ -218,27 +156,26 @@ statfunc int init_program_data(program_data_t *p, void *ctx)
+ 
+         p->event->context.policies_version = p->config->policies_version;
+     }
+-    if (p->task_info->policies_version != p->event->context.policies_version) {
+-        p->task_info->policies_version = p->event->context.policies_version;
+-        p->task_info->recompute_scope = true;
+-    }
+ 
+-    if (container_lookup_required) {
+-        u32 cgroup_id_lsb = p->event->context.task.cgroup_id;
+-        u8 *state = bpf_map_lookup_elem(&containers_map, &cgroup_id_lsb);
+-
+-        if (state != NULL) {
+-            p->task_info->container_state = *state;
+-            switch (*state) {
+-                case CONTAINER_STARTED:
+-                case CONTAINER_EXISTED:
+-                    p->event->context.task.flags |= CONTAINER_STARTED_FLAG;
+-            }
++    if (p->config->options & OPT_CGROUP_V1) {
++        p->event->context.task.cgroup_id = get_cgroup_v1_subsys0_id(p->event->task);
++    } else {
++        p->event->context.task.cgroup_id = bpf_get_current_cgroup_id();
++    }
++    p->task_info->context.cgroup_id = p->event->context.task.cgroup_id;
++    u32 cgroup_id_lsb = p->event->context.task.cgroup_id;
++    u8 *state = bpf_map_lookup_elem(&containers_map, &cgroup_id_lsb);
++    if (state != NULL) {
++        p->task_info->container_state = *state;
++        switch (*state) {
++            case CONTAINER_STARTED:
++            case CONTAINER_EXISTED:
++                p->event->context.task.flags |= CONTAINER_STARTED_FLAG;
+         }
+     }
+ 
+-    // update task_info with the new context
+-    bpf_probe_read(&p->task_info->context, sizeof(task_context_t), &p->event->context.task);
++    // initialize matched_policies to all policies match
++    p->event->context.matched_policies = ~0ULL;
+ 
+     return 1;
+ }
+@@ -268,9 +205,6 @@ statfunc int init_tailcall_program_data(program_data_t *p, void *ctx)
+         return 0;
+     }
+ 
+-    p->event->args_buf.offset = 0;
+-    p->event->args_buf.argnum = 0;
+-
+     return 1;
+ }
+ 
+
+--- pkg/ebpf/c/common/filesystem.h
+@@ -252,7 +252,7 @@ statfunc void *get_path_str(struct path *path)
+         return NULL;
+ 
+     size_t buf_off = get_path_str_buf(path, string_p);
+-    return &string_p->buf[buf_off];
++    return &string_p->buf[buf_off & ((MAX_PERCPU_BUFSIZE >> 1) - 1)];
+ }
+ 
+ statfunc file_id_t get_file_id(struct file *file)
+@@ -279,7 +279,7 @@ statfunc void *get_path_str_cached(struct file *file)
+ 
+         size_t buf_off = get_path_str_buf(__builtin_preserve_access_index(&file->f_path), string_p);
+         if (likely(sizeof(string_p->buf) > buf_off + sizeof(path_buf_t))) {
+-            path = (path_buf_t *) (&string_p->buf[0] + buf_off);
++            path = (path_buf_t *) (&string_p->buf[buf_off & ((MAX_PERCPU_BUFSIZE >> 1) - 1)]);
+             bpf_map_update_elem(&io_file_path_cache_map, &file_id, path, BPF_ANY);
+         } else {
+             return NULL;
+
+--- pkg/ebpf/c/common/filtering.h
+@@ -5,6 +5,7 @@
+ 
+ #include <maps.h>
+ #include <common/logging.h>
++#include <common/task.h>
+ #include <common/common.h>
+ 
+ // PROTOTYPES
+@@ -189,7 +190,7 @@ statfunc u64 bool_filter_matches(u64 filter_out_scopes, bool val)
+ 
+ statfunc u64 compute_scopes(program_data_t *p)
+ {
+-    task_context_t *context = &p->task_info->context;
++    task_context_t *context = &p->event->context.task;
+ 
+     // Don't monitor self
+     if (p->config->tracee_pid == context->host_pid)
+@@ -254,6 +255,7 @@ statfunc u64 compute_scopes(program_data_t *p)
+     }
+ 
+     if (policies_cfg->uid_filter_enabled_scopes) {
++        context->uid = bpf_get_current_uid_gid();
+         u64 filter_out_scopes = policies_cfg->uid_filter_out_scopes;
+         u64 mask = ~policies_cfg->uid_filter_enabled_scopes;
+         u64 max = policies_cfg->uid_max;
+@@ -265,24 +267,27 @@ statfunc u64 compute_scopes(program_data_t *p)
+     }
+ 
+     if (policies_cfg->mnt_ns_filter_enabled_scopes) {
++        context->mnt_id = get_task_mnt_ns_id(p->event->task);
+         u64 filter_out_scopes = policies_cfg->mnt_ns_filter_out_scopes;
+         u64 mask = ~policies_cfg->mnt_ns_filter_enabled_scopes;
+-        u64 mnt_id = context->mnt_id;
+ 
+         filter_map = get_filter_map(&mnt_ns_filter_version, version);
+-        res &= equality_filter_matches(filter_out_scopes, filter_map, &mnt_id) | mask;
++        res &= equality_filter_matches(filter_out_scopes, filter_map, &context->mnt_id) | mask;
+     }
+ 
+     if (policies_cfg->pid_ns_filter_enabled_scopes) {
++        context->pid_id = get_task_pid_ns_id(p->event->task);
+         u64 filter_out_scopes = policies_cfg->pid_ns_filter_out_scopes;
+         u64 mask = ~policies_cfg->pid_ns_filter_enabled_scopes;
+-        u64 pid_id = context->pid_id;
+ 
+         filter_map = get_filter_map(&pid_ns_filter_version, version);
+-        res &= equality_filter_matches(filter_out_scopes, filter_map, &pid_id) | mask;
++        res &= equality_filter_matches(filter_out_scopes, filter_map, &context->pid_id) | mask;
+     }
+ 
+     if (policies_cfg->uts_ns_filter_enabled_scopes) {
++        char *uts_name = get_task_uts_name(p->event->task);
++        if (uts_name)
++            bpf_probe_read_kernel_str(&context->uts_name, TASK_COMM_LEN, uts_name);
+         u64 filter_out_scopes = policies_cfg->uts_ns_filter_out_scopes;
+         u64 mask = ~policies_cfg->uts_ns_filter_enabled_scopes;
+ 
+@@ -291,6 +296,7 @@ statfunc u64 compute_scopes(program_data_t *p)
+     }
+ 
+     if (policies_cfg->comm_filter_enabled_scopes) {
++        bpf_get_current_comm(&context->comm, sizeof(context->comm));
+         u64 filter_out_scopes = policies_cfg->comm_filter_out_scopes;
+         u64 mask = ~policies_cfg->comm_filter_enabled_scopes;
+ 
+@@ -299,9 +305,9 @@ statfunc u64 compute_scopes(program_data_t *p)
+     }
+ 
+     if (policies_cfg->cgroup_id_filter_enabled_scopes) {
++        u32 cgroup_id_lsb = context->cgroup_id;
+         u64 filter_out_scopes = policies_cfg->cgroup_id_filter_out_scopes;
+         u64 mask = ~policies_cfg->cgroup_id_filter_enabled_scopes;
+-        u32 cgroup_id_lsb = context->cgroup_id;
+ 
+         filter_map = get_filter_map(&cgroup_id_filter_version, version);
+         res &= equality_filter_matches(filter_out_scopes, filter_map, &cgroup_id_lsb) | mask;
+@@ -310,10 +316,9 @@ statfunc u64 compute_scopes(program_data_t *p)
+     if (policies_cfg->proc_tree_filter_enabled_scopes) {
+         u64 filter_out_scopes = policies_cfg->proc_tree_filter_out_scopes;
+         u64 mask = ~policies_cfg->proc_tree_filter_enabled_scopes;
+-        u32 host_pid = context->host_pid;
+ 
+         filter_map = get_filter_map(&process_tree_map_version, version);
+-        res &= equality_filter_matches(filter_out_scopes, filter_map, &host_pid) | mask;
++        res &= equality_filter_matches(filter_out_scopes, filter_map, &context->host_pid) | mask;
+     }
+ 
+     if (policies_cfg->bin_path_filter_enabled_scopes) {
+@@ -339,15 +344,8 @@ statfunc u64 compute_scopes(program_data_t *p)
+ 
+ statfunc u64 should_trace(program_data_t *p)
+ {
+-    // use cache whenever possible
+-    if (p->task_info->recompute_scope) {
+-        p->task_info->matched_scopes = compute_scopes(p);
+-        p->task_info->recompute_scope = false;
+-    }
+-
+-    p->event->context.matched_policies = p->task_info->matched_scopes;
+-
+-    return p->task_info->matched_scopes;
++    p->event->context.matched_policies = compute_scopes(p);
++    return p->event->context.matched_policies;
+ }
+ 
+ statfunc u64 should_submit(u32 event_id, event_data_t *event)
+
+--- pkg/ebpf/c/tracee.bpf.c
+@@ -77,6 +77,13 @@ int sys_enter_init(struct bpf_raw_tracepoint_args *ctx)
+         task_info = init_task_info(tid, 0);
+         if (unlikely(task_info == NULL))
+             return 0;
++
++        int zero = 0;
++        config_entry_t *config = bpf_map_lookup_elem(&config_map, &zero);
++        if (unlikely(config == NULL))
++            return 0;
++
++        init_task_context(&task_info->context, task, config->options);
+     }
+ 
+     syscall_data_t *sys = &(task_info->syscall_data);
+@@ -210,6 +217,13 @@ int sys_exit_init(struct bpf_raw_tracepoint_args *ctx)
+         task_info = init_task_info(tid, 0);
+         if (unlikely(task_info == NULL))
+             return 0;
++
++        int zero = 0;
++        config_entry_t *config = bpf_map_lookup_elem(&config_map, &zero);
++        if (unlikely(config == NULL))
++            return 0;
++
++        init_task_context(&task_info->context, task, config->options);
+     }
+ 
+     // check if syscall is being traced and mark that it finished
+@@ -349,7 +363,7 @@ SEC("raw_tracepoint/sys_execve")
+ int syscall__execve(void *ctx)
+ {
+     program_data_t p = {};
+-    if (!init_program_data(&p, ctx))
++    if (!init_tailcall_program_data(&p, ctx))
+         return 0;
+ 
+     if (!p.task_info->syscall_traced)
+@@ -360,6 +374,7 @@ int syscall__execve(void *ctx)
+     if (!should_submit(SYSCALL_EXECVE, p.event))
+         return 0;
+ 
++    reset_event_args(&p);
+     save_str_to_buf(&p.event->args_buf, (void *) sys->args.args[0] /*filename*/, 0);
+     save_str_arr_to_buf(&p.event->args_buf, (const char *const *) sys->args.args[1] /*argv*/, 1);
+     if (p.config->options & OPT_EXEC_ENV) {
+@@ -374,7 +389,7 @@ SEC("raw_tracepoint/sys_execveat")
+ int syscall__execveat(void *ctx)
+ {
+     program_data_t p = {};
+-    if (!init_program_data(&p, ctx))
++    if (!init_tailcall_program_data(&p, ctx))
+         return 0;
+ 
+     if (!p.task_info->syscall_traced)
+@@ -385,6 +400,7 @@ int syscall__execveat(void *ctx)
+     if (!should_submit(SYSCALL_EXECVEAT, p.event))
+         return 0;
+ 
++    reset_event_args(&p);
+     save_to_submit_buf(&p.event->args_buf, (void *) &sys->args.args[0] /*dirfd*/, sizeof(int), 0);
+     save_str_to_buf(&p.event->args_buf, (void *) sys->args.args[1] /*pathname*/, 1);
+     save_str_arr_to_buf(&p.event->args_buf, (const char *const *) sys->args.args[2] /*argv*/, 2);
+@@ -413,6 +429,7 @@ statfunc int send_socket_dup(program_data_t *p, u64 oldfd, u64 newfd)
+ 
+     // this is a socket - submit the SOCKET_DUP event
+ 
++    reset_event_args(p);
+     save_to_submit_buf(&(p->event->args_buf), &oldfd, sizeof(u32), 0);
+     save_to_submit_buf(&(p->event->args_buf), &newfd, sizeof(u32), 1);
+ 
+@@ -458,7 +475,7 @@ SEC("raw_tracepoint/sys_dup")
+ int sys_dup_exit_tail(void *ctx)
+ {
+     program_data_t p = {};
+-    if (!init_program_data(&p, ctx))
++    if (!init_tailcall_program_data(&p, ctx))
+         return 0;
+ 
+     syscall_data_t *sys = &p.task_info->syscall_data;
+@@ -516,7 +533,6 @@ int tracepoint__sched__sched_process_fork(struct bpf_raw_tracepoint_args *ctx)
+         return 0;
+     }
+ 
+-    task->recompute_scope = true;
+     task->context.tid = child_ns_tid;
+     task->context.host_tid = child_tid;
+     task->context.start_time = child_start_time;
+@@ -570,7 +586,7 @@ int tracepoint__sched__sched_process_fork(struct bpf_raw_tracepoint_args *ctx)
+         return 0;
+ 
+     // Always follow every pid that passed the should_trace() checks (follow filter)
+-    c_proc_info->follow_in_scopes = p.task_info->matched_scopes;
++    c_proc_info->follow_in_scopes = p.event->context.matched_policies;
+ 
+     // Submit the event
+ 
+@@ -640,7 +656,7 @@ int tracepoint__sched__sched_process_fork(struct bpf_raw_tracepoint_args *ctx)
+ }
+ 
+ // number of iterations - value that the verifier was seen to cope with - the higher, the better
+-#define MAX_NUM_MODULES 600
++#define MAX_NUM_MODULES 450
+ 
+ enum
+ {
+@@ -1028,7 +1044,6 @@ int uprobe_lkm_seeker_submitter(struct pt_regs *ctx)
+ 
+     // Uprobes are not triggered by syscalls, so we need to override the false value.
+     p.event->context.syscall = NO_SYSCALL;
+-    p.event->context.matched_policies = ULLONG_MAX;
+ 
+     u32 trigger_pid = bpf_get_current_pid_tgid() >> 32;
+     // Uprobe was triggered from other tracee instance
+@@ -1060,7 +1075,6 @@ int uprobe_lkm_seeker(struct pt_regs *ctx)
+ 
+     // Uprobes are not triggered by syscalls, so we need to override the false value.
+     p.event->context.syscall = NO_SYSCALL;
+-    p.event->context.matched_policies = ULLONG_MAX;
+ 
+     // uprobe was triggered from other tracee instance
+     if (p.config->tracee_pid != p.task_info->context.pid &&
+@@ -1214,8 +1228,6 @@ int tracepoint__sched__sched_process_exec(struct bpf_raw_tracepoint_args *ctx)
+         }
+     }
+ 
+-    p.task_info->recompute_scope = true; // a new task should always have the scope recomputed
+-
+     struct linux_binprm *bprm = (struct linux_binprm *) ctx->args[2];
+     if (bprm == NULL)
+         return -1;
+@@ -1234,7 +1246,7 @@ int tracepoint__sched__sched_process_exec(struct bpf_raw_tracepoint_args *ctx)
+     if (!should_trace(&p))
+         return 0;
+ 
+-    proc_info->follow_in_scopes = p.task_info->matched_scopes; // follow task for matched scopes
++    proc_info->follow_in_scopes = p.event->context.matched_policies; // follow task for matched scopes
+ 
+     if (!should_submit(SCHED_PROCESS_EXEC, p.event) &&
+         (p.config->options & OPT_PROCESS_INFO) != OPT_PROCESS_INFO)
+@@ -1417,7 +1429,7 @@ int syscall__accept4(void *ctx)
+     del_args(SOCKET_ACCEPT);
+ 
+     program_data_t p = {};
+-    if (!init_program_data(&p, ctx))
++    if (!init_tailcall_program_data(&p, ctx))
+         return 0;
+ 
+     struct socket *old_sock = (struct socket *) saved_args.args[0];
+@@ -1431,6 +1443,7 @@ int syscall__accept4(void *ctx)
+         return -1;
+     }
+ 
++    reset_event_args(&p);
+     save_to_submit_buf(&p.event->args_buf, (void *) &sockfd, sizeof(u32), 0);
+     save_sockaddr_to_buf(&p.event->args_buf, old_sock, 1);
+     save_sockaddr_to_buf(&p.event->args_buf, new_sock, 2);
+@@ -1578,7 +1591,6 @@ int uprobe_syscall_table_check(struct pt_regs *ctx)
+ 
+     // Uprobes are not triggered by syscalls, so we need to override the false value.
+     p.event->context.syscall = NO_SYSCALL;
+-    p.event->context.matched_policies = ULLONG_MAX;
+ 
+     syscall_table_check(&p);
+ 
+@@ -1614,7 +1626,6 @@ int uprobe_seq_ops_trigger(struct pt_regs *ctx)
+ 
+     // Uprobes are not triggered by syscalls, so we need to override the false value.
+     p.event->context.syscall = NO_SYSCALL;
+-    p.event->context.matched_policies = ULLONG_MAX;
+ 
+     // uprobe was triggered from other tracee instance
+     if (p.config->tracee_pid != p.task_info->context.pid &&
+@@ -1695,7 +1706,6 @@ int uprobe_mem_dump_trigger(struct pt_regs *ctx)
+ 
+     // Uprobes are not triggered by syscalls, so we need to override the false value.
+     p.event->context.syscall = NO_SYSCALL;
+-    p.event->context.matched_policies = ULLONG_MAX;
+ 
+     // uprobe was triggered from other tracee instance
+     if (p.config->tracee_pid != p.task_info->context.pid &&
+@@ -3018,6 +3028,9 @@ do_file_io_operation(struct pt_regs *ctx, u32 event_id, u32 tail_call_id, bool i
+     if (!init_program_data(&p, ctx))
+         return 0;
+ 
++    if (!should_trace(&p))
++        return 0;
++
+     if (!should_submit_io_event(event_id, &p)) {
+         bpf_tail_call(ctx, &prog_array, tail_call_id);
+         return 0;
+@@ -3656,7 +3669,7 @@ SEC("raw_tracepoint/sys_init_module")
+ int syscall__init_module(void *ctx)
+ {
+     program_data_t p = {};
+-    if (!init_program_data(&p, ctx))
++    if (!init_tailcall_program_data(&p, ctx))
+         return 0;
+ 
+     syscall_data_t *sys = &p.task_info->syscall_data;
+@@ -5531,25 +5544,15 @@ int BPF_KPROBE(trace_sock_alloc_file)
+     if (!is_socket_supported(sock))
+         return 0;
+ 
+-    // initialize program data
+-
+-    program_data_t p = {};
+-    if (!init_program_data(&p, ctx))
+-        return 0;
+-
+-    if (!should_trace(&p))
+-        return 0;
+-
+     struct entry entry = {0};
+ 
+     // save args for retprobe
+     entry.args[0] = PT_REGS_PARM1(ctx); // struct socket *sock
+-
+     entry.args[1] = PT_REGS_PARM2(ctx); // int flags
+     entry.args[2] = PT_REGS_PARM2(ctx); // char *dname
+ 
+     // prepare for kretprobe using entrymap
+-    u32 host_tid = p.event->context.task.host_tid;
++    u32 host_tid = bpf_get_current_pid_tgid();
+     bpf_map_update_elem(&entrymap, &host_tid, &entry, BPF_ANY);
+ 
+     return 0;
+@@ -5565,6 +5568,9 @@ int BPF_KRETPROBE(trace_ret_sock_alloc_file)
+     if (!init_program_data(&p, ctx))
+         return 0;
+ 
++    if (!should_trace(&p))
++        return 0;
++
+     // pick from entry from entrymap
+     u32 host_tid = p.event->context.task.host_tid;
+     struct entry *entry = bpf_map_lookup_elem(&entrymap, &host_tid);
+@@ -5788,6 +5794,7 @@ int BPF_KPROBE(cgroup_bpf_run_filter_skb)
+ 
+     program_data_t p = {};
+     p.scratch_idx = 1;
++    p.event = e;
+     if (!init_program_data(&p, ctx))
+         return 0;
+ 
+
+--- pkg/ebpf/c/types.h
+@@ -210,11 +210,8 @@ enum container_state_e
+ typedef struct task_info {
+     task_context_t context;
+     syscall_data_t syscall_data;
+-    bool syscall_traced;  // indicates that syscall_data is valid
+-    bool recompute_scope; // recompute matched_scopes (new task/context changed/policy changed)
+-    u16 policies_version; // version of policies used to match this task
+-    u64 matched_scopes;   // cached bitmap of scopes this task matched
+-    u8 container_state;   // the state of the container the task resides in
++    bool syscall_traced; // indicates that syscall_data is valid
++    u8 container_state;  // the state of the container the task resides in
+ } task_info_t;
+ 
+ typedef struct file_id {
+

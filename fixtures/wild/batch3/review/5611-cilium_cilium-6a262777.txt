@@ -1,0 +1,43 @@
+repo: cilium/cilium
+commit: 6a262777bebcb6edb7880a9d8e9aae8510b7cec1
+rank: 5611
+
+bpf: Make snat_v6_needs_masquerade global
+
+That will reduce complexity by relying on function-by-function
+verification on recent kernels.
+
+The weak argument is required to prevent compiler optimizations that
+can break verification. In particular, the compiler may remove arguments
+from the function prototype in some callsites. Since the verifier relies
+on the prototype to know what types to expect in the caller for R1-R5,
+this optimization breaks verification. By marking it weak, we tell the
+compiler that the function may change at link time, which prevents
+optimizations.
+
+Signed-off-by: Paul Chaignon <paul.chaignon@gmail.com>
+
+--- bpf/include/bpf/compiler.h
+@@ -48,6 +48,10 @@
+ # define __noinline		__attribute__((noinline))
+ #endif
+ 
++#ifndef __weak
++# define __weak		__attribute__((weak))
++#endif
++
+ #ifndef __stringify
+ # define __stringify(X)		#X
+ #endif
+
+--- bpf/lib/nat.h
+@@ -1818,7 +1818,7 @@ struct {
+ 	__type(value, struct ipv6_nat_target);
+ } nat_target_storage __section_maps_btf;
+ 
+-static __always_inline int
++__noinline __weak int
+ snat_v6_needs_masquerade(struct __ctx_buff *ctx __maybe_unused,
+ 			 fraginfo_t fraginfo __maybe_unused,
+ 			 int l4_off __maybe_unused)
+

@@ -1,0 +1,592 @@
+repo: DataDog/datadog-agent
+commit: 436845d387d4aa066fa47704507f2f69df51cc4c
+rank: 5661
+
+dyninst: support compound conditions spanning entry and return events (#50205)
+
+### What does this PR do?
+
+Today, dyninst rejects when-clause expressions whose leaves resolve to variables from different event kinds. A method probe with both an entry and a return event must place every leaf in the same event — typically all in entry (parameters) or all in return (return values, locals, `@duration`). The restriction lived in `analyzeCondition` (irgen.go), which returned `IssueKindConditionVariableUnavailable` on any compound that mixed event kinds.
+
+This change lifts that restriction so users can write `arg.size > 1024 && retval.err != nil` or `@duration > 100ms && retval.err != nil` on a single probe — the natural way to express "fire when an interesting input produced an interesting outcome."
+
+### Approach: per-leaf 2-bit status with AST replay
+
+Each entry-side leaf is compiled into its own SM sub-function (`ProcessConditionLeaf`). The entry-side condition handler becomes a driver that calls each leaf in turn and records its outcome — false, true, eval-error, or nil-deref — as a 2-bit status in a per-call `condition_state` (uint16, packed into `call_depths_entry_t` alongside `probe_id` and `entry_ktime_ns`).
+
+A leaf-internal abort (nil deref / OOB / map miss) calls `sm_return` once, landing back in the driver rather than aborting the event handler. This isolation is what makes short-circuit semantics correct: the driver captures whichever leaves succeed and whichever errored, without one leaf's failure poisoning the others.
+
+The entry-side gate and return-side condition both run as **AST replays** over `condition_state`. Each entry leaf in the AST lowers to `SM_OP_CONDITION_LEAF_LOAD`, which reads the 2-bit status:
+- `LEAF_FALSE` / `LEAF_TRUE` → write the bit at `sm->offset`, continue.
+- `LEAF_EVAL_ERROR` / `LEAF_NIL_DEREF` → set `condition_eval_error` (and `condition_nil_deref` for the latter), write 1 at `sm->offset`, jump to the tail.
+
+The error-path jump bypasses surrounding short-circuit and Not ops so the eval-error flag survives surrounding boolean operators all the way to event.c's header surfacing — but only when the AST replay actually reaches the errored leaf. A guard like `(x != nil && x.I32 == 1)` correctly short-circuits the AND when `x` is nil; the errored leaf (`x.I32 == 1`) is never read by the replay, so no eval_error surfaces. This preserves the user's written short-circuit semantics. The "unguarded error → fail-open" behaviour is preserved for leaves that *are* actually reached by the surrounding short-circuit logic.
+
+Polarity tracking through `Not` ops in the entry-side gate matters for soundness: pure-return subtrees must prune to a constant that flips back to "true" (the safe value at the gate output) after any wrapping NotOps. Without polarity tracking, `!(@return == X)` under an AND with an entry leaf would falsely suppress the return event. `emitGate` carries a `negated` flag through NotOps and emits 0 or 1 to keep the gate output safe.
+
+**Best-effort entry short-circuit**: when the entry-only slice of the AST is provably false (the gate evaluates false), the entry-side condition's tail `SM_OP_CONDITION_CHECK_PRESERVE_ERROR` sets `condition_failed=true`. event.c skips the entry event AND the deferred `in_progress_calls` insertion; the return event then sees `CALL_DEPTHS_ABSENT` and is suppressed naturally. No insert-then-delete dance.
+
+**Throttler**. Split-condition entry uses `ThrottleNone`, return uses `ThrottleAfterCondCheck` so the user's per-second budget isn't halved.
+
+**Storage**. `probe_id` narrows from uint32 to uint16 to make room for `condition_state` alongside it on `call_depths_entry_t` (still 24 bytes total). The compiler asserts `probeIdx < 1<<16` for entry/return-paired probes; line probes don't insert into `in_progress_calls` and tolerate any probe index. The `IssueKindConditionCarryTooLarge` cap is at 8 entry-side leaves (16 bits / 2 bits per leaf).
+
+**IR / SM ops added**
+
+- `ConditionStateInitOp`: clear `condition_state` at the start of the entry-side driver.
+- `ConditionLeafEvalOp{LeafIdx}`: lowers to (`CallOp leafFn`, `ConditionLeafRecordOp`). The driver issues one per entry leaf.
+- `ConditionLeafLoadOp{LeafIdx, ErrorTarget}`: reads `condition_state[i]` and dispatches per the rules above. Used in both the entry-side gate and the return-side AST replay.
+- `ConditionCheckPreserveErrorOp`: like `ConditionCheckOp` but does NOT clear `condition_eval_error`. Used at the tail of split-event-kind drivers so a per-leaf load's eval-error flag survives.
+- `ConditionLeafCompleteOp`: emitted at the tail of a per-leaf SM sub-function on the success path. Clears `condition_eval_error` so the driver's `RECORD` can distinguish completion from abort.
+- `ExprPrepareOp` at IR level: existing SM op, exposed at IR so the driver can re-prepare scratch between per-leaf calls and the AST replay.
+
+**Verifier-budget note**. The new design adds N+1 SM functions per split-condition probe (one driver + one per leaf, max 9). All share the same `sm_loop` BPF subprog, so the deepest BPF call chain (`probe_run` → `sm_loop` → `sm_swiss_map_aese`) is unchanged. event.c's `probe_run_with_cookie` frame stays at 136 bytes by writing `call_depths_delete` out-parameters directly into `stack_machine_t` fields rather than into stack locals.
+
+### Motivation
+
+Often you want to look at some properties of arguments and then something about `@duration` (like it was slow) or something about the return (there was an error?). 
+
+### Describe how you validated your changes
+
+Eleven new probes in `simple.yaml` exercise the cases this change enables and the soundness behaviours:
+
+**Basic shapes**:
+- `condCompound_split_return_and_param`: `@return == 2 && a == 1`
+- `condCompound_split_or`: `a > 4 || @return < 5`
+- `condCompound_split_not`: `!(a > 4) && @return == 2`
+- `condCompound_split_or_of_ands`: `(a > 4 && @return > 5) || (a < 3 && @return < 5)`
+- `condCompound_split_duration_param`: `a > 4 && @duration > 0.0`
+- `condCompound_split_entry_false`: `a > 100 && @return == 2` (entry forces false → return event suppressed)
+- `condCompound_split_max_carry`: 8 entry leaves under AND with one return leaf
+- `condCompound_split_carry_overflow`: 9 entry leaves → rejected with `IssueKindConditionCarryTooLarge`
+
+**Polarity / Not interaction**:
+- `condCompound_split_not_around_return`: `a > 4 && !(@return == 2)`
+- `condCompound_split_not_around_return_or`: `a > 4 || !(@return == 2)`
+
+**Short-circuit + error semantics**:
+- `condCompound_split_guarded_nil_deref`: `(x != nil && x.I32 == 1) && @return == 1` — fires only on match; the nil case correctly short-circuits without surfacing eval_error.
+- `condCompound_split_guarded_or`: `(x != nil && x.I32 == 1) || @return == 99` — guarded AND short-circuits silently when x is nil.
+- `condCompound_split_unguarded_nil_deref`: `x.I32 == 1 || @return == 99` — preserves "unguarded error → fail open" with `eval_error=2`.
+- `condCompound_split_or_short_circuits_error`: `@return == 0 || x.I32 == 99` — when the OR's left is true, the errored right leaf is not surfaced.
+- `condCompound_split_entry_nilderef`: `x.I32 == 300 && @duration > 0.0` — nil-deref on the only entry leaf fails open.
+
+The full `TestDyninst/simple` integration suite passes across all toolchains (1.23, 1.24, 1.25, 1.26rc1) and architectures (amd64, arm64). The existing `TestDurationThreshold`, `TestThrottler`, `TestFirstFlushFailDropNotification`, `TestDropNotifications`, `TestEndToEnd`, and the full snapshot-test suite continue to pass.
+
+### Additional Notes
+
+Fixes https://datadoghq.atlassian.net/browse/DEBUG-5494
+
+Co-authored-by: andrew.werner <andrew.werner@datadoghq.com>
+
+--- pkg/dyninst/ebpf/context.h
+@@ -58,6 +58,30 @@ DEFINE_QUEUE(pointers, pointers_queue_item_t, 128);
+ // uint16, so 0xFFFF can never collide with a real sequence number.
+ #define LAST_SUBMITTED_SEQ_NONE ((uint16_t)0xFFFF)
+ 
++// LEAF_STATUS_* values for the 2-bit per-leaf status entries packed into
++// stack_machine_t.condition_state and call_depths_entry_t.condition_state.
++// Each entry leaf in a split-event-kind condition produces one of these.
++// The encoding is chosen so SM_OP_CONDITION_LEAF_RECORD can derive the
++// status directly from condition_eval_error/condition_nil_deref:
++//   - completed-and-false → 00 = LEAF_STATUS_FALSE
++//   - completed-and-true  → 01 = LEAF_STATUS_TRUE
++//   - eval-error          → 10 = LEAF_STATUS_EVAL_ERROR
++//   - nil-deref           → 11 = LEAF_STATUS_NIL_DEREF
++// SM_OP_CONDITION_LEAF_LOAD reads the 2 bits and (for the error variants)
++// also sets condition_eval_error / condition_nil_deref so event.c's
++// header surfaces the right flavor.
++#define LEAF_STATUS_FALSE 0
++#define LEAF_STATUS_TRUE 1
++#define LEAF_STATUS_EVAL_ERROR 2
++#define LEAF_STATUS_NIL_DEREF 3
++
++// MAX_CONDITION_ENTRY_LEAVES is the maximum number of entry-side leaves
++// allowed in a split-event-kind condition. condition_state is a uint16
++// storing 2 bits per leaf, so the cap is 8. Keep in sync with
++// maxConditionEntryLeaves in pkg/dyninst/irgen/irgen.go.
++#define MAX_CONDITION_ENTRY_LEAVES 8
++#define CONDITION_LEAF_IDX_MASK (MAX_CONDITION_ENTRY_LEAVES - 1)
++
+ #define ENQUEUE_STACK_DEPTH 32
+ typedef struct stack_machine {
+   // Initialized on every entry point.
+@@ -100,24 +124,55 @@ typedef struct stack_machine {
+ 
+   // Set to true by ConditionCheck when the condition is false.
+   bool condition_failed;
+-  // "Arm" flag for the condition-evaluation error channel. Lifecycle:
+-  //   1. SM_OP_CONDITION_BEGIN sets it to true at the start of every
+-  //      condition evaluation.
+-  //   2. If any leaf aborts the stack machine mid-evaluation (nil deref,
+-  //      OOB, map miss, etc.) it stays true — the abort path leaves it
+-  //      armed so userspace sees a failed condition.
+-  //   3. The tail SM_OP_CONDITION_CHECK clears it to false iff the full
+-  //      condition tree ran to completion. For compound conditions the
+-  //      intermediate SM_OP_COND_JUMP_IF_* ops deliberately do NOT
+-  //      clear it: a short-circuit jump may skip a leaf that would have
+-  //      aborted, but leaves that fall through can still fault, so the
+-  //      arm must survive until CHECK.
++  // "Arm" flag for the condition-evaluation error channel.
++  //
++  // Every condition-leaf abort path (nil deref, OOB, map miss, deref
++  // fail, swiss-map probe failure, @duration absent, etc.) sets this
++  // directly before calling sm_return — but only when the current
++  // expression is a condition (i.e. expr_status_idx == EXPR_STATUS_IDX_NONE).
++  // Capture expressions report errors via the per-expression status
++  // array (EXPR_STATUS_NIL_DEREF, EXPR_STATUS_OOB, EXPR_STATUS_ABSENT)
++  // and must NOT poison this flag. Single-event ConditionBeginOp also
++  // arms it at the start of the condition as belt-and-braces.
++  //
++  // Single-event-kind conditions:
++  //   - SM_OP_CONDITION_BEGIN arms it at the start of the condition.
++  //   - If any leaf aborts, the abort path also arms it (see above),
++  //     so userspace sees a failed condition.
++  //   - The tail SM_OP_CONDITION_CHECK clears it iff the full condition
++  //     tree ran to completion. The intermediate SM_OP_COND_JUMP_IF_*
++  //     ops deliberately do NOT clear it: a short-circuit jump may
++  //     skip a leaf that would have aborted, but leaves that fall
++  //     through can still fault, so the arm must survive until CHECK.
++  //
++  // Split-event-kind conditions (entry-side driver and return-side AST
++  // replay): each entry leaf is its own SM sub-function. The leaf arms
++  // the flag in its prelude, and the success-path
++  // SM_OP_CONDITION_LEAF_COMPLETE clears it; abort paths leave it armed
++  // (and also arm it directly, per above — important for the
++  // return-side replay, which inlines its return leaves and skips
++  // SM_OP_CONDITION_BEGIN). The driver's SM_OP_CONDITION_LEAF_RECORD
++  // reads the flag to derive a 2-bit status, then clears it before the
++  // next leaf. AST-replay SM_OP_CONDITION_LEAF_LOAD sets the flag (and
++  // condition_nil_deref) when it dispatches an errored leaf, and the
++  // tail SM_OP_CONDITION_CHECK_PRESERVE_ERROR deliberately does NOT
++  // clear it so the error survives to event.c.
++  //
+   // event.c surfaces the flag as header->condition_eval_error (0, 1, 2).
+   bool condition_eval_error;
+   // Set to true when a nil pointer dereference causes an expression or
+   // condition evaluation to abort. Used together with condition_eval_error
+   // to distinguish nil-caused failures from other evaluation errors.
+   bool condition_nil_deref;
++  // condition_state packs up to 8 per-leaf 2-bit statuses for a split-
++  // event-kind condition. Bits [2*i, 2*i+1] hold leaf i's status (one of
++  // the LEAF_STATUS_* values). Reset to 0 by SM_OP_CONDITION_STATE_INIT
++  // at the start of the entry-side driver; written per-leaf by
++  // SM_OP_CONDITION_LEAF_RECORD; read per-leaf during AST replay by
++  // SM_OP_CONDITION_LEAF_LOAD; copied into the call_depths slot at the
++  // existing insertion site in event.c so the return-side program can
++  // consult it.
++  uint16_t condition_state;
+   // Set to true by sm_chase_pointer when scratch_buf_serialize fails due to
+   // insufficient buffer space. Checked and cleared by SM_OP_CHASE_POINTERS
+   // to trigger a flush-and-continue.
+@@ -250,6 +305,7 @@ static stack_machine_t* stack_machine_ctx_load(const probe_params_t* probe_param
+   stack_machine->condition_failed = false;
+   stack_machine->condition_eval_error = false;
+   stack_machine->condition_nil_deref = false;
++  stack_machine->condition_state = 0;
+   chased_pointers_trie_init(&stack_machine->chased);
+   chased_slices_init(&stack_machine->chased_slices);
+   stack_machine->pointer_chasing_ttl = probe_params->pointer_chasing_limit;
+@@ -311,7 +367,15 @@ typedef struct global_ctx {
+ 
+ typedef struct call_depths_entry {
+   uint32_t depth;
+-  uint32_t probe_id;
++  // The compiler asserts probe_id fits in uint16.
++  uint16_t probe_id;
++  // condition_state packs up to 8 per-leaf 2-bit statuses (see
++  // LEAF_STATUS_* in this file). Written by the entry-side driver via
++  // SM_OP_CONDITION_LEAF_RECORD, copied here at insertion time, copied
++  // back into the SM at call_depths_delete time so the return-side
++  // condition program can read individual leaves via
++  // SM_OP_CONDITION_LEAF_LOAD. Zero for non-split probes.
++  uint16_t condition_state;
+   uint64_t dict_ptr; // dictionary pointer for generic shape functions (0 if N/A)
+   // Timestamp of the entry event that established this call. Returned to the
+   // return probe via call_depths_delete and stamped as entry_ktime_ns on the
+@@ -337,12 +401,14 @@ struct {
+ } in_progress_calls SEC(".maps");
+ 
+ static inline __attribute__((always_inline)) bool call_depths_insert(
+-    call_depths_t* depths, uint32_t depth, uint32_t probe_id,
++    call_depths_t* depths, uint32_t depth, uint16_t probe_id,
++    uint16_t condition_state,
+     uint64_t dict_ptr, uint64_t entry_ktime_ns) {
+   for (int i = 0; i < CALL_DEPTHS_SIZE; i++) {
+     if (depths->depths[i].depth == 0 && depths->depths[i].probe_id == 0) {
+       depths->depths[i].depth = depth;
+       depths->depths[i].probe_id = probe_id;
++      depths->depths[i].condition_state = condition_state;
+       depths->depths[i].dict_ptr = dict_ptr;
+       depths->depths[i].entry_ktime_ns = entry_ktime_ns;
+       return true;
+@@ -352,8 +418,9 @@ static inline __attribute__((always_inline)) bool call_depths_insert(
+ }
+ 
+ static inline __attribute__((always_inline)) bool call_depths_delete(
+-    call_depths_t* depths, uint32_t depth, uint32_t probe_id,
+-    int* remaining, uint64_t* out_dict_ptr, uint64_t* out_entry_ktime_ns) {
++    call_depths_t* depths, uint32_t depth, uint16_t probe_id,
++    int* remaining, uint64_t* out_dict_ptr, uint64_t* out_entry_ktime_ns,
++    uint16_t* out_condition_state) {
+   bool found = false;
+   for (int i = 0; i < CALL_DEPTHS_SIZE; i++) {
+     if (depths->depths[i].depth == depth && depths->depths[i].probe_id == probe_id) {
+@@ -363,8 +430,12 @@ static inline __attribute__((always_inline)) bool call_depths_delete(
+       if (out_entry_ktime_ns) {
+         *out_entry_ktime_ns = depths->depths[i].entry_ktime_ns;
+       }
++      if (out_condition_state) {
++        *out_condition_state = depths->depths[i].condition_state;
++      }
+       depths->depths[i].depth = 0;
+       depths->depths[i].probe_id = 0;
++      depths->depths[i].condition_state = 0;
+       depths->depths[i].dict_ptr = 0;
+       depths->depths[i].entry_ktime_ns = 0;
+       found = true;
+
+--- pkg/dyninst/ebpf/event.c
+@@ -126,20 +126,21 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
+       return;
+     }
+     int remaining;
+-    uint64_t saved_dict_ptr = 0;
+     uint64_t entry_ktime_ns = 0;
++    // Write directly into stack_machine_t fields where possible so the
++    // verifier doesn't have to track extra stack-local addresses; this
++    // keeps probe_run_with_cookie's frame within budget.
+     if (!call_depths_delete(
+-            depths, header->stack_byte_depth, params->probe_id,
+-            &remaining, &saved_dict_ptr, &entry_ktime_ns)) {
++            depths, header->stack_byte_depth, (uint16_t)params->probe_id,
++            &remaining, &global_ctx.stack_machine->saved_dict_ptr,
++            &entry_ktime_ns,
++            &global_ctx.stack_machine->condition_state)) {
+       // Somewhat common case where the goroutine has open calls, but it's not
+       // this one.
+       LOG(4, "failed to delete in_progress_calls %lld (%lld): %d",
+           header->goid, header->stack_byte_depth, params->probe_id);
+       return;
+     }
+-    // Restore the dict pointer saved at entry time so the stack machine
+-    // can resolve generic shape types on the return path.
+-    global_ctx.stack_machine->saved_dict_ptr = saved_dict_ptr;
+     // Stamp the entry's timestamp on the return event so userspace can
+     // correlate entry and return for the same invocation. Also record it
+     // on stack_machine for any drop notifications this probe sends.
+@@ -283,7 +284,8 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
+       return;
+     }
+     depths->depths[0].depth = header->stack_byte_depth;
+-    depths->depths[0].probe_id = params->probe_id;
++    depths->depths[0].probe_id = (uint16_t)params->probe_id;
++    depths->depths[0].condition_state = global_ctx.stack_machine->condition_state;
+     depths->depths[0].dict_ptr = global_ctx.stack_machine->saved_dict_ptr;
+     depths->depths[0].entry_ktime_ns = start_ns;
+     int ret = bpf_map_update_elem(&in_progress_calls, &header->goid, depths, BPF_NOEXIST);
+@@ -296,7 +298,8 @@ probe_run(uint64_t start_ns, const probe_params_t* params, struct pt_regs* regs)
+           LOG(1, "failed to lookup in_progress_calls for goid %lld after failing to insert", header->goid);
+           return;
+         }
+-        if (!call_depths_insert(depths, header->stack_byte_depth, params->probe_id,
++        if (!call_depths_insert(depths, header->stack_byte_depth, (uint16_t)params->probe_id,
++                                global_ctx.stack_machine->condition_state,
+                                 global_ctx.stack_machine->saved_dict_ptr, start_ns)) {
+           header->event_pairing_expectation = EVENT_PAIRING_EXPECTATION_CALL_COUNT_EXCEEDED;
+         }
+
+--- pkg/dyninst/ebpf/stack_machine.h
+@@ -2286,9 +2286,21 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+       // NULL pointer: write nil-deref status.
+       if (expr_status_idx != EXPR_STATUS_IDX_NONE) {
+         expr_status_write(buf, sm->expr_results_offset, expr_status_idx, EXPR_STATUS_NIL_DEREF);
++      } else {
++        // Condition expression (no status slot): arm the eval-error
++        // channel directly. The flag is set here (not just by
++        // ConditionBeginOp at the condition's prelude) so that
++        // split-event-kind return-side AST-replay drivers — which
++        // inline their return leaves and skip ConditionBeginOp — still
++        // surface the error. For single-event conditions, ConditionBeginOp
++        // already armed it; setting it again is a no-op.
++        sm->condition_eval_error = true;
++        sm->condition_nil_deref = true;
+       }
+-      sm->condition_nil_deref = true;
+-      // Abort expression evaluation.
++      // Abort expression evaluation. For split-event-kind conditions the
++      // entry-side driver invokes each leaf as its own SM function, so
++      // sm_return here lands back in the driver, which captures the
++      // error flavor via SM_OP_CONDITION_LEAF_RECORD.
+       scratch_buf_set_len(buf, sm->expr_results_end_offset);
+       if (!sm_return(sm)) {
+         return 1;
+@@ -2297,7 +2309,12 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+     }
+     addr += bias;
+     if (!scratch_buf_dereference(buf, sm->offset, byte_len, addr)) {
+-      // Dereference failed: abort expression evaluation.
++      // Dereference failed: abort expression evaluation. Arm the
++      // eval-error channel when this is a condition leaf (no status
++      // slot to write to).
++      if (expr_status_idx == EXPR_STATUS_IDX_NONE) {
++        sm->condition_eval_error = true;
++      }
+       scratch_buf_set_len(buf, sm->expr_results_end_offset);
+       if (!sm_return(sm)) {
+         return 1;
+@@ -2326,6 +2343,8 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+       LOG(3, "EXPR_SLICE_BOUNDS_CHECK: index %u >= len %lld, aborting", index, slice_len);
+       if (expr_status_idx != EXPR_STATUS_IDX_NONE) {
+         expr_status_write(buf, sm->expr_results_offset, expr_status_idx, EXPR_STATUS_OOB);
++      } else {
++        sm->condition_eval_error = true;
+       }
+       scratch_buf_set_len(buf, sm->expr_results_end_offset);
+       if (!sm_return(sm)) {
+@@ -2927,6 +2946,8 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+       if (expr_status_idx != EXPR_STATUS_IDX_NONE) {
+         expr_status_write(buf, sm->expr_results_offset, expr_status_idx,
+                           EXPR_STATUS_ABSENT);
++      } else {
++        sm->condition_eval_error = true;
+       }
+       // Abort expression evaluation so the caller (condition check /
+       // ExprSave) does not read uninitialized bytes.
+@@ -3141,9 +3162,7 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+ 
+   case SM_OP_CONDITION_BEGIN: {
+     // Arm the eval-error flag. See the lifecycle comment on
+-    // condition_eval_error in context.h: this is one of three ops that
+-    // touch the flag (BEGIN arms, JUMP_IF_* leave untouched, CHECK
+-    // clears on success).
++    // condition_eval_error in context.h.
+     sm->condition_eval_error = true;
+   } break;
+ 
+@@ -3191,6 +3210,103 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+     }
+   } break;
+ 
++  // --- Split-event-kind condition ops (per-leaf 2-bit status + AST replay) ---
++
++  // CONDITION_STATE_INIT: clears condition_state at the start of the
++  // entry-side driver. stack_machine_ctx_load already zeroes
++  // condition_state on every probe entry, but this op makes the driver
++  // self-contained against future changes.
++  case SM_OP_CONDITION_STATE_INIT: {
++    sm->condition_state = 0;
++  } break;
++
++  // CONDITION_LEAF_RECORD: captures the outcome of an entry-side leaf
++  // (called via SM_OP_CALL just before this op) into the 2-bit slot for
++  // leaf Index in condition_state. Reads condition_eval_error /
++  // condition_nil_deref to derive the error flavor; if neither is set,
++  // reads the boolean byte at sm->offset to derive false/true. Clears
++  // both error flags so the next leaf starts clean. Index is 0..7.
++  case SM_OP_CONDITION_LEAF_RECORD: {
++    uint8_t leaf_idx = sm_read_program_uint8(sm) & CONDITION_LEAF_IDX_MASK;
++    uint16_t status;
++    if (sm->condition_eval_error) {
++      status = sm->condition_nil_deref ? LEAF_STATUS_NIL_DEREF
++                                       : LEAF_STATUS_EVAL_ERROR;
++    } else {
++      if (!scratch_buf_bounds_check(&sm->offset, 1)) {
++        return 1;
++      }
++      status = (*buf)[sm->offset] & 1; // FALSE=0, TRUE=1
++    }
++    uint16_t mask = (uint16_t)(3u << (2u * leaf_idx));
++    sm->condition_state =
++        (uint16_t)((sm->condition_state & ~mask)
++                   | (uint16_t)(status << (2u * leaf_idx)));
++    // Clear per-leaf error flags so the next leaf's record sees fresh
++    // state.
++    sm->condition_eval_error = false;
++    sm->condition_nil_deref = false;
++  } break;
++
++  // CONDITION_LEAF_LOAD: read leaf Index's 2-bit status and dispatch.
++  // FALSE/TRUE writes 0/1 at sm->offset and continues. EVAL_ERROR /
++  // NIL_DEREF set condition_eval_error (and nil_deref for the latter),
++  // write 1 at sm->offset (so the surrounding ConditionCheck passes),
++  // and jump to ErrorTarget — bypassing surrounding short-circuit and
++  // Not ops so the error flag survives to event.c surfacing.
++  case SM_OP_CONDITION_LEAF_LOAD: {
++    uint8_t leaf_idx = sm_read_program_uint8(sm) & CONDITION_LEAF_IDX_MASK;
++    uint32_t error_target = sm_read_program_uint32(sm);
++    uint16_t status =
++        (uint16_t)((sm->condition_state >> (2u * leaf_idx)) & 3u);
++    if (!scratch_buf_bounds_check(&sm->offset, 1)) {
++      return 1;
++    }
++    if (status == LEAF_STATUS_FALSE) {
++      (*buf)[sm->offset] = 0;
++    } else if (status == LEAF_STATUS_TRUE) {
++      (*buf)[sm->offset] = 1;
++    } else {
++      // EVAL_ERROR or NIL_DEREF: surface as fail-open and short-circuit
++      // to the tail.
++      sm->condition_eval_error = true;
++      if (status == LEAF_STATUS_NIL_DEREF) {
++        sm->condition_nil_deref = true;
++      }
++      (*buf)[sm->offset] = 1;
++      sm->pc = error_target;
++    }
++  } break;
++
++  // CONDITION_CHECK_PRESERVE_ERROR: like SM_OP_CONDITION_CHECK but does
++  // NOT clear condition_eval_error. Used at the tail of split-event-kind
++  // condition drivers so that an eval-error surfaced by
++  // SM_OP_CONDITION_LEAF_LOAD during AST replay survives to event.c's
++  // header surfacing.
++  case SM_OP_CONDITION_CHECK_PRESERVE_ERROR: {
++    if (!scratch_buf_bounds_check(&sm->offset, 1)) {
++      return 1;
++    }
++    uint8_t val = (*buf)[sm->offset];
++    if (val == 0) {
++      sm->condition_failed = true;
++      LOG(1, "condition check failed");
++      return 1; // Abort stack machine.
++    }
++  } break;
++
++  // CONDITION_LEAF_COMPLETE: emitted at the tail of a per-leaf SM
++  // sub-function on the success path. Clears condition_eval_error so
++  // the driver's CONDITION_LEAF_RECORD can distinguish success
++  // (eval_error == false → read boolean byte at sm->offset) from abort
++  // (eval_error == true → encode error flavor from condition_nil_deref).
++  // Abort paths inside the leaf bypass this op via sm_return, leaving
++  // condition_eval_error armed by SM_OP_CONDITION_BEGIN at the leaf's
++  // prelude.
++  case SM_OP_CONDITION_LEAF_COMPLETE: {
++    sm->condition_eval_error = false;
++  } break;
++
+   // ---------------------------------------------------------------------------
+   // Swiss map lookup opcodes. The compiler emits these 5 in sequence:
+   //   SETUP [params] → AESENC → HASH_FINISH → PROBE → CHECK_SLOT
+@@ -3208,7 +3324,11 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+       break;
+     }
+     if (rc <= 0) {
+-      // nil map (0) or error (-1). OOB already written.
++      // nil map (0) or error (-1). OOB already written by the setup
++      // helper for capture expressions; arm eval_error for conditions.
++      if (sm->swiss_map_state.expr_status_idx == EXPR_STATUS_IDX_NONE) {
++        sm->condition_eval_error = true;
++      }
+       if (!sm_return(sm)) return 1;
+       break;
+     }
+@@ -3224,6 +3344,9 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+       barrier_var(kdl);
+       if (!sm_copy_from_code(buf, sm->swiss_map_state.key_data_off,
+                              sm->pc - kdl, kdl)) {
++        if (sm->swiss_map_state.expr_status_idx == EXPR_STATUS_IDX_NONE) {
++          sm->condition_eval_error = true;
++        }
+         if (!sm_return(sm)) return 1;
+         break;
+       }
+@@ -3259,10 +3382,17 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+     } else if (hf_rc == 0) {
+       // Hash done, probe state set. Fall through to PROBE.
+     } else if (hf_rc == -2) {
+-      // Key not found (null table). OOB already written.
++      // Key not found (null table). OOB already written for capture
++      // expressions; arm eval_error for conditions.
++      if (sm->swiss_map_state.expr_status_idx == EXPR_STATUS_IDX_NONE) {
++        sm->condition_eval_error = true;
++      }
+       if (!sm_return(sm)) return 1;
+     } else {
+       // Error.
++      if (sm->swiss_map_state.expr_status_idx == EXPR_STATUS_IDX_NONE) {
++        sm->condition_eval_error = true;
++      }
+       if (!sm_return(sm)) return 1;
+     }
+   } break;
+@@ -3278,6 +3408,9 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+                              (void*)(sm->swiss_map_state.group_addr +
+                                      sm->swiss_map_state.ctrl_offset)) != 0) {
+       LOG(3, "swiss_map_probe: failed to read ctrl");
++      if (sm->swiss_map_state.expr_status_idx == EXPR_STATUS_IDX_NONE) {
++        sm->condition_eval_error = true;
++      }
+       scratch_buf_set_len(buf, sm->expr_results_end_offset);
+       if (!sm_return(sm)) return 1;
+       break;
+@@ -3310,6 +3443,8 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+       if (sm->swiss_map_state.expr_status_idx != EXPR_STATUS_IDX_NONE) {
+         expr_status_write(buf, sm->expr_results_offset,
+                           sm->swiss_map_state.expr_status_idx, EXPR_STATUS_OOB);
++      } else {
++        sm->condition_eval_error = true;
+       }
+       scratch_buf_set_len(buf, sm->expr_results_end_offset);
+       if (!sm_return(sm)) return 1;
+@@ -3368,6 +3503,9 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+     if (result < 0) {
+       // Genuine read error — fault in both modes.
+       LOG(3, "swiss_map_check_slot: error");
++      if (sm->swiss_map_state.expr_status_idx == EXPR_STATUS_IDX_NONE) {
++        sm->condition_eval_error = true;
++      }
+       scratch_buf_set_len(buf, sm->expr_results_end_offset);
+       if (!sm_return(sm)) return 1;
+       break;
+@@ -3387,6 +3525,8 @@ static long sm_loop(__maybe_unused unsigned long i, void* _ctx) {
+       if (sm->swiss_map_state.expr_status_idx != EXPR_STATUS_IDX_NONE) {
+         expr_status_write(buf, sm->expr_results_offset,
+                           sm->swiss_map_state.expr_status_idx, EXPR_STATUS_OOB);
++      } else {
++        sm->condition_eval_error = true;
+       }
+       scratch_buf_set_len(buf, sm->expr_results_end_offset);
+       if (!sm_return(sm)) return 1;
+
+--- pkg/dyninst/ebpf/types.h
+@@ -124,6 +124,22 @@ typedef enum sm_opcode {
+   // advance sm->offset. Callers that use the value as a comparison
+   // operand follow with EXPR_PUSH_OFFSET{8} to advance/push.
+   SM_OP_EXPR_LOAD_DURATION = 41,
++  // Split-event-kind condition ops. Used when a probe's condition
++  // expression has leaves that resolve to variables on both the entry
++  // and return events. Each entry leaf is compiled to its own SM
++  // sub-function so leaf-internal aborts (nil deref / OOB) return to
++  // the entry-side driver rather than the event handler. The driver
++  // captures each leaf's outcome as a 2-bit status in sm->condition_state
++  // and runs an AST replay that lazily reads statuses, preserving the
++  // user's short-circuit semantics. See pkg/dyninst/ir/expression.go.
++  SM_OP_CONDITION_STATE_INIT = 42,
++  SM_OP_CONDITION_LEAF_RECORD = 43,
++  SM_OP_CONDITION_LEAF_LOAD = 44,
++  SM_OP_CONDITION_CHECK_PRESERVE_ERROR = 45,
++  // Emitted at the tail of a per-leaf SM sub-function on the success
++  // path. Clears condition_eval_error so the driver's
++  // CONDITION_LEAF_RECORD can distinguish success from abort.
++  SM_OP_CONDITION_LEAF_COMPLETE = 46,
+ } sm_opcode_t;
+ 
+ // cmp_op_t identifies which comparison SM_OP_EXPR_CMP_BASE /
+@@ -234,6 +250,16 @@ static const char* op_code_name(sm_opcode_t op_code) {
+     return "COND_JUMP_IF_TRUE";
+   case SM_OP_EXPR_LOAD_DURATION:
+     return "EXPR_LOAD_DURATION";
++  case SM_OP_CONDITION_STATE_INIT:
++    return "CONDITION_STATE_INIT";
++  case SM_OP_CONDITION_LEAF_RECORD:
++    return "CONDITION_LEAF_RECORD";
++  case SM_OP_CONDITION_LEAF_LOAD:
++    return "CONDITION_LEAF_LOAD";
++  case SM_OP_CONDITION_CHECK_PRESERVE_ERROR:
++    return "CONDITION_CHECK_PRESERVE_ERROR";
++  case SM_OP_CONDITION_LEAF_COMPLETE:
++    return "CONDITION_LEAF_COMPLETE";
+   default:
+     break;
+   }
+

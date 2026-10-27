@@ -1,0 +1,220 @@
+repo: cilium/cilium
+commit: 2449df267c0a85b5e380e8bf7057578c64b1d69d
+rank: 3129
+
+bpf:test:lb: add IPv4/6 East/West tests for external IPs
+
+This commits adds IPv4/6 East/West tests for external IPs in the load
+balancer test suite. These tests verify that the load balancer correctly
+handles traffic destined to external IPs service from the E/W path.
+
+Signed-off-by: Simone Magnani <simone.magnani@isovalent.com>
+
+--- bpf/tests/lib/lb.h
+@@ -46,6 +46,9 @@ __lb_v4_upsert_service(__be32 addr, __be16 port, __u8 proto,
+ 		/* Register with both scopes: */
+ 		svc_key.proto = proto;
+ 		svc_key.scope = LB_LOOKUP_SCOPE_INT;
++		/* For external IPs, only the EXT-scope entry has backends. */
++		if (lb4_svc_is_external_ip(&svc_value))
++			svc_value.count = 0;
+ 		map_update_elem(&cilium_lb4_services_v2, &svc_key, &svc_value, BPF_ANY);
+ 	}
+ }
+
+--- bpf/tests/tc_lb4_external_ips.h
+@@ -14,6 +14,14 @@
+ # define HOOK			netdev_receive_packet
+ 
+ #include "lib/bpf_host.h"
++#elif defined(EAST_WEST_TEST)
++# define ENABLE_SOCKET_LB_HOST_ONLY	1
++# define CLIENT_IP			v4_pod_two
++# define HOOK				pod_send_packet
++
++#include "lib/bpf_lxc.h"
++#else
++# error "Test direction not defined"
+ #endif
+ 
+ #define CLIENT_PORT		tcp_src_one
+@@ -29,6 +37,7 @@
+ #define BACKEND_IFINDEX		11
+ #define BACKEND_ID		124
+ 
++#include "lib/policy.h"
+ #include "lib/endpoint.h"
+ #include "lib/lb.h"
+ #include "scapy.h"
+@@ -55,7 +64,17 @@ const __u8 lb4_ns_external_ip_post_dnat[] = {
+ 	SCAPY_BUF_BYTES(lb4_ns_external_ip_post_dnat)
+ };
+ 
+-/* Test that a request for an ExternalIP service is handled correctly */
++/* packet defined in ./scapy/lb_pkt_defs.py */
++const __u8 lb4_ew_external_ip[] = {
++	SCAPY_BUF_BYTES(lb4_ew_external_ip)
++};
++
++/* Test that a request for an ExternalIP service is handled correctly:
++ * - For North-South traffic, the packet should be accepted and DNATed to the
++ *   backend, and a conntrack entry should be created for the connection.
++ * - For East-West traffic, the packet should be dropped and no conntrack entry
++ *   should be created for the connection.
++ */
+ PKTGEN("tc", "tc_lb4_external_ips")
+ int lb4_external_ips_pktgen(struct __ctx_buff *ctx)
+ {
+@@ -65,6 +84,8 @@ int lb4_external_ips_pktgen(struct __ctx_buff *ctx)
+ 
+ #ifdef NORTH_SOUTH_TEST
+ 	scapy_push_data(&builder, lb4_ns_external_ip, sizeof(lb4_ns_external_ip));
++#else
++	scapy_push_data(&builder, lb4_ew_external_ip, sizeof(lb4_ew_external_ip));
+ #endif
+ 
+ 	pktgen__finish(&builder);
+@@ -75,6 +96,8 @@ int lb4_external_ips_pktgen(struct __ctx_buff *ctx)
+ SETUP("tc", "tc_lb4_external_ips")
+ int lb4_external_ips_setup(struct __ctx_buff *ctx)
+ {
++	policy_add_egress_allow_all_entry();
++
+ 	endpoint_v4_add_entry(BACKEND_IP, BACKEND_IFINDEX, 0, 0, 0, 0,
+ 			      (__u8 *)mac_one, (__u8 *)mac_two);
+ 	lb_v4_add_service_with_flags(FRONTEND_IP, FRONTEND_PORT,
+@@ -118,6 +141,26 @@ int lb4_external_ips_check(__maybe_unused const struct __ctx_buff *ctx)
+ 	assert(ct_entry);
+ 	assert(ct_entry->packets == 1);
+ 	assert(ct_entry->bytes == sizeof(lb4_ns_external_ip_post_dnat));
++#else
++	/* Ensure packet is dropped. */
++	assert(*status_code == CTX_ACT_DROP);
++
++	/* Ensure packet is not DNATed. */
++	ASSERT_CTX_BUF_OFF("lb4_ew_external_ip", "Ether", ctx, sizeof(__u32),
++			   lb4_ew_external_ip, sizeof(lb4_ew_external_ip));
++
++	/* Ensure drop metrics are updated accordingly. */
++	struct metrics_key metric_key = {
++		.reason = -DROP_NO_SERVICE,
++		.dir = METRIC_EGRESS,
++	};
++	__u64 count = 1;
++
++	assert_metrics_count(metric_key, count);
++
++	/* Ensure CT entry is not populated (SVC). */
++	ct_entry = map_lookup_elem(get_ct_map4(&tuple), &tuple);
++	assert(!ct_entry);
+ #endif
+ 
+ 	test_finish();
+
+--- bpf/tests/tc_lb4_external_ips_ew.c
+@@ -0,0 +1,6 @@
++// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++/* Copyright Authors of Cilium */
++
++#define EAST_WEST_TEST 1
++
++#include "tc_lb4_external_ips.h"
+
+--- bpf/tests/tc_lb6_external_ips.h
+@@ -14,6 +14,14 @@
+ # define HOOK			netdev_receive_packet
+ 
+ #include "lib/bpf_host.h"
++#elif defined(EAST_WEST_TEST)
++# define ENABLE_SOCKET_LB_HOST_ONLY	1
++# define CLIENT_IP			v6_pod_two
++# define HOOK				pod_send_packet
++
++#include "lib/bpf_lxc.h"
++#else
++# error "Test direction not defined"
+ #endif
+ 
+ #define CLIENT_PORT		tcp_src_one
+@@ -29,6 +37,7 @@
+ #define BACKEND_IFINDEX		11
+ #define BACKEND_ID		124
+ 
++#include "lib/policy.h"
+ #include "lib/endpoint.h"
+ #include "lib/lb.h"
+ #include "scapy.h"
+@@ -55,7 +64,17 @@ const __u8 lb6_ns_external_ip_post_dnat[] = {
+ 	SCAPY_BUF_BYTES(lb6_ns_external_ip_post_dnat)
+ };
+ 
+-/* Test that a request for an ExternalIP service is handled correctly */
++/* packet defined in ./scapy/lb_pkt_defs.py */
++const __u8 lb6_ew_external_ip[] = {
++	SCAPY_BUF_BYTES(lb6_ew_external_ip)
++};
++
++/* Test that a request for an ExternalIP service is handled correctly:
++ * - For North-South traffic, the packet should be accepted and DNATed to the
++ *   backend, and a conntrack entry should be created for the connection.
++ * - For East-West traffic, the packet should be dropped and no conntrack entry
++ *   should be created for the connection.
++ */
+ PKTGEN("tc", "tc_lb6_external_ips")
+ int lb6_external_ips_pktgen(struct __ctx_buff *ctx)
+ {
+@@ -65,6 +84,8 @@ int lb6_external_ips_pktgen(struct __ctx_buff *ctx)
+ 
+ #ifdef NORTH_SOUTH_TEST
+ 	scapy_push_data(&builder, lb6_ns_external_ip, sizeof(lb6_ns_external_ip));
++#else
++	scapy_push_data(&builder, lb6_ew_external_ip, sizeof(lb6_ew_external_ip));
+ #endif
+ 
+ 	pktgen__finish(&builder);
+@@ -75,6 +96,8 @@ int lb6_external_ips_pktgen(struct __ctx_buff *ctx)
+ SETUP("tc", "tc_lb6_external_ips")
+ int lb6_external_ips_setup(struct __ctx_buff *ctx)
+ {
++	policy_add_egress_allow_all_entry();
++
+ 	endpoint_v6_add_entry((union v6addr *)BACKEND_IP, BACKEND_IFINDEX, 0, 0, 0,
+ 			      (__u8 *)mac_one, (__u8 *)mac_two);
+ 	lb_v6_add_service_with_flags((union v6addr *)FRONTEND_IP, FRONTEND_PORT,
+@@ -118,6 +141,26 @@ int lb6_external_ips_check(__maybe_unused const struct __ctx_buff *ctx)
+ 	assert(ct_entry);
+ 	assert(ct_entry->packets == 1);
+ 	assert(ct_entry->bytes == sizeof(lb6_ns_external_ip_post_dnat));
++#else
++	/* Ensure packet is dropped. */
++	assert(*status_code == CTX_ACT_DROP);
++
++	/* Ensure packet is not DNATed. */
++	ASSERT_CTX_BUF_OFF("lb6_ew_external_ip", "Ether", ctx, sizeof(__u32),
++			   lb6_ew_external_ip, sizeof(lb6_ew_external_ip));
++
++	/* Ensure drop metrics are updated accordingly. */
++	struct metrics_key metric_key = {
++		.reason = -DROP_NO_SERVICE,
++		.dir = METRIC_EGRESS,
++	};
++	__u64 count = 1;
++
++	assert_metrics_count(metric_key, count);
++
++	/* Ensure CT entry is not populated (SVC). */
++	ct_entry = map_lookup_elem(get_ct_map6(&tuple), &tuple);
++	assert(!ct_entry);
+ #endif
+ 
+ 	test_finish();
+
+--- bpf/tests/tc_lb6_external_ips_ew.c
+@@ -0,0 +1,6 @@
++// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++/* Copyright Authors of Cilium */
++
++#define EAST_WEST_TEST 1
++
++#include "tc_lb6_external_ips.h"
+

@@ -1,0 +1,46 @@
+repo: aquasecurity/tracee
+commit: a675202eeef1bcf2ce269cb7493f35d769dbe367
+rank: 2043
+
+ebpf: fix buffer bounds checking for clang 15 compatibility
+
+Replace explicit bounds checks with the fixed update_min macro in buffer
+functions to help the BPF verifier understand memory access safety with
+newer clang versions.
+
+The issue occurs because clang 15+ optimizes arithmetic differently,
+making it harder for the BPF verifier to prove memory access safety.
+The update_min macro provides explicit constraints the verifier can
+understand.
+
+Also reduce MAX_NUM_MODULES from 420 to 330 as a workaround for BPF verifier
+complexity limits.
+
+Fixes: #4397
+
+--- pkg/ebpf/c/common/buffer.h
+@@ -360,9 +360,9 @@ statfunc int save_str_arr_to_buf(args_buffer_t *buf, const char __user *const __
+     }
+     // handle truncated argument list
+     char ellipsis[] = "...";
+-    if (buf->offset > ARGS_BUF_SIZE - MAX_STRING_SIZE - sizeof(int))
+-        // not enough space - return
+-        goto out;
++
++    // Clamp buffer offset to prevent overflow
++    update_min(buf->offset, ARGS_BUF_SIZE - MAX_STRING_SIZE - sizeof(int));
+ 
+     // Read into buffer
+     int sz = bpf_probe_read_str(&(buf->args[buf->offset + sizeof(int)]), MAX_STRING_SIZE, ellipsis);
+
+--- pkg/ebpf/c/tracee.bpf.c
+@@ -756,7 +756,7 @@ int tracepoint__sched__sched_process_fork(struct bpf_raw_tracepoint_args *ctx)
+     return 0;
+ }
+ 
+-#define MAX_NUM_MODULES          420
++#define MAX_NUM_MODULES          330
+ #define MAX_MODULES_MAP_ENTRIES  2 * MAX_NUM_MODULES
+ #define MOD_TREE_LOOP_ITERATIONS 240
+ #define MOD_TREE_LOOP_DEPTH      14
+

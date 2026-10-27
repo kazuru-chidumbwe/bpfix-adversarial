@@ -1,0 +1,101 @@
+repo: facebookincubator/katran
+commit: 80d6ea7d388249882c7353dbb55b0526926632b5
+rank: 4938
+
+Add metrics for cross pop decapsulation
+
+Summary:
+- Track cross pop decap packets received
+- Track successful cross pop decapsulation
+- Added unit test to verify counters added
+- Remove parameterized test as its not supported for vmtest
+Error on using parameterized test
+```
+⚠ Listing failed: katran/facebook/vmtest:katran_xpop_decap_vmtest-5.19.0-0_fbk11_11538_g61e82533119f (0.1s)
+Failed to list tests. Expected exit code 0 but received: ExitStatus(unix_wait_status(1))
+STDOUT:
+STDERR:Error: [ValueParameterizedTestsError]
+Failed to list tests: parameterized test are not supported yet.
+Please run `arc buildozer 'set supports_static_listing False' <your_target>`
+to disable static listing for a specific target if it'll contain parameterized
+tests.
+For more information please refer to:
+https://fburl.com/parameterized-test-not-supported
+
+Buck UI: https://www.internalfb.com/buck2/14565fa5-658d-4b57-9090-53d137f651cc
+Test UI: https://www.internalfb.com/intern/testinfra/testrun/7036874687737566
+Network: Up: 546MiB  Down: 242MiB  (reSessionID-ad104f28-b21b-4597-8cef-0ecfe37c5b30)
+Analyzing targets. Remaining     0/4
+Executing actions. Remaining     0/184
+Command: test.     Finished 57 local, 27 cache (32% hit)
+Time elapsed: 3:17.2s
+Test listing failed
+Tests finished: Listing Fail 1. Pass 0. Fail 0. Fatal 0. Skip 0. Build failure 0
+1 LISTINGS FAILED
+  ⚠ katran/facebook/vmtest:katran_xpop_decap_vmtest-5.19.0-0_fbk11_11538_g61e82533119f
+NO TESTS RAN
+```
+
+Reviewed By: avasylev
+
+Differential Revision: D75387150
+
+fbshipit-source-id: 120fea33bda52bc88bbdd2f9ac5a9823f902666d
+
+--- katran/lib/bpf/balancer.bpf.c
+@@ -348,13 +348,19 @@ __attribute__((__always_inline__)) static inline int process_encaped_ipip_pckt(
+   } else {
+     data_stats->v1 += 1;
+   }
+-
+   if (action >= 0) {
+     return action;
+   }
+   if (pass) {
+     // pass packet to kernel after decapsulation
+     return XDP_PASS;
++  } else {
++    // Increment XPOP_DECAP_SUCCESSFUL counter if pass is false
++    __u32 stats_key = MAX_VIPS + XPOP_DECAP_SUCCESSFUL;
++    struct lb_stats* stats_data = bpf_map_lookup_elem(&stats, &stats_key);
++    if (stats_data) {
++      stats_data->v1 += 1;
++    }
+   }
+   return recirculate(xdp);
+ }
+@@ -456,6 +462,7 @@ __attribute__((__always_inline__)) static inline int process_encaped_gue_pckt(
+     if ((*data + offset) > *data_end) {
+       return XDP_DROP;
+     }
++
+     action = decrement_ttl(*data, *data_end, offset, false);
+     if (!gue_decap_v4(xdp, data, data_end)) {
+       return XDP_DROP;
+@@ -481,6 +488,13 @@ __attribute__((__always_inline__)) static inline int process_encaped_gue_pckt(
+     // increment stats after decapsulation
+     incr_decap_vip_stats(*data, off, *data_end, inner_ipv6);
+     return XDP_PASS;
++  } else {
++    // Increment XPOP_DECAP_SUCCESSFUL counter if pass is false
++    __u32 stats_key = MAX_VIPS + XPOP_DECAP_SUCCESSFUL;
++    struct lb_stats* stats_data = bpf_map_lookup_elem(&stats, &stats_key);
++    if (stats_data) {
++      stats_data->v1 += 1;
++    }
+   }
+   return recirculate(xdp);
+ }
+
+--- katran/lib/bpf/balancer_consts.h
+@@ -276,6 +276,9 @@
+ // offset of stats for icmp Fragment needed messages
+ #define ICMP_PTB_V4_STATS 13
+ 
++// Tracks successful cross-pop packet decapsulation
++#define XPOP_DECAP_SUCCESSFUL 14
++
+ // indice for all stats maps defined above correspond to entries in the map
+ // stats starting from the index MAX_VIPS. The max_entries of stats is
+ // STATS_MAP_SIZE defined as (MAX_VIPS * 2). So the index above should be always
+
