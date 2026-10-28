@@ -26,8 +26,14 @@ Other cases are not covered and are reported as such.
 
 ## 5. The oracle's sites
 
-The source lines (file base name, line) of every step on the failing path from the first-loss point to the rejected instruction, both included. A step with no source line adds nothing.
+The source lines (file base name, line) of the steps on the failing path from the first-loss point up to the rejected instruction, **without the rejected instruction's own line** (the stop line). The sites are where the missing proof could still have been established; the stop line is where its absence was noticed. Excluding it keeps the oracle from agreeing by construction with any reporter that names the stop line (bpfix's `-->`, VerifierState). A step with no source line adds nothing. A case whose first-loss point is on the stop line has no sites and is reported as such.
 
 ## 6. What is reported
 
-Per covered case: the first-loss step and its line, the site set, its size and its chance (sites over code lines, `oracle.code_line_mask`, of the files involved), and **agreement** with the repair-site oracle under R0, R1 and R2 (the two site sets share at least one line). Per reporter: primary on a state-oracle site, with Wilson 95% intervals over distinct cases, next to the same reporter's R0 result on the same cases. Both corpora: main75 (`results/main75_pin.json` cases) and the scored wild cases.
+Per covered case: the first-loss step and its line, the site set, its size and its chance (sites over code lines, `oracle.code_line_mask`, of the files involved), and **agreement** with the repair-site oracle under R0, R1 and R2 (the two site sets share at least one line). Both corpora: main75 (`results/main75_pin.json` cases) and the scored wild cases.
+
+The oracle is used only to check the repair-site oracle. Reporters are **not** ranked against it, because it is read from the same log that log-based reporters read. For context only, the result lists per reporter how often its primary line is a state-oracle site, marked as not a ranking.
+
+## Changes
+
+- 28 Oct 2026, before any case was scored, after the oracle had been run on the two format logs above and on wild rank 111 (not a covered kind): rule 5 now leaves out the stop line, and rule 6 no longer ranks reporters against the oracle. With the stop line as a site, every reporter that names it would have agreed with the oracle by construction.
