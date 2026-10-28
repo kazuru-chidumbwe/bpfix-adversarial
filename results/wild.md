@@ -12,7 +12,7 @@ Oracle: lines of the developer's own parent → fix edit, per file. Intervals: W
 | batch 3 | 4606 | 355 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | n/a |
 | pooled | 5027 | 539 | 122 | 1 | 7 | 14 | 0 | 43 | 57 | 0.008 (0.001–0.045) |
 
-Not scored: rank 2043 (pending hand check)
+Not scored: rank 2043 (pending reporter outputs: PREVAIL, PrettyVerifier, bpfix)
 
 ## Primary location on a repair site, pooled (1 cases, 1 informative)
 

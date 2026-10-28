@@ -146,6 +146,11 @@ def score_case(d: Path, hand: dict | None) -> dict:
     if hand["verdict"] != "ok":
         row["excluded"] = f"hand check: {hand['verdict']} ({hand.get('note', '')})"
         return row
+    missing = sorted(rep.name for rep in REGISTRY.values()
+                     if rep.needs_artifact and not (d / f"buggy{rep.needs_artifact}").is_file())
+    if missing:  # never score an absent output as a miss
+        row["excluded"] = "pending reporter outputs: " + ", ".join(missing)
+        return row
     sites, code, semantic = file_sites(d, meta["changed_files"])
     if not semantic:
         row["excluded"] = "no-semantic-hunk"

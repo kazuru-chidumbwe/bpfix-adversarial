@@ -12,3 +12,6 @@ lab/.env
 
 # lab/run_v2_campaign.sh vmlinux.h cache
 .cache/
+
+# wild cases: the objects the kernel rejected and accepted are evidence (PREVAIL replays them)
+!fixtures/wild/cases/*/*.o

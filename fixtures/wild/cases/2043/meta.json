@@ -1,0 +1,55 @@
+{
+ "screen_rank": 2043,
+ "repo": "aquasecurity/tracee",
+ "commit": "a675202eeef1bcf2ce269cb7493f35d769dbe367",
+ "parent": "9f591d33b18d4b9497289e2b553af151369b6fee",
+ "build_type": "direct compile",
+ "flips": [
+  {
+   "object": "tracee.bpf.c::pkg__ebpf__c__tracee.bpf.c.o",
+   "program": "syscall__execve_enter",
+   "section": "raw_tracepoint/sys_execve"
+  },
+  {
+   "object": "tracee.bpf.c::pkg__ebpf__c__tracee.bpf.c.o",
+   "program": "syscall__execve_exit",
+   "section": "raw_tracepoint/sys_execve"
+  },
+  {
+   "object": "tracee.bpf.c::pkg__ebpf__c__tracee.bpf.c.o",
+   "program": "syscall__execveat_enter",
+   "section": "raw_tracepoint/sys_execveat"
+  },
+  {
+   "object": "tracee.bpf.c::pkg__ebpf__c__tracee.bpf.c.o",
+   "program": "syscall__execveat_exit",
+   "section": "raw_tracepoint/sys_execveat"
+  },
+  {
+   "object": "tracee.bpf.c::pkg__ebpf__c__tracee.bpf.c.o",
+   "program": "trace_call_usermodehelper",
+   "section": "kprobe/call_usermodehelper"
+  },
+  {
+   "object": "tracee.bpf.c::pkg__ebpf__c__tracee.bpf.c.o",
+   "program": "trace_execute_finished",
+   "section": "kretprobe/execute_finished"
+  },
+  {
+   "object": "tracee.bpf.c::pkg__ebpf__c__tracee.bpf.c.o",
+   "program": "trace_security_bprm_check",
+   "section": "kprobe/security_bprm_check"
+  }
+ ],
+ "decided_by": "default",
+ "feature_macros": null,
+ "object": "tracee.bpf.c::pkg__ebpf__c__tracee.bpf.c.o",
+ "program": "syscall__execve_enter",
+ "section": "raw_tracepoint/sys_execve",
+ "parent_cmd": "clang -g -O2 -target bpf -D__TARGET_ARCH_x86 -I /home/test/wild/tmp/2043/parent/pkg/ebpf/c -I /home/test/wild/tmp/2043/parent/pkg/ebpf -I /home/test/wild/tmp/2043/parent/pkg -I /home/test/wild/tmp/2043/parent -I /home/test/bpfix-b2/.cache/vmlinux-6.12.86+deb13-amd64 -I /usr/include -c /home/test/wild/tmp/2043/parent/pkg/ebpf/c/tracee.bpf.c -o /home/test/wild/tmp/2043/parent-objs/pkg__ebpf__c__tracee.bpf.c.o",
+ "fix_cmd": "clang -g -O2 -target bpf -D__TARGET_ARCH_x86 -I /home/test/wild/tmp/2043/fix/pkg/ebpf/c -I /home/test/wild/tmp/2043/fix/pkg/ebpf -I /home/test/wild/tmp/2043/fix/pkg -I /home/test/wild/tmp/2043/fix -I /home/test/bpfix-b2/.cache/vmlinux-6.12.86+deb13-amd64 -I /usr/include -c /home/test/wild/tmp/2043/fix/pkg/ebpf/c/tracee.bpf.c -o /home/test/wild/tmp/2043/fix-objs/pkg__ebpf__c__tracee.bpf.c.o",
+ "changed_files": [
+  "pkg/ebpf/c/common/buffer.h",
+  "pkg/ebpf/c/tracee.bpf.c"
+ ]
+}

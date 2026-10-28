@@ -169,7 +169,33 @@ def check_figures() -> None:
             path.write_bytes(data)
 
 
+def unreadable_tracked_files() -> list[str]:
+    """Tracked files this checkout cannot open. Emitters treat a missing reporter output as a miss,
+    so an unreadable file would change results silently (Windows paths over 260 characters)."""
+    import subprocess
+
+    p = subprocess.run(["git", "-C", str(ROOT), "ls-files", "-z"], capture_output=True, check=False)
+    if p.returncode:
+        return []  # not a git checkout (an archive): nothing to compare against
+    out = []
+    for rel in p.stdout.decode("utf-8", "replace").split("\0"):
+        if rel:
+            try:
+                with open(ROOT / rel, "rb"):
+                    pass
+            except OSError:
+                out.append(rel)
+    return out
+
+
 def main() -> int:
+    bad = unreadable_tracked_files()
+    if bad:
+        raise SystemExit(
+            f"{len(bad)} tracked file(s) cannot be opened in this checkout, e.g.\n  {bad[0]}\n"
+            "On Windows this is the 260-character path limit: clone into a short directory (C:\\bpfix), or enable "
+            "long paths (git config core.longpaths true, and the LongPathsEnabled registry setting), then check out again."
+        )
     covered = {rel for rel, _ in OFFLINE_EMITTERS} | set(SKIP_RESULTS)
     on_disk = {
         f"results/{p.name}"

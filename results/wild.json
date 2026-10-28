@@ -6,7 +6,7 @@
  "excluded": [
   {
    "rank": 2043,
-   "reason": "pending hand check"
+   "reason": "pending reporter outputs: PREVAIL, PrettyVerifier, bpfix"
   }
  ],
  "yield": {
@@ -3026,7 +3026,7 @@
    "program": "syscall__execve_enter",
    "section": "raw_tracepoint/sys_execve",
    "build_type": "direct compile",
-   "excluded": "pending hand check"
+   "excluded": "pending reporter outputs: PREVAIL, PrettyVerifier, bpfix"
   }
  ]
 }
