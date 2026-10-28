@@ -1,9 +1,14 @@
 {
  "generator": "tools/score_wild.py",
  "protocol": "docs/WILD-CORPUS-PROTOCOL.md (scoring rules for the wild cases)",
- "n_cases": 1,
+ "n_cases": 2,
  "n_scored": 1,
- "excluded": [],
+ "excluded": [
+  {
+   "rank": 2043,
+   "reason": "pending hand check"
+  }
+ ],
  "yield": {
   "batch 1": {
    "candidates": 280,
@@ -11,11 +16,11 @@
    "screened": 81,
    "outcomes": {
     "included": 1,
-    "I3": 9,
+    "I3": 5,
     "I4": 7,
     "C": 0,
     "E4": 22,
-    "E5": 42
+    "E5": 46
    },
    "included_over_screened": {
     "rate": 0.0123,
@@ -32,10 +37,10 @@
    "outcomes": {
     "included": 0,
     "I3": 2,
-    "I4": 4,
+    "I4": 7,
     "C": 0,
     "E4": 21,
-    "E5": 14
+    "E5": 11
    },
    "included_over_screened": {
     "rate": 0.0,
@@ -65,11 +70,11 @@
    "screened": 122,
    "outcomes": {
     "included": 1,
-    "I3": 11,
-    "I4": 11,
+    "I3": 7,
+    "I4": 14,
     "C": 0,
     "E4": 43,
-    "E5": 56
+    "E5": 57
    },
    "included_over_screened": {
     "rate": 0.0082,
@@ -3012,6 +3017,16 @@
      }
     }
    }
+  },
+  {
+   "rank": 2043,
+   "batch": "batch 3",
+   "repo": "aquasecurity/tracee",
+   "commit": "a675202eeef1bcf2ce269cb7493f35d769dbe367",
+   "program": "syscall__execve_enter",
+   "section": "raw_tracepoint/sys_execve",
+   "build_type": "direct compile",
+   "excluded": "pending hand check"
   }
  ]
 }
