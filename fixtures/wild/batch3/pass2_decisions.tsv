@@ -1,0 +1,2 @@
+rank	decision	code	note
+2043	pass		fixes a verifier rejection of the buffer bounds check (message and diff); the MAX_NUM_MODULES change is a second, complexity-only edit, so not E1 and not N0

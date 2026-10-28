@@ -1,2 +1,3 @@
 rank	verdict	note
 111	ok	pin log rejects line 182 (rq->__sector) with invalid mem access scalar, the message and statement the commit quotes; the fix replaces the direct reads with BPF_CORE_READ (probe reads), not only a relocation
+2043	ok	pin log rejects buffer.h:368 (bpf_probe_read_str into buf->args at buf->offset) with invalid access to map value, R1 max value outside the allowed range; the fix replaces the bounds check at 363 that guards it (update_min); not a placeholder or loader artefact
