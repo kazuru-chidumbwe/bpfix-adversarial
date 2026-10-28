@@ -1,0 +1,24 @@
+{
+ "screen_rank": 4049,
+ "repo": "parca-dev/parca-agent",
+ "commit": "13db3a4feebe6bd65ceedbb3052a66ba017e155d",
+ "parent": "ad208e4713ce3e0b61852a630c044385214ffdf2",
+ "build_type": "direct compile",
+ "flips": [
+  {
+   "object": "native.bpf.c::bpf__unwinders__native.bpf.c.o",
+   "program": "entrypoint",
+   "section": "perf_event"
+  }
+ ],
+ "decided_by": "default",
+ "feature_macros": null,
+ "object": "native.bpf.c::bpf__unwinders__native.bpf.c.o",
+ "program": "entrypoint",
+ "section": "perf_event",
+ "parent_cmd": "clang -g -O2 -target bpf -D__TARGET_ARCH_x86 -I /home/test/wild/tmp/4049/parent/bpf/unwinders -I /home/test/wild/tmp/4049/parent/bpf -I /home/test/wild/tmp/4049/parent/bpf/x86 -I /home/test/wild/tmp/4049/parent -I /home/test/bpfix-b2/.cache/vmlinux-6.12.86+deb13-amd64 -I /usr/include -c /home/test/wild/tmp/4049/parent/bpf/unwinders/native.bpf.c -o /home/test/wild/tmp/4049/parent-objs/bpf__unwinders__native.bpf.c.o",
+ "fix_cmd": "clang -g -O2 -target bpf -D__TARGET_ARCH_x86 -I /home/test/wild/tmp/4049/fix/bpf/unwinders -I /home/test/wild/tmp/4049/fix/bpf -I /home/test/wild/tmp/4049/fix/bpf/x86 -I /home/test/wild/tmp/4049/fix -I /home/test/bpfix-b2/.cache/vmlinux-6.12.86+deb13-amd64 -I /usr/include -c /home/test/wild/tmp/4049/fix/bpf/unwinders/native.bpf.c -o /home/test/wild/tmp/4049/fix-objs/bpf__unwinders__native.bpf.c.o",
+ "changed_files": [
+  "bpf/unwinders/native.bpf.c"
+ ]
+}

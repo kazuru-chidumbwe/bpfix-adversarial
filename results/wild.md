@@ -1,6 +1,6 @@
 # Wild cases on the cite pin
 
-Rules `docs/WILD-CORPUS-PROTOCOL.md (scoring rules for the wild cases)`. Included cases 2; scored 1.
+Rules `docs/WILD-CORPUS-PROTOCOL.md (scoring rules for the wild cases)`. Included cases 4; scored 1.
 Oracle: lines of the developer's own parent → fix edit, per file. Intervals: Wilson 95% over distinct cases.
 
 ## Yield per batch
@@ -12,7 +12,7 @@ Oracle: lines of the developer's own parent → fix edit, per file. Intervals: W
 | batch 3 | 4606 | 355 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | n/a |
 | pooled | 5027 | 539 | 122 | 1 | 7 | 14 | 0 | 43 | 57 | 0.008 (0.001–0.045) |
 
-Not scored: rank 2043 (pending reporter outputs: PREVAIL, PrettyVerifier, bpfix)
+Not scored: rank 2043 (pending reporter outputs: PREVAIL, PrettyVerifier, bpfix), rank 3285 (pending reporter outputs: PREVAIL, PrettyVerifier, bpfix), rank 4049 (pending reporter outputs: PREVAIL, PrettyVerifier, bpfix)
 
 ## Primary location on a repair site, pooled (1 cases, 1 informative)
 

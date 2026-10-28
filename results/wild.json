@@ -1,11 +1,19 @@
 {
  "generator": "tools/score_wild.py",
  "protocol": "docs/WILD-CORPUS-PROTOCOL.md (scoring rules for the wild cases)",
- "n_cases": 2,
+ "n_cases": 4,
  "n_scored": 1,
  "excluded": [
   {
    "rank": 2043,
+   "reason": "pending reporter outputs: PREVAIL, PrettyVerifier, bpfix"
+  },
+  {
+   "rank": 3285,
+   "reason": "pending reporter outputs: PREVAIL, PrettyVerifier, bpfix"
+  },
+  {
+   "rank": 4049,
    "reason": "pending reporter outputs: PREVAIL, PrettyVerifier, bpfix"
   }
  ],
@@ -3025,6 +3033,26 @@
    "commit": "a675202eeef1bcf2ce269cb7493f35d769dbe367",
    "program": "syscall__execve_enter",
    "section": "raw_tracepoint/sys_execve",
+   "build_type": "direct compile",
+   "excluded": "pending reporter outputs: PREVAIL, PrettyVerifier, bpfix"
+  },
+  {
+   "rank": 3285,
+   "batch": "batch 3",
+   "repo": "ThisSeanZhang/landscape",
+   "commit": "fc3fafd3a352bd77217ec49a76530267cb91265b",
+   "program": "xdp_lan_root",
+   "section": "xdp",
+   "build_type": "direct compile",
+   "excluded": "pending reporter outputs: PREVAIL, PrettyVerifier, bpfix"
+  },
+  {
+   "rank": 4049,
+   "batch": "batch 3",
+   "repo": "parca-dev/parca-agent",
+   "commit": "13db3a4feebe6bd65ceedbb3052a66ba017e155d",
+   "program": "entrypoint",
+   "section": "perf_event",
    "build_type": "direct compile",
    "excluded": "pending reporter outputs: PREVAIL, PrettyVerifier, bpfix"
   }

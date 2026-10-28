@@ -1,3 +1,5 @@
 rank	verdict	note
 111	ok	pin log rejects line 182 (rq->__sector) with invalid mem access scalar, the message and statement the commit quotes; the fix replaces the direct reads with BPF_CORE_READ (probe reads), not only a relocation
 2043	ok	pin log rejects buffer.h:368 (bpf_probe_read_str into buf->args at buf->offset) with invalid access to map value, R1 max value outside the allowed range; the fix replaces the bounds check at 363 that guards it (update_min); not a placeholder or loader artefact
+3285	ok	pin log rejects xdp_meta.h:41 (read of ctx->data_meta after bpf_xdp_adjust_meta) with dereference of modified ctx ptr R2 off=8; the fix reads data, data_end and data_meta through asm accessors in the same header, as the commit comment explains; not a loader artefact
+4049	ok	pin log rejects native.bpf.c:491 (proc_info->mappings[mid].begin) with invalid access to map value, R8 max value outside the allowed range; the fix inserts mid = opaquify(mid) before the bounds check on mid, so the check bounds it again; the commit targets the 1M-insn limit on newer kernels, on the pin the same edit clears the map bound

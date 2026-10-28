@@ -1,0 +1,295 @@
+libbpf: object 'landscape-ebpf_': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'xdp': found 3 CO-RE relocations
+libbpf: CO-RE relocating [30] struct xdp_md: found target candidate [13583] struct xdp_md in [vmlinux]
+libbpf: prog 'xdp_lan_root': relo #0: <byte_off> [30] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'xdp_lan_root': relo #0: matching candidate #0 <byte_off> [13583] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'xdp_lan_root': relo #0: patched insn #108 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'xdp_lan_root': relo #1: <byte_off> [30] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'xdp_lan_root': relo #1: matching candidate #0 <byte_off> [13583] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'xdp_lan_root': relo #1: patched insn #109 (LDX/ST/STX) off 0 -> 0
+libbpf: CO-RE relocating [33] struct ethhdr: found target candidate [20213] struct ethhdr in [vmlinux]
+libbpf: prog 'xdp_lan_root': relo #2: <byte_off> [33] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'xdp_lan_root': relo #2: matching candidate #0 <byte_off> [20213] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'xdp_lan_root': relo #2: patched insn #114 (LDX/ST/STX) off 12 -> 12
+libbpf: map 'root_next_stage': created successfully, fd=4
+libbpf: map 'xdp_pipe_exits_lan': created successfully, fd=5
+libbpf: map 'xdp_redirect_able': created successfully, fd=6
+libbpf: map 'xdp_pipe_root_progs': created successfully, fd=7
+libbpf: map 'xdp_pipe_exits_wan': created successfully, fd=8
+libbpf: map 'xdp_lan_pipe_root_progs': created successfully, fd=9
+libbpf: map 'landscap.rodata': created successfully, fd=10
+libbpf: prog 'xdp_lan_root': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int xdp_lan_root(struct xdp_md *ctx) { @ xdp_lan_root.bpf.c:29
+0: (bf) r6 = r1                       ; R1=ctx() R6_w=ctx()
+; if (xdp_stamp_chain_id(ctx, current_chain) != 0) { @ xdp_lan_root.bpf.c:30
+1: (18) r1 = 0xffffd1bb0115e000       ; R1_w=map_value(map=landscap.rodata,ks=4,vs=128)
+3: (61) r7 = *(u32 *)(r1 +0)          ; R1_w=map_value(map=landscap.rodata,ks=4,vs=128) R7_w=0
+; DEFINE_XDP_CTX_POINTER(data_meta) /* This defines ctx_data_meta(). */ @ xdp_meta.h:35
+4: (61) r1 = *(u32 *)(r6 +8)          ; R1_w=pkt_meta(r=0) R6_w=ctx()
+; DEFINE_XDP_CTX_POINTER(data)      /* This defines ctx_data(). */ @ xdp_meta.h:33
+5: (61) r2 = *(u32 *)(r6 +0)          ; R2_w=pkt(r=0) R6_w=ctx()
+; if (data_meta + sizeof(*meta) > data) return -1; @ xdp_meta.h:41
+6: (bf) r3 = r1                       ; R1_w=pkt_meta(r=0) R3_w=pkt_meta(r=0)
+7: (07) r3 += 12                      ; R3_w=pkt_meta(off=12,r=0)
+8: (2d) if r3 > r2 goto pc+23         ; R2_w=pkt(r=0) R3_w=pkt_meta(off=12,r=12)
+; __builtin_memcpy(meta, data_meta, sizeof(*meta)); @ xdp_meta.h:42
+9: (71) r3 = *(u8 *)(r1 +1)           ; R1_w=pkt_meta(r=12) R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+10: (67) r3 <<= 8                     ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xff00,var_off=(0x0; 0xff00))
+11: (71) r2 = *(u8 *)(r1 +0)          ; R1_w=pkt_meta(r=12) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+12: (4f) r3 |= r2                     ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+13: (71) r4 = *(u8 *)(r1 +2)          ; R1_w=pkt_meta(r=12) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+14: (67) r4 <<= 16                    ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xff0000,var_off=(0x0; 0xff0000))
+15: (71) r2 = *(u8 *)(r1 +3)          ; R1_w=pkt_meta(r=12) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+16: (67) r2 <<= 24                    ; R2_w=scalar(smin=0,smax=umax=umax32=0xff000000,smax32=0x7f000000,var_off=(0x0; 0xff000000))
+17: (4f) r2 |= r4                     ; R2_w=scalar(smin=0,smax=umax=umax32=0xffff0000,smax32=0x7fff0000,var_off=(0x0; 0xffff0000)) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xff0000,var_off=(0x0; 0xff0000))
+18: (4f) r2 |= r3                     ; R2_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+19: (71) r3 = *(u8 *)(r1 +5)          ; R1_w=pkt_meta(r=12) R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+20: (67) r3 <<= 8                     ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xff00,var_off=(0x0; 0xff00))
+21: (71) r4 = *(u8 *)(r1 +4)          ; R1_w=pkt_meta(r=12) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+22: (4f) r3 |= r4                     ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+23: (71) r4 = *(u8 *)(r1 +6)          ; R1_w=pkt_meta(r=12) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+24: (67) r4 <<= 16                    ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xff0000,var_off=(0x0; 0xff0000))
+25: (71) r1 = *(u8 *)(r1 +7)          ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+26: (67) r1 <<= 24                    ; R1_w=scalar(smin=0,smax=umax=umax32=0xff000000,smax32=0x7f000000,var_off=(0x0; 0xff000000))
+27: (4f) r1 |= r4                     ; R1_w=scalar(smin=0,smax=umax=umax32=0xffff0000,smax32=0x7fff0000,var_off=(0x0; 0xffff0000)) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xff0000,var_off=(0x0; 0xff0000))
+28: (4f) r1 |= r3                     ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+29: (67) r1 <<= 32                    ; R1_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+30: (4f) r1 |= r2                     ; R1_w=scalar() R2_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; if (xdp_get_meta(ctx, &meta) != 0) { @ xdp_meta.h:60
+31: (05) goto pc+8
+; DEFINE_XDP_CTX_POINTER(data_meta) /* This defines ctx_data_meta(). */ @ xdp_meta.h:35
+40: (61) r2 = *(u32 *)(r6 +8)         ; R2_w=pkt_meta(r=0) R6=ctx()
+; DEFINE_XDP_CTX_POINTER(data)      /* This defines ctx_data(). */ @ xdp_meta.h:33
+41: (61) r3 = *(u32 *)(r6 +0)         ; R3_w=pkt(r=0) R6=ctx()
+; if (data_meta + sizeof(meta) > data) return -1; @ xdp_meta.h:66
+42: (bf) r4 = r2                      ; R2_w=pkt_meta(r=0) R4_w=pkt_meta(r=0)
+43: (07) r4 += 12                     ; R4_w=pkt_meta(off=12,r=0)
+44: (3d) if r3 >= r4 goto pc+9        ; R3_w=pkt(r=0) R4_w=pkt_meta(off=12,r=0)
+; bpf_printk("[lan_root] stamp chain meta failed, chain=%u", current_chain); @ xdp_lan_root.bpf.c:31
+45: (18) r1 = 0xffffd1bb0115e000      ; R1_w=map_value(map=landscap.rodata,ks=4,vs=128)
+47: (61) r3 = *(u32 *)(r1 +0)         ; R1_w=map_value(map=landscap.rodata,ks=4,vs=128) R3_w=0
+48: (18) r1 = 0xffffd1bb0115e004      ; R1_w=map_value(map=landscap.rodata,ks=4,vs=128,off=4)
+50: (b7) r2 = 45                      ; R2_w=45
+51: (85) call bpf_trace_printk#6
+mark_precise: frame0: last_idx 51 first_idx 40 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 50: (b7) r2 = 45
+52: R0=scalar()
+52: (b7) r0 = 1                       ; R0_w=1
+; return XDP_DROP; @ xdp_lan_root.bpf.c:32
+53: (05) goto pc+87
+; } @ xdp_lan_root.bpf.c:62
+141: (95) exit
+
+from 44 to 54: R1=scalar() R2_w=pkt_meta(r=12) R3_w=pkt(r=0) R4_w=pkt_meta(off=12,r=12) R6=ctx() R7=0 R10=fp0
+54: R1=scalar() R2_w=pkt_meta(r=12) R3_w=pkt(r=0) R4_w=pkt_meta(off=12,r=12) R6=ctx() R7=0 R10=fp0
+; __builtin_memcpy(data_meta, &meta, sizeof(meta)); @ xdp_meta.h:68
+54: (bf) r3 = r7                      ; R3_w=0 R7=0
+55: (77) r3 >>= 24                    ; R3_w=0
+56: (73) *(u8 *)(r2 +11) = r3         ; R2_w=pkt_meta(r=12) R3_w=0
+57: (bf) r3 = r7                      ; R3_w=0 R7=0
+58: (77) r3 >>= 16                    ; R3_w=0
+59: (73) *(u8 *)(r2 +10) = r3         ; R2_w=pkt_meta(r=12) R3_w=0
+60: (73) *(u8 *)(r2 +8) = r7          ; R2_w=pkt_meta(r=12) R7=0
+61: (77) r7 >>= 8                     ; R7_w=0
+62: (73) *(u8 *)(r2 +9) = r7          ; R2_w=pkt_meta(r=12) R7_w=0
+63: (bf) r3 = r1                      ; R1=scalar(id=1) R3_w=scalar(id=1)
+64: (77) r3 >>= 56                    ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+65: (73) *(u8 *)(r2 +7) = r3          ; R2_w=pkt_meta(r=12) R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+66: (bf) r3 = r1                      ; R1=scalar(id=1) R3_w=scalar(id=1)
+67: (77) r3 >>= 48                    ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+68: (73) *(u8 *)(r2 +6) = r3          ; R2_w=pkt_meta(r=12) R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+69: (bf) r3 = r1                      ; R1=scalar(id=1) R3_w=scalar(id=1)
+70: (77) r3 >>= 40                    ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffffff,var_off=(0x0; 0xffffff))
+71: (73) *(u8 *)(r2 +5) = r3          ; R2_w=pkt_meta(r=12) R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffffff,var_off=(0x0; 0xffffff))
+72: (bf) r3 = r1                      ; R1=scalar(id=1) R3_w=scalar(id=1)
+73: (77) r3 >>= 32                    ; R3_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+74: (73) *(u8 *)(r2 +4) = r3          ; R2_w=pkt_meta(r=12) R3_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+75: (bf) r3 = r1                      ; R1=scalar(id=1) R3_w=scalar(id=1)
+76: (77) r3 >>= 24                    ; R3_w=scalar(smin=0,smax=umax=0xffffffffff,var_off=(0x0; 0xffffffffff))
+77: (73) *(u8 *)(r2 +3) = r3          ; R2_w=pkt_meta(r=12) R3_w=scalar(smin=0,smax=umax=0xffffffffff,var_off=(0x0; 0xffffffffff))
+78: (bf) r3 = r1                      ; R1=scalar(id=1) R3_w=scalar(id=1)
+79: (77) r3 >>= 16                    ; R3_w=scalar(smin=0,smax=umax=0xffffffffffff,var_off=(0x0; 0xffffffffffff))
+80: (73) *(u8 *)(r2 +2) = r3          ; R2_w=pkt_meta(r=12) R3_w=scalar(smin=0,smax=umax=0xffffffffffff,var_off=(0x0; 0xffffffffffff))
+81: (73) *(u8 *)(r2 +0) = r1          ; R1=scalar(id=1) R2_w=pkt_meta(r=12)
+82: (77) r1 >>= 8                     ; R1_w=scalar(smin=0,smax=umax=0xffffffffffffff,var_off=(0x0; 0xffffffffffffff))
+83: (73) *(u8 *)(r2 +1) = r1          ; R1_w=scalar(smin=0,smax=umax=0xffffffffffffff,var_off=(0x0; 0xffffffffffffff)) R2_w=pkt_meta(r=12)
+; DEFINE_XDP_CTX_POINTER(data_meta) /* This defines ctx_data_meta(). */ @ xdp_meta.h:35
+84: (61) r1 = *(u32 *)(r6 +8)         ; R1_w=pkt_meta(r=0) R6=ctx()
+; DEFINE_XDP_CTX_POINTER(data)      /* This defines ctx_data(). */ @ xdp_meta.h:33
+85: (61) r2 = *(u32 *)(r6 +0)         ; R2_w=pkt(r=0) R6=ctx()
+; if (data_meta + sizeof(*meta) > data) return -1; @ xdp_meta.h:41
+86: (bf) r3 = r1                      ; R1_w=pkt_meta(r=0) R3_w=pkt_meta(r=0)
+87: (07) r3 += 12                     ; R3=pkt_meta(off=12,r=0)
+88: (3d) if r2 >= r3 goto pc+4        ; R2=pkt(r=0) R3=pkt_meta(off=12,r=0)
+; bpf_printk("[lan_root] no meta"); @ xdp_lan_root.bpf.c:38
+89: (18) r1 = 0xffffd1bb0115e031      ; R1_w=map_value(map=landscap.rodata,ks=4,vs=128,off=49)
+91: (b7) r2 = 19                      ; R2_w=19
+92: (05) goto pc+46
+; bpf_printk("[lan_root] all tailcalls failed"); @ xdp_lan_root.bpf.c:60
+139: (85) call bpf_trace_printk#6
+mark_precise: frame0: last_idx 139 first_idx 88 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 92: (05) goto pc+46
+mark_precise: frame0: regs=r2 stack= before 91: (b7) r2 = 19
+140: R0_w=scalar()
+140: (b7) r0 = 2                      ; R0_w=2
+; } @ xdp_lan_root.bpf.c:62
+141: (95) exit
+
+from 88 to 93: R1=pkt_meta(r=12) R2=pkt(r=0) R3=pkt_meta(off=12,r=12) R4=pkt_meta(off=12,r=12) R6=ctx() R7=0 R10=fp0
+93: R1=pkt_meta(r=12) R2=pkt(r=0) R3=pkt_meta(off=12,r=12) R4=pkt_meta(off=12,r=12) R6=ctx() R7=0 R10=fp0
+; __builtin_memcpy(meta, data_meta, sizeof(*meta)); @ xdp_meta.h:42
+93: (71) r2 = *(u8 *)(r1 +5)          ; R1=pkt_meta(r=12) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+94: (67) r2 <<= 8                     ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xff00,var_off=(0x0; 0xff00))
+95: (71) r3 = *(u8 *)(r1 +4)          ; R1=pkt_meta(r=12) R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+96: (4f) r2 |= r3                     ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+97: (71) r3 = *(u8 *)(r1 +6)          ; R1=pkt_meta(r=12) R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+98: (67) r3 <<= 16                    ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xff0000,var_off=(0x0; 0xff0000))
+99: (71) r1 = *(u8 *)(r1 +7)          ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+100: (67) r1 <<= 24                   ; R1_w=scalar(smin=0,smax=umax=umax32=0xff000000,smax32=0x7f000000,var_off=(0x0; 0xff000000))
+101: (4f) r1 |= r3                    ; R1_w=scalar(smin=0,smax=umax=umax32=0xffff0000,smax32=0x7fff0000,var_off=(0x0; 0xffff0000)) R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xff0000,var_off=(0x0; 0xff0000))
+102: (4f) r1 |= r2                    ; R1=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+; if (meta.target_ifindex == 0) { @ xdp_lan_root.bpf.c:42
+103: (55) if r1 != 0x0 goto pc+4      ; R1=0
+; bpf_printk("[lan_root] target_ifindex=0"); @ xdp_lan_root.bpf.c:43
+104: (18) r1 = 0xffffd1bb0115e044     ; R1_w=map_value(map=landscap.rodata,ks=4,vs=128,off=68)
+106: (b7) r2 = 28                     ; R2_w=28
+107: (05) goto pc+31
+; bpf_printk("[lan_root] all tailcalls failed"); @ xdp_lan_root.bpf.c:60
+139: (85) call bpf_trace_printk#6
+mark_precise: frame0: last_idx 139 first_idx 103 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 107: (05) goto pc+31
+mark_precise: frame0: regs=r2 stack= before 106: (b7) r2 = 28
+140: R0_w=scalar()
+140: (b7) r0 = 2                      ; R0_w=2
+; } @ xdp_lan_root.bpf.c:62
+141: (95) exit
+
+from 103 to 108: R1=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R3=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xff0000,var_off=(0x0; 0xff0000)) R4=pkt_meta(off=12,r=12) R6=ctx() R7=0 R10=fp0
+108: R1=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R3=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xff0000,var_off=(0x0; 0xff0000)) R4=pkt_meta(off=12,r=12) R6=ctx() R7=0 R10=fp0
+; if (XDP_REVALIDATE(ctx, &data, &data_end, &eth, 0, sizeof(*eth))) return XDP_L3_ERR; @ xdp_common.h:43
+108: (61) r2 = *(u32 *)(r6 +4)        ; R2_w=pkt_end() R6=ctx()
+109: (61) r1 = *(u32 *)(r6 +0)        ; R1_w=pkt(r=0) R6=ctx()
+110: (bf) r3 = r1                     ; R1_w=pkt(r=0) R3_w=pkt(r=0)
+111: (07) r3 += 14                    ; R3=pkt(off=14,r=0)
+112: (2d) if r3 > r2 goto pc+17       ; R2=pkt_end() R3=pkt(off=14,r=14)
+113: (15) if r1 == 0x0 goto pc+16     ; R1=pkt(r=14)
+; switch (eth->h_proto) { @ xdp_common.h:45
+114: (69) r1 = *(u16 *)(r1 +12)       ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+115: (15) if r1 == 0x8 goto pc+8      ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+116: (55) if r1 != 0xdd86 goto pc+13          ; R1_w=0xdd86
+; asm volatile("r1 = %[ctx]\n\t" @ bpf_helpers.h:161
+117: (18) r7 = 0xffff8d0e27243400     ; R7_w=map_ptr(map=root_next_stage,ks=4,vs=4)
+119: (bf) r1 = r6                     ; R1_w=ctx() R6=ctx()
+120: (bf) r2 = r7                     ; R2_w=map_ptr(map=root_next_stage,ks=4,vs=4) R7_w=map_ptr(map=root_next_stage,ks=4,vs=4)
+121: (b7) r3 = 1                      ; R3_w=1
+122: (85) call bpf_tail_call#12
+mark_precise: frame0: last_idx 122 first_idx 112 subseq_idx -1 
+mark_precise: frame0: regs=r3 stack= before 121: (b7) r3 = 1
+123:
+; break; @ xdp_lan_root.bpf.c:50
+123: (05) goto pc+6
+; asm volatile("r1 = %[ctx]\n\t" @ bpf_helpers.h:161
+130: (18) r7 = 0xffff8d0e27242a00     ; R7_w=map_ptr(map=xdp_pipe_exits_,ks=4,vs=4)
+132: (bf) r1 = r6                     ; R1_w=ctx() R6=ctx()
+133: (bf) r2 = r7                     ; R2_w=map_ptr(map=xdp_pipe_exits_,ks=4,vs=4) R7_w=map_ptr(map=xdp_pipe_exits_,ks=4,vs=4)
+134: (b7) r3 = 0                      ; R3_w=0
+135: (85) call bpf_tail_call#12
+mark_precise: frame0: last_idx 135 first_idx 123 subseq_idx -1 
+mark_precise: frame0: regs=r3 stack= before 134: (b7) r3 = 0
+136:
+; bpf_printk("[lan_root] all tailcalls failed"); @ xdp_lan_root.bpf.c:60
+136: (18) r1 = 0xffffd1bb0115e060     ; R1_w=map_value(map=landscap.rodata,ks=4,vs=128,off=96)
+138: (b7) r2 = 32                     ; R2=32
+139: (85) call bpf_trace_printk#6
+mark_precise: frame0: last_idx 139 first_idx 139 subseq_idx -1 
+mark_precise: frame0: parent state regs=r2 stack=:  R1_rw=map_value(map=landscap.rodata,ks=4,vs=128,off=96) R2_rw=P32 R6=ctx() R7_w=map_ptr(map=xdp_pipe_exits_,ks=4,vs=4) R10=fp0
+mark_precise: frame0: last_idx 138 first_idx 123 subseq_idx 139 
+mark_precise: frame0: regs=r2 stack= before 138: (b7) r2 = 32
+140: R0_w=scalar()
+140: (b7) r0 = 2                      ; R0_w=2
+; } @ xdp_lan_root.bpf.c:62
+141: (95) exit
+
+from 116 to 130: R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R2=pkt_end() R3=pkt(off=14,r=14) R4=pkt_meta(off=12,r=12) R6=ctx() R7=0 R10=fp0
+130: R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R2=pkt_end() R3=pkt(off=14,r=14) R4=pkt_meta(off=12,r=12) R6=ctx() R7=0 R10=fp0
+; asm volatile("r1 = %[ctx]\n\t" @ bpf_helpers.h:161
+130: (18) r7 = 0xffff8d0e27242a00     ; R7_w=map_ptr(map=xdp_pipe_exits_,ks=4,vs=4)
+132: (bf) r1 = r6                     ; R1_w=ctx() R6=ctx()
+133: (bf) r2 = r7                     ; R2_w=map_ptr(map=xdp_pipe_exits_,ks=4,vs=4) R7_w=map_ptr(map=xdp_pipe_exits_,ks=4,vs=4)
+134: (b7) r3 = 0                      ; R3_w=0
+135: (85) call bpf_tail_call#12
+mark_precise: frame0: last_idx 135 first_idx 112 subseq_idx -1 
+mark_precise: frame0: regs=r3 stack= before 134: (b7) r3 = 0
+136:
+; bpf_printk("[lan_root] all tailcalls failed"); @ xdp_lan_root.bpf.c:60
+136: (18) r1 = 0xffffd1bb0115e060     ; R1_w=map_value(map=landscap.rodata,ks=4,vs=128,off=96)
+138: (b7) r2 = 32
+frame 0: propagating r2
+mark_precise: frame0: last_idx 139 first_idx 136 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 138: (b7) r2 = 32
+139: safe
+
+from 115 to 124: R1_w=8 R2=pkt_end() R3=pkt(off=14,r=14) R4=pkt_meta(off=12,r=12) R6=ctx() R7=0 R10=fp0
+124: R1_w=8 R2=pkt_end() R3=pkt(off=14,r=14) R4=pkt_meta(off=12,r=12) R6=ctx() R7=0 R10=fp0
+; asm volatile("r1 = %[ctx]\n\t" @ bpf_helpers.h:161
+124: (18) r7 = 0xffff8d0e27243400     ; R7_w=map_ptr(map=root_next_stage,ks=4,vs=4)
+126: (bf) r1 = r6                     ; R1_w=ctx() R6=ctx()
+127: (bf) r2 = r7                     ; R2_w=map_ptr(map=root_next_stage,ks=4,vs=4) R7_w=map_ptr(map=root_next_stage,ks=4,vs=4)
+128: (b7) r3 = 0                      ; R3_w=0
+129: (85) call bpf_tail_call#12
+mark_precise: frame0: last_idx 129 first_idx 112 subseq_idx -1 
+mark_precise: frame0: regs=r3 stack= before 128: (b7) r3 = 0
+130:
+130: (18) r7 = 0xffff8d0e27242a00     ; R7_w=map_ptr(map=xdp_pipe_exits_,ks=4,vs=4)
+132: (bf) r1 = r6                     ; R1_w=ctx() R6=ctx()
+133: (bf) r2 = r7                     ; R2_w=map_ptr(map=xdp_pipe_exits_,ks=4,vs=4) R7_w=map_ptr(map=xdp_pipe_exits_,ks=4,vs=4)
+134: (b7) r3 = 0                      ; R3_w=0
+135: (85) call bpf_tail_call#12
+mark_precise: frame0: last_idx 135 first_idx 112 subseq_idx -1 
+mark_precise: frame0: regs=r3 stack= before 134: (b7) r3 = 0
+136: safe
+
+from 113 to 130: R1=pkt(r=14) R2=pkt_end() R3=pkt(off=14,r=14) R4=pkt_meta(off=12,r=12) R6=ctx() R7=0 R10=fp0
+130: R1=pkt(r=14) R2=pkt_end() R3=pkt(off=14,r=14) R4=pkt_meta(off=12,r=12) R6=ctx() R7=0 R10=fp0
+130: (18) r7 = 0xffff8d0e27242a00     ; R7_w=map_ptr(map=xdp_pipe_exits_,ks=4,vs=4)
+132: (bf) r1 = r6                     ; R1_w=ctx() R6=ctx()
+133: (bf) r2 = r7                     ; R2_w=map_ptr(map=xdp_pipe_exits_,ks=4,vs=4) R7_w=map_ptr(map=xdp_pipe_exits_,ks=4,vs=4)
+134: (b7) r3 = 0                      ; R3_w=0
+135: (85) call bpf_tail_call#12
+mark_precise: frame0: last_idx 135 first_idx 130 subseq_idx -1 
+mark_precise: frame0: regs=r3 stack= before 134: (b7) r3 = 0
+136: safe
+
+from 112 to 130: safe
+
+from 8 to 32: R1_w=pkt_meta(r=0) R2_w=pkt(r=0) R3_w=pkt_meta(off=12,r=0) R6_w=ctx() R7_w=0 R10=fp0
+32: R1_w=pkt_meta(r=0) R2_w=pkt(r=0) R3_w=pkt_meta(off=12,r=0) R6_w=ctx() R7_w=0 R10=fp0
+; int ret = bpf_xdp_adjust_meta(ctx, -(int)sizeof(meta)); @ xdp_meta.h:61
+32: (bf) r1 = r6                      ; R1_w=ctx() R6_w=ctx()
+33: (18) r2 = 0xfffffff4              ; R2_w=0xfffffff4
+35: (85) call bpf_xdp_adjust_meta#54          ; R0=scalar()
+36: (b7) r1 = 0                       ; R1_w=0
+; if (ret) return ret; @ xdp_meta.h:62
+37: (67) r0 <<= 32                    ; R0_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+38: (77) r0 >>= 32                    ; R0_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+39: (55) if r0 != 0x0 goto pc+5       ; R0_w=0
+40: safe
+
+from 39 to 45: R0_w=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R1_w=0 R6=ctx() R7=0 R10=fp0
+45: R0_w=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R1_w=0 R6=ctx() R7=0 R10=fp0
+; bpf_printk("[lan_root] stamp chain meta failed, chain=%u", current_chain); @ xdp_lan_root.bpf.c:31
+45: (18) r1 = 0xffffd1bb0115e000      ; R1_w=map_value(map=landscap.rodata,ks=4,vs=128)
+47: (61) r3 = *(u32 *)(r1 +0)         ; R1_w=map_value(map=landscap.rodata,ks=4,vs=128) R3_w=0
+48: (18) r1 = 0xffffd1bb0115e004      ; R1_w=map_value(map=landscap.rodata,ks=4,vs=128,off=4)
+50: (b7) r2 = 45                      ; R2_w=45
+51: (85) call bpf_trace_printk#6
+mark_precise: frame0: last_idx 51 first_idx 36 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 50: (b7) r2 = 45
+52: safe
+verification time 1060 usec
+stack depth 0
+processed 167 insns (limit 1000000) max_states_per_insn 0 total_states 10 peak_states 10 mark_read 2
+-- END PROG LOAD LOG --

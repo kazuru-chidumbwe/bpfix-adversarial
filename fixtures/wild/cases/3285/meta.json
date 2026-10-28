@@ -1,0 +1,29 @@
+{
+ "screen_rank": 3285,
+ "repo": "ThisSeanZhang/landscape",
+ "commit": "fc3fafd3a352bd77217ec49a76530267cb91265b",
+ "parent": "0dd2b94c553ed43c962b70b4771fe9ae1ab2d648",
+ "build_type": "direct compile",
+ "flips": [
+  {
+   "object": "xdp_lan_root.bpf.c::landscape-ebpf__src__bpf__xdp_lan_root.bpf.c.o",
+   "program": "xdp_lan_root",
+   "section": "xdp"
+  },
+  {
+   "object": "xdp_wan_root.bpf.c::landscape-ebpf__src__bpf__xdp_wan_root.bpf.c.o",
+   "program": "xdp_wan_root",
+   "section": "xdp"
+  }
+ ],
+ "decided_by": "default",
+ "feature_macros": null,
+ "object": "xdp_lan_root.bpf.c::landscape-ebpf__src__bpf__xdp_lan_root.bpf.c.o",
+ "program": "xdp_lan_root",
+ "section": "xdp",
+ "parent_cmd": "clang -g -O2 -target bpf -D__TARGET_ARCH_x86 -I /home/test/wild/tmp/3285/parent/landscape-ebpf/src/bpf -I /home/test/wild/tmp/3285/parent/landscape-ebpf/src -I /home/test/wild/tmp/3285/parent/landscape-ebpf -I /home/test/wild/tmp/3285/parent -I /home/test/bpfix-b2/.cache/vmlinux-6.12.86+deb13-amd64 -I /usr/include -c /home/test/wild/tmp/3285/parent/landscape-ebpf/src/bpf/xdp_lan_root.bpf.c -o /home/test/wild/tmp/3285/parent-objs/landscape-ebpf__src__bpf__xdp_lan_root.bpf.c.o",
+ "fix_cmd": "clang -g -O2 -target bpf -D__TARGET_ARCH_x86 -I /home/test/wild/tmp/3285/fix/landscape-ebpf/src/bpf -I /home/test/wild/tmp/3285/fix/landscape-ebpf/src -I /home/test/wild/tmp/3285/fix/landscape-ebpf -I /home/test/wild/tmp/3285/fix -I /home/test/bpfix-b2/.cache/vmlinux-6.12.86+deb13-amd64 -I /usr/include -c /home/test/wild/tmp/3285/fix/landscape-ebpf/src/bpf/xdp_lan_root.bpf.c -o /home/test/wild/tmp/3285/fix-objs/landscape-ebpf__src__bpf__xdp_lan_root.bpf.c.o",
+ "changed_files": [
+  "landscape-ebpf/src/bpf/chain/xdp_meta.h"
+ ]
+}
