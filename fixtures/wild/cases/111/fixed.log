@@ -43,7 +43,7 @@ func 'block_rq_complete' arg0 has btf_id 12660 type STRUCT 'request'
 2: R1_w=trusted_ptr_request() R6_w=ctx()
 2: (7b) *(u64 *)(r10 -8) = r1         ; R1_w=trusted_ptr_request() R10=fp0 fp-8_w=trusted_ptr_request()
 ; if (filter_cg && !bpf_current_task_under_cgroup(&cgroup_map, 0)) @ biosnoop.bpf.c:151
-3: (18) r1 = 0xffffd1bb00aa7000       ; R1_w=map_value(map=libbpf_t.rodata,ks=4,vs=16)
+3: (18) r1 = 0xffffd1bb00fee000       ; R1_w=map_value(map=libbpf_t.rodata,ks=4,vs=16)
 5: (71) r1 = *(u8 *)(r1 +0)           ; R1_w=0
 6: (55) if r1 != 0x1 goto pc+5
 mark_precise: frame0: last_idx 6 first_idx 0 subseq_idx -1 
@@ -65,7 +65,7 @@ mark_precise: frame0: regs=r1 stack= before 5: (71) r1 = *(u8 *)(r1 +0)
 23: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
 24: (07) r2 += -8                     ; R2_w=fp-8
 ; stagep = bpf_map_lookup_elem(&start, &rq); @ biosnoop.bpf.c:160
-25: (18) r1 = 0xffff8d0e977a3400      ; R1_w=map_ptr(map=start,ks=8,vs=24)
+25: (18) r1 = 0xffff8d0d8a718c00      ; R1_w=map_ptr(map=start,ks=8,vs=24)
 27: (85) call bpf_map_lookup_elem#1   ; R0_w=map_value_or_null(id=2,map=start,ks=8,vs=24)
 ; if (!stagep) @ biosnoop.bpf.c:161
 28: (15) if r0 == 0x0 goto pc+105     ; R0_w=map_value(map=start,ks=8,vs=24)
@@ -75,14 +75,14 @@ mark_precise: frame0: regs=r1 stack= before 5: (71) r1 = *(u8 *)(r1 +0)
 31: (1f) r9 -= r1                     ; R1=scalar() R9=scalar()
 ; if (delta < 0 || delta < min_ns) @ biosnoop.bpf.c:164
 32: (6d) if r8 s> r9 goto pc+91       ; R8=0 R9=scalar(smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff))
-33: (18) r1 = 0xffffd1bb00aa7008      ; R1_w=map_value(map=libbpf_t.rodata,ks=4,vs=16,off=8)
+33: (18) r1 = 0xffffd1bb00fee008      ; R1_w=map_value(map=libbpf_t.rodata,ks=4,vs=16,off=8)
 35: (79) r1 = *(u64 *)(r1 +0)         ; R1_w=0
 36: (2d) if r1 > r9 goto pc+87
 mark_precise: frame0: last_idx 36 first_idx 32 subseq_idx -1 
 mark_precise: frame0: regs=r1 stack= before 35: (79) r1 = *(u64 *)(r1 +0)
 mark_precise: frame0: last_idx 36 first_idx 32 subseq_idx -1 
 mark_precise: frame0: regs=r9 stack= before 35: (79) r1 = *(u64 *)(r1 +0)
-mark_precise: frame0: regs=r9 stack= before 33: (18) r1 = 0xffffd1bb00aa7008
+mark_precise: frame0: regs=r9 stack= before 33: (18) r1 = 0xffffd1bb00fee008
 mark_precise: frame0: regs=r9 stack= before 32: (6d) if r8 s> r9 goto pc+91
 mark_precise: frame0: parent state regs=r8,r9 stack=:  R0_w=map_value(map=start,ks=8,vs=24) R1_w=scalar() R6=ctx() R7_w=scalar(id=1) R8_rw=P0 R9_rw=Pscalar() R10=fp0 fp-8=mmmmmmmm fp-16_w=0 fp-24_w=0 fp-32_w=0 fp-40_w=0 fp-48_w=0 fp-56_w=0 fp-64_w=0 fp-72_w=0
 mark_precise: frame0: last_idx 31 first_idx 13 subseq_idx 32 
@@ -91,7 +91,7 @@ mark_precise: frame0: regs=r1,r8,r9 stack= before 30: (bf) r9 = r7
 mark_precise: frame0: regs=r1,r7,r8 stack= before 29: (79) r1 = *(u64 *)(r0 +8)
 mark_precise: frame0: regs=r7,r8 stack= before 28: (15) if r0 == 0x0 goto pc+105
 mark_precise: frame0: regs=r7,r8 stack= before 27: (85) call bpf_map_lookup_elem#1
-mark_precise: frame0: regs=r7,r8 stack= before 25: (18) r1 = 0xffff8d0e977a3400
+mark_precise: frame0: regs=r7,r8 stack= before 25: (18) r1 = 0xffff8d0d8a718c00
 mark_precise: frame0: regs=r7,r8 stack= before 24: (07) r2 += -8
 mark_precise: frame0: regs=r7,r8 stack= before 23: (bf) r2 = r10
 mark_precise: frame0: regs=r7,r8 stack= before 22: (7b) *(u64 *)(r10 -72) = r8
@@ -112,7 +112,7 @@ mark_precise: frame0: regs=r0 stack= before 12: (85) call bpf_ktime_get_ns#5
 38: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
 39: (07) r2 += -8                     ; R2_w=fp-8
 ; piddatap = bpf_map_lookup_elem(&infobyreq, &rq); @ biosnoop.bpf.c:166
-40: (18) r1 = 0xffff8d0e977a2400      ; R1_w=map_ptr(map=infobyreq,ks=8,vs=20)
+40: (18) r1 = 0xffff8d0d8a718400      ; R1_w=map_ptr(map=infobyreq,ks=8,vs=20)
 42: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=3,map=infobyreq,ks=8,vs=20)
 ; if (!piddatap) { @ biosnoop.bpf.c:167
 43: (55) if r0 != 0x0 goto pc+3       ; R0=0
@@ -124,7 +124,7 @@ mark_precise: frame0: regs=r0 stack= before 12: (85) call bpf_ktime_get_ns#5
 ; event.delta = delta; @ biosnoop.bpf.c:174
 59: (7b) *(u64 *)(r10 -56) = r9       ; R9=scalar(id=4,smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff)) R10=fp0 fp-56_w=scalar(id=4,smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff))
 ; if (targ_queued && BPF_CORE_READ(rq, q, elevator)) { @ biosnoop.bpf.c:175
-60: (18) r1 = 0xffffd1bb00aa7001      ; R1_w=map_value(map=libbpf_t.rodata,ks=4,vs=16,off=1)
+60: (18) r1 = 0xffffd1bb00fee001      ; R1_w=map_value(map=libbpf_t.rodata,ks=4,vs=16,off=1)
 62: (71) r1 = *(u8 *)(r1 +0)          ; R1_w=0
 63: (55) if r1 != 0x1 goto pc+23
 mark_precise: frame0: last_idx 63 first_idx 43 subseq_idx -1 
@@ -176,7 +176,7 @@ mark_precise: frame0: regs=r2 stack= before 109: (b7) r2 = 4
 116: (07) r4 += -72                   ; R4_w=fp-72
 ; bpf_perf_event_output(ctx, &events, BPF_F_CURRENT_CPU, &event, @ biosnoop.bpf.c:186
 117: (bf) r1 = r6                     ; R1_w=ctx() R6=ctx()
-118: (18) r2 = 0xffff8d0f0341d200     ; R2_w=map_ptr(map=events,ks=4,vs=4)
+118: (18) r2 = 0xffff8d0c90b05a00     ; R2_w=map_ptr(map=events,ks=4,vs=4)
 120: (18) r3 = 0xffffffff             ; R3_w=0xffffffff
 122: (b7) r5 = 64                     ; R5_w=64
 123: (85) call bpf_perf_event_output#25
@@ -186,11 +186,11 @@ mark_precise: frame0: regs=r5 stack= before 122: (b7) r5 = 64
 124: (bf) r6 = r10                    ; R6_w=fp0 R10=fp0
 125: (07) r6 += -8                    ; R6_w=fp-8
 ; bpf_map_delete_elem(&start, &rq); @ biosnoop.bpf.c:190
-126: (18) r1 = 0xffff8d0e977a3400     ; R1_w=map_ptr(map=start,ks=8,vs=24)
+126: (18) r1 = 0xffff8d0d8a718c00     ; R1_w=map_ptr(map=start,ks=8,vs=24)
 128: (bf) r2 = r6                     ; R2_w=fp-8 R6_w=fp-8
 129: (85) call bpf_map_delete_elem#3          ; R0_w=scalar()
 ; bpf_map_delete_elem(&infobyreq, &rq); @ biosnoop.bpf.c:191
-130: (18) r1 = 0xffff8d0e977a2400     ; R1_w=map_ptr(map=infobyreq,ks=8,vs=20)
+130: (18) r1 = 0xffff8d0d8a718400     ; R1_w=map_ptr(map=infobyreq,ks=8,vs=20)
 132: (bf) r2 = r6                     ; R2_w=fp-8 R6_w=fp-8
 133: (85) call bpf_map_delete_elem#3          ; R0=scalar()
 ; int BPF_PROG(block_rq_complete, struct request *rq, int error, @ biosnoop.bpf.c:148
@@ -216,7 +216,7 @@ from 43 to 47: R0=map_value(map=infobyreq,ks=8,vs=20) R6=ctx() R7=scalar(id=1) R
 ; event.delta = delta; @ biosnoop.bpf.c:174
 59: (7b) *(u64 *)(r10 -56) = r9       ; R9=scalar(id=9,smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff)) R10=fp0 fp-56_w=scalar(id=9,smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff))
 ; if (targ_queued && BPF_CORE_READ(rq, q, elevator)) { @ biosnoop.bpf.c:175
-60: (18) r1 = 0xffffd1bb00aa7001      ; R1_w=map_value(map=libbpf_t.rodata,ks=4,vs=16,off=1)
+60: (18) r1 = 0xffffd1bb00fee001      ; R1_w=map_value(map=libbpf_t.rodata,ks=4,vs=16,off=1)
 62: (71) r1 = *(u8 *)(r1 +0)          ; R1_w=0
 63: (55) if r1 != 0x1 goto pc+23
 mark_precise: frame0: last_idx 63 first_idx 43 subseq_idx -1 
@@ -227,7 +227,7 @@ mark_precise: frame0: regs=r1 stack= before 62: (71) r1 = *(u8 *)(r1 +0)
 from 32 to 124: safe
 
 from 28 to 134: safe
-verification time 627 usec
+verification time 623 usec
 stack depth 80
 processed 106 insns (limit 1000000) max_states_per_insn 0 total_states 7 peak_states 7 mark_read 5
 -- END PROG LOAD LOG --

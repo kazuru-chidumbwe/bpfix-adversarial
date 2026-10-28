@@ -16,8 +16,8 @@
  "object": "biosnoop.bpf.c::libbpf-tools__biosnoop.bpf.c.o",
  "program": "block_rq_complete",
  "section": "tp_btf/block_rq_complete",
- "parent_cmd": "clang -g -O2 -target bpf -D__TARGET_ARCH_x86 -I /home/test/wild/tmp/111/parent/libbpf-tools -I /home/test/wild/tmp/111/parent/libbpf-tools/x86 -I /home/test/wild/tmp/111/parent -I /home/test/bpfix-v2-git/.cache/vmlinux-6.12.86+deb13-amd64 -I /usr/include -c /home/test/wild/tmp/111/parent/libbpf-tools/biosnoop.bpf.c -o /home/test/wild/tmp/111/parent-objs/libbpf-tools__biosnoop.bpf.c.o",
- "fix_cmd": "clang -g -O2 -target bpf -D__TARGET_ARCH_x86 -I /home/test/wild/tmp/111/fix/libbpf-tools -I /home/test/wild/tmp/111/fix/libbpf-tools/x86 -I /home/test/wild/tmp/111/fix -I /home/test/bpfix-v2-git/.cache/vmlinux-6.12.86+deb13-amd64 -I /usr/include -c /home/test/wild/tmp/111/fix/libbpf-tools/biosnoop.bpf.c -o /home/test/wild/tmp/111/fix-objs/libbpf-tools__biosnoop.bpf.c.o",
+ "parent_cmd": "clang -g -O2 -target bpf -D__TARGET_ARCH_x86 -I /home/test/wild/tmp/111/parent/libbpf-tools -I /home/test/wild/tmp/111/parent/libbpf-tools/x86 -I /home/test/wild/tmp/111/parent -I /home/test/bpfix-b2/.cache/vmlinux-6.12.86+deb13-amd64 -I /usr/include -c /home/test/wild/tmp/111/parent/libbpf-tools/biosnoop.bpf.c -o /home/test/wild/tmp/111/parent-objs/libbpf-tools__biosnoop.bpf.c.o",
+ "fix_cmd": "clang -g -O2 -target bpf -D__TARGET_ARCH_x86 -I /home/test/wild/tmp/111/fix/libbpf-tools -I /home/test/wild/tmp/111/fix/libbpf-tools/x86 -I /home/test/wild/tmp/111/fix -I /home/test/bpfix-b2/.cache/vmlinux-6.12.86+deb13-amd64 -I /usr/include -c /home/test/wild/tmp/111/fix/libbpf-tools/biosnoop.bpf.c -o /home/test/wild/tmp/111/fix-objs/libbpf-tools__biosnoop.bpf.c.o",
  "changed_files": [
   "libbpf-tools/biosnoop.bpf.c"
  ]
