@@ -14,7 +14,7 @@ A class with four members:
 | `needs_artifact` | File suffix of the tool's stored output, e.g. `.prettyverifier.txt`. Use `None` for a reporter that reads the log or the source directly. |
 | `replay(ctx, obj) -> str` | External tools only. Runs the tool on one case and returns its output text. `ctx.source` is the C file, `ctx.log_path` the captured verifier log, and `obj` the object recompiled with the capture's own flags. |
 | `provenance() -> dict` | External tools only. Tool version or source commit, plus any input transformation the adapter applies. |
-| `predict(ctx) -> Prediction` | Reads the stored output (`ctx.artifact(self.needs_artifact)`) and returns `Prediction(primary, labels, note)`. A missing or unparseable output returns `primary=None`, which scores as a miss. |
+| `predict(ctx) -> Prediction` | Reads the stored output (`ctx.artifact(self.needs_artifact)`) and returns `Prediction(primary, labels, note)`. An output the tool produced but that names no usable line returns `primary=None`, which scores as a miss. A missing output is not a miss: run the replay first (the wild scorer lists such a case as pending, and `tools/check_results_fresh.py` stops if a committed output cannot be read). |
 
 Keep any adaptation of the input faithful and visible. Pretty Verifier, for example, expects the plain verifier log, so its adapter removes only the two statistics lines that `bpftool -d` adds before `processed`, and says so in `provenance()`.
 
@@ -49,3 +49,14 @@ python tools/score_main75_pin.py --run campaigns/main75/lab/<run>
 ```
 
 The new reporter appears in `results/main75_pin.md`: primary and label hits under R0, R1 and R2, informative cases, strata, McNemar against every other reporter, and metamorphic pairs. Commit the stored outputs with the results so `tools/check_results_fresh.py` can rebuild the tables offline.
+
+## What the two existing adapters took
+
+Measured from the commits that added them. Neither changed the core package (`bpfix_adversarial/` outside `adapters/`) or any scorer; the other files in those commits are the regenerated results.
+
+| Adapter | Commit | Adapter module | Registry | Test | Core or scorer lines changed |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Pretty Verifier | `18ce180` | 90 lines | 4 lines | 60 lines | 0 |
+| PREVAIL | `d9360e4`, then `a18b17c` and `4cd2236` | 59 lines, 73 after two fixes (pass `--line-info`; analyse the program the kernel rejected when an object has several) | 3 lines | 48 lines, 52 after the fixes | 0 |
+
+Both fixes stayed inside the adapter module and its test.
