@@ -174,7 +174,10 @@ def unreadable_tracked_files() -> list[str]:
     so an unreadable file would change results silently (Windows paths over 260 characters)."""
     import subprocess
 
-    p = subprocess.run(["git", "-C", str(ROOT), "ls-files", "-z"], capture_output=True, check=False)
+    try:
+        p = subprocess.run(["git", "-C", str(ROOT), "ls-files", "-z"], capture_output=True, check=False)
+    except FileNotFoundError:
+        return []  # no git (the Docker image): the files were copied in, nothing to compare against
     if p.returncode:
         return []  # not a git checkout (an archive): nothing to compare against
     out = []
