@@ -35,6 +35,7 @@ OFFLINE_EMITTERS: list[tuple[str, list[str]]] = [
     ("results/main75_rewrites.json",
      ["tools/score_main75_rewrites.py", "--run", "campaigns/n3/lab/testbed-a-20261026T060709Z"]),
     ("results/wild.json", ["tools/score_wild.py"]),
+    ("results/state_oracle.json", ["tools/score_state_oracle.py"]),
     ("results/pad_rename_invariance.json", ["tools/emit_pad_rename_invariance.py"]),
     ("results/depth21_selection.json", ["tools/emit_depth21_selection.py"]),
     ("results/sc_vs_honesty.json", ["tools/score_sc_vs_honesty.py"]),

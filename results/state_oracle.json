@@ -1,0 +1,1715 @@
+{
+ "generator": "tools/score_state_oracle.py",
+ "protocol": "docs/STATE-ORACLE.md",
+ "summary": {
+  "main75": {
+   "cases": 74,
+   "covered": 31,
+   "with_sites": 30,
+   "by_kind": {
+    "NullablePointer": 20,
+    "PacketBounds": 11
+   },
+   "agree_R0": {
+    "hits": 22,
+    "n": 30,
+    "wilson95": [
+     0.5555,
+     0.8582
+    ]
+   },
+   "agree_R1": {
+    "hits": 26,
+    "n": 30,
+    "wilson95": [
+     0.7032,
+     0.9469
+    ]
+   },
+   "agree_R2": {
+    "hits": 23,
+    "n": 30,
+    "wilson95": [
+     0.5907,
+     0.8821
+    ]
+   },
+   "mean_chance": 0.0473,
+   "context_primary_on_state_site": {
+    "PREVAIL": 0,
+    "PrettyVerifier": 0,
+    "SourceComment": 8,
+    "VerifierState": 0,
+    "bpfix": 0
+   }
+  },
+  "wild": {
+   "cases": 1,
+   "covered": 0,
+   "with_sites": 0,
+   "by_kind": {
+    "NullablePointer": 0,
+    "PacketBounds": 0
+   },
+   "agree_R0": {
+    "hits": 0,
+    "n": 0,
+    "wilson95": null
+   },
+   "agree_R1": {
+    "hits": 0,
+    "n": 0,
+    "wilson95": null
+   },
+   "agree_R2": {
+    "hits": 0,
+    "n": 0,
+    "wilson95": null
+   },
+   "mean_chance": null,
+   "context_primary_on_state_site": {}
+  }
+ },
+ "rows": [
+  {
+   "corpus": "main75",
+   "case": "alu32_pointer_cookie_001",
+   "kind": null,
+   "message": "R1 pointer arithmetic with <<= operator prohibited",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "dynptr_slice_missing_null_check_001",
+   "kind": "NullablePointer",
+   "message": "R0 invalid mem access 'rdonly_mem_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 13,
+    "line": [
+     "buggy.bpf.c",
+     32
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    33
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     32
+    ]
+   ],
+   "n_sites": 1,
+   "chance": 0.0588,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "dynptr_slice_short_mem_001",
+   "kind": null,
+   "message": "invalid access to memory, mem_size=13 off=12 size=2 R0 min value is outside of the allowed memory range",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "dynptr_slice_stack_buffer_001",
+   "kind": null,
+   "message": "invalid indirect read from stack R3 off -24+8 size 9 arg#2 arg#3 memory, len pair leads to invalid memory access",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "dynptr_stack_copy_001",
+   "kind": null,
+   "message": "invalid read from stack off -8+0 size 8",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "dynptr_uninitialized_slice_arg_001",
+   "kind": null,
+   "message": "Expected an initialized dynptr as arg #0",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "helper_csum_diff_stack_len_001",
+   "kind": null,
+   "message": "invalid indirect access to stack R3 off=-8 size=12",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "helper_map_arg_stack_001",
+   "kind": null,
+   "message": "R1 type=fp expected=map_ptr",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "map_value_branch_merge_001",
+   "kind": "NullablePointer",
+   "message": "R0 invalid mem access 'map_value_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 36,
+    "line": [
+     "buggy.bpf.c",
+     60
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    65
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     60
+    ],
+    [
+     "buggy.bpf.c",
+     61
+    ]
+   ],
+   "n_sites": 2,
+   "chance": 0.0476,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "map_value_index_guard_oob_001",
+   "kind": null,
+   "message": "invalid access to map value, value_size=12 off=20 size=4 R1 min value is outside of the allowed memory range",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "map_value_inline_cookie_001",
+   "kind": "NullablePointer",
+   "message": "R1 invalid mem access 'map_value_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 28,
+    "line": [
+     "buggy.bpf.c",
+     39
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    67
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     39
+    ]
+   ],
+   "n_sites": 1,
+   "chance": 0.027,
+   "agrees": {
+    "R0": false,
+    "R1": false,
+    "R2": false
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": true,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "map_value_pointer_cookie_001",
+   "kind": "NullablePointer",
+   "message": "R1 invalid mem access 'map_value_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 28,
+    "line": [
+     "buggy.bpf.c",
+     63
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    67
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     63
+    ]
+   ],
+   "n_sites": 1,
+   "chance": 0.0263,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "map_value_signed_index_001",
+   "kind": null,
+   "message": "math between map_value pointer and register with unbounded min value is not allowed",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "map_value_spill_cookie_001",
+   "kind": "NullablePointer",
+   "message": "R0 invalid mem access 'map_value_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 26,
+    "line": [
+     "buggy.bpf.c",
+     58
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    62
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     58
+    ]
+   ],
+   "n_sites": 1,
+   "chance": 0.0256,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "packet_checked_wrong_base_001",
+   "kind": "PacketBounds",
+   "message": "invalid access to packet, off=13 size=2, R1(id=0,off=13,r=14) R1 offset is outside of the packet",
+   "note": "",
+   "first_loss": {
+    "insn": 5,
+    "line": [
+     "buggy.bpf.c",
+     27
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    31
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     27
+    ]
+   ],
+   "n_sites": 1,
+   "chance": 0.0714,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": true,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "packet_eth_off_by_one_001",
+   "kind": "PacketBounds",
+   "message": "invalid access to packet, off=12 size=2, R1(id=0,off=12,r=13) R1 offset is outside of the packet",
+   "note": "",
+   "first_loss": {
+    "insn": 5,
+    "line": [
+     "buggy.bpf.c",
+     33
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    36
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     33
+    ]
+   ],
+   "n_sites": 1,
+   "chance": 0.05,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": true,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "packet_ihl_udp_undercheck_001",
+   "kind": "PacketBounds",
+   "message": "invalid access to packet, off=22 size=1, R1(id=1,off=22,r=21) R1 offset is outside of the packet",
+   "note": "",
+   "first_loss": {
+    "insn": 25,
+    "line": [
+     "buggy.bpf.c",
+     63
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    72
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     63
+    ],
+    [
+     "buggy.bpf.c",
+     66
+    ]
+   ],
+   "n_sites": 2,
+   "chance": 0.0392,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "packet_inline_return_cookie_001",
+   "kind": null,
+   "message": "R3 pointer arithmetic with <<= operator prohibited",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "packet_l4_branch_cookie_001",
+   "kind": null,
+   "message": "R1 pointer arithmetic with <<= operator prohibited",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "packet_macro_cookie_001",
+   "kind": null,
+   "message": "R3 pointer arithmetic with <<= operator prohibited",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "packet_macro_payload_undercheck_001",
+   "kind": "PacketBounds",
+   "message": "invalid access to packet, off=20 size=2, R3(id=1,off=20,r=21) R3 offset is outside of the packet",
+   "note": "",
+   "first_loss": {
+    "insn": 22,
+    "line": [
+     "buggy.bpf.c",
+     46
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    52
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     46
+    ]
+   ],
+   "n_sites": 1,
+   "chance": 0.0323,
+   "agrees": {
+    "R0": false,
+    "R1": false,
+    "R2": false
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "packet_vlan_cookie_001",
+   "kind": null,
+   "message": "R3 pointer arithmetic with <<= operator prohibited",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "perf_event_packet_payload_001",
+   "kind": null,
+   "message": "helper access to the packet is not allowed",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "ringbuf_branch_cookie_001",
+   "kind": null,
+   "message": "R1 pointer arithmetic with <<= operator prohibited",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "ringbuf_double_submit_001",
+   "kind": null,
+   "message": "R7 invalid mem access 'scalar'",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "ringbuf_missing_null_check_001",
+   "kind": "NullablePointer",
+   "message": "R7 invalid mem access 'ringbuf_mem_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 15,
+    "line": [
+     "buggy.bpf.c",
+     34
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    35
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     34
+    ]
+   ],
+   "n_sites": 1,
+   "chance": 0.0345,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "ringbuf_nested_missing_null_001",
+   "kind": "NullablePointer",
+   "message": "R6 invalid mem access 'ringbuf_mem_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 21,
+    "line": [
+     "buggy.bpf.c",
+     47
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    48
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     47
+    ]
+   ],
+   "n_sites": 1,
+   "chance": 0.0333,
+   "agrees": {
+    "R0": false,
+    "R1": true,
+    "R2": false
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "ringbuf_nested_reserve_leak_001",
+   "kind": null,
+   "message": "Unreleased reference id=2 alloc_insn=11",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "ringbuf_pointer_cookie_001",
+   "kind": null,
+   "message": "R0 pointer arithmetic with <<= operator prohibited",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "ringbuf_ref_leak_001",
+   "kind": null,
+   "message": "Unreleased reference id=2 alloc_insn=6",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "ringbuf_stack_discard_001",
+   "kind": null,
+   "message": "R1 type=fp expected=ringbuf_mem",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "ringbuf_stack_submit_001",
+   "kind": null,
+   "message": "R1 type=fp expected=ringbuf_mem",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "ringbuf_submit_after_discard_001",
+   "kind": null,
+   "message": "R1 type=scalar expected=ringbuf_mem",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "ringbuf_two_record_cookie_001",
+   "kind": null,
+   "message": "R0 pointer arithmetic with <<= operator prohibited",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_actplane_cap_dynptr_payload_null_001",
+   "kind": "NullablePointer",
+   "message": "R0 invalid mem access 'mem_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 18,
+    "line": [
+     "buggy.bpf.c",
+     64
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    94
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     64
+    ],
+    [
+     "buggy.bpf.c",
+     65
+    ],
+    [
+     "buggy.bpf.c",
+     70
+    ],
+    [
+     "buggy.bpf.c",
+     71
+    ],
+    [
+     "buggy.bpf.c",
+     73
+    ],
+    [
+     "buggy.bpf.c",
+     77
+    ],
+    [
+     "buggy.bpf.c",
+     80
+    ],
+    [
+     "buggy.bpf.c",
+     81
+    ],
+    [
+     "buggy.bpf.c",
+     84
+    ],
+    [
+     "buggy.bpf.c",
+     92
+    ]
+   ],
+   "n_sites": 10,
+   "chance": 0.1266,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": true,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_actplane_lsm_bpf_ringbuf_merge_001",
+   "kind": "NullablePointer",
+   "message": "R1 invalid mem access 'ringbuf_mem_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 23,
+    "line": [
+     "buggy.bpf.c",
+     49
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    54
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     49
+    ],
+    [
+     "buggy.bpf.c",
+     50
+    ]
+   ],
+   "n_sites": 2,
+   "chance": 0.0526,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_actplane_mmap_pending_merge_001",
+   "kind": "NullablePointer",
+   "message": "R7 invalid mem access 'map_value_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 28,
+    "line": [
+     "buggy.bpf.c",
+     214
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    217
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     214
+    ]
+   ],
+   "n_sites": 1,
+   "chance": 0.0056,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_actplane_policy_map_merge_001",
+   "kind": "NullablePointer",
+   "message": "R0 invalid mem access 'map_value_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 26,
+    "line": [
+     "buggy.bpf.c",
+     54
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    57
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     54
+    ]
+   ],
+   "n_sites": 1,
+   "chance": 0.0294,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_actplane_taint_loop_count_bound_001",
+   "kind": null,
+   "message": "invalid unbounded variable-offset read from stack R3",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_agentsight_fs_overflow_counter_merge_001",
+   "kind": "NullablePointer",
+   "message": "R1 invalid mem access 'map_value_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 132,
+    "line": [
+     "buggy.bpf.c",
+     120
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    123
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     120
+    ]
+   ],
+   "n_sites": 1,
+   "chance": 0.0108,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_agentsight_process_ringbuf_null_001",
+   "kind": "NullablePointer",
+   "message": "R0 invalid mem access 'ringbuf_mem_or_null'",
+   "note": "R0 never shown as *_or_null on the failing path",
+   "first_loss": null,
+   "stop_line": null,
+   "sites": [],
+   "n_sites": 0,
+   "chance": 0.0
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_agentsight_stdiocap_user_copy_len_001",
+   "kind": null,
+   "message": "invalid access to memory, mem_size=24 off=16 size=16 R1 min value is outside of the allowed memory range",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_agentsight_write_ctx_merge_001",
+   "kind": "NullablePointer",
+   "message": "R0 invalid mem access 'map_value_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 32,
+    "line": [
+     "buggy.bpf.c",
+     129
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    132
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     129
+    ]
+   ],
+   "n_sites": 1,
+   "chance": 0.0093,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_bpftime_opensnoop_ringbuf_filter_ref_001",
+   "kind": null,
+   "message": "",
+   "note": "no verifier error message"
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_bpftime_opensnoop_stack_wrong_prog_type_001",
+   "kind": null,
+   "message": "program of this type cannot use helper bpf_get_stack#67",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_cilium_change_proto_stale_001",
+   "kind": null,
+   "message": "R6 invalid mem access 'scalar'",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_cilium_fib_lookup_param_len_001",
+   "kind": null,
+   "message": "invalid indirect access to stack R2 off=-64 size=68",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_cilium_ip_options_traceid_payload_bound_001",
+   "kind": "PacketBounds",
+   "message": "invalid access to packet, off=36 size=2, R4(id=4,off=36,r=36) R4 offset is outside of the packet",
+   "note": "",
+   "first_loss": {
+    "insn": 60,
+    "line": [
+     "buggy.bpf.c",
+     88
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    37
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     34
+    ],
+    [
+     "buggy.bpf.c",
+     88
+    ],
+    [
+     "buggy.bpf.c",
+     91
+    ],
+    [
+     "buggy.bpf.c",
+     92
+    ]
+   ],
+   "n_sites": 4,
+   "chance": 0.0519,
+   "agrees": {
+    "R0": false,
+    "R1": false,
+    "R2": false
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_cilium_ipv6_exthdr_l4_offset_001",
+   "kind": "PacketBounds",
+   "message": "invalid access to packet, off=64 size=2, R3(id=1,off=64,r=0) R3 offset is outside of the packet",
+   "note": "",
+   "first_loss": {
+    "insn": 23,
+    "line": [
+     "buggy.bpf.c",
+     77
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    87
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     77
+    ]
+   ],
+   "n_sites": 1,
+   "chance": 0.0189,
+   "agrees": {
+    "R0": false,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_cilium_mcast_igmpv3_grec_bound_001",
+   "kind": "PacketBounds",
+   "message": "invalid access to packet, off=22 size=1, R4(id=1,off=22,r=22) R4 offset is outside of the packet",
+   "note": "",
+   "first_loss": {
+    "insn": 20,
+    "line": [
+     "buggy.bpf.c",
+     74
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    86
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     74
+    ],
+    [
+     "buggy.bpf.c",
+     78
+    ],
+    [
+     "buggy.bpf.c",
+     79
+    ],
+    [
+     "buggy.bpf.c",
+     84
+    ]
+   ],
+   "n_sites": 4,
+   "chance": 0.069,
+   "agrees": {
+    "R0": false,
+    "R1": true,
+    "R2": false
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_cilium_proxy_skc_assign_ref_leak_001",
+   "kind": null,
+   "message": "Unreleased reference id=2 alloc_insn=21",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_cilium_srv6_segment_bound_001",
+   "kind": "PacketBounds",
+   "message": "invalid access to packet, off=74 size=4, R3(id=0,off=74,r=62) R3 offset is outside of the packet",
+   "note": "",
+   "first_loss": {
+    "insn": 15,
+    "line": [
+     "buggy.bpf.c",
+     50
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    60
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     50
+    ],
+    [
+     "buggy.bpf.c",
+     52
+    ],
+    [
+     "buggy.bpf.c",
+     56
+    ]
+   ],
+   "n_sites": 3,
+   "chance": 0.0577,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": true,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_datrail_browsertrace_start_ns_merge_001",
+   "kind": "NullablePointer",
+   "message": "R1 invalid mem access 'map_value_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 23,
+    "line": [
+     "buggy.bpf.c",
+     59
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    69
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     59
+    ],
+    [
+     "buggy.bpf.c",
+     60
+    ],
+    [
+     "buggy.bpf.c",
+     65
+    ],
+    [
+     "buggy.bpf.c",
+     66
+    ]
+   ],
+   "n_sites": 4,
+   "chance": 0.0615,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": true,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_datrail_cgroup_filter_key_width_001",
+   "kind": null,
+   "message": "invalid indirect access to stack R2 off=-4 size=8",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_eunomia_energy_runtime_merge_001",
+   "kind": "NullablePointer",
+   "message": "R0 invalid mem access 'map_value_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 60,
+    "line": [
+     "buggy.bpf.c",
+     127
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    130
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     127
+    ]
+   ],
+   "n_sites": 1,
+   "chance": 0.0081,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_eunomia_http_doff_copy_bound_001",
+   "kind": "PacketBounds",
+   "message": "invalid access to packet, off=34 size=1, R8(id=6,off=34,r=34) R8 offset is outside of the packet",
+   "note": "",
+   "first_loss": {
+    "insn": 80,
+    "line": [
+     "buggy.bpf.c",
+     107
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    131
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     59
+    ],
+    [
+     "buggy.bpf.c",
+     107
+    ],
+    [
+     "buggy.bpf.c",
+     112
+    ],
+    [
+     "buggy.bpf.c",
+     113
+    ],
+    [
+     "buggy.bpf.c",
+     118
+    ],
+    [
+     "buggy.bpf.c",
+     119
+    ],
+    [
+     "buggy.bpf.c",
+     124
+    ],
+    [
+     "buggy.bpf.c",
+     125
+    ],
+    [
+     "buggy.bpf.c",
+     126
+    ],
+    [
+     "buggy.bpf.c",
+     127
+    ],
+    [
+     "buggy.bpf.c",
+     130
+    ]
+   ],
+   "n_sites": 11,
+   "chance": 0.0982,
+   "agrees": {
+    "R0": false,
+    "R1": true,
+    "R2": false
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_eunomia_wq_container_map_001",
+   "kind": null,
+   "message": "arg#0 doesn't point to a map value",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_nccl_cpu_observer_slot_merge_001",
+   "kind": "NullablePointer",
+   "message": "R0 invalid mem access 'map_value_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 40,
+    "line": [
+     "buggy.bpf.c",
+     94
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    102
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     94
+    ],
+    [
+     "buggy.bpf.c",
+     96
+    ]
+   ],
+   "n_sites": 2,
+   "chance": 0.0194,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_tetragon_data_event_size_guard_001",
+   "kind": null,
+   "message": "R2 unbounded memory access, use 'var &= const' or 'if (var < const)'",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_tutorial_dynptr_tc_ref_leak_001",
+   "kind": null,
+   "message": "Unreleased reference id=13 alloc_insn=127",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_tutorial_memleak_free_info_merge_001",
+   "kind": "NullablePointer",
+   "message": "R6 invalid mem access 'map_value_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 13,
+    "line": [
+     "buggy.bpf.c",
+     65
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    73
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     65
+    ],
+    [
+     "buggy.bpf.c",
+     67
+    ],
+    [
+     "buggy.bpf.c",
+     72
+    ]
+   ],
+   "n_sites": 3,
+   "chance": 0.06,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_tutorial_pidhide_tailcall_map_type_001",
+   "kind": null,
+   "message": "kernel subsystem misconfigured verifier",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_tutorial_user_ringbuf_dynptr_merge_001",
+   "kind": "NullablePointer",
+   "message": "R6 invalid mem access 'mem_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 11,
+    "line": [
+     "buggy.bpf.c",
+     32
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    50
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     32
+    ],
+    [
+     "buggy.bpf.c",
+     34
+    ],
+    [
+     "buggy.bpf.c",
+     36
+    ],
+    [
+     "buggy.bpf.c",
+     37
+    ],
+    [
+     "buggy.bpf.c",
+     40
+    ],
+    [
+     "buggy.bpf.c",
+     45
+    ]
+   ],
+   "n_sites": 6,
+   "chance": 0.1304,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": true,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_xdp_tools_ihl_macro_wrong_base_001",
+   "kind": "PacketBounds",
+   "message": "invalid access to packet, off=16 size=2, R1(id=1,off=16,r=0) R1 offset is outside of the packet",
+   "note": "",
+   "first_loss": {
+    "insn": 14,
+    "line": [
+     "buggy.bpf.c",
+     55
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    30
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     54
+    ],
+    [
+     "buggy.bpf.c",
+     55
+    ]
+   ],
+   "n_sites": 2,
+   "chance": 0.0625,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_xdp_tools_load_bytes_stack_len_001",
+   "kind": null,
+   "message": "invalid indirect access to stack R3 off=-12 size=18",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_xdp_tools_xdpdump_perf_map_type_001",
+   "kind": null,
+   "message": "cannot pass map_type 2 into func bpf_perf_event_output#25",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_xdp_tools_xdpfilt_udp_macro_bound_001",
+   "kind": "PacketBounds",
+   "message": "invalid access to packet, off=16 size=2, R3(id=1,off=16,r=14) R3 offset is outside of the packet",
+   "note": "",
+   "first_loss": {
+    "insn": 15,
+    "line": [
+     "buggy.bpf.c",
+     61
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    92
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     61
+    ],
+    [
+     "buggy.bpf.c",
+     66
+    ],
+    [
+     "buggy.bpf.c",
+     87
+    ]
+   ],
+   "n_sites": 3,
+   "chance": 0.0508,
+   "agrees": {
+    "R0": false,
+    "R1": false,
+    "R2": false
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": false,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "rs_xdp_tools_xdpsock_redirect_map_type_001",
+   "kind": null,
+   "message": "cannot pass map_type 2 into func bpf_redirect_map#51",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "subprog_adjust_tail_stale_001",
+   "kind": null,
+   "message": "R7 invalid mem access 'scalar'",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "subprog_map_value_null_001",
+   "kind": "NullablePointer",
+   "message": "R1 invalid mem access 'map_value_or_null'",
+   "note": "",
+   "first_loss": {
+    "insn": 32,
+    "line": [
+     "buggy.bpf.c",
+     35
+    ]
+   },
+   "stop_line": [
+    "buggy.bpf.c",
+    55
+   ],
+   "sites": [
+    [
+     "buggy.bpf.c",
+     35
+    ],
+    [
+     "buggy.bpf.c",
+     53
+    ]
+   ],
+   "n_sites": 2,
+   "chance": 0.0513,
+   "agrees": {
+    "R0": true,
+    "R1": true,
+    "R2": true
+   },
+   "primary_on_state_site": {
+    "bpfix": false,
+    "VerifierState": false,
+    "SourceComment": true,
+    "PrettyVerifier": false,
+    "PREVAIL": false
+   }
+  },
+  {
+   "corpus": "main75",
+   "case": "xdp_adjust_head_map_value_001",
+   "kind": null,
+   "message": "R7 invalid mem access 'scalar'",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "xdp_adjust_head_ringbuf_001",
+   "kind": null,
+   "message": "R7 invalid mem access 'scalar'",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "xdp_adjust_head_stale_001",
+   "kind": null,
+   "message": "R6 invalid mem access 'scalar'",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "main75",
+   "case": "xdp_adjust_tail_stale_001",
+   "kind": null,
+   "message": "R6 invalid mem access 'scalar'",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "wild",
+   "case": "111",
+   "kind": null,
+   "message": "R2 invalid mem access 'scalar'",
+   "note": "not covered (rule 3)"
+  }
+ ]
+}
