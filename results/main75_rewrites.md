@@ -64,4 +64,45 @@ Lost primary hits by mechanism: *unmoved* = the reporter's line is the same stat
 | INLINE | SourceComment | 1 | 1 | 0 |
 | INLINE | StaleLine (control) | 17 | 0 | 17 |
 
+Primary location under the alternative repair-site rules, same valid pairs: before → after, lost / gained, exact McNemar p.
+
+| rewrite | reporter | R1 | R2 |
+| --- | --- | --- | --- |
+| VPAD | bpfix | 21 → 6 (17 / 2, 0.0007) | 15 → 4 (12 / 1, 0.0034) |
+| VPAD | VerifierState | 21 → 6 (17 / 2, 0.0007) | 15 → 4 (12 / 1, 0.0034) |
+| VPAD | SourceComment | 8 → 7 (1 / 0, 1.0000) | 8 → 7 (1 / 0, 1.0000) |
+| VPAD | PrettyVerifier | 18 → 6 (14 / 2, 0.0042) | 14 → 4 (11 / 1, 0.0063) |
+| VPAD | PREVAIL | 18 → 7 (13 / 2, 0.0074) | 12 → 5 (8 / 1, 0.0391) |
+| VPAD | StaleLine (control) | 21 → 21 (0 / 0, n/a) | 15 → 11 (4 / 0, 0.1250) |
+| VPADC | bpfix | 39 → 24 (17 / 2, 0.0007) | 33 → 22 (12 / 1, 0.0034) |
+| VPADC | VerifierState | 39 → 24 (17 / 2, 0.0007) | 33 → 22 (12 / 1, 0.0034) |
+| VPADC | SourceComment | 11 → 10 (1 / 0, 1.0000) | 10 → 9 (1 / 0, 1.0000) |
+| VPADC | PrettyVerifier | 30 → 18 (14 / 2, 0.0042) | 26 → 16 (11 / 1, 0.0063) |
+| VPADC | PREVAIL | 35 → 24 (13 / 2, 0.0074) | 29 → 20 (10 / 1, 0.0117) |
+| VPADC | StaleLine (control) | 39 → 28 (11 / 0, 0.0010) | 33 → 11 (22 / 0, 0.0000) |
+| MACRO | bpfix | 21 → 21 (0 / 0, n/a) | 17 → 17 (0 / 0, n/a) |
+| MACRO | VerifierState | 21 → 21 (0 / 0, n/a) | 17 → 17 (0 / 0, n/a) |
+| MACRO | SourceComment | 7 → 7 (0 / 0, n/a) | 7 → 7 (0 / 0, n/a) |
+| MACRO | PrettyVerifier | 17 → 17 (0 / 0, n/a) | 13 → 13 (0 / 0, n/a) |
+| MACRO | PREVAIL | 18 → 18 (0 / 0, n/a) | 14 → 14 (0 / 0, n/a) |
+| MACRO | StaleLine (control) | 21 → 18 (5 / 2, 0.4531) | 17 → 13 (8 / 4, 0.3877) |
+| INLINE | bpfix | 26 → 25 (1 / 0, 1.0000) | 21 → 21 (0 / 0, n/a) |
+| INLINE | VerifierState | 26 → 25 (1 / 0, 1.0000) | 21 → 21 (0 / 0, n/a) |
+| INLINE | SourceComment | 9 → 8 (1 / 0, 1.0000) | 9 → 8 (1 / 0, 1.0000) |
+| INLINE | PrettyVerifier | 23 → 22 (1 / 0, 1.0000) | 19 → 19 (0 / 0, n/a) |
+| INLINE | PREVAIL | 24 → 22 (2 / 0, 0.5000) | 18 → 18 (0 / 0, n/a) |
+| INLINE | StaleLine (control) | 26 → 19 (12 / 5, 0.1435) | 21 → 19 (7 / 5, 0.7744) |
+| REORDER | bpfix | 0 → 0 (0 / 0, n/a) | 0 → 0 (0 / 0, n/a) |
+| REORDER | VerifierState | 0 → 0 (0 / 0, n/a) | 0 → 0 (0 / 0, n/a) |
+| REORDER | SourceComment | 0 → 0 (0 / 0, n/a) | 0 → 0 (0 / 0, n/a) |
+| REORDER | PrettyVerifier | 0 → 0 (0 / 0, n/a) | 0 → 0 (0 / 0, n/a) |
+| REORDER | PREVAIL | 0 → 0 (0 / 0, n/a) | 0 → 0 (0 / 0, n/a) |
+| REORDER | StaleLine (control) | 0 → 0 (0 / 0, n/a) | 0 → 0 (0 / 0, n/a) |
+| SPLIT | bpfix | 0 → 0 (0 / 0, n/a) | 0 → 0 (0 / 0, n/a) |
+| SPLIT | VerifierState | 0 → 0 (0 / 0, n/a) | 0 → 0 (0 / 0, n/a) |
+| SPLIT | SourceComment | 0 → 0 (0 / 0, n/a) | 0 → 0 (0 / 0, n/a) |
+| SPLIT | PrettyVerifier | 0 → 0 (0 / 0, n/a) | 0 → 0 (0 / 0, n/a) |
+| SPLIT | PREVAIL | 0 → 0 (0 / 0, n/a) | 0 → 0 (0 / 0, n/a) |
+| SPLIT | StaleLine (control) | 0 → 0 (0 / 0, n/a) | 0 → 0 (0 / 0, n/a) |
+
 Invalid pairs: INLINE `map_value_branch_merge_001` (buggy COMPILE_FAIL, fixed COMPILE_FAIL); INLINE `map_value_inline_cookie_001` (buggy REJECT, fixed COMPILE_FAIL); INLINE `map_value_pointer_cookie_001` (buggy REJECT, fixed COMPILE_FAIL); INLINE `rs_agentsight_fs_overflow_counter_merge_001` (buggy REJECT, fixed COMPILE_FAIL)

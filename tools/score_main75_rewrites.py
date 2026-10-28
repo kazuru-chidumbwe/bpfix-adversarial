@@ -23,7 +23,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from bpfix_adversarial.reporters import CaseContext, registry  # noqa: E402
-from bpfix_adversarial.repair_site import diff_hunks, mcnemar_exact, repair_sites, wilson  # noqa: E402
+from bpfix_adversarial.repair_site import (  # noqa: E402
+    diff_hunks, mcnemar_exact, repair_sites, repair_sites_r1, repair_sites_r2, wilson)
 from tools.gen_main75_rewrites import REWRITES, counterpart  # noqa: E402
 
 N3 = ROOT / "campaigns" / "n3"
@@ -71,7 +72,10 @@ def main(argv: list[str] | None = None) -> int:
                 invalid.append({"case_id": cid, "buggy": vb, "fixed": vf})
                 continue
             src_b, src_f = N3 / cid / f"{rid}.buggy.bpf.c", N3 / cid / f"{rid}.fixed.bpf.c"
-            sites = repair_sites(diff_hunks(src_b.read_text(encoding="utf-8"), src_f.read_text(encoding="utf-8")))
+            text_b, text_f = src_b.read_text(encoding="utf-8"), src_f.read_text(encoding="utf-8")
+            hunks = diff_hunks(text_b, text_f)
+            sites = repair_sites(hunks)
+            alt = {"R1": repair_sites_r1(text_b, hunks), "R2": repair_sites_r2(text_b, text_f)}
             orig_lines = lines_of(CASES / cid / "buggy.bpf.c")
             new_lines = lines_of(src_b)
             ctx = CaseContext(cid, src_b, ROOT / bm["log"], main75[cid]["upstream_obligation"])
@@ -96,6 +100,8 @@ def main(argv: list[str] | None = None) -> int:
                     "rewrite_label_on_site": (vp is not None and vp in sites) or any(x in sites for x in vlabels),
                     "primary": vp,
                     "primary_moved": (vp != mapped) if mapped is not None else (vp is not None),
+                    "by_rule": {rule: {"orig_on_site": main75[cid]["outcomes"]["bpfix" if rep == CONTROL else rep][rule]["primary_on_site"],
+                                       "rewrite_on_site": vp is not None and vp in alt[rule]} for rule in alt},
                 }
             valid.append(res)
         summary = {}
@@ -118,8 +124,18 @@ def main(argv: list[str] | None = None) -> int:
                             "label_lost": l_lost, "label_gained": l_gained,
                             "label_mcnemar_p": mcnemar_exact(l_lost, l_gained),
                             "primary_moved": moved, "primary_moved_wilson95": wilson(moved, len(rs))}
+        by_rule = {}
+        for rule in ("R1", "R2"):
+            by_rule[rule] = {}
+            for rep in reporters:
+                rs = [v["by_reporter"][rep]["by_rule"][rule] for v in valid]
+                lo = sum(1 for r in rs if r["orig_on_site"] and not r["rewrite_on_site"])
+                ga = sum(1 for r in rs if not r["orig_on_site"] and r["rewrite_on_site"])
+                by_rule[rule][rep] = {"orig_on_site": sum(1 for r in rs if r["orig_on_site"]),
+                                      "rewrite_on_site": sum(1 for r in rs if r["rewrite_on_site"]),
+                                      "lost": lo, "gained": ga, "mcnemar_p": mcnemar_exact(lo, ga)}
         per_rewrite[rid] = {"applied": meta["applied"][rid], "valid": len(valid), "invalid": invalid,
-                            "summary": summary, "rows": valid}
+                            "summary": summary, "by_rule": by_rule, "rows": valid}
 
     payload = {"generator": "tools/score_main75_rewrites.py", "protocol": "docs/MAIN75-PIN-PROTOCOL.md Section 7",
                "run": run.relative_to(ROOT).as_posix(), "rewrites": per_rewrite}
@@ -156,6 +172,16 @@ def main(argv: list[str] | None = None) -> int:
         for rep, s in d["summary"].items():
             if s["lost"]:
                 L.append(f"| {rid} | {rep} | {s['lost']} | {s['lost_primary_unmoved']} | {s['lost_primary_moved']} |")
+    L += ["", "Primary location under the alternative repair-site rules, same valid pairs: before → after, "
+          "lost / gained, exact McNemar p.", "",
+          "| rewrite | reporter | R1 | R2 |", "| --- | --- | --- | --- |"]
+    for rid, d in per_rewrite.items():
+        for rep in d["summary"]:
+            cells = []
+            for rule in ("R1", "R2"):
+                s = d["by_rule"][rule][rep]
+                cells.append(f"{s['orig_on_site']} → {s['rewrite_on_site']} ({s['lost']} / {s['gained']}, {pv(s['mcnemar_p'])})")
+            L.append(f"| {rid} | {rep} | " + " | ".join(cells) + " |")
     inv = [(rid, x) for rid, d in per_rewrite.items() for x in d["invalid"]]
     if inv:
         L += ["", "Invalid pairs: " + "; ".join(f"{rid} `{x['case_id']}` (buggy {x['buggy']}, fixed {x['fixed']})"
