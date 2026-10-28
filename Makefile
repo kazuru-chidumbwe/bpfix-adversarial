@@ -1,7 +1,7 @@
-.PHONY: help smoke test rename-demo insets figures version v2-mutants
+.PHONY: help smoke test rename-demo insets natural figures version v2-mutants
 
 help:
-	@echo "Targets: smoke | test | rename-demo | insets | figures | version | v2-mutants"
+	@echo "Targets: smoke | test | rename-demo | insets | natural | figures | version | v2-mutants"
 
 version:
 	python -c "import bpfix_adversarial as m; print(m.__version__)"
@@ -31,6 +31,14 @@ insets:
 	python tools/emit_marker_isolation.py
 	python tools/emit_rq1_bpfix_cli.py
 	python tools/emit_figures.py
+
+# The two natural corpora (main75 on the cite pin, rewrites, wild cases) and the verifier-state oracle,
+# re-scored offline from the committed logs. Run dirs: the same as tools/check_results_fresh.py.
+natural:
+	python tools/score_main75_pin.py --run campaigns/main75/lab/testbed-a-20261026T044355Z
+	python tools/score_main75_rewrites.py --run campaigns/n3/lab/testbed-a-20261026T060709Z
+	python tools/score_wild.py
+	python tools/score_state_oracle.py
 
 # Campaign v2 sources (campaigns/v2/README.md); committed, checked by tests.
 v2-mutants:

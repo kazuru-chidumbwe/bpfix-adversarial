@@ -44,3 +44,6 @@ jobs:
         run: python tools/check_results_fresh.py
       - name: Unit tests
         run: python -m unittest discover -s tests -v
+      - name: Re-score the natural corpora; committed results must not change
+        if: runner.os == 'Linux'
+        run: make natural && git diff --exit-code -- results
