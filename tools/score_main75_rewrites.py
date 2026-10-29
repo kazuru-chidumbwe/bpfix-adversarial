@@ -72,7 +72,7 @@ def main(argv: list[str] | None = None) -> int:
             if not row[rid]["applied"]:
                 continue
             if main75.get(cid, {}).get("excluded", True):
-                unscored.append(cid)
+                unscored.append({"case_id": cid, "reason": main75.get(cid, {}).get("excluded") or "absent"})
                 continue
             bm, fm = man.get(f"{cid}__{rid}.buggy"), man.get(f"{cid}__{rid}.fixed")
             vb, vf = (bm or {}).get("verdict"), (fm or {}).get("verdict")
@@ -155,10 +155,10 @@ def main(argv: list[str] | None = None) -> int:
          "| rewrite | applied | not scored in main75 | valid | invalid |", "| --- | ---: | ---: | ---: | ---: |"]
     for rid, d in per_rewrite.items():
         L.append(f"| {rid} | {d['applied']} | {len(d['not_scored'])} | {d['valid']} | {len(d['invalid'])} |")
-    skipped = sorted({c for d in per_rewrite.values() for c in d["not_scored"]})
+    skipped = sorted({(x["case_id"], x["reason"]) for d in per_rewrite.values() for x in d["not_scored"]})
     if skipped:
-        L += ["", "Not scored in main75 (no semantic hunk), so not scored here either: "
-              + ", ".join(f"`{c}`" for c in skipped) + "."]
+        L += ["", "Not scored in main75, so not scored here either: "
+              + ", ".join(f"`{c}` ({r})" for c, r in skipped) + "."]
     L += ["", "Primary location: on-site count before and after the rewrite, paired McNemar. Any label: the same for "
           "the primary or any labelled line. `orig` is the reporter's count on the applicable cases before the rewrite.", "",
           "| rewrite | reporter | pairs | primary orig → rewrite | lost / gained | p | any label orig → rewrite | lost / gained | p | primary moved |",

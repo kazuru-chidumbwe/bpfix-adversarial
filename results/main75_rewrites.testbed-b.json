@@ -6,8 +6,14 @@
   "VPAD": {
    "applied": 46,
    "not_scored": [
-    "rs_bpftime_sslsniff_perf_copy_len_001",
-    "rs_eunomia_wq_container_map_001"
+    {
+     "case_id": "rs_bpftime_sslsniff_perf_copy_len_001",
+     "reason": "no-semantic-hunk"
+    },
+    {
+     "case_id": "rs_eunomia_wq_container_map_001",
+     "reason": "buggy-compile-fail"
+    }
    ],
    "valid": 44,
    "invalid": [],
@@ -5441,8 +5447,14 @@
   "VPADC": {
    "applied": 68,
    "not_scored": [
-    "rs_bpftime_sslsniff_perf_copy_len_001",
-    "rs_eunomia_wq_container_map_001"
+    {
+     "case_id": "rs_bpftime_sslsniff_perf_copy_len_001",
+     "reason": "no-semantic-hunk"
+    },
+    {
+     "case_id": "rs_eunomia_wq_container_map_001",
+     "reason": "buggy-compile-fail"
+    }
    ],
    "valid": 66,
    "invalid": [],
@@ -13511,7 +13523,10 @@
   "MACRO": {
    "applied": 32,
    "not_scored": [
-    "rs_bpftime_sslsniff_perf_copy_len_001"
+    {
+     "case_id": "rs_bpftime_sslsniff_perf_copy_len_001",
+     "reason": "no-semantic-hunk"
+    }
    ],
    "valid": 31,
    "invalid": [],
@@ -17416,8 +17431,14 @@
   "INLINE": {
    "applied": 48,
    "not_scored": [
-    "rs_bpftime_sslsniff_perf_copy_len_001",
-    "rs_eunomia_wq_container_map_001"
+    {
+     "case_id": "rs_bpftime_sslsniff_perf_copy_len_001",
+     "reason": "no-semantic-hunk"
+    },
+    {
+     "case_id": "rs_eunomia_wq_container_map_001",
+     "reason": "buggy-compile-fail"
+    }
    ],
    "valid": 42,
    "invalid": [

@@ -11,7 +11,7 @@ Run `campaigns/n3/lab/testbed-b-20261029T205135Z` · rules `docs/MAIN75-PIN-PROT
 | REORDER | 0 | 0 | 0 | 0 |
 | SPLIT | 3 | 0 | 3 | 0 |
 
-Not scored in main75 (no semantic hunk), so not scored here either: `rs_bpftime_sslsniff_perf_copy_len_001`, `rs_eunomia_wq_container_map_001`.
+Not scored in main75, so not scored here either: `rs_bpftime_sslsniff_perf_copy_len_001` (no-semantic-hunk), `rs_eunomia_wq_container_map_001` (buggy-compile-fail).
 
 Primary location: on-site count before and after the rewrite, paired McNemar. Any label: the same for the primary or any labelled line. `orig` is the reporter's count on the applicable cases before the rewrite.
 

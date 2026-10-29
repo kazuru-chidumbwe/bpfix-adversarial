@@ -6,7 +6,10 @@
   "VPAD": {
    "applied": 46,
    "not_scored": [
-    "rs_bpftime_sslsniff_perf_copy_len_001"
+    {
+     "case_id": "rs_bpftime_sslsniff_perf_copy_len_001",
+     "reason": "no-semantic-hunk"
+    }
    ],
    "valid": 45,
    "invalid": [],
@@ -5557,7 +5560,10 @@
   "VPADC": {
    "applied": 68,
    "not_scored": [
-    "rs_bpftime_sslsniff_perf_copy_len_001"
+    {
+     "case_id": "rs_bpftime_sslsniff_perf_copy_len_001",
+     "reason": "no-semantic-hunk"
+    }
    ],
    "valid": 67,
    "invalid": [],
@@ -13743,7 +13749,10 @@
   "MACRO": {
    "applied": 32,
    "not_scored": [
-    "rs_bpftime_sslsniff_perf_copy_len_001"
+    {
+     "case_id": "rs_bpftime_sslsniff_perf_copy_len_001",
+     "reason": "no-semantic-hunk"
+    }
    ],
    "valid": 31,
    "invalid": [],
@@ -17648,7 +17657,10 @@
   "INLINE": {
    "applied": 48,
    "not_scored": [
-    "rs_bpftime_sslsniff_perf_copy_len_001"
+    {
+     "case_id": "rs_bpftime_sslsniff_perf_copy_len_001",
+     "reason": "no-semantic-hunk"
+    }
    ],
    "valid": 43,
    "invalid": [
