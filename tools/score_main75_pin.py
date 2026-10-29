@@ -283,7 +283,10 @@ def main(argv: list[str] | None = None) -> int:
         "pad_processed_insns": pad_insns,
     }
     out_json.write_text(json.dumps(payload, indent=1) + "\n", encoding="utf-8", newline="\n")
-    out_md.write_text(render_md(payload), encoding="utf-8", newline="\n")
+    md = render_md(payload)
+    if args.tag:
+        md = md.replace("on the cite pin", f"on {args.tag}", 1)
+    out_md.write_text(md, encoding="utf-8", newline="\n")
     print(f"wrote {out_json.relative_to(ROOT)} and {out_md.relative_to(ROOT)}")
     return 0
 

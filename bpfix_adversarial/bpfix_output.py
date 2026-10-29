@@ -15,6 +15,11 @@ Format (bpfix 0.1.9)::
 underline kind (``^`` primary, ``-`` secondary) and message. A ``-->`` line of
 0 (seen upstream when the rejected instruction has no line record) is kept as
 ``primary_raw`` and reported as ``primary = None``.
+
+When the verifier log carries no source locations (kernels before 6.9 print
+``; <source>`` without `` @ file:line``), bpfix points into the log itself
+(``--> <verifier-log>:26``). That number is a log line, not a source line, so
+it is kept as ``primary_raw`` and reported as ``primary = None`` with no labels.
 """
 
 from __future__ import annotations
@@ -28,6 +33,7 @@ RE_SNIP = re.compile(r"^\s*(\d+)\s+\|\s?(.*)$")
 RE_UNDER = re.compile(r"^\s*\|\s*([\^-]+)\s*(.*)$")
 RE_NEXT = re.compile(r"^\s*=\s*next action:\s*(.*)$", re.M)
 RE_PC = re.compile(r"nearest BPF instruction pc\s+(\d+)")
+LOG_PATH = "<verifier-log>"
 
 
 @dataclass(frozen=True)
@@ -83,12 +89,15 @@ def parse_bpfix(text: str) -> BpfixDiagnostic:
                 kind = "primary" if u.group(1).startswith("^") else "secondary"
                 msg = u.group(2).strip()
         labels.append(Label(line=int(m.group(1)), source=m.group(2).strip(), kind=kind, message=msg))
+    in_log = bool(arrow) and arrow.group(1) == LOG_PATH
+    if in_log:
+        labels = []
     return BpfixDiagnostic(
         error_id=err.group(1) if err else None,
         headline=err.group(2).strip() if err else None,
         path=arrow.group(1) if arrow else None,
         primary_raw=raw,
-        primary=raw if raw else None,
+        primary=raw if raw and not in_log else None,
         next_action=nxt.group(1).strip() if nxt else None,
         nearest_pc=int(pc.group(1)) if pc else None,
         labels=labels,

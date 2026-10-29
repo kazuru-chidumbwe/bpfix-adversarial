@@ -1,0 +1,357 @@
+{
+ "generator": "tools/compare_configs.py",
+ "protocol": "docs/MAIN75-PIN-PROTOCOL.md Section 8",
+ "tag": "testbed-b",
+ "runs": {
+  "pin": "campaigns/main75/lab/testbed-a-20261026T044355Z",
+  "testbed-b": "campaigns/main75/lab/testbed-b-20261029T204226Z",
+  "pin_rewrites": "campaigns/n3/lab/testbed-a-20261026T060709Z",
+  "testbed-b_rewrites": "campaigns/n3/lab/testbed-b-20261029T205135Z"
+ },
+ "scored": {
+  "pin": 74,
+  "testbed-b": 73,
+  "both": 73
+ },
+ "included_on_one_host": [
+  {
+   "case_id": "rs_eunomia_wq_container_map_001",
+   "pin": "scored",
+   "testbed-b": "buggy-compile-fail"
+  }
+ ],
+ "paired": {
+  "bpfix": {
+   "R0": {
+    "pin": 34,
+    "testbed-b": 0,
+    "pin_only": 34,
+    "testbed-b_only": 0,
+    "p": 0.0
+   },
+   "R1": {
+    "pin": 43,
+    "testbed-b": 0,
+    "pin_only": 43,
+    "testbed-b_only": 0,
+    "p": 0.0
+   },
+   "R2": {
+    "pin": 38,
+    "testbed-b": 0,
+    "pin_only": 38,
+    "testbed-b_only": 0,
+    "p": 0.0
+   },
+   "same_primary": 0
+  },
+  "VerifierState": {
+   "R0": {
+    "pin": 34,
+    "testbed-b": 0,
+    "pin_only": 34,
+    "testbed-b_only": 0,
+    "p": 0.0
+   },
+   "R1": {
+    "pin": 43,
+    "testbed-b": 0,
+    "pin_only": 43,
+    "testbed-b_only": 0,
+    "p": 0.0
+   },
+   "R2": {
+    "pin": 38,
+    "testbed-b": 0,
+    "pin_only": 38,
+    "testbed-b_only": 0,
+    "p": 0.0
+   },
+   "same_primary": 0
+  },
+  "SourceComment": {
+   "R0": {
+    "pin": 9,
+    "testbed-b": 9,
+    "pin_only": 0,
+    "testbed-b_only": 0,
+    "p": null
+   },
+   "R1": {
+    "pin": 11,
+    "testbed-b": 11,
+    "pin_only": 0,
+    "testbed-b_only": 0,
+    "p": null
+   },
+   "R2": {
+    "pin": 10,
+    "testbed-b": 10,
+    "pin_only": 0,
+    "testbed-b_only": 0,
+    "p": null
+   },
+   "same_primary": 73
+  },
+  "PrettyVerifier": {
+   "R0": {
+    "pin": 27,
+    "testbed-b": 27,
+    "pin_only": 0,
+    "testbed-b_only": 0,
+    "p": null
+   },
+   "R1": {
+    "pin": 35,
+    "testbed-b": 35,
+    "pin_only": 0,
+    "testbed-b_only": 0,
+    "p": null
+   },
+   "R2": {
+    "pin": 31,
+    "testbed-b": 31,
+    "pin_only": 0,
+    "testbed-b_only": 0,
+    "p": null
+   },
+   "same_primary": 72
+  },
+  "PREVAIL": {
+   "R0": {
+    "pin": 29,
+    "testbed-b": 28,
+    "pin_only": 1,
+    "testbed-b_only": 0,
+    "p": 1.0
+   },
+   "R1": {
+    "pin": 39,
+    "testbed-b": 34,
+    "pin_only": 5,
+    "testbed-b_only": 0,
+    "p": 0.0625
+   },
+   "R2": {
+    "pin": 34,
+    "testbed-b": 29,
+    "pin_only": 5,
+    "testbed-b_only": 0,
+    "p": 0.0625
+   },
+   "same_primary": 67
+  }
+ },
+ "claims": [
+  {
+   "claim": "the four locating reporters at least twice the random line (R0)",
+   "pin": "bpfix 34, VerifierState 34, PrettyVerifier 27, PREVAIL 29; random 7.0",
+   "pin_holds": true,
+   "testbed-b": "bpfix 0, VerifierState 0, PrettyVerifier 27, PREVAIL 28; random 6.97",
+   "testbed-b_holds": false
+  },
+  {
+   "claim": "the four locating reporters at least twice the random line (R1)",
+   "pin": "bpfix 44, VerifierState 44, PrettyVerifier 35, PREVAIL 40; random 14.67",
+   "pin_holds": true,
+   "testbed-b": "bpfix 0, VerifierState 0, PrettyVerifier 35, PREVAIL 34; random 14.59",
+   "testbed-b_holds": false
+  },
+  {
+   "claim": "the four locating reporters at least twice the random line (R2)",
+   "pin": "bpfix 38, VerifierState 38, PrettyVerifier 31, PREVAIL 34; random 10.22",
+   "pin_holds": true,
+   "testbed-b": "bpfix 0, VerifierState 0, PrettyVerifier 31, PREVAIL 29; random 10.2",
+   "testbed-b_holds": false
+  },
+  {
+   "claim": "SourceComment less than twice the random line (R0)",
+   "pin": "9; random 7.0",
+   "pin_holds": true,
+   "testbed-b": "9; random 6.97",
+   "testbed-b_holds": true
+  },
+  {
+   "claim": "SourceComment less than twice the random line (R1)",
+   "pin": "11; random 14.67",
+   "pin_holds": true,
+   "testbed-b": "11; random 14.59",
+   "testbed-b_holds": true
+  },
+  {
+   "claim": "SourceComment less than twice the random line (R2)",
+   "pin": "10; random 10.22",
+   "pin_holds": true,
+   "testbed-b": "10; random 10.2",
+   "testbed-b_holds": true
+  },
+  {
+   "claim": "bpfix and VerifierState tie (R0)",
+   "pin": "discordant 0 / 0",
+   "pin_holds": true,
+   "testbed-b": "discordant 0 / 0",
+   "testbed-b_holds": true
+  },
+  {
+   "claim": "bpfix and VerifierState tie (R1)",
+   "pin": "discordant 0 / 0",
+   "pin_holds": true,
+   "testbed-b": "discordant 0 / 0",
+   "testbed-b_holds": true
+  },
+  {
+   "claim": "bpfix and VerifierState tie (R2)",
+   "pin": "discordant 0 / 0",
+   "pin_holds": true,
+   "testbed-b": "discordant 0 / 0",
+   "testbed-b_holds": true
+  },
+  {
+   "claim": "bpfix above Pretty Verifier, p < 0.05 (R0)",
+   "pin": "7 / 0, p = 0.015625",
+   "pin_holds": true,
+   "testbed-b": "0 / 27, p = 0.0",
+   "testbed-b_holds": false
+  },
+  {
+   "claim": "bpfix above Pretty Verifier, p < 0.05 (R1)",
+   "pin": "9 / 0, p = 0.003906",
+   "pin_holds": true,
+   "testbed-b": "0 / 35, p = 0.0",
+   "testbed-b_holds": false
+  },
+  {
+   "claim": "bpfix above Pretty Verifier, p < 0.05 (R2)",
+   "pin": "7 / 0, p = 0.015625",
+   "pin_holds": true,
+   "testbed-b": "0 / 31, p = 0.0",
+   "testbed-b_holds": false
+  },
+  {
+   "claim": "bpfix and PREVAIL not significantly different (R0)",
+   "pin": "6 / 1, p = 0.125",
+   "pin_holds": true,
+   "testbed-b": "0 / 28, p = 0.0",
+   "testbed-b_holds": false
+  },
+  {
+   "claim": "bpfix and PREVAIL not significantly different (R1)",
+   "pin": "6 / 2, p = 0.289062",
+   "pin_holds": true,
+   "testbed-b": "0 / 34, p = 0.0",
+   "testbed-b_holds": false
+  },
+  {
+   "claim": "bpfix and PREVAIL not significantly different (R2)",
+   "pin": "4 / 0, p = 0.125",
+   "pin_holds": true,
+   "testbed-b": "0 / 29, p = 0.0",
+   "testbed-b_holds": false
+  },
+  {
+   "claim": "SourceComment below every other reporter, p < 0.001 (R0)",
+   "pin": "30 / 5, p = 2.2e-05; 30 / 5, p = 2.2e-05; 23 / 5, p = 0.000912; 25 / 5, p = 0.000325",
+   "pin_holds": true,
+   "testbed-b": "0 / 9, p = 0.003906; 0 / 9, p = 0.003906; 23 / 5, p = 0.000912; 24 / 5, p = 0.000546",
+   "testbed-b_holds": false
+  },
+  {
+   "claim": "SourceComment below every other reporter, p < 0.001 (R1)",
+   "pin": "38 / 5, p = 0.0; 38 / 5, p = 0.0; 31 / 7, p = 0.000116; 35 / 6, p = 5e-06",
+   "pin_holds": true,
+   "testbed-b": "0 / 11, p = 0.000977; 0 / 11, p = 0.000977; 31 / 7, p = 0.000116; 29 / 6, p = 0.000117",
+   "testbed-b_holds": false
+  },
+  {
+   "claim": "SourceComment below every other reporter, p < 0.001 (R2)",
+   "pin": "33 / 5, p = 4e-06; 33 / 5, p = 4e-06; 26 / 5, p = 0.000192; 29 / 5, p = 3.9e-05",
+   "pin_holds": true,
+   "testbed-b": "0 / 10, p = 0.001953; 0 / 10, p = 0.001953; 26 / 5, p = 0.000192; 25 / 6, p = 0.000878",
+   "testbed-b_holds": false
+  },
+  {
+   "claim": "bpfix labels reach more repair sites than its arrow (R0)",
+   "pin": "34 vs 50",
+   "pin_holds": true,
+   "testbed-b": "0 vs 0",
+   "testbed-b_holds": false
+  },
+  {
+   "claim": "bpfix labels reach more repair sites than its arrow (R1)",
+   "pin": "44 vs 64",
+   "pin_holds": true,
+   "testbed-b": "0 vs 0",
+   "testbed-b_holds": false
+  },
+  {
+   "claim": "bpfix labels reach more repair sites than its arrow (R2)",
+   "pin": "38 vs 54",
+   "pin_holds": true,
+   "testbed-b": "0 vs 0",
+   "testbed-b_holds": false
+  },
+  {
+   "claim": "NullablePointer: labels well above arrow (R0)",
+   "pin": "6 vs 16 of 20",
+   "pin_holds": true,
+   "testbed-b": "0 vs 0 of 20",
+   "testbed-b_holds": false
+  },
+  {
+   "claim": "pad8: the four locating reporters lose no hit",
+   "pin": "{'bpfix': 0, 'VerifierState': 0, 'PrettyVerifier': 0, 'PREVAIL': 0}",
+   "pin_holds": true,
+   "testbed-b": "{'bpfix': 0, 'VerifierState': 0, 'PrettyVerifier': 0, 'PREVAIL': 0}",
+   "testbed-b_holds": true
+  },
+  {
+   "claim": "pad32: the four locating reporters lose no hit",
+   "pin": "{'bpfix': 0, 'VerifierState': 0, 'PrettyVerifier': 0, 'PREVAIL': 0}",
+   "pin_holds": true,
+   "testbed-b": "{'bpfix': 0, 'VerifierState': 0, 'PrettyVerifier': 0, 'PREVAIL': 0}",
+   "testbed-b_holds": true
+  },
+  {
+   "claim": "rename: the four locating reporters lose no hit",
+   "pin": "{'bpfix': 0, 'VerifierState': 0, 'PrettyVerifier': 0, 'PREVAIL': 0}",
+   "pin_holds": true,
+   "testbed-b": "{'bpfix': 0, 'VerifierState': 0, 'PrettyVerifier': 0, 'PREVAIL': 0}",
+   "testbed-b_holds": true
+  },
+  {
+   "claim": "pad8: the control loses all its hits",
+   "pin": "33 of 33",
+   "pin_holds": true,
+   "testbed-b": "0 of 0",
+   "testbed-b_holds": false
+  },
+  {
+   "claim": "pad32: the control loses all its hits",
+   "pin": "33 of 33",
+   "pin_holds": true,
+   "testbed-b": "0 of 0",
+   "testbed-b_holds": false
+  },
+  {
+   "claim": "MACRO: no hit changes for the four locating reporters (R0)",
+   "pin": "{'bpfix': 0, 'VerifierState': 0, 'PrettyVerifier': 0, 'PREVAIL': 0}",
+   "pin_holds": true,
+   "testbed-b": "{'bpfix': 0, 'VerifierState': 0, 'PrettyVerifier': 0, 'PREVAIL': 0}",
+   "testbed-b_holds": true
+  },
+  {
+   "claim": "INLINE: no hit changes for the four locating reporters (R0)",
+   "pin": "{'bpfix': 0, 'VerifierState': 0, 'PrettyVerifier': 0, 'PREVAIL': 0}",
+   "pin_holds": true,
+   "testbed-b": "{'bpfix': 0, 'VerifierState': 0, 'PrettyVerifier': 0, 'PREVAIL': 0}",
+   "testbed-b_holds": true
+  },
+  {
+   "claim": "VPADC: every lost hit is with the primary line unmoved",
+   "pin": "{'bpfix': 0, 'VerifierState': 0, 'PrettyVerifier': 0, 'PREVAIL': 0}",
+   "pin_holds": true,
+   "testbed-b": "{'bpfix': 0, 'VerifierState': 0, 'PrettyVerifier': 0, 'PREVAIL': 0}",
+   "testbed-b_holds": true
+  }
+ ]
+}

@@ -41,6 +41,9 @@ insets:
 natural:
 	$(PYTHON) tools/score_main75_pin.py --run campaigns/main75/lab/testbed-a-20261026T044355Z
 	$(PYTHON) tools/score_main75_rewrites.py --run campaigns/n3/lab/testbed-a-20261026T060709Z
+	$(PYTHON) tools/score_main75_pin.py --run campaigns/main75/lab/testbed-b-20261029T204226Z --tag testbed-b
+	$(PYTHON) tools/score_main75_rewrites.py --run campaigns/n3/lab/testbed-b-20261029T205135Z --tag testbed-b
+	$(PYTHON) tools/compare_configs.py --tag testbed-b
 	$(PYTHON) tools/score_wild.py
 	$(PYTHON) tools/score_state_oracle.py
 	$(PYTHON) tools/score_pv_lookup.py

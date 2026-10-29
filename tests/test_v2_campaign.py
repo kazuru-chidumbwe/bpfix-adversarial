@@ -128,6 +128,15 @@ class TestBpfixOutput(unittest.TestCase):
         self.assertIsNone(d.primary)
         self.assertEqual(d.label_lines, [66])
 
+    def test_log_location_is_not_a_source_line(self) -> None:
+        # Kernel 6.8 logs have no "@ file:line", so bpfix points into the log.
+        p = next((ROOT / "campaigns" / "main75" / "lab" / "testbed-b-20261029T204226Z" / "buggy")
+                 .glob("alu32_pointer_cookie_001__buggy.*.bpfix.txt"))
+        d = parse_bpfix(p.read_text(encoding="utf-8"))
+        self.assertEqual((d.path, d.primary_raw), ("<verifier-log>", 26))
+        self.assertIsNone(d.primary)
+        self.assertEqual(d.labels, [])
+
     def test_structure_key_ignores_source_text(self) -> None:
         a = "error[BPFIX-E002]: x\n  --> a.c:9\n   |\n 5 | if (!ptr)\n   | --- ctx\n"
         b = "error[BPFIX-E002]: x\n  --> b.c:9\n   |\n 5 | if (!entry)\n   | ----- ctx\n"
@@ -173,6 +182,23 @@ class TestVerifierErrorBlock(unittest.TestCase):
     def test_unfamiliar_wording_is_found(self) -> None:
         log = "0: (b7) r0 = 0\n1: (95) exit\nUnreleased reference id=2 alloc_insn=11\nverification time 5 usec\n"
         self.assertEqual(verifier_error_block(log.splitlines()), (2, ["Unreleased reference id=2 alloc_insn=11"]))
+
+
+class TestCampaignScoresReproduce(unittest.TestCase):
+    """The committed campaign v2 scores on the pin must equal a fresh scoring of the committed captures."""
+
+    def test_rescore_pin_run(self) -> None:
+        run = V2 / "lab" / "testbed-a-20261026T041232Z"
+        committed = json.loads((run / "results" / "v2_scores.json").read_text(encoding="utf-8"))
+        with tempfile.TemporaryDirectory() as td:
+            p = subprocess.run(
+                [sys.executable, "tools/score_v2_campaign.py", "--captured", str(run / "templates"),
+                 "--upstream-captured", str(run / "upstream"), "--out", td],
+                cwd=ROOT, capture_output=True, text=True,
+            )
+            self.assertEqual(p.returncode, 0, p.stderr)
+            fresh = json.loads((Path(td) / "v2_scores.json").read_text(encoding="utf-8"))
+        self.assertEqual(fresh, committed)
 
 
 if __name__ == "__main__":

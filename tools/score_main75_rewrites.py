@@ -198,7 +198,10 @@ def main(argv: list[str] | None = None) -> int:
     if inv:
         L += ["", "Invalid pairs: " + "; ".join(f"{rid} `{x['case_id']}` (buggy {x['buggy']}, fixed {x['fixed']})"
                                               for rid, x in inv)]
-    out_md.write_text("\n".join(L) + "\n", encoding="utf-8", newline="\n")
+    md = "\n".join(L) + "\n"
+    if args.tag:
+        md = md.replace("on the cite pin", f"on {args.tag}", 1)
+    out_md.write_text(md, encoding="utf-8", newline="\n")
     print(f"wrote {out_json.relative_to(ROOT)} and {out_md.relative_to(ROOT)}")
     return 0
 
