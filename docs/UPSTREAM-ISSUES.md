@@ -79,3 +79,31 @@ during the copy), not the value that reaches the rejected load. The class (E006
 lowering_artifact) and the help text are right, and the project's fix (context
 fields read through asm accessors) matches the help. Unchanged in 0.1.10
 (4b9deca), which changes only version numbers under `crates/`.
+
+## 6. No source location on kernels before 6.9
+
+Input: `campaigns/main75/lab/testbed-b-20261029T204226Z/buggy/` (all 74 rejecting
+upstream main75 programs, captured on Ubuntu 24.04, kernel 6.8.0-147-generic,
+clang 18.1.3, bpftool 7.4.0). Every bpfix output there has its arrow in the log:
+
+```
+error[BPFIX-E006]: verifier-visible compiler lowering hides the required proof
+  --> <verifier-log>:26
+   = verifier[26]: R1 pointer arithmetic with <<= operator prohibited
+```
+
+Kernels before 6.9 print the source text of each line without ` @ file:line`
+(the suffix comes from kernel commit 7cc13adbd057, "bpf: emit source code file
+name and line number in verifier log", first in 6.9):
+
+```
+; if ((void *)(eth + 1) > data_end)
+```
+
+`parse_source_comment` in `crates/bpfix/src/source.rs` starts with
+`line.rsplit_once(" @ ")?`, so no source event is recorded and no snippet is
+shown. The error class is unaffected (the same on 6.8 and 6.12.86 for all 73
+programs that build on both). Kernels before 6.9 include the 6.1 and 6.6
+longterm series and Ubuntu 24.04's default kernel. Since the log still holds the
+source text, a fallback could match it against the source file given to bpfix,
+or report that source locations need kernel 6.9 or later.
