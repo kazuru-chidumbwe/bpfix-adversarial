@@ -114,3 +114,7 @@ bpfix, any label on a repair site (informative): R0 46/69 (0.55–0.77), R1 59/6
 | rename | StaleLine (control) | 35 | 12 | 12 | 0 | 0 | n/a | 0/35 (0.00–0.10) |
 
 Metamorphic pairs excluded: `rs_actplane_mmap_pending_merge_001` rename (orig REJECT / rename COMPILE_FAIL)
+
+pad8: the verifier's processed-instruction count differs from the unpadded capture in 65 of 66 padded programs; unchanged: `map_value_spill_cookie_001`.
+
+pad32: the verifier's processed-instruction count differs from the unpadded capture in 65 of 66 padded programs; unchanged: `map_value_spill_cookie_001`.

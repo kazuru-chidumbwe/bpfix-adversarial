@@ -5,6 +5,9 @@
  "rewrites": {
   "VPAD": {
    "applied": 46,
+   "not_scored": [
+    "rs_bpftime_sslsniff_perf_copy_len_001"
+   ],
    "valid": 45,
    "invalid": [],
    "summary": {
@@ -5553,6 +5556,9 @@
   },
   "VPADC": {
    "applied": 68,
+   "not_scored": [
+    "rs_bpftime_sslsniff_perf_copy_len_001"
+   ],
    "valid": 67,
    "invalid": [],
    "summary": {
@@ -13736,6 +13742,9 @@
   },
   "MACRO": {
    "applied": 32,
+   "not_scored": [
+    "rs_bpftime_sslsniff_perf_copy_len_001"
+   ],
    "valid": 31,
    "invalid": [],
    "summary": {
@@ -17638,6 +17647,9 @@
   },
   "INLINE": {
    "applied": 48,
+   "not_scored": [
+    "rs_bpftime_sslsniff_perf_copy_len_001"
+   ],
    "valid": 43,
    "invalid": [
     {
@@ -23017,6 +23029,7 @@
   },
   "REORDER": {
    "applied": 0,
+   "not_scored": [],
    "valid": 0,
    "invalid": [],
    "summary": {
@@ -23217,6 +23230,7 @@
   },
   "SPLIT": {
    "applied": 3,
+   "not_scored": [],
    "valid": 3,
    "invalid": [],
    "summary": {

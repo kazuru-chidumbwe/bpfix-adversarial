@@ -253,6 +253,12 @@ def main(argv: list[str] | None = None) -> int:
         mcnemar[f"{a}_vs_{b}"] = per_rule
 
     pairs = variant_pairs(rows, var_m)
+    pad_insns: dict = {}
+    for v in ("pad8", "pad32"):
+        padded = sorted(k[: -len("__" + v)] for k in var_m if k.endswith("__" + v))
+        same = [c for c in padded if var_m[f"{c}__{v}"].get("processed_insns")
+                == var_m.get(f"{c}__orig", {}).get("processed_insns")]
+        pad_insns[v] = {"padded": len(padded), "changed": len(padded) - len(same), "unchanged": same}
     payload = {
         "generator": "tools/score_main75_pin.py",
         "protocol": "docs/MAIN75-PIN-PROTOCOL.md",
@@ -270,6 +276,7 @@ def main(argv: list[str] | None = None) -> int:
                         for v, per in pairs.items()},
         "rows": rows,
         "metamorphic_rows": {v: {rep: d["rows"] for rep, d in per.items()} for v, per in pairs.items()},
+        "pad_processed_insns": pad_insns,
     }
     OUT_JSON.write_text(json.dumps(payload, indent=1) + "\n", encoding="utf-8", newline="\n")
     OUT_MD.write_text(render_md(payload), encoding="utf-8", newline="\n")
@@ -334,6 +341,10 @@ def render_md(p: dict) -> str:
     excl = [(v, e) for v, per in p["metamorphic"].items() for e in per["bpfix"]["excluded"]]
     if excl:
         L += ["", "Metamorphic pairs excluded: " + "; ".join(f"`{e['case_id']}` {v} ({e['reason']})" for v, e in excl)]
+    for v, d in p.get("pad_processed_insns", {}).items():
+        L += ["", f"{v}: the verifier's processed-instruction count differs from the unpadded capture in {d['changed']} "
+              f"of {d['padded']} padded programs" + (f"; unchanged: {', '.join(f'`{c}`' for c in d['unchanged'])}"
+                                                    if d["unchanged"] else "") + "."]
     L.append("")
     return "\n".join(L)
 

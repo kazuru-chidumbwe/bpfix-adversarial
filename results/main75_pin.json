@@ -20586,5 +20586,21 @@
     }
    ]
   }
+ },
+ "pad_processed_insns": {
+  "pad8": {
+   "padded": 66,
+   "changed": 65,
+   "unchanged": [
+    "map_value_spill_cookie_001"
+   ]
+  },
+  "pad32": {
+   "padded": 66,
+   "changed": 65,
+   "unchanged": [
+    "map_value_spill_cookie_001"
+   ]
+  }
  }
 }

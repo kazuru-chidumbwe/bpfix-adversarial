@@ -62,9 +62,12 @@ def main(argv: list[str] | None = None) -> int:
 
     per_rewrite: dict = {}
     for rid in REWRITES:
-        valid, invalid = [], []
+        valid, invalid, unscored = [], [], []
         for cid, row in sorted(meta["cases"].items()):
-            if not row[rid]["applied"] or main75.get(cid, {}).get("excluded", True):
+            if not row[rid]["applied"]:
+                continue
+            if main75.get(cid, {}).get("excluded", True):
+                unscored.append(cid)
                 continue
             bm, fm = man.get(f"{cid}__{rid}.buggy"), man.get(f"{cid}__{rid}.fixed")
             vb, vf = (bm or {}).get("verdict"), (fm or {}).get("verdict")
@@ -134,8 +137,8 @@ def main(argv: list[str] | None = None) -> int:
                 by_rule[rule][rep] = {"orig_on_site": sum(1 for r in rs if r["orig_on_site"]),
                                       "rewrite_on_site": sum(1 for r in rs if r["rewrite_on_site"]),
                                       "lost": lo, "gained": ga, "mcnemar_p": mcnemar_exact(lo, ga)}
-        per_rewrite[rid] = {"applied": meta["applied"][rid], "valid": len(valid), "invalid": invalid,
-                            "summary": summary, "by_rule": by_rule, "rows": valid}
+        per_rewrite[rid] = {"applied": meta["applied"][rid], "not_scored": unscored, "valid": len(valid),
+                            "invalid": invalid, "summary": summary, "by_rule": by_rule, "rows": valid}
 
     payload = {"generator": "tools/score_main75_rewrites.py", "protocol": "docs/MAIN75-PIN-PROTOCOL.md Section 7",
                "run": run.relative_to(ROOT).as_posix(), "rewrites": per_rewrite}
@@ -144,9 +147,13 @@ def main(argv: list[str] | None = None) -> int:
     L = ["# Verifier-visible rewrites of main75 on the cite pin", "",
          f"Run `{payload['run']}` · rules `{payload['protocol']}`. A rewritten pair is valid when the rewritten "
          "buggy REJECTS and the rewritten fixed ACCEPTS. Repair sites are recomputed from the rewritten pair (R0).", "",
-         "| rewrite | applied | valid | invalid |", "| --- | ---: | ---: | ---: |"]
+         "| rewrite | applied | not scored in main75 | valid | invalid |", "| --- | ---: | ---: | ---: | ---: |"]
     for rid, d in per_rewrite.items():
-        L.append(f"| {rid} | {d['applied']} | {d['valid']} | {len(d['invalid'])} |")
+        L.append(f"| {rid} | {d['applied']} | {len(d['not_scored'])} | {d['valid']} | {len(d['invalid'])} |")
+    skipped = sorted({c for d in per_rewrite.values() for c in d["not_scored"]})
+    if skipped:
+        L += ["", "Not scored in main75 (no semantic hunk), so not scored here either: "
+              + ", ".join(f"`{c}`" for c in skipped) + "."]
     L += ["", "Primary location: on-site count before and after the rewrite, paired McNemar. Any label: the same for "
           "the primary or any labelled line. `orig` is the reporter's count on the applicable cases before the rewrite.", "",
           "| rewrite | reporter | pairs | primary orig → rewrite | lost / gained | p | any label orig → rewrite | lost / gained | p | primary moved |",

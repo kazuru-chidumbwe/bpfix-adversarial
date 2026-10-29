@@ -2,14 +2,16 @@
 
 Run `campaigns/n3/lab/testbed-a-20261026T060709Z` · rules `docs/MAIN75-PIN-PROTOCOL.md Section 7`. A rewritten pair is valid when the rewritten buggy REJECTS and the rewritten fixed ACCEPTS. Repair sites are recomputed from the rewritten pair (R0).
 
-| rewrite | applied | valid | invalid |
-| --- | ---: | ---: | ---: |
-| VPAD | 46 | 45 | 0 |
-| VPADC | 68 | 67 | 0 |
-| MACRO | 32 | 31 | 0 |
-| INLINE | 48 | 43 | 4 |
-| REORDER | 0 | 0 | 0 |
-| SPLIT | 3 | 3 | 0 |
+| rewrite | applied | not scored in main75 | valid | invalid |
+| --- | ---: | ---: | ---: | ---: |
+| VPAD | 46 | 1 | 45 | 0 |
+| VPADC | 68 | 1 | 67 | 0 |
+| MACRO | 32 | 1 | 31 | 0 |
+| INLINE | 48 | 1 | 43 | 4 |
+| REORDER | 0 | 0 | 0 | 0 |
+| SPLIT | 3 | 0 | 3 | 0 |
+
+Not scored in main75 (no semantic hunk), so not scored here either: `rs_bpftime_sslsniff_perf_copy_len_001`.
 
 Primary location: on-site count before and after the rewrite, paired McNemar. Any label: the same for the primary or any labelled line. `orig` is the reporter's count on the applicable cases before the rewrite.
 
