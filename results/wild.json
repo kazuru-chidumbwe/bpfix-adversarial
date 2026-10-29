@@ -1,20 +1,12 @@
 {
  "generator": "tools/score_wild.py",
  "protocol": "docs/WILD-CORPUS-PROTOCOL.md (scoring rules for the wild cases)",
- "n_cases": 4,
- "n_scored": 1,
+ "n_cases": 6,
+ "n_scored": 5,
  "excluded": [
   {
-   "rank": 2043,
-   "reason": "pending reporter outputs: PREVAIL, PrettyVerifier, bpfix"
-  },
-  {
-   "rank": 3285,
-   "reason": "pending reporter outputs: PREVAIL, PrettyVerifier, bpfix"
-  },
-  {
-   "rank": 4049,
-   "reason": "pending reporter outputs: PREVAIL, PrettyVerifier, bpfix"
+   "rank": 4259,
+   "reason": "pass 2: E3 (same bug as rank 4049 fixed on the PR #2667 branch that 4049 merges; 4049 ranks earlier)"
   }
  ],
  "yield": {
@@ -27,6 +19,9 @@
     "I3": 5,
     "I4": 7,
     "C": 0,
+    "E1": 0,
+    "E3": 0,
+    "N0": 0,
     "E4": 22,
     "E5": 46
    },
@@ -47,6 +42,9 @@
     "I3": 2,
     "I4": 7,
     "C": 0,
+    "E1": 0,
+    "E3": 0,
+    "N0": 0,
     "E4": 21,
     "E5": 11
    },
@@ -61,34 +59,46 @@
   "batch 3": {
    "candidates": 4606,
    "pass1_survivors": 355,
-   "screened": 0,
+   "screened": 355,
    "outcomes": {
-    "included": 0,
-    "I3": 0,
-    "I4": 0,
-    "C": 0,
-    "E4": 0,
-    "E5": 0
+    "included": 4,
+    "I3": 23,
+    "I4": 22,
+    "C": 1,
+    "E1": 0,
+    "E3": 1,
+    "N0": 0,
+    "E4": 115,
+    "E5": 189
    },
-   "included_over_screened": null
+   "included_over_screened": {
+    "rate": 0.0113,
+    "wilson95": [
+     0.0044,
+     0.0286
+    ]
+   }
   },
   "pooled": {
    "candidates": 5027,
    "pass1_survivors": 539,
-   "screened": 122,
+   "screened": 477,
    "outcomes": {
-    "included": 1,
-    "I3": 7,
-    "I4": 14,
-    "C": 0,
-    "E4": 43,
-    "E5": 57
+    "included": 5,
+    "I3": 30,
+    "I4": 36,
+    "C": 1,
+    "E1": 0,
+    "E3": 1,
+    "N0": 0,
+    "E4": 158,
+    "E5": 246
    },
    "included_over_screened": {
-    "rate": 0.0082,
+    "rate": 0.0105,
     "wilson95": [
-     0.0014,
-     0.045
+     0.0045,
+     0.0243
     ]
    }
   }
@@ -99,79 +109,79 @@
     "bpfix": {
      "R0": {
       "primary_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "label_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 4,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.3755,
+        0.9638
        ]
       },
       "primary_within_3": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       }
      },
      "R1": {
       "primary_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       },
       "label_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 4,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.3755,
+        0.9638
        ]
       },
       "primary_within_3": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       }
      },
      "R2": {
       "primary_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "label_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 4,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.3755,
+        0.9638
        ]
       },
       "primary_within_3": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       }
      }
@@ -179,79 +189,79 @@
     "VerifierState": {
      "R0": {
       "primary_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "label_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "primary_within_3": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       }
      },
      "R1": {
       "primary_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       },
       "label_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       },
       "primary_within_3": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       }
      },
      "R2": {
       "primary_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "label_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "primary_within_3": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       }
      }
@@ -260,78 +270,78 @@
      "R0": {
       "primary_on_site": {
        "hits": 0,
-       "n": 1,
+       "n": 5,
        "wilson95": [
         0.0,
-        0.7935
+        0.4345
        ]
       },
       "label_on_site": {
        "hits": 0,
-       "n": 1,
+       "n": 5,
        "wilson95": [
         0.0,
-        0.7935
+        0.4345
        ]
       },
       "primary_within_3": {
        "hits": 0,
-       "n": 1,
+       "n": 5,
        "wilson95": [
         0.0,
-        0.7935
+        0.4345
        ]
       }
      },
      "R1": {
       "primary_on_site": {
        "hits": 0,
-       "n": 1,
+       "n": 5,
        "wilson95": [
         0.0,
-        0.7935
+        0.4345
        ]
       },
       "label_on_site": {
        "hits": 0,
-       "n": 1,
+       "n": 5,
        "wilson95": [
         0.0,
-        0.7935
+        0.4345
        ]
       },
       "primary_within_3": {
        "hits": 0,
-       "n": 1,
+       "n": 5,
        "wilson95": [
         0.0,
-        0.7935
+        0.4345
        ]
       }
      },
      "R2": {
       "primary_on_site": {
        "hits": 0,
-       "n": 1,
+       "n": 5,
        "wilson95": [
         0.0,
-        0.7935
+        0.4345
        ]
       },
       "label_on_site": {
        "hits": 0,
-       "n": 1,
+       "n": 5,
        "wilson95": [
         0.0,
-        0.7935
+        0.4345
        ]
       },
       "primary_within_3": {
        "hits": 0,
-       "n": 1,
+       "n": 5,
        "wilson95": [
         0.0,
-        0.7935
+        0.4345
        ]
       }
      }
@@ -339,79 +349,79 @@
     "PrettyVerifier": {
      "R0": {
       "primary_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "label_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "primary_within_3": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       }
      },
      "R1": {
       "primary_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "label_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "primary_within_3": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       }
      },
      "R2": {
       "primary_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "label_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "primary_within_3": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       }
      }
@@ -420,166 +430,166 @@
      "R0": {
       "primary_on_site": {
        "hits": 1,
-       "n": 1,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.0362,
+        0.6245
        ]
       },
       "label_on_site": {
        "hits": 1,
-       "n": 1,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.0362,
+        0.6245
        ]
       },
       "primary_within_3": {
        "hits": 1,
-       "n": 1,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.0362,
+        0.6245
        ]
       }
      },
      "R1": {
       "primary_on_site": {
        "hits": 1,
-       "n": 1,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.0362,
+        0.6245
        ]
       },
       "label_on_site": {
        "hits": 1,
-       "n": 1,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.0362,
+        0.6245
        ]
       },
       "primary_within_3": {
        "hits": 1,
-       "n": 1,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.0362,
+        0.6245
        ]
       }
      },
      "R2": {
       "primary_on_site": {
        "hits": 1,
-       "n": 1,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.0362,
+        0.6245
        ]
       },
       "label_on_site": {
        "hits": 1,
-       "n": 1,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.0362,
+        0.6245
        ]
       },
       "primary_within_3": {
        "hits": 1,
-       "n": 1,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.0362,
+        0.6245
        ]
       }
      }
     },
     "random_expected": {
-     "R0": 0.02,
-     "R1": 0.03,
-     "R2": 0.02
+     "R0": 0.19,
+     "R1": 0.36,
+     "R2": 0.37
     },
-    "n": 1
+    "n": 5
    },
    "informative": {
     "bpfix": {
      "R0": {
       "primary_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "label_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 4,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.3755,
+        0.9638
        ]
       },
       "primary_within_3": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       }
      },
      "R1": {
       "primary_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       },
       "label_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 4,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.3755,
+        0.9638
        ]
       },
       "primary_within_3": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       }
      },
      "R2": {
       "primary_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "label_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 4,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.3755,
+        0.9638
        ]
       },
       "primary_within_3": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       }
      }
@@ -587,79 +597,79 @@
     "VerifierState": {
      "R0": {
       "primary_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "label_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "primary_within_3": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       }
      },
      "R1": {
       "primary_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       },
       "label_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       },
       "primary_within_3": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       }
      },
      "R2": {
       "primary_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "label_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "primary_within_3": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       }
      }
@@ -668,78 +678,78 @@
      "R0": {
       "primary_on_site": {
        "hits": 0,
-       "n": 1,
+       "n": 5,
        "wilson95": [
         0.0,
-        0.7935
+        0.4345
        ]
       },
       "label_on_site": {
        "hits": 0,
-       "n": 1,
+       "n": 5,
        "wilson95": [
         0.0,
-        0.7935
+        0.4345
        ]
       },
       "primary_within_3": {
        "hits": 0,
-       "n": 1,
+       "n": 5,
        "wilson95": [
         0.0,
-        0.7935
+        0.4345
        ]
       }
      },
      "R1": {
       "primary_on_site": {
        "hits": 0,
-       "n": 1,
+       "n": 5,
        "wilson95": [
         0.0,
-        0.7935
+        0.4345
        ]
       },
       "label_on_site": {
        "hits": 0,
-       "n": 1,
+       "n": 5,
        "wilson95": [
         0.0,
-        0.7935
+        0.4345
        ]
       },
       "primary_within_3": {
        "hits": 0,
-       "n": 1,
+       "n": 5,
        "wilson95": [
         0.0,
-        0.7935
+        0.4345
        ]
       }
      },
      "R2": {
       "primary_on_site": {
        "hits": 0,
-       "n": 1,
+       "n": 5,
        "wilson95": [
         0.0,
-        0.7935
+        0.4345
        ]
       },
       "label_on_site": {
        "hits": 0,
-       "n": 1,
+       "n": 5,
        "wilson95": [
         0.0,
-        0.7935
+        0.4345
        ]
       },
       "primary_within_3": {
        "hits": 0,
-       "n": 1,
+       "n": 5,
        "wilson95": [
         0.0,
-        0.7935
+        0.4345
        ]
       }
      }
@@ -747,79 +757,79 @@
     "PrettyVerifier": {
      "R0": {
       "primary_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "label_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "primary_within_3": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       }
      },
      "R1": {
       "primary_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "label_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "primary_within_3": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       }
      },
      "R2": {
       "primary_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "label_on_site": {
-       "hits": 1,
-       "n": 1,
+       "hits": 2,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.1176,
+        0.7693
        ]
       },
       "primary_within_3": {
-       "hits": 1,
-       "n": 1,
+       "hits": 3,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.2307,
+        0.8824
        ]
       }
      }
@@ -828,88 +838,88 @@
      "R0": {
       "primary_on_site": {
        "hits": 1,
-       "n": 1,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.0362,
+        0.6245
        ]
       },
       "label_on_site": {
        "hits": 1,
-       "n": 1,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.0362,
+        0.6245
        ]
       },
       "primary_within_3": {
        "hits": 1,
-       "n": 1,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.0362,
+        0.6245
        ]
       }
      },
      "R1": {
       "primary_on_site": {
        "hits": 1,
-       "n": 1,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.0362,
+        0.6245
        ]
       },
       "label_on_site": {
        "hits": 1,
-       "n": 1,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.0362,
+        0.6245
        ]
       },
       "primary_within_3": {
        "hits": 1,
-       "n": 1,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.0362,
+        0.6245
        ]
       }
      },
      "R2": {
       "primary_on_site": {
        "hits": 1,
-       "n": 1,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.0362,
+        0.6245
        ]
       },
       "label_on_site": {
        "hits": 1,
-       "n": 1,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.0362,
+        0.6245
        ]
       },
       "primary_within_3": {
        "hits": 1,
-       "n": 1,
+       "n": 5,
        "wilson95": [
-        0.2065,
-        1.0
+        0.0362,
+        0.6245
        ]
       }
      }
     },
     "random_expected": {
-     "R0": 0.02,
-     "R1": 0.03,
-     "R2": 0.02
+     "R0": 0.19,
+     "R1": 0.36,
+     "R2": 0.37
     },
-    "n": 1
+    "n": 5
    }
   },
   "batch 1": {
@@ -2283,106 +2293,160 @@
     "bpfix": {
      "R0": {
       "primary_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "label_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 3,
+       "n": 4,
+       "wilson95": [
+        0.3006,
+        0.9544
+       ]
       },
       "primary_within_3": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       }
      },
      "R1": {
       "primary_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       },
       "label_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 3,
+       "n": 4,
+       "wilson95": [
+        0.3006,
+        0.9544
+       ]
       },
       "primary_within_3": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       }
      },
      "R2": {
       "primary_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "label_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 3,
+       "n": 4,
+       "wilson95": [
+        0.3006,
+        0.9544
+       ]
       },
       "primary_within_3": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       }
      }
     },
     "VerifierState": {
      "R0": {
       "primary_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "label_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "primary_within_3": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       }
      },
      "R1": {
       "primary_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       },
       "label_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       },
       "primary_within_3": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       }
      },
      "R2": {
       "primary_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "label_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "primary_within_3": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       }
      }
     },
@@ -2390,105 +2454,159 @@
      "R0": {
       "primary_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "label_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "primary_within_3": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       }
      },
      "R1": {
       "primary_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "label_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "primary_within_3": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       }
      },
      "R2": {
       "primary_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "label_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "primary_within_3": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       }
      }
     },
     "PrettyVerifier": {
      "R0": {
       "primary_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "label_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "primary_within_3": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       }
      },
      "R1": {
       "primary_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "label_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "primary_within_3": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       }
      },
      "R2": {
       "primary_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "label_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "primary_within_3": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       }
      }
     },
@@ -2496,166 +2614,247 @@
      "R0": {
       "primary_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "label_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "primary_within_3": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       }
      },
      "R1": {
       "primary_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "label_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "primary_within_3": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       }
      },
      "R2": {
       "primary_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "label_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "primary_within_3": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       }
      }
     },
     "random_expected": {
-     "R0": 0,
-     "R1": 0,
-     "R2": 0
+     "R0": 0.17,
+     "R1": 0.33,
+     "R2": 0.35
     },
-    "n": 0
+    "n": 4
    },
    "informative": {
     "bpfix": {
      "R0": {
       "primary_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "label_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 3,
+       "n": 4,
+       "wilson95": [
+        0.3006,
+        0.9544
+       ]
       },
       "primary_within_3": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       }
      },
      "R1": {
       "primary_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       },
       "label_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 3,
+       "n": 4,
+       "wilson95": [
+        0.3006,
+        0.9544
+       ]
       },
       "primary_within_3": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       }
      },
      "R2": {
       "primary_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "label_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 3,
+       "n": 4,
+       "wilson95": [
+        0.3006,
+        0.9544
+       ]
       },
       "primary_within_3": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       }
      }
     },
     "VerifierState": {
      "R0": {
       "primary_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "label_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "primary_within_3": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       }
      },
      "R1": {
       "primary_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       },
       "label_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       },
       "primary_within_3": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       }
      },
      "R2": {
       "primary_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "label_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "primary_within_3": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       }
      }
     },
@@ -2663,105 +2862,159 @@
      "R0": {
       "primary_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "label_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "primary_within_3": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       }
      },
      "R1": {
       "primary_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "label_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "primary_within_3": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       }
      },
      "R2": {
       "primary_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "label_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "primary_within_3": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       }
      }
     },
     "PrettyVerifier": {
      "R0": {
       "primary_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "label_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "primary_within_3": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       }
      },
      "R1": {
       "primary_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "label_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "primary_within_3": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       }
      },
      "R2": {
       "primary_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "label_on_site": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 1,
+       "n": 4,
+       "wilson95": [
+        0.0456,
+        0.6994
+       ]
       },
       "primary_within_3": {
-       "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "hits": 2,
+       "n": 4,
+       "wilson95": [
+        0.15,
+        0.85
+       ]
       }
      }
     },
@@ -2769,61 +3022,88 @@
      "R0": {
       "primary_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "label_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "primary_within_3": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       }
      },
      "R1": {
       "primary_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "label_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "primary_within_3": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       }
      },
      "R2": {
       "primary_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "label_on_site": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       },
       "primary_within_3": {
        "hits": 0,
-       "n": 0,
-       "wilson95": null
+       "n": 4,
+       "wilson95": [
+        0.0,
+        0.4899
+       ]
       }
      }
     },
     "random_expected": {
-     "R0": 0,
-     "R1": 0,
-     "R2": 0
+     "R0": 0.17,
+     "R1": 0.33,
+     "R2": 0.35
     },
-    "n": 0
+    "n": 4
    }
   }
  },
@@ -3034,7 +3314,196 @@
    "program": "syscall__execve_enter",
    "section": "raw_tracepoint/sys_execve",
    "build_type": "direct compile",
-   "excluded": "pending reporter outputs: PREVAIL, PrettyVerifier, bpfix"
+   "excluded": null,
+   "unit": "tracee.bpf.c",
+   "repair_sites": {
+    "R0": {
+     "buffer.h": [
+      363,
+      364,
+      365
+     ],
+     "tracee.bpf.c": []
+    },
+    "R1": {
+     "buffer.h": [
+      362,
+      363,
+      364,
+      365,
+      368
+     ],
+     "tracee.bpf.c": []
+    },
+    "R2": {
+     "buffer.h": [
+      363,
+      364,
+      365
+     ],
+     "tracee.bpf.c": []
+    }
+   },
+   "chance": {
+    "R0": 0.0006,
+    "R1": 0.0009,
+    "R2": 0.0006
+   },
+   "informative": true,
+   "bpfix_error_id": "E005",
+   "upstream_obligation": "ScalarRange",
+   "predictions": {
+    "bpfix": {
+     "file": "buffer.h",
+     "primary": 368,
+     "labels": [
+      363,
+      368
+     ],
+     "note": "E005"
+    },
+    "VerifierState": {
+     "file": "buffer.h",
+     "primary": 368,
+     "labels": [],
+     "note": "VS: stop-site source map before reject"
+    },
+    "SourceComment": {
+     "file": null,
+     "primary": 53,
+     "labels": [],
+     "note": "SC: scalar-guard establish"
+    },
+    "PrettyVerifier": {
+     "file": null,
+     "primary": null,
+     "labels": [],
+     "note": "no source location"
+    },
+    "PREVAIL": {
+     "file": null,
+     "primary": null,
+     "labels": [],
+     "note": "PREVAIL other, no source location"
+    }
+   },
+   "outcomes": {
+    "bpfix": {
+     "R0": {
+      "file": "buffer.h",
+      "primary_on_site": false,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 3
+     },
+     "R1": {
+      "file": "buffer.h",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "file": "buffer.h",
+      "primary_on_site": false,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 3
+     }
+    },
+    "VerifierState": {
+     "R0": {
+      "file": "buffer.h",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     },
+     "R1": {
+      "file": "buffer.h",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "file": "buffer.h",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     }
+    },
+    "SourceComment": {
+     "R0": {
+      "file": "tracee.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "file": "tracee.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "file": "tracee.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "file": "tracee.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "file": "tracee.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "file": "tracee.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PREVAIL": {
+     "R0": {
+      "file": "tracee.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "file": "tracee.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "file": "tracee.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    }
+   }
   },
   {
    "rank": 3285,
@@ -3044,7 +3513,246 @@
    "program": "xdp_lan_root",
    "section": "xdp",
    "build_type": "direct compile",
-   "excluded": "pending reporter outputs: PREVAIL, PrettyVerifier, bpfix"
+   "excluded": null,
+   "unit": "xdp_meta.h",
+   "repair_sites": {
+    "R0": {
+     "xdp_meta.h": [
+      12,
+      13,
+      14,
+      15,
+      24,
+      25,
+      41,
+      42,
+      76,
+      77,
+      101,
+      102
+     ]
+    },
+    "R1": {
+     "xdp_meta.h": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      23,
+      24,
+      25,
+      26,
+      40,
+      41,
+      42,
+      43,
+      75,
+      76,
+      77,
+      78,
+      100,
+      101,
+      102,
+      103
+     ]
+    },
+    "R2": {
+     "xdp_meta.h": [
+      12,
+      13,
+      14,
+      15,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      76,
+      77,
+      101,
+      102
+     ]
+    }
+   },
+   "chance": {
+    "R0": 0.1463,
+    "R1": 0.2683,
+    "R2": 0.3293
+   },
+   "informative": true,
+   "bpfix_error_id": "E006",
+   "upstream_obligation": "PointerProvenance",
+   "predictions": {
+    "bpfix": {
+     "file": "xdp_meta.h",
+     "primary": 41,
+     "labels": [
+      17,
+      39,
+      41
+     ],
+     "note": "E006"
+    },
+    "VerifierState": {
+     "file": "xdp_meta.h",
+     "primary": 41,
+     "labels": [],
+     "note": "VS: stop-site source map before reject"
+    },
+    "SourceComment": {
+     "file": null,
+     "primary": null,
+     "labels": [],
+     "note": "SC: N/A, no PP-specific SourceComment heuristic (upstream coverage gap)"
+    },
+    "PrettyVerifier": {
+     "file": null,
+     "primary": 41,
+     "labels": [
+      41
+     ],
+     "note": ""
+    },
+    "PREVAIL": {
+     "file": null,
+     "primary": null,
+     "labels": [],
+     "note": "PREVAIL PASS, no source location"
+    }
+   },
+   "outcomes": {
+    "bpfix": {
+     "R0": {
+      "file": "xdp_meta.h",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "file": "xdp_meta.h",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "file": "xdp_meta.h",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    },
+    "VerifierState": {
+     "R0": {
+      "file": "xdp_meta.h",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "file": "xdp_meta.h",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "file": "xdp_meta.h",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    },
+    "SourceComment": {
+     "R0": {
+      "file": "xdp_meta.h",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "file": "xdp_meta.h",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "file": "xdp_meta.h",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "file": "xdp_meta.h",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "file": "xdp_meta.h",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "file": "xdp_meta.h",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    },
+    "PREVAIL": {
+     "R0": {
+      "file": "xdp_meta.h",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "file": "xdp_meta.h",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "file": "xdp_meta.h",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    }
+   }
   },
   {
    "rank": 4049,
@@ -3054,7 +3762,411 @@
    "program": "entrypoint",
    "section": "perf_event",
    "build_type": "direct compile",
-   "excluded": "pending reporter outputs: PREVAIL, PrettyVerifier, bpfix"
+   "excluded": null,
+   "unit": "native.bpf.c",
+   "repair_sites": {
+    "R0": {
+     "native.bpf.c": [
+      355,
+      356,
+      485,
+      486,
+      516,
+      517
+     ]
+    },
+    "R1": {
+     "native.bpf.c": [
+      354,
+      355,
+      356,
+      358,
+      484,
+      485,
+      486,
+      487,
+      515,
+      516,
+      517,
+      518
+     ]
+    },
+    "R2": {
+     "native.bpf.c": [
+      355,
+      356,
+      485,
+      486,
+      516,
+      517
+     ]
+    }
+   },
+   "chance": {
+    "R0": 0.0064,
+    "R1": 0.0128,
+    "R2": 0.0064
+   },
+   "informative": true,
+   "bpfix_error_id": "E005",
+   "upstream_obligation": "ScalarRange",
+   "predictions": {
+    "bpfix": {
+     "file": "native.bpf.c",
+     "primary": 491,
+     "labels": [
+      486,
+      491
+     ],
+     "note": "E005"
+    },
+    "VerifierState": {
+     "file": "native.bpf.c",
+     "primary": 491,
+     "labels": [],
+     "note": "VS: stop-site source map before reject"
+    },
+    "SourceComment": {
+     "file": null,
+     "primary": 322,
+     "labels": [],
+     "note": "SC: scalar-guard establish"
+    },
+    "PrettyVerifier": {
+     "file": null,
+     "primary": 519,
+     "labels": [
+      519
+     ],
+     "note": ""
+    },
+    "PREVAIL": {
+     "file": null,
+     "primary": 491,
+     "labels": [],
+     "note": "PREVAIL FAIL"
+    }
+   },
+   "outcomes": {
+    "bpfix": {
+     "R0": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": true,
+      "primary_within_3": false,
+      "distance": 5
+     },
+     "R1": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": true,
+      "primary_within_3": false,
+      "distance": 4
+     },
+     "R2": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": true,
+      "primary_within_3": false,
+      "distance": 5
+     }
+    },
+    "VerifierState": {
+     "R0": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 5
+     },
+     "R1": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 4
+     },
+     "R2": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 5
+     }
+    },
+    "SourceComment": {
+     "R0": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 33
+     },
+     "R1": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 32
+     },
+     "R2": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 33
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 2
+     },
+     "R1": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 1
+     },
+     "R2": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 2
+     }
+    },
+    "PREVAIL": {
+     "R0": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 5
+     },
+     "R1": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 4
+     },
+     "R2": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 5
+     }
+    }
+   }
+  },
+  {
+   "rank": 4259,
+   "batch": "batch 3",
+   "repo": "parca-dev/parca-agent",
+   "commit": "a5ce7e995abf543157353401b22694045d333b11",
+   "program": "entrypoint",
+   "section": "perf_event",
+   "build_type": "direct compile",
+   "excluded": "pass 2: E3 (same bug as rank 4049 fixed on the PR #2667 branch that 4049 merges; 4049 ranks earlier)",
+   "excluded_code": "E3"
+  },
+  {
+   "rank": 6257,
+   "batch": "batch 3",
+   "repo": "inspektor-gadget/inspektor-gadget",
+   "commit": "cc05827e6a6bec41201cd18f9f5d238871198579",
+   "program": "ig_seccomp_e",
+   "section": "raw_tracepoint/sys_enter",
+   "build_type": "direct compile",
+   "excluded": null,
+   "unit": "program.bpf.c",
+   "repair_sites": {
+    "R0": {
+     "program.bpf.c": [
+      100
+     ]
+    },
+    "R1": {
+     "program.bpf.c": [
+      99,
+      100,
+      103
+     ]
+    },
+    "R2": {
+     "program.bpf.c": [
+      100
+     ]
+    }
+   },
+   "chance": {
+    "R0": 0.0164,
+    "R1": 0.0492,
+    "R2": 0.0164
+   },
+   "informative": true,
+   "bpfix_error_id": "E005",
+   "upstream_obligation": "ScalarRange",
+   "predictions": {
+    "bpfix": {
+     "file": "program.bpf.c",
+     "primary": 157,
+     "labels": [
+      110,
+      157
+     ],
+     "note": "E005"
+    },
+    "VerifierState": {
+     "file": "program.bpf.c",
+     "primary": 157,
+     "labels": [],
+     "note": "VS: stop-site source map before reject"
+    },
+    "SourceComment": {
+     "file": null,
+     "primary": 110,
+     "labels": [],
+     "note": "SC: scalar-guard establish"
+    },
+    "PrettyVerifier": {
+     "file": null,
+     "primary": 157,
+     "labels": [
+      157
+     ],
+     "note": ""
+    },
+    "PREVAIL": {
+     "file": null,
+     "primary": null,
+     "labels": [],
+     "note": "PREVAIL other, no source location"
+    }
+   },
+   "outcomes": {
+    "bpfix": {
+     "R0": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 57
+     },
+     "R1": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 54
+     },
+     "R2": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 57
+     }
+    },
+    "VerifierState": {
+     "R0": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 57
+     },
+     "R1": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 54
+     },
+     "R2": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 57
+     }
+    },
+    "SourceComment": {
+     "R0": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 10
+     },
+     "R1": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 7
+     },
+     "R2": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 10
+     }
+    },
+    "PrettyVerifier": {
+     "R0": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 57
+     },
+     "R1": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 54
+     },
+     "R2": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 57
+     }
+    },
+    "PREVAIL": {
+     "R0": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    }
+   }
   }
  ]
 }

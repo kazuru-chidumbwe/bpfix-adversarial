@@ -6,7 +6,7 @@ Agreement: the two site sets share at least one line. Intervals: Wilson 95% over
 | corpus | cases | covered (NP / PB) | with sites | agree R0 | agree R1 | agree R2 | mean chance |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | main75 | 74 | 31 (20 / 11) | 30 | 22/30 (0.56–0.86) | 26/30 (0.70–0.95) | 23/30 (0.59–0.88) | 0.047 |
-| wild | 1 | 0 (0 / 0) | 0 | 0/0 | 0/0 | 0/0 | n/a |
+| wild | 5 | 0 (0 / 0) | 0 | 0/0 | 0/0 | 0/0 | n/a |
 
 Context only, not a ranking (rule 6): cases where a reporter's primary line is a state-oracle site.
 

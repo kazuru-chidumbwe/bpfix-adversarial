@@ -44,7 +44,7 @@
    }
   },
   "wild": {
-   "cases": 1,
+   "cases": 5,
    "covered": 0,
    "with_sites": 0,
    "by_kind": {
@@ -1709,6 +1709,34 @@
    "case": "111",
    "kind": null,
    "message": "R2 invalid mem access 'scalar'",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "wild",
+   "case": "2043",
+   "kind": null,
+   "message": "invalid access to map value, value_size=32528 off=65680 size=4096 R1 max value is outside of the allowed memory range",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "wild",
+   "case": "3285",
+   "kind": null,
+   "message": "dereference of modified ctx ptr R2 off=8 disallowed",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "wild",
+   "case": "4049",
+   "kind": null,
+   "message": "invalid access to map value, value_size=16032 off=20480 size=8 R8 max value is outside of the allowed memory range",
+   "note": "not covered (rule 3)"
+  },
+  {
+   "corpus": "wild",
+   "case": "6257",
+   "kind": null,
+   "message": "invalid access to map value, value_size=501 off=511 size=1 R0 max value is outside of the allowed memory range",
    "note": "not covered (rule 3)"
   }
  ]
