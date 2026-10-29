@@ -1,0 +1,24 @@
+{
+ "screen_rank": 6257,
+ "repo": "inspektor-gadget/inspektor-gadget",
+ "commit": "cc05827e6a6bec41201cd18f9f5d238871198579",
+ "parent": "ec5bc37be6068443b7c4cf8618c6e0cd0a8a1336",
+ "build_type": "direct compile",
+ "flips": [
+  {
+   "object": "program.bpf.c::gadgets__advise_seccomp__program.bpf.c.o",
+   "program": "ig_seccomp_e",
+   "section": "raw_tracepoint/sys_enter"
+  }
+ ],
+ "decided_by": "default",
+ "feature_macros": null,
+ "object": "program.bpf.c::gadgets__advise_seccomp__program.bpf.c.o",
+ "program": "ig_seccomp_e",
+ "section": "raw_tracepoint/sys_enter",
+ "parent_cmd": "clang -g -O2 -target bpf -D__TARGET_ARCH_x86 -I /home/test/wild/tmp/6257/parent/gadgets/advise_seccomp -I /home/test/wild/tmp/6257/parent/gadgets -I /home/test/wild/tmp/6257/parent -I /home/test/wild/tmp/6257/parent/include -I /home/test/bpfix-b2/.cache/vmlinux-6.12.86+deb13-amd64 -I /usr/include -c /home/test/wild/tmp/6257/parent/gadgets/advise_seccomp/program.bpf.c -o /home/test/wild/tmp/6257/parent-objs/gadgets__advise_seccomp__program.bpf.c.o",
+ "fix_cmd": "clang -g -O2 -target bpf -D__TARGET_ARCH_x86 -I /home/test/wild/tmp/6257/fix/gadgets/advise_seccomp -I /home/test/wild/tmp/6257/fix/gadgets -I /home/test/wild/tmp/6257/fix -I /home/test/wild/tmp/6257/fix/include -I /home/test/bpfix-b2/.cache/vmlinux-6.12.86+deb13-amd64 -I /usr/include -c /home/test/wild/tmp/6257/fix/gadgets/advise_seccomp/program.bpf.c -o /home/test/wild/tmp/6257/fix-objs/gadgets__advise_seccomp__program.bpf.c.o",
+ "changed_files": [
+  "gadgets/advise_seccomp/program.bpf.c"
+ ]
+}

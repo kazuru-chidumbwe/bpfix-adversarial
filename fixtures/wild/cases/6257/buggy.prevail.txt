@@ -1,0 +1,5 @@
+PREVAIL exit=1
+available programs:
+section=raw_tracepoint/sys_enter function=ig_seccomp_e [reject_load: Unsupported or invalid CO-RE/BTF relocation data: CO-RE: array index 0 out of bounds (size 0) for access path 0:0:0]
+
+error: No executable sections

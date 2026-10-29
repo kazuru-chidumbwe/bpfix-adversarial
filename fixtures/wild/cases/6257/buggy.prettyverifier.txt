@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Invalid access to map value
+   157 | syscall_bitmap->syscalls[id] = 0x01; @ program.bpf.c:157
+       | in file /home/test/wild/tmp/6257/parent/gadgets/advise_seccomp/program.bpf.c
+Access is 11 bytes past the end of the map value (capacity: 501 bytes).
+
+Add or tighten a bounds check so the accessed range stays within the map value limits.
+

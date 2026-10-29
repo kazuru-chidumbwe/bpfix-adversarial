@@ -5,7 +5,12 @@
   "source_commit": "3211393d326b885025f3ad626bf372e3880cf0b2",
   "input": "compiled object only; the kernel log is not read",
   "cases": [
-    "111"
+    "111",
+    "2043",
+    "3285",
+    "4049",
+    "4259",
+    "6257"
   ],
   "missing_object": []
 }

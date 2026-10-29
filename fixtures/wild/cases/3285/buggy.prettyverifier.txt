@@ -1,0 +1,8 @@
+Prettier Verifier ##
+#######################
+
+error: Pointer access not allowed
+   41 | void *data_meta = (void *)(long)ctx->data_meta; @ xdp_meta.h:41
+      | in file /home/test/wild/tmp/3285/parent/landscape-ebpf/src/bpf/chain/xdp_meta.h
+Access to this pointer-typed register or passing it to a helper is only allowed in its original, unmodified form.
+

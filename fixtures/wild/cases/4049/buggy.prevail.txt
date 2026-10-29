@@ -1,0 +1,10 @@
+PREVAIL exit=1
+(program perf_event/entrypoint)
+FAIL: perf_event/entrypoint
+
+; /home/test/wild/tmp/4049/parent/bpf/unwinders/native.bpf.c:491
+;         if (proc_info->mappings[mid].begin <= pc) {
+
+376: Upper bound must be at most r8.shared_region_size (valid_access(r8.offset+8, width=8) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

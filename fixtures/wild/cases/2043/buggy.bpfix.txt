@@ -1,0 +1,18 @@
+error[BPFIX-E005]: map-value access bounds proof is missing
+  = class: source_bug
+  = confidence: medium
+  = diagnostic: supported, help: repair_hint, span: exact_pc
+  = next action: bounds
+  --> buffer.h:368
+   |
+363 | if (buf->offset > ARGS_BUF_SIZE - MAX_STRING_SIZE - sizeof(int))
+    | ---------------------------------------------------------------- nearby source context for scalar range
+368 | int sz = bpf_probe_read_str(&(buf->args[buf->offset + sizeof(int)]), MAX_STRING_SIZE, ellipsis);
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ rejected here: R1 map-value access off=65680 size=4096 reaches byte 69776, past value_size=32528
+   |
+   = verifier[3688]: invalid access to map value, value_size=32528 off=65680 size=4096; R1 max value is outside of the allowed memory range
+   = note: nearest BPF instruction pc 2596
+   = note: parsed 1877 verifier state snapshots
+   = required proof: prove R1's map-value byte range off=65680 size=4096 stays within value_size=32528; verifier sees map_value(off=145,value_size=32528,range(smin=0,smax=65535,umax=65535))
+help: Clamp the computed map-value offset against the declared value size before the access.
+help: Check the field offset plus index plus access width, not only the raw index.

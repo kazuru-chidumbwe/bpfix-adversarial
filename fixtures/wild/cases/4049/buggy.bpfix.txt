@@ -1,0 +1,18 @@
+error[BPFIX-E005]: scalar range at the rejected use is still verifier-unsafe
+  = class: source_bug
+  = confidence: medium
+  = diagnostic: supported, help: repair_hint, span: exact_pc
+  = next action: bounds
+  --> native.bpf.c:491
+   |
+486 | if (mid < 0 || mid >= MAX_MAPPINGS_PER_PROCESS) {
+    | ------------------------------------------------- nearby source context for scalar range
+491 | if (proc_info->mappings[mid].begin <= pc) {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ rejected here: R8 map-value access off=20480 size=8 reaches byte 20488, past value_size=16032
+   |
+   = verifier[737]: invalid access to map value, value_size=16032 off=20480 size=8; R8 max value is outside of the allowed memory range
+   = note: nearest BPF instruction pc 376
+   = note: parsed 357 verifier state snapshots
+   = note[verifier-state]: verifier state shows the rejected scalar or pointer-offset register still has an unsafe range at the use
+   = required proof: prove R8's map-value byte range off=20480 size=8 stays within value_size=16032; verifier sees map_value(off=32,value_size=16032,range(smin=0,smax=20440,umax=20440))
+help: Clamp or branch-check the exact scalar used by this helper, pointer arithmetic, stack access, or map-value access immediately before the rejected operation.

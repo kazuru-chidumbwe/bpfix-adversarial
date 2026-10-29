@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Invalid access to map value
+   63 | int sz = bpf_probe_read_str(&(buf->args[buf->offset + sizeof(int)]), MAX_STRING_SIZE, ellipsis); @ buffer.h:368
+      | in file /home/test/wild/tmp/2043/parent/pkg/ebpf/c/common/context.h
+Access involving '&' is 37248 bytes past the end of the map value (capacity: 32528 bytes).
+
+Add or tighten a bounds check so the accessed range stays within the map value limits.
+

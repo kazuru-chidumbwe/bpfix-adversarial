@@ -1,0 +1,806 @@
+libbpf: object 'bpf__unwinders_': failed (-95) to create BPF token from '/sys/fs/bpf', skipping optional step...
+libbpf: loaded kernel BTF from '/sys/kernel/btf/vmlinux'
+libbpf: sec 'perf_event': found 13 CO-RE relocations
+libbpf: CO-RE relocating [133] struct task_struct: found target candidate [211] struct task_struct in [vmlinux]
+libbpf: prog 'entrypoint': relo #1: <byte_off> [133] struct task_struct.mm (0:41 @ offset 840)
+libbpf: prog 'entrypoint': relo #1: matching candidate #0 <byte_off> [211] struct task_struct.mm (0:58 @ offset 2304)
+libbpf: prog 'entrypoint': relo #1: patched insn #34 (ALU/ALU64) imm 840 -> 2304
+libbpf: CO-RE relocating [127] struct bpf_perf_event_data: found target candidate [13153] struct bpf_perf_event_data in [vmlinux]
+libbpf: prog 'entrypoint': relo #2: <byte_off> [127] struct bpf_perf_event_data.regs (0:0 @ offset 0)
+libbpf: prog 'entrypoint': relo #2: matching candidate #0 <byte_off> [13153] struct bpf_perf_event_data.regs (0:0 @ offset 0)
+libbpf: prog 'entrypoint': relo #2: patched insn #137 (ALU/ALU64) imm 0 -> 0
+libbpf: CO-RE relocating [128] typedef bpf_user_pt_regs_t: found target candidate [13152] typedef bpf_user_pt_regs_t in [vmlinux]
+libbpf: prog 'entrypoint': relo #3: <byte_off> [128] typedef bpf_user_pt_regs_t.ip (0:16 @ offset 128)
+libbpf: prog 'entrypoint': relo #3: matching candidate #0 <byte_off> [13152] typedef bpf_user_pt_regs_t.ip (0:16 @ offset 128)
+libbpf: prog 'entrypoint': relo #3: patched insn #155 (LDX/ST/STX) off 128 -> 128
+libbpf: prog 'entrypoint': relo #4: <byte_off> [133] struct task_struct.mm (0:41 @ offset 840)
+libbpf: prog 'entrypoint': relo #4: matching candidate #0 <byte_off> [211] struct task_struct.mm (0:58 @ offset 2304)
+libbpf: prog 'entrypoint': relo #4: patched insn #162 (ALU/ALU64) imm 840 -> 2304
+libbpf: prog 'entrypoint': relo #5: <byte_off> [128] typedef bpf_user_pt_regs_t.ip (0:16 @ offset 128)
+libbpf: prog 'entrypoint': relo #5: matching candidate #0 <byte_off> [13152] typedef bpf_user_pt_regs_t.ip (0:16 @ offset 128)
+libbpf: prog 'entrypoint': relo #5: patched insn #183 (LDX/ST/STX) off 128 -> 128
+libbpf: prog 'entrypoint': relo #6: <byte_off> [128] typedef bpf_user_pt_regs_t.sp (0:19 @ offset 152)
+libbpf: prog 'entrypoint': relo #6: matching candidate #0 <byte_off> [13152] typedef bpf_user_pt_regs_t.sp (0:19 @ offset 152)
+libbpf: prog 'entrypoint': relo #6: patched insn #185 (LDX/ST/STX) off 152 -> 152
+libbpf: prog 'entrypoint': relo #7: <byte_off> [128] typedef bpf_user_pt_regs_t.bp (0:4 @ offset 32)
+libbpf: prog 'entrypoint': relo #7: matching candidate #0 <byte_off> [13152] typedef bpf_user_pt_regs_t.bp (0:4 @ offset 32)
+libbpf: prog 'entrypoint': relo #7: patched insn #187 (LDX/ST/STX) off 32 -> 32
+libbpf: prog 'entrypoint': relo #8: <byte_off> [127] struct bpf_perf_event_data.regs.ip (0:0:16 @ offset 128)
+libbpf: prog 'entrypoint': relo #8: matching candidate #0 <byte_off> [13153] struct bpf_perf_event_data.regs.ip (0:0:16 @ offset 128)
+libbpf: prog 'entrypoint': relo #8: patched insn #467 (LDX/ST/STX) off 128 -> 128
+libbpf: prog 'entrypoint': relo #9: <byte_off> [133] struct task_struct.stack (0:2 @ offset 32)
+libbpf: prog 'entrypoint': relo #9: matching candidate #0 <byte_off> [211] struct task_struct.stack (0:3 @ offset 32)
+libbpf: prog 'entrypoint': relo #9: patched insn #556 (ALU/ALU64) imm 32 -> 32
+libbpf: CO-RE relocating [129] struct pt_regs: found target candidate [179] struct pt_regs in [vmlinux]
+libbpf: prog 'entrypoint': relo #10: <byte_off> [129] struct pt_regs.ip (0:16 @ offset 128)
+libbpf: prog 'entrypoint': relo #10: matching candidate #0 <byte_off> [179] struct pt_regs.ip (0:16 @ offset 128)
+libbpf: prog 'entrypoint': relo #10: patched insn #577 (ALU/ALU64) imm 128 -> 128
+libbpf: prog 'entrypoint': relo #11: <byte_off> [129] struct pt_regs.sp (0:19 @ offset 152)
+libbpf: prog 'entrypoint': relo #11: matching candidate #0 <byte_off> [179] struct pt_regs.sp (0:19 @ offset 152)
+libbpf: prog 'entrypoint': relo #11: patched insn #586 (ALU/ALU64) imm 152 -> 152
+libbpf: prog 'entrypoint': relo #12: <byte_off> [129] struct pt_regs.bp (0:4 @ offset 32)
+libbpf: prog 'entrypoint': relo #12: matching candidate #0 <byte_off> [179] struct pt_regs.bp (0:4 @ offset 32)
+libbpf: prog 'entrypoint': relo #12: patched insn #594 (ALU/ALU64) imm 32 -> 32
+libbpf: map 'heap': created successfully, fd=4
+libbpf: map 'process_info': created successfully, fd=5
+libbpf: map 'unwind_failed_reasons': created successfully, fd=6
+libbpf: map 'unwind_tables': created successfully, fd=7
+libbpf: map 'programs': created successfully, fd=8
+libbpf: map 'stack_counts': created successfully, fd=9
+libbpf: map 'stack_traces': created successfully, fd=10
+libbpf: map 'symbol_table': created successfully, fd=11
+libbpf: map 'symbol_index_storage': created successfully, fd=12
+libbpf: map 'golang_mapbucket_storage_map': created successfully, fd=13
+libbpf: map 'debug_threads_ids': created successfully, fd=14
+libbpf: map 'unwind_info_chunks': created successfully, fd=15
+libbpf: map 'events_count': created successfully, fd=16
+libbpf: map 'percpu_stats': created successfully, fd=17
+libbpf: map 'events': created successfully, fd=18
+libbpf: map 'bpf__unw.rodata': created successfully, fd=19
+libbpf: prog 'native_unwind': skipped loading
+libbpf: prog 'entrypoint': BPF program load failed: Permission denied
+libbpf: prog 'entrypoint': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int entrypoint(struct bpf_perf_event_data *ctx) { @ native.bpf.c:1255
+0: (bf) r9 = r1                       ; R1=ctx() R9_w=ctx()
+1: (b7) r1 = 0                        ; R1_w=0
+; DEFINE_COUNTER(total_entries); @ native.bpf.c:327
+2: (63) *(u32 *)(r10 -96) = r1        ; R1_w=0 R10=fp0 fp-96=????0
+3: (bf) r2 = r10                      ; R2_w=fp0 R10=fp0
+4: (07) r2 += -96                     ; R2_w=fp-96
+5: (18) r1 = 0xffff8d0d30ed0200       ; R1_w=map_ptr(map=percpu_stats,ks=4,vs=208)
+7: (85) call bpf_map_lookup_elem#1    ; R0_w=map_value_or_null(id=1,map=percpu_stats,ks=4,vs=208)
+8: (15) if r0 == 0x0 goto pc+3        ; R0_w=map_value(map=percpu_stats,ks=4,vs=208)
+9: (79) r1 = *(u64 *)(r0 +0)          ; R0_w=map_value(map=percpu_stats,ks=4,vs=208) R1_w=scalar()
+10: (07) r1 += 1                      ; R1_w=scalar()
+11: (7b) *(u64 *)(r0 +0) = r1         ; R0=map_value(map=percpu_stats,ks=4,vs=208) R1=scalar()
+; u64 pid_tgid = bpf_get_current_pid_tgid(); @ native.bpf.c:1261
+12: (85) call bpf_get_current_pid_tgid#14     ; R0_w=scalar()
+; int per_process_id = pid_tgid >> 32; @ native.bpf.c:1262
+13: (bf) r1 = r0                      ; R0_w=scalar(id=2) R1_w=scalar(id=2)
+14: (77) r1 >>= 32                    ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+15: (63) *(u32 *)(r10 -28) = r1       ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-32=mmmm????
+16: (18) r1 = 0xffffffff              ; R1_w=0xffffffff
+; if (per_process_id == 0) { @ native.bpf.c:1265
+18: (2d) if r0 > r1 goto pc+12        ; R0_w=scalar(id=2,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R1_w=0xffffffff
+19: (b7) r6 = 0                       ; R6_w=0
+; DEFINE_COUNTER(total_zero_pids); @ native.bpf.c:352
+20: (63) *(u32 *)(r10 -96) = r6       ; R6_w=0 R10=fp0 fp-96=????0
+21: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+22: (07) r2 += -96                    ; R2_w=fp-96
+23: (18) r1 = 0xffff8d0d30ed0200      ; R1_w=map_ptr(map=percpu_stats,ks=4,vs=208)
+25: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=3,map=percpu_stats,ks=4,vs=208)
+26: (15) if r0 == 0x0 goto pc+975     ; R0=map_value(map=percpu_stats,ks=4,vs=208)
+27: (79) r1 = *(u64 *)(r0 +184)       ; R0=map_value(map=percpu_stats,ks=4,vs=208) R1_w=scalar()
+28: (07) r1 += 1                      ; R1_w=scalar()
+29: (7b) *(u64 *)(r0 +184) = r1       ; R0=map_value(map=percpu_stats,ks=4,vs=208) R1_w=scalar()
+30: (05) goto pc+971
+; } @ native.bpf.c:1347
+1002: (bf) r0 = r6                    ; R0_w=0 R6=0
+1003: (95) exit
+
+from 26 to 1002: R0=0 R6=0 R9=ctx() R10=fp0 fp-32=mmmm???? fp-96=????mmmm
+1002: R0=0 R6=0 R9=ctx() R10=fp0 fp-32=mmmm???? fp-96=????mmmm
+1002: (bf) r0 = r6                    ; R0_w=0 R6=0
+1003: (95) exit
+
+from 18 to 31: R0=scalar(id=2,umin=0x100000000) R1=0xffffffff R9=ctx() R10=fp0 fp-32=mmmm???? fp-96=????mmmm
+31: R0=scalar(id=2,umin=0x100000000) R1=0xffffffff R9=ctx() R10=fp0 fp-32=mmmm???? fp-96=????mmmm
+; DEFINE_COUNTER(total_zero_pids); @ native.bpf.c:352
+31: (7b) *(u64 *)(r10 -112) = r0      ; R0=scalar(id=2,umin=0x100000000) R10=fp0 fp-112_w=scalar(id=2,umin=0x100000000)
+; struct task_struct *task = (struct task_struct *)bpf_get_current_task(); @ native.bpf.c:645
+32: (85) call bpf_get_current_task#35         ; R0_w=scalar()
+; if (task == NULL) { @ native.bpf.c:646
+33: (15) if r0 == 0x0 goto pc+20      ; R0_w=scalar(umin=1)
+34: (b7) r1 = 2304                    ; R1_w=2304
+35: (0f) r0 += r1                     ; R0_w=scalar() R1_w=2304
+36: (bf) r1 = r10                     ; R1_w=fp0 R10=fp0
+37: (07) r1 += -96                    ; R1_w=fp-96
+; int err = bpf_probe_read_kernel(&mm, 8, &task->mm); @ native.bpf.c:651
+38: (b7) r2 = 8                       ; R2_w=8
+39: (bf) r3 = r0                      ; R0_w=scalar(id=4) R3_w=scalar(id=4)
+40: (85) call bpf_probe_read_kernel#113
+mark_precise: frame0: last_idx 40 first_idx 31 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 39: (bf) r3 = r0
+mark_precise: frame0: regs=r2 stack= before 38: (b7) r2 = 8
+41: R0=scalar() fp-96=mmmmmmmm
+41: (bf) r1 = r0                      ; R0=scalar(id=5) R1_w=scalar(id=5)
+42: (67) r1 <<= 32                    ; R1_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+43: (77) r1 >>= 32                    ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; if (err) { @ native.bpf.c:652
+44: (15) if r1 == 0x0 goto pc+213     ; R1_w=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; LOG("[warn] bpf_probe_read_kernel failed with %d", err); @ native.bpf.c:653
+45: (18) r1 = 0xffffd1bb0075c004      ; R1_w=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=4)
+47: (71) r1 = *(u8 *)(r1 +1)          ; R1_w=0
+48: (55) if r1 != 0x1 goto pc+5
+mark_precise: frame0: last_idx 48 first_idx 41 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 47: (71) r1 = *(u8 *)(r1 +1)
+48: R1_w=0
+; if (unwinder_config.filter_processes) { @ native.bpf.c:1275
+54: (18) r1 = 0xffffd1bb0075c004      ; R1_w=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=4)
+56: (71) r1 = *(u8 *)(r1 +0)          ; R1=0
+57: (55) if r1 != 0x1 goto pc+60
+mark_precise: frame0: last_idx 57 first_idx 57 subseq_idx -1 
+mark_precise: frame0: parent state regs=r1 stack=:  R0=scalar(id=5) R1_rw=P0 R9=ctx() R10=fp0 fp-32=mmmm???? fp-96=mmmmmmmm fp-112=scalar(id=2,umin=0x100000000)
+mark_precise: frame0: last_idx 56 first_idx 41 subseq_idx 57 
+mark_precise: frame0: regs=r1 stack= before 56: (71) r1 = *(u8 *)(r1 +0)
+57: R1=0
+; LOG("[debug] pid %u matched filter.", per_process_id); @ native.bpf.c:1282
+118: (b7) r6 = 0                      ; R6_w=0
+; DEFINE_COUNTER(total_runs); @ native.bpf.c:328
+119: (63) *(u32 *)(r10 -96) = r6      ; R6_w=0 R10=fp0 fp-96=mmmm0
+120: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+121: (07) r2 += -96                   ; R2_w=fp-96
+122: (18) r1 = 0xffff8d0d30ed0200     ; R1_w=map_ptr(map=percpu_stats,ks=4,vs=208)
+124: (85) call bpf_map_lookup_elem#1          ; R0_w=map_value_or_null(id=6,map=percpu_stats,ks=4,vs=208)
+125: (15) if r0 == 0x0 goto pc+3      ; R0_w=map_value(map=percpu_stats,ks=4,vs=208)
+126: (79) r1 = *(u64 *)(r0 +8)        ; R0_w=map_value(map=percpu_stats,ks=4,vs=208) R1_w=scalar()
+127: (07) r1 += 1                     ; R1_w=scalar()
+128: (7b) *(u64 *)(r0 +8) = r1        ; R0=map_value(map=percpu_stats,ks=4,vs=208) R1=scalar()
+; u32 zero = 0; @ native.bpf.c:1189
+129: (63) *(u32 *)(r10 -24) = r6      ; R6=0 R10=fp0 fp-24=????0
+130: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+131: (07) r2 += -24                   ; R2_w=fp-24
+; unwind_state_t *unwind_state = bpf_map_lookup_elem(&heap, &zero); @ native.bpf.c:1192
+132: (18) r1 = 0xffff8d0d41801800     ; R1_w=map_ptr(map=heap,ks=4,vs=1120)
+134: (85) call bpf_map_lookup_elem#1          ; R0_w=map_value_or_null(id=7,map=heap,ks=4,vs=1120)
+135: (bf) r6 = r0                     ; R0_w=map_value_or_null(id=7,map=heap,ks=4,vs=1120) R6_w=map_value_or_null(id=7,map=heap,ks=4,vs=1120)
+; if (unwind_state == NULL) { @ native.bpf.c:1193
+136: (15) if r6 == 0x0 goto pc+61     ; R6_w=map_value(map=heap,ks=4,vs=1120)
+137: (b7) r1 = 0                      ; R1_w=0
+138: (bf) r7 = r9                     ; R7_w=ctx() R9=ctx()
+139: (0f) r7 += r1
+mark_precise: frame0: last_idx 139 first_idx 129 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 138: (bf) r7 = r9
+mark_precise: frame0: regs=r1 stack= before 137: (b7) r1 = 0
+140: R1_w=0 R7_w=ctx()
+; bpf_perf_prog_read_value(ctx, (void *)&(unwind_state->stack), sizeof(unwind_state->stack)); @ native.bpf.c:1204
+140: (bf) r2 = r6                     ; R2_w=map_value(map=heap,ks=4,vs=1120) R6_w=map_value(map=heap,ks=4,vs=1120)
+141: (07) r2 += 32                    ; R2_w=map_value(map=heap,ks=4,vs=1120,off=32)
+142: (bf) r1 = r9                     ; R1_w=ctx() R9=ctx()
+143: (b7) r3 = 1024                   ; R3_w=1024
+144: (85) call bpf_perf_prog_read_value#56
+mark_precise: frame0: last_idx 144 first_idx 129 subseq_idx -1 
+mark_precise: frame0: regs=r3 stack= before 143: (b7) r3 = 1024
+145: R0=scalar()
+145: (b7) r1 = 0                      ; R1_w=0
+; unwind_state->unwinder_type = 0; @ native.bpf.c:1208
+146: (7b) *(u64 *)(r6 +1064) = r1     ; R1_w=0 R6=map_value(map=heap,ks=4,vs=1120)
+; unwind_state->unwinding_jit = false; @ native.bpf.c:1206
+147: (6b) *(u16 *)(r6 +1056) = r1     ; R1_w=0 R6=map_value(map=heap,ks=4,vs=1120)
+; unwind_state->tail_calls = 0; @ native.bpf.c:1205
+148: (63) *(u32 *)(r6 +24) = r1       ; R1_w=0 R6=map_value(map=heap,ks=4,vs=1120)
+; unwind_state->unwinder_type = 0; @ native.bpf.c:1208
+149: (7b) *(u64 *)(r6 +1072) = r1     ; R1_w=0 R6=map_value(map=heap,ks=4,vs=1120)
+150: (7b) *(u64 *)(r6 +1080) = r1     ; R1_w=0 R6=map_value(map=heap,ks=4,vs=1120)
+151: (7b) *(u64 *)(r6 +1088) = r1     ; R1_w=0 R6=map_value(map=heap,ks=4,vs=1120)
+152: (7b) *(u64 *)(r6 +1096) = r1     ; R1_w=0 R6=map_value(map=heap,ks=4,vs=1120)
+153: (7b) *(u64 *)(r6 +1104) = r1     ; R1_w=0 R6=map_value(map=heap,ks=4,vs=1120)
+154: (7b) *(u64 *)(r6 +1112) = r1     ; R1_w=0 R6=map_value(map=heap,ks=4,vs=1120)
+; if (in_kernel(PT_REGS_IP(regs))) { @ native.bpf.c:1221
+155: (79) r1 = *(u64 *)(r7 +128)      ; R1_w=scalar() R7=ctx()
+156: (65) if r1 s> 0xffffffff goto pc+26      ; R1_w=scalar(smax=-1,umin=0x8000000000000000,var_off=(0x8000000000000000; 0x7fffffffffffffff))
+; struct task_struct *task = (struct task_struct *)bpf_get_current_task(); @ native.bpf.c:670
+157: (85) call bpf_get_current_task#35        ; R0=scalar()
+158: (bf) r7 = r0                     ; R0=scalar(id=8) R7_w=scalar(id=8)
+; if (task == NULL) { @ native.bpf.c:671
+159: (15) if r7 == 0x0 goto pc+38     ; R7_w=scalar(id=8,umin=1)
+; struct task_struct *task = (struct task_struct *)bpf_get_current_task(); @ native.bpf.c:645
+160: (85) call bpf_get_current_task#35        ; R0_w=scalar()
+; if (task == NULL) { @ native.bpf.c:646
+161: (15) if r0 == 0x0 goto pc+394    ; R0_w=scalar(umin=1)
+162: (b7) r1 = 2304                   ; R1_w=2304
+163: (0f) r0 += r1                    ; R0_w=scalar() R1_w=2304
+164: (bf) r1 = r10                    ; R1_w=fp0 R10=fp0
+165: (07) r1 += -96                   ; R1_w=fp-96
+; int err = bpf_probe_read_kernel(&mm, 8, &task->mm); @ native.bpf.c:651
+166: (b7) r2 = 8                      ; R2_w=8
+167: (bf) r3 = r0                     ; R0_w=scalar(id=9) R3_w=scalar(id=9)
+168: (85) call bpf_probe_read_kernel#113
+mark_precise: frame0: last_idx 168 first_idx 158 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 167: (bf) r3 = r0
+mark_precise: frame0: regs=r2 stack= before 166: (b7) r2 = 8
+169: R0=scalar() fp-96=mmmmmmmm
+169: (bf) r1 = r0                     ; R0=scalar(id=10) R1_w=scalar(id=10)
+170: (67) r1 <<= 32                   ; R1_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+171: (77) r1 >>= 32                   ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; if (err) { @ native.bpf.c:652
+172: (15) if r1 == 0x0 goto pc+381    ; R1_w=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; LOG("[warn] bpf_probe_read_kernel failed with %d", err); @ native.bpf.c:653
+173: (18) r1 = 0xffffd1bb0075c004     ; R1_w=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=4)
+175: (71) r1 = *(u8 *)(r1 +1)         ; R1_w=0
+176: (55) if r1 != 0x1 goto pc+379
+mark_precise: frame0: last_idx 176 first_idx 169 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 175: (71) r1 = *(u8 *)(r1 +1)
+176: R1_w=0
+; if (is_kthread()) { @ native.bpf.c:675
+556: (b7) r1 = 32                     ; R1_w=32
+557: (0f) r7 += r1                    ; R1_w=32 R7_w=scalar(id=8+32)
+558: (bf) r1 = r10                    ; R1_w=fp0 R10=fp0
+559: (07) r1 += -8                    ; R1_w=fp-8
+; err = bpf_probe_read_kernel(&stack, 8, &task->stack); @ native.bpf.c:679
+560: (b7) r2 = 8                      ; R2_w=8
+561: (bf) r3 = r7                     ; R3_w=scalar(id=11) R7_w=scalar(id=11)
+562: (85) call bpf_probe_read_kernel#113
+mark_precise: frame0: last_idx 562 first_idx 169 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 561: (bf) r3 = r7
+mark_precise: frame0: regs=r2 stack= before 560: (b7) r2 = 8
+563: R0=scalar() fp-8=mmmmmmmm
+563: (bf) r1 = r0                     ; R0=scalar(id=12) R1_w=scalar(id=12)
+564: (67) r1 <<= 32                   ; R1_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+565: (77) r1 >>= 32                   ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; if (err) { @ native.bpf.c:680
+566: (15) if r1 == 0x0 goto pc+10     ; R1_w=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; LOG("[warn] bpf_probe_read_kernel failed with %d", err); @ native.bpf.c:681
+567: (18) r1 = 0xffffd1bb0075c004     ; R1_w=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=4)
+569: (71) r1 = *(u8 *)(r1 +1)         ; R1_w=0
+570: (55) if r1 != 0x1 goto pc-373
+mark_precise: frame0: last_idx 570 first_idx 563 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 569: (71) r1 = *(u8 *)(r1 +1)
+570: R1_w=0
+; unwind_state->stack.len++; @ native.bpf.c:787
+198: (b7) r6 = 0                      ; R6_w=0
+; u32 zero = 0; @ native.bpf.c:1289
+199: (63) *(u32 *)(r10 -100) = r6
+mark_precise: frame0: last_idx 199 first_idx 563 subseq_idx -1 
+mark_precise: frame0: regs=r6 stack= before 198: (b7) r6 = 0
+200: R6_w=0 R10=fp0 fp-104=0000????
+200: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+201: (07) r2 += -100                  ; R2_w=fp-100
+; unwind_state_t *unwind_state = bpf_map_lookup_elem(&heap, &zero); @ native.bpf.c:1290
+202: (18) r1 = 0xffff8d0d41801800     ; R1_w=map_ptr(map=heap,ks=4,vs=1120)
+204: (85) call bpf_map_lookup_elem#1          ; R0=map_value_or_null(id=13,map=heap,ks=4,vs=1120)
+; if (unwind_state == NULL) { @ native.bpf.c:1291
+205: (55) if r0 != 0x0 goto pc+9      ; R0=0
+; LOG("[error] no unwind state"); @ native.bpf.c:1293
+206: (18) r1 = 0xffffd1bb0075c004     ; R1_w=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=4)
+208: (71) r1 = *(u8 *)(r1 +1)         ; R1_w=0
+209: (55) if r1 != 0x1 goto pc+792
+mark_precise: frame0: last_idx 209 first_idx 205 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 208: (71) r1 = *(u8 *)(r1 +1)
+209: R1_w=0
+; } @ native.bpf.c:1347
+1002: (bf) r0 = r6                    ; R0_w=0 R6=0
+1003: (95) exit
+
+from 205 to 215: R0=map_value(map=heap,ks=4,vs=1120) R6=0 R7=scalar(id=11) R9=ctx() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000)
+215: R0=map_value(map=heap,ks=4,vs=1120) R6=0 R7=scalar(id=11) R9=ctx() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000)
+; LOG("[error] should never happen"); @ native.bpf.c:1303
+215: (7b) *(u64 *)(r10 -128) = r0     ; R0=map_value(map=heap,ks=4,vs=1120) R10=fp0 fp-128_w=map_value(map=heap,ks=4,vs=1120)
+; if (has_unwind_information(per_process_id)) { @ native.bpf.c:1298
+216: (61) r1 = *(u32 *)(r10 -28)      ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-32=mmmm????
+217: (63) *(u32 *)(r10 -96) = r1      ; R1_w=scalar(id=14,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-96=mmmmscalar(id=14,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+218: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+219: (07) r2 += -96                   ; R2_w=fp-96
+; process_info_t *proc_info = bpf_map_lookup_elem(&process_info, &per_process_id); @ native.bpf.c:545
+220: (18) r1 = 0xffff8d0d830a1c00     ; R1_w=map_ptr(map=process_info,ks=4,vs=16032)
+222: (85) call bpf_map_lookup_elem#1          ; R0=map_value_or_null(id=15,map=process_info,ks=4,vs=16032)
+; if (has_unwind_information(per_process_id)) { @ native.bpf.c:1298
+223: (15) if r0 == 0x0 goto pc+77     ; R0=map_value(map=process_info,ks=4,vs=16032)
+; u32 zero = 0; @ native.bpf.c:392
+224: (63) *(u32 *)(r10 -8) = r6       ; R6=0 R10=fp0 fp-8=mmmm0
+225: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+226: (07) r2 += -8                    ; R2_w=fp-8
+; struct unwinder_stats_t *unwinder_stats = bpf_map_lookup_elem(&percpu_stats, &zero); @ native.bpf.c:393
+227: (18) r1 = 0xffff8d0d30ed0200     ; R1_w=map_ptr(map=percpu_stats,ks=4,vs=208)
+229: (85) call bpf_map_lookup_elem#1          ; R0_w=map_value_or_null(id=16,map=percpu_stats,ks=4,vs=208)
+; if (unwinder_stats == NULL) { @ native.bpf.c:394
+230: (15) if r0 == 0x0 goto pc+10     ; R0_w=map_value(map=percpu_stats,ks=4,vs=208)
+; DEFINE_COUNTER(total_samples); @ native.bpf.c:329
+231: (63) *(u32 *)(r10 -96) = r6      ; R6=0 R10=fp0 fp-96=mmmm0
+232: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+233: (07) r2 += -96                   ; R2_w=fp-96
+234: (18) r1 = 0xffff8d0d30ed0200     ; R1_w=map_ptr(map=percpu_stats,ks=4,vs=208)
+236: (85) call bpf_map_lookup_elem#1          ; R0=map_value_or_null(id=17,map=percpu_stats,ks=4,vs=208)
+237: (15) if r0 == 0x0 goto pc+3      ; R0=map_value(map=percpu_stats,ks=4,vs=208)
+238: (79) r1 = *(u64 *)(r0 +16)       ; R0=map_value(map=percpu_stats,ks=4,vs=208) R1_w=scalar()
+239: (07) r1 += 1                     ; R1_w=scalar()
+240: (7b) *(u64 *)(r0 +16) = r1       ; R0=map_value(map=percpu_stats,ks=4,vs=208) R1_w=scalar()
+241: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+242: (07) r2 += -28                   ; R2_w=fp-28
+; process_info_t *proc_info = bpf_map_lookup_elem(&process_info, &per_process_id); @ native.bpf.c:1301
+243: (18) r1 = 0xffff8d0d830a1c00     ; R1_w=map_ptr(map=process_info,ks=4,vs=16032)
+245: (85) call bpf_map_lookup_elem#1          ; R0=map_value_or_null(id=18,map=process_info,ks=4,vs=16032)
+246: (bf) r6 = r0                     ; R0=map_value_or_null(id=18,map=process_info,ks=4,vs=16032) R6_w=map_value_or_null(id=18,map=process_info,ks=4,vs=16032)
+247: (18) r1 = 0xffffd1bb0075c004     ; R1_w=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=4)
+249: (71) r1 = *(u8 *)(r1 +1)         ; R1_w=0
+; if (proc_info == NULL) { @ native.bpf.c:1302
+250: (55) if r6 != 0x0 goto pc+21     ; R6_w=0
+251: (b7) r6 = 1                      ; R6_w=1
+; LOG("[error] should never happen"); @ native.bpf.c:1303
+252: (15) if r1 == 0x0 goto pc+749
+mark_precise: frame0: last_idx 252 first_idx 246 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 251: (b7) r6 = 1
+mark_precise: frame0: regs=r1 stack= before 250: (55) if r6 != 0x0 goto pc+21
+mark_precise: frame0: regs=r1 stack= before 249: (71) r1 = *(u8 *)(r1 +1)
+252: R1_w=0
+; } @ native.bpf.c:1347
+1002: (bf) r0 = r6                    ; R0_w=1 R6_w=1
+1003: (95) exit
+
+from 250 to 272: R0=map_value(map=process_info,ks=4,vs=16032) R1=0 R6=map_value(map=process_info,ks=4,vs=16032) R7=scalar(id=11) R9=ctx() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120)
+272: R0=map_value(map=process_info,ks=4,vs=16032) R1=0 R6=map_value(map=process_info,ks=4,vs=16032) R7=scalar(id=11) R9=ctx() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120)
+; DEFINE_COUNTER(total_kthreads); @ native.bpf.c:353
+272: (7b) *(u64 *)(r10 -136) = r9     ; R9=ctx() R10=fp0 fp-136_w=ctx()
+; LOG("[debug] setting runtime unwinder type to %d", proc_info->unwinder_type); @ native.bpf.c:1308
+273: (15) if r1 == 0x0 goto pc+5
+mark_precise: frame0: last_idx 273 first_idx 272 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 272: (7b) *(u64 *)(r10 -136) = r9
+mark_precise: frame0: parent state regs=r1 stack=:  R0=map_value(map=process_info,ks=4,vs=16032) R1_rw=P0 R6_w=map_value(map=process_info,ks=4,vs=16032) R7=scalar(id=11) R9_r=ctx() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120)
+mark_precise: frame0: last_idx 250 first_idx 246 subseq_idx 272 
+mark_precise: frame0: regs=r1 stack= before 250: (55) if r6 != 0x0 goto pc+21
+mark_precise: frame0: regs=r1 stack= before 249: (71) r1 = *(u8 *)(r1 +1)
+273: R1=0
+; unwind_state->unwinder_type = proc_info->unwinder_type; @ native.bpf.c:1309
+279: (79) r1 = *(u64 *)(r6 +16)       ; R1_w=scalar() R6=map_value(map=process_info,ks=4,vs=16032)
+280: (79) r2 = *(u64 *)(r10 -128)     ; R2_w=map_value(map=heap,ks=4,vs=1120) R10=fp0 fp-128=map_value(map=heap,ks=4,vs=1120)
+281: (7b) *(u64 *)(r2 +1064) = r1     ; R1_w=scalar() R2_w=map_value(map=heap,ks=4,vs=1120)
+; enum find_unwind_table_return unwind_table_result = find_unwind_table(&chunk_info, per_process_id, unwind_state->ip, NULL); @ native.bpf.c:1312
+282: (79) r9 = *(u64 *)(r2 +0)        ; R2_w=map_value(map=heap,ks=4,vs=1120) R9_w=scalar()
+283: (61) r1 = *(u32 *)(r10 -28)      ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-32=mmmm????
+284: (63) *(u32 *)(r10 -8) = r1       ; R1_w=scalar(id=19,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-8=mmmmscalar(id=19,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+285: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+286: (07) r2 += -8                    ; R2_w=fp-8
+; process_info_t *proc_info = bpf_map_lookup_elem(&process_info, &pid); @ native.bpf.c:564
+287: (18) r1 = 0xffff8d0d830a1c00     ; R1_w=map_ptr(map=process_info,ks=4,vs=16032)
+289: (85) call bpf_map_lookup_elem#1          ; R0=map_value_or_null(id=20,map=process_info,ks=4,vs=16032)
+; if (proc_info == NULL) { @ native.bpf.c:566
+290: (55) if r0 != 0x0 goto pc+43     ; R0=0
+; LOG("[error] should never happen"); @ native.bpf.c:567
+291: (18) r1 = 0xffffd1bb0075c004     ; R1_w=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=4)
+293: (71) r1 = *(u8 *)(r1 +1)         ; R1_w=0
+294: (79) r7 = *(u64 *)(r10 -136)     ; R7_w=ctx() R10=fp0 fp-136=ctx()
+295: (55) if r1 != 0x1 goto pc+426
+mark_precise: frame0: last_idx 295 first_idx 290 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 294: (79) r7 = *(u64 *)(r10 -136)
+mark_precise: frame0: regs=r1 stack= before 293: (71) r1 = *(u8 *)(r1 +1)
+295: R1_w=0
+; LOG("[info] chunks is null for executable %llu", executable_id); @ native.bpf.c:613
+722: (79) r4 = *(u64 *)(r10 -112)     ; R4_w=scalar(id=2,umin=0x100000000) R10=fp0 fp-112=scalar(id=2,umin=0x100000000)
+; } else if (proc_info->is_jit_compiler) { @ native.bpf.c:1328
+723: (79) r1 = *(u64 *)(r6 +8)        ; R1_w=scalar() R6=map_value(map=process_info,ks=4,vs=16032)
+724: (15) if r1 == 0x0 goto pc+227    ; R1_w=scalar(umin=1)
+; LOG("[warn] IP 0x%llx not covered, may be JIT!.", unwind_state->ip); @ native.bpf.c:1329
+725: (18) r6 = 0xffffd1bb0075c004     ; R6_w=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=4)
+727: (71) r1 = *(u8 *)(r6 +1)         ; R1=0 R6=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=4)
+728: (55) if r1 != 0x1 goto pc+6
+mark_precise: frame0: last_idx 728 first_idx 728 subseq_idx -1 
+mark_precise: frame0: parent state regs=r1 stack=:  R0=0 R1_rw=P0 R4_w=scalar(id=2,umin=0x100000000) R6_w=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=4) R7_w=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+mark_precise: frame0: last_idx 727 first_idx 290 subseq_idx 728 
+mark_precise: frame0: regs=r1 stack= before 727: (71) r1 = *(u8 *)(r6 +1)
+728: R1=0
+; request_refresh_process_info(ctx, per_process_id); @ native.bpf.c:1330
+735: (61) r1 = *(u32 *)(r10 -28)      ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-32=mmmm????
+; pid_event_t payload = {REQUEST_REFRESH_PROCINFO, user_pid}; @ native.bpf.c:443
+736: (63) *(u32 *)(r10 -4) = r1       ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-8=mmmmmmmm
+737: (b7) r1 = 2                      ; R1_w=2
+738: (73) *(u8 *)(r10 -8) = r1        ; R1_w=2 R10=fp0 fp-8=mmmmmmm2
+; if (event_rate_limited(payload, unwinder_config.rate_limit_process_mappings)) { @ native.bpf.c:444
+739: (61) r6 = *(u32 *)(r6 +12)       ; R6_w=0
+740: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=scalar() R10=fp0 fp-8=mmmmmmm2
+741: (7b) *(u64 *)(r10 -96) = r1      ; R1_w=scalar(id=21) R10=fp0 fp-96_w=scalar(id=21)
+742: (b7) r1 = 0                      ; R1_w=0
+; u32 zero = 0; @ native.bpf.c:406
+743: (63) *(u32 *)(r10 -24) = r1      ; R1_w=0 R10=fp0 fp-24=????0
+744: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+745: (07) r2 += -96                   ; R2_w=fp-96
+; val = bpf_map_lookup_elem(map, key); @ shared.h:105
+746: (18) r1 = 0xffff8d0d96406000     ; R1_w=map_ptr(map=events_count,ks=8,vs=4)
+748: (85) call bpf_map_lookup_elem#1          ; R0=map_value_or_null(id=22,map=events_count,ks=8,vs=4)
+; if (val) { @ shared.h:106
+749: (55) if r0 != 0x0 goto pc+22     ; R0=0
+750: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+751: (07) r2 += -96                   ; R2_w=fp-96
+752: (bf) r3 = r10                    ; R3_w=fp0 R10=fp0
+753: (07) r3 += -24                   ; R3_w=fp-24
+; err = bpf_map_update_elem(map, key, init, BPF_NOEXIST); @ shared.h:110
+754: (18) r1 = 0xffff8d0d96406000     ; R1_w=map_ptr(map=events_count,ks=8,vs=4)
+756: (b7) r4 = 1                      ; R4_w=1
+757: (85) call bpf_map_update_elem#2          ; R0=scalar()
+; if (err && !STACK_COLLISION(err)) { @ shared.h:111
+758: (15) if r0 == 0x0 goto pc+7      ; R0=scalar(umin=1)
+759: (15) if r0 == 0xffffffef goto pc+6       ; R0=scalar(umin=1)
+; bpf_printk("[error] bpf_map_lookup_or_try_init with ret: %d", err); @ shared.h:112
+760: (18) r1 = 0xffffd1bb0075cccd     ; R1_w=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=3277)
+762: (b7) r2 = 48                     ; R2_w=48
+763: (bf) r3 = r0                     ; R0=scalar(id=23,umin=1) R3_w=scalar(id=23,umin=1)
+764: (85) call bpf_trace_printk#6
+mark_precise: frame0: last_idx 764 first_idx 758 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 763: (bf) r3 = r0
+mark_precise: frame0: regs=r2 stack= before 762: (b7) r2 = 48
+765: R0_w=scalar()
+; if (val) { @ native.bpf.c:408
+765: (05) goto pc+10
+; __sync_fetch_and_add(val, 1); @ native.bpf.c:412
+776: (b7) r1 = 0                      ; R1_w=0
+; DEFINE_COUNTER(event_request_refresh_process_info); @ native.bpf.c:349
+777: (63) *(u32 *)(r10 -96) = r1      ; R1_w=0 R10=fp0 fp-96=mmmm0
+778: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+779: (07) r2 += -96                   ; R2_w=fp-96
+780: (18) r1 = 0xffff8d0d30ed0200     ; R1_w=map_ptr(map=percpu_stats,ks=4,vs=208)
+782: (85) call bpf_map_lookup_elem#1          ; R0=map_value_or_null(id=24,map=percpu_stats,ks=4,vs=208)
+783: (15) if r0 == 0x0 goto pc+3      ; R0=map_value(map=percpu_stats,ks=4,vs=208)
+784: (79) r1 = *(u64 *)(r0 +168)      ; R0=map_value(map=percpu_stats,ks=4,vs=208) R1_w=scalar()
+785: (07) r1 += 1                     ; R1_w=scalar()
+786: (7b) *(u64 *)(r0 +168) = r1      ; R0=map_value(map=percpu_stats,ks=4,vs=208) R1_w=scalar()
+787: (bf) r4 = r10                    ; R4_w=fp0 R10=fp0
+788: (07) r4 += -8                    ; R4_w=fp-8
+; bpf_perf_event_output(ctx, &events, BPF_F_CURRENT_CPU, &payload, sizeof(u64)); @ native.bpf.c:448
+789: (bf) r1 = r7                     ; R1_w=ctx() R7=ctx()
+790: (18) r2 = 0xffffd1bb03a19000     ; R2_w=map_ptr(map=events,ks=4,vs=4)
+792: (18) r3 = 0xffffffff             ; R3_w=0xffffffff
+794: (b7) r5 = 8                      ; R5_w=8
+795: (85) call bpf_perf_event_output#25
+mark_precise: frame0: last_idx 795 first_idx 783 subseq_idx -1 
+mark_precise: frame0: regs=r5 stack= before 794: (b7) r5 = 8
+796: R0=scalar()
+796: (b7) r6 = 0                      ; R6_w=0
+; DEFINE_COUNTER(error_pc_not_covered_jit); @ native.bpf.c:338
+797: (63) *(u32 *)(r10 -96) = r6      ; R6_w=0 R10=fp0 fp-96=mmmm0
+798: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+799: (07) r2 += -96                   ; R2_w=fp-96
+800: (18) r1 = 0xffff8d0d30ed0200     ; R1_w=map_ptr(map=percpu_stats,ks=4,vs=208)
+802: (85) call bpf_map_lookup_elem#1          ; R0_w=map_value_or_null(id=25,map=percpu_stats,ks=4,vs=208)
+803: (15) if r0 == 0x0 goto pc+3      ; R0_w=map_value(map=percpu_stats,ks=4,vs=208)
+804: (79) r1 = *(u64 *)(r0 +88)       ; R0_w=map_value(map=percpu_stats,ks=4,vs=208) R1_w=scalar()
+805: (07) r1 += 1                     ; R1_w=scalar()
+806: (7b) *(u64 *)(r0 +88) = r1       ; R0=map_value(map=percpu_stats,ks=4,vs=208) R1=scalar()
+; DEFINE_COUNTER(error_jit_unupdated_mapping); @ native.bpf.c:339
+807: (63) *(u32 *)(r10 -96) = r6      ; R6=0 R10=fp0 fp-96=mmmm0
+808: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+809: (07) r2 += -96                   ; R2_w=fp-96
+810: (18) r1 = 0xffff8d0d30ed0200     ; R1_w=map_ptr(map=percpu_stats,ks=4,vs=208)
+812: (85) call bpf_map_lookup_elem#1          ; R0_w=map_value_or_null(id=26,map=percpu_stats,ks=4,vs=208)
+813: (15) if r0 == 0x0 goto pc+3      ; R0_w=map_value(map=percpu_stats,ks=4,vs=208)
+814: (79) r1 = *(u64 *)(r0 +96)       ; R0_w=map_value(map=percpu_stats,ks=4,vs=208) R1_w=scalar()
+815: (07) r1 += 1                     ; R1_w=scalar()
+816: (7b) *(u64 *)(r0 +96) = r1       ; R0=map_value(map=percpu_stats,ks=4,vs=208) R1=scalar()
+; BUMP_UNWIND_FAILED_COUNT(per_process_id, pc_not_covered); @ native.bpf.c:1334
+817: (61) r1 = *(u32 *)(r10 -28)      ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-32=mmmm????
+818: (63) *(u32 *)(r10 -8) = r1       ; R1_w=scalar(id=27,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-8=mmmmscalar(id=27,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+819: (b7) r1 = 0                      ; R1_w=0
+820: (7b) *(u64 *)(r10 -40) = r1      ; R1_w=0 R10=fp0 fp-40_w=0
+821: (7b) *(u64 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48_w=0
+822: (7b) *(u64 *)(r10 -56) = r1      ; R1_w=0 R10=fp0 fp-56_w=0
+823: (7b) *(u64 *)(r10 -64) = r1      ; R1_w=0 R10=fp0 fp-64_w=0
+824: (7b) *(u64 *)(r10 -72) = r1      ; R1_w=0 R10=fp0 fp-72_w=0
+825: (7b) *(u64 *)(r10 -80) = r1      ; R1_w=0 R10=fp0 fp-80_w=0
+826: (7b) *(u64 *)(r10 -88) = r1      ; R1_w=0 R10=fp0 fp-88_w=0
+827: (7b) *(u64 *)(r10 -96) = r1      ; R1_w=0 R10=fp0 fp-96_w=0
+828: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+829: (07) r2 += -8                    ; R2_w=fp-8
+; val = bpf_map_lookup_elem(map, key); @ shared.h:105
+830: (18) r1 = 0xffff8d0d830a0000     ; R1_w=map_ptr(map=unwind_failed_r,ks=4,vs=64)
+832: (85) call bpf_map_lookup_elem#1          ; R0_w=map_value_or_null(id=28,map=unwind_failed_r,ks=4,vs=64)
+; if (val) { @ shared.h:106
+833: (55) if r0 != 0x0 goto pc+17     ; R0_w=0
+834: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+835: (07) r2 += -8                    ; R2_w=fp-8
+836: (bf) r3 = r10                    ; R3_w=fp0 R10=fp0
+837: (07) r3 += -96                   ; R3_w=fp-96
+; err = bpf_map_update_elem(map, key, init, BPF_NOEXIST); @ shared.h:110
+838: (18) r1 = 0xffff8d0d830a0000     ; R1_w=map_ptr(map=unwind_failed_r,ks=4,vs=64)
+840: (b7) r4 = 1                      ; R4_w=1
+841: (85) call bpf_map_update_elem#2          ; R0=scalar()
+; if (err && !STACK_COLLISION(err)) { @ shared.h:111
+842: (15) if r0 == 0x0 goto pc+2      ; R0=scalar(umin=1)
+843: (15) if r0 == 0xffffffef goto pc+1       ; R0=scalar(umin=1)
+; bpf_printk("[error] bpf_map_lookup_or_try_init with ret: %d", err); @ shared.h:112
+844: (05) goto pc-170
+675: (18) r1 = 0xffffd1bb0075cccd     ; R1_w=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=3277)
+677: (b7) r2 = 48                     ; R2_w=48
+678: (bf) r3 = r0                     ; R0=scalar(id=29,umin=1) R3_w=scalar(id=29,umin=1)
+679: (85) call bpf_trace_printk#6
+mark_precise: frame0: last_idx 679 first_idx 842 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 678: (bf) r3 = r0
+mark_precise: frame0: regs=r2 stack= before 677: (b7) r2 = 48
+680: R0_w=scalar()
+680: (b7) r6 = 1                      ; R6_w=1
+; return 1; @ native.bpf.c:1335
+681: (05) goto pc+320
+; } @ native.bpf.c:1347
+1002: (bf) r0 = r6                    ; R0_w=1 R6=1
+1003: (95) exit
+
+from 843 to 845: R0=-17 R6=0 R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-40=mmmmmmmm fp-48=mmmmmmmm fp-56=mmmmmmmm fp-64=mmmmmmmm fp-72=mmmmmmmm fp-80=mmmmmmmm fp-88=mmmmmmmm fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+845: R0=-17 R6=0 R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-40=mmmmmmmm fp-48=mmmmmmmm fp-56=mmmmmmmm fp-64=mmmmmmmm fp-72=mmmmmmmm fp-80=mmmmmmmm fp-88=mmmmmmmm fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+; bpf_printk("[error] bpf_map_lookup_or_try_init with ret: %d", err); @ shared.h:112
+845: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+846: (07) r2 += -8                    ; R2_w=fp-8
+; return bpf_map_lookup_elem(map, key); @ shared.h:116
+847: (18) r1 = 0xffff8d0d830a0000     ; R1_w=map_ptr(map=unwind_failed_r,ks=4,vs=64)
+849: (85) call bpf_map_lookup_elem#1          ; R0_w=map_value_or_null(id=30,map=unwind_failed_r,ks=4,vs=64)
+; BUMP_UNWIND_FAILED_COUNT(per_process_id, pc_not_covered); @ native.bpf.c:1334
+850: (15) if r0 == 0x0 goto pc+150    ; R0_w=map_value(map=unwind_failed_r,ks=4,vs=64)
+851: (05) goto pc+147
+; BUMP_UNWIND_FAILED_COUNT(per_process_id, pc_not_covered); @ native.bpf.c:1318
+999: (b7) r1 = 1                      ; R1_w=1
+1000: (c3) lock *(u32 *)(r0 +0) += r1         ; R0=map_value(map=unwind_failed_r,ks=4,vs=64) R1_w=1
+1001: (b7) r6 = 1
+1002: safe
+
+from 850 to 1001: R0_w=0 R6=0 R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-40=mmmmmmmm fp-48=mmmmmmmm fp-56=mmmmmmmm fp-64=mmmmmmmm fp-72=mmmmmmmm fp-80=mmmmmmmm fp-88=mmmmmmmm fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+1001: R0_w=0 R6=0 R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-40=mmmmmmmm fp-48=mmmmmmmm fp-56=mmmmmmmm fp-64=mmmmmmmm fp-72=mmmmmmmm fp-80=mmmmmmmm fp-88=mmmmmmmm fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+1001: (b7) r6 = 1
+1002: safe
+
+from 842 to 845: R0=0 R6=0 R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-40=mmmmmmmm fp-48=mmmmmmmm fp-56=mmmmmmmm fp-64=mmmmmmmm fp-72=mmmmmmmm fp-80=mmmmmmmm fp-88=mmmmmmmm fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+845: R0=0 R6=0 R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-40=mmmmmmmm fp-48=mmmmmmmm fp-56=mmmmmmmm fp-64=mmmmmmmm fp-72=mmmmmmmm fp-80=mmmmmmmm fp-88=mmmmmmmm fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+; bpf_printk("[error] bpf_map_lookup_or_try_init with ret: %d", err); @ shared.h:112
+845: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+846: (07) r2 += -8                    ; R2_w=fp-8
+; return bpf_map_lookup_elem(map, key); @ shared.h:116
+847: (18) r1 = 0xffff8d0d830a0000     ; R1_w=map_ptr(map=unwind_failed_r,ks=4,vs=64)
+849: (85) call bpf_map_lookup_elem#1          ; R0_w=map_value_or_null(id=31,map=unwind_failed_r,ks=4,vs=64)
+; BUMP_UNWIND_FAILED_COUNT(per_process_id, pc_not_covered); @ native.bpf.c:1334
+850: (15) if r0 == 0x0 goto pc+150    ; R0_w=map_value(map=unwind_failed_r,ks=4,vs=64)
+851: (05) goto pc+147
+999: safe
+
+from 850 to 1001: R0_w=0 R6=0 R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-40=mmmmmmmm fp-48=mmmmmmmm fp-56=mmmmmmmm fp-64=mmmmmmmm fp-72=mmmmmmmm fp-80=mmmmmmmm fp-88=mmmmmmmm fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+1001: R0_w=0 R6=0 R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-40=mmmmmmmm fp-48=mmmmmmmm fp-56=mmmmmmmm fp-64=mmmmmmmm fp-72=mmmmmmmm fp-80=mmmmmmmm fp-88=mmmmmmmm fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+; BUMP_UNWIND_FAILED_COUNT(per_process_id, pc_not_covered); @ native.bpf.c:1318
+1001: (b7) r6 = 1
+1002: safe
+
+from 833 to 851: safe
+
+from 813 to 817: safe
+
+from 803 to 807: safe
+
+from 783 to 787: R0=0 R6=0 R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmm2 fp-24=????mmmm fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+787: R0=0 R6=0 R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmm2 fp-24=????mmmm fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+; DEFINE_COUNTER(event_request_refresh_process_info); @ native.bpf.c:349
+787: (bf) r4 = r10                    ; R4_w=fp0 R10=fp0
+788: (07) r4 += -8                    ; R4_w=fp-8
+; bpf_perf_event_output(ctx, &events, BPF_F_CURRENT_CPU, &payload, sizeof(u64)); @ native.bpf.c:448
+789: (bf) r1 = r7                     ; R1_w=ctx() R7=ctx()
+790: (18) r2 = 0xffffd1bb03a19000     ; R2_w=map_ptr(map=events,ks=4,vs=4)
+792: (18) r3 = 0xffffffff             ; R3_w=0xffffffff
+794: (b7) r5 = 8                      ; R5_w=8
+795: (85) call bpf_perf_event_output#25
+mark_precise: frame0: last_idx 795 first_idx 783 subseq_idx -1 
+mark_precise: frame0: regs=r5 stack= before 794: (b7) r5 = 8
+796: safe
+
+from 759 to 766: R0=-17 R6=0 R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmm2 fp-24=????mmmm fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+766: R0=-17 R6=0 R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmm2 fp-24=????mmmm fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+; if (val) { @ native.bpf.c:408
+766: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+767: (07) r2 += -96                   ; R2_w=fp-96
+; return bpf_map_lookup_elem(map, key); @ shared.h:116
+768: (18) r1 = 0xffff8d0d96406000     ; R1_w=map_ptr(map=events_count,ks=8,vs=4)
+770: (85) call bpf_map_lookup_elem#1          ; R0_w=map_value_or_null(id=32,map=events_count,ks=8,vs=4)
+; if (val) { @ native.bpf.c:408
+771: (15) if r0 == 0x0 goto pc+4      ; R0_w=map_value(map=events_count,ks=8,vs=4)
+; if (*val >= rate) { @ native.bpf.c:409
+772: (61) r1 = *(u32 *)(r0 +0)        ; R0_w=map_value(map=events_count,ks=8,vs=4) R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+773: (3d) if r1 >= r6 goto pc+22
+mark_precise: frame0: last_idx 773 first_idx 766 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 772: (61) r1 = *(u32 *)(r0 +0)
+mark_precise: frame0: last_idx 773 first_idx 766 subseq_idx -1 
+mark_precise: frame0: regs=r6 stack= before 772: (61) r1 = *(u32 *)(r0 +0)
+mark_precise: frame0: regs=r6 stack= before 771: (15) if r0 == 0x0 goto pc+4
+mark_precise: frame0: regs=r6 stack= before 770: (85) call bpf_map_lookup_elem#1
+mark_precise: frame0: regs=r6 stack= before 768: (18) r1 = 0xffff8d0d96406000
+mark_precise: frame0: regs=r6 stack= before 767: (07) r2 += -96
+mark_precise: frame0: regs=r6 stack= before 766: (bf) r2 = r10
+mark_precise: frame0: parent state regs=r6 stack=:  R0=-17 R6_r=P0 R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmm2 fp-24=????mmmm fp-32=mmmm???? fp-96_r=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+mark_precise: frame0: last_idx 759 first_idx 758 subseq_idx 766 
+mark_precise: frame0: regs=r6 stack= before 759: (15) if r0 == 0xffffffef goto pc+6
+mark_precise: frame0: regs=r6 stack= before 758: (15) if r0 == 0x0 goto pc+7
+mark_precise: frame0: parent state regs=r6 stack=:  R0_rw=scalar() R6_r=P0 R7_r=ctx() R9=scalar() R10=fp0 fp-8_r=mmmmmmm2 fp-24=????mmmm fp-32_r=mmmm???? fp-96_r=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+mark_precise: frame0: last_idx 757 first_idx 749 subseq_idx 758 
+mark_precise: frame0: regs=r6 stack= before 757: (85) call bpf_map_update_elem#2
+mark_precise: frame0: regs=r6 stack= before 756: (b7) r4 = 1
+mark_precise: frame0: regs=r6 stack= before 754: (18) r1 = 0xffff8d0d96406000
+mark_precise: frame0: regs=r6 stack= before 753: (07) r3 += -24
+mark_precise: frame0: regs=r6 stack= before 752: (bf) r3 = r10
+mark_precise: frame0: regs=r6 stack= before 751: (07) r2 += -96
+mark_precise: frame0: regs=r6 stack= before 750: (bf) r2 = r10
+mark_precise: frame0: regs=r6 stack= before 749: (55) if r0 != 0x0 goto pc+22
+mark_precise: frame0: parent state regs=r6 stack=:  R0_rw=map_value_or_null(id=22,map=events_count,ks=8,vs=4) R6_rw=P0 R7_r=ctx() R9=scalar() R10=fp0 fp-8_r=mmmmmmm2 fp-24_r=????0 fp-32_r=mmmm???? fp-96_rw=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+mark_precise: frame0: last_idx 748 first_idx 728 subseq_idx 749 
+mark_precise: frame0: regs=r6 stack= before 748: (85) call bpf_map_lookup_elem#1
+mark_precise: frame0: regs=r6 stack= before 746: (18) r1 = 0xffff8d0d96406000
+mark_precise: frame0: regs=r6 stack= before 745: (07) r2 += -96
+mark_precise: frame0: regs=r6 stack= before 744: (bf) r2 = r10
+mark_precise: frame0: regs=r6 stack= before 743: (63) *(u32 *)(r10 -24) = r1
+mark_precise: frame0: regs=r6 stack= before 742: (b7) r1 = 0
+mark_precise: frame0: regs=r6 stack= before 741: (7b) *(u64 *)(r10 -96) = r1
+mark_precise: frame0: regs=r6 stack= before 740: (79) r1 = *(u64 *)(r10 -8)
+mark_precise: frame0: regs=r6 stack= before 739: (61) r6 = *(u32 *)(r6 +12)
+773: R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R6=0
+796: safe
+
+from 771 to 776: R0=0 R6=0 R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmm2 fp-24=????mmmm fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+776: R0=0 R6=0 R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmm2 fp-24=????mmmm fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+; __sync_fetch_and_add(val, 1); @ native.bpf.c:412
+776: (b7) r1 = 0                      ; R1_w=0
+; DEFINE_COUNTER(event_request_refresh_process_info); @ native.bpf.c:349
+777: (63) *(u32 *)(r10 -96) = r1      ; R1_w=0 R10=fp0 fp-96=mmmm0
+778: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+779: (07) r2 += -96                   ; R2_w=fp-96
+780: (18) r1 = 0xffff8d0d30ed0200     ; R1_w=map_ptr(map=percpu_stats,ks=4,vs=208)
+782: (85) call bpf_map_lookup_elem#1
+783: safe
+frame 0: propagating r6
+mark_precise: frame0: last_idx 766 first_idx 758 subseq_idx -1 
+mark_precise: frame0: regs=r6 stack= before 758: (15) if r0 == 0x0 goto pc+7
+mark_precise: frame0: parent state regs= stack=:  R0_rw=scalar() R6_r=P0 R7_r=ctx() R9=scalar() R10=fp0 fp-8_r=mmmmmmm2 fp-24=????mmmm fp-32_r=mmmm???? fp-96_r=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+
+from 758 to 766: safe
+
+from 749 to 772: R0=map_value(map=events_count,ks=8,vs=4) R6=0 R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmm2 fp-24=????0 fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+772: R0=map_value(map=events_count,ks=8,vs=4) R6=0 R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmm2 fp-24=????0 fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+; if (*val >= rate) { @ native.bpf.c:409
+772: (61) r1 = *(u32 *)(r0 +0)        ; R0=map_value(map=events_count,ks=8,vs=4) R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+773: (3d) if r1 >= r6 goto pc+22
+mark_precise: frame0: last_idx 773 first_idx 749 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 772: (61) r1 = *(u32 *)(r0 +0)
+mark_precise: frame0: last_idx 773 first_idx 749 subseq_idx -1 
+mark_precise: frame0: regs=r6 stack= before 772: (61) r1 = *(u32 *)(r0 +0)
+mark_precise: frame0: regs=r6 stack= before 749: (55) if r0 != 0x0 goto pc+22
+mark_precise: frame0: parent state regs= stack=:  R0_rw=map_value_or_null(id=22,map=events_count,ks=8,vs=4) R6_rw=P0 R7_r=ctx() R9=scalar() R10=fp0 fp-8_r=mmmmmmm2 fp-24_r=????0 fp-32_r=mmmm???? fp-96_rw=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+773: R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R6=0
+796: safe
+
+from 724 to 952: R0=0 R1=0 R4=scalar(id=2,umin=0x100000000) R6=map_value(map=process_info,ks=4,vs=16032) R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+952: R0=0 R1=0 R4=scalar(id=2,umin=0x100000000) R6=map_value(map=process_info,ks=4,vs=16032) R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+; LOG("[info] per_process_id %d per_thread_id %d", per_process_id, per_thread_id); @ native.bpf.c:1339
+952: (18) r6 = 0xffffd1bb0075c004     ; R6_w=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=4)
+954: (71) r1 = *(u8 *)(r6 +1)         ; R1_w=0 R6_w=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=4)
+955: (55) if r1 != 0x1 goto pc+5
+mark_precise: frame0: last_idx 955 first_idx 952 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 954: (71) r1 = *(u8 *)(r6 +1)
+955: R1_w=0
+; LOG("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"); @ native.bpf.c:1246
+961: (71) r1 = *(u8 *)(r6 +1)         ; R1_w=0 R6_w=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=4)
+962: (55) if r1 != 0x1 goto pc+4
+mark_precise: frame0: last_idx 962 first_idx 952 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 961: (71) r1 = *(u8 *)(r6 +1)
+962: R1_w=0
+; LOG("traversing native stack"); @ native.bpf.c:1247
+967: (71) r1 = *(u8 *)(r6 +1)         ; R1_w=0 R6_w=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=4)
+968: (55) if r1 != 0x1 goto pc+4
+mark_precise: frame0: last_idx 968 first_idx 952 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 967: (71) r1 = *(u8 *)(r6 +1)
+968: R1_w=0
+; LOG("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"); @ native.bpf.c:1248
+973: (71) r1 = *(u8 *)(r6 +1)         ; R1=0 R6=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=4)
+974: (55) if r1 != 0x1 goto pc+4
+mark_precise: frame0: last_idx 974 first_idx 974 subseq_idx -1 
+mark_precise: frame0: parent state regs=r1 stack=:  R0=0 R1_rw=P0 R4=scalar(id=2,umin=0x100000000) R6_w=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=4) R7=ctx() R9=scalar() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+mark_precise: frame0: last_idx 973 first_idx 952 subseq_idx 974 
+mark_precise: frame0: regs=r1 stack= before 973: (71) r1 = *(u8 *)(r6 +1)
+974: R1=0
+979: (b7) r6 = 0                      ; R6_w=0
+; bpf_tail_call(ctx, &programs, NATIVE_UNWINDER_PROGRAM_ID); @ native.bpf.c:1250
+980: (bf) r1 = r7                     ; R1_w=ctx() R7=ctx()
+981: (18) r2 = 0xffff8d0d41801000     ; R2_w=map_ptr(map=programs,ks=4,vs=4)
+983: (b7) r3 = 0                      ; R3_w=0
+984: (85) call bpf_tail_call#12
+mark_precise: frame0: last_idx 984 first_idx 974 subseq_idx -1 
+mark_precise: frame0: regs=r3 stack= before 983: (b7) r3 = 0
+985:
+985: (05) goto pc+16
+1002: safe
+
+from 290 to 334: R0=map_value(map=process_info,ks=4,vs=16032) R6=map_value(map=process_info,ks=4,vs=16032) R7=scalar(id=11) R9=scalar() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+334: R0=map_value(map=process_info,ks=4,vs=16032) R6=map_value(map=process_info,ks=4,vs=16032) R7=scalar(id=11) R9=scalar() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-96=mmmmmmmm fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx()
+; BUMP_UNWIND_FAILED_COUNT(per_process_id, no_unwind_info); @ native.bpf.c:1344
+334: (7b) *(u64 *)(r10 -144) = r6     ; R6=map_value(map=process_info,ks=4,vs=16032) R10=fp0 fp-144_w=map_value(map=process_info,ks=4,vs=16032)
+335: (18) r1 = 0xfabadafabada         ; R1_w=0xfabadafabada
+337: (7b) *(u64 *)(r10 -120) = r1     ; R1_w=0xfabadafabada R10=fp0 fp-120_w=0xfabadafabada
+338: (b7) r2 = 0                      ; R2_w=0
+; u64 executable_id = 0; @ native.bpf.c:571
+339: (7b) *(u64 *)(r10 -96) = r2      ; R2_w=0 R10=fp0 fp-96_w=0
+340: (b7) r1 = 10                     ; R1_w=10
+341: (bf) r8 = r0                     ; R0=map_value(map=process_info,ks=4,vs=16032) R8_w=map_value(map=process_info,ks=4,vs=16032)
+342: (07) r8 += 32                    ; R8_w=map_value(map=process_info,ks=4,vs=16032,off=32)
+; u64 right = proc_info->len; @ native.bpf.c:476
+343: (79) r6 = *(u64 *)(r0 +24)       ; R0=map_value(map=process_info,ks=4,vs=16032) R6_w=scalar()
+344: (b7) r4 = 400                    ; R4_w=400
+345: (79) r3 = *(u64 *)(r10 -112)     ; R3_w=scalar(id=2,umin=0x100000000) R10=fp0 fp-112=scalar(id=2,umin=0x100000000)
+346: (05) goto pc+6
+; if (left >= right) { @ native.bpf.c:482
+353: (3d) if r2 >= r6 goto pc+33      ; R2_w=0 R6_w=scalar(umin=1)
+354: (bf) r5 = r6                     ; R5_w=scalar(id=34,umin=1) R6_w=scalar(id=34,umin=1)
+355: (0f) r5 += r2                    ; R2_w=0 R5_w=scalar(id=34+0,umin=1)
+356: (77) r5 >>= 1                    ; R5_w=scalar(smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff))
+; u32 mid = (left + right) / 2; @ native.bpf.c:481
+357: (bf) r0 = r5                     ; R0_w=scalar(id=35,smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff)) R5_w=scalar(id=35,smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff))
+358: (67) r0 <<= 32                   ; R0_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+359: (77) r0 >>= 32                   ; R0=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; if (mid < 0 || mid >= MAX_MAPPINGS_PER_PROCESS) { @ native.bpf.c:486
+360: (2d) if r4 > r0 goto pc+9        ; R0=scalar(smin=umin=umin32=400,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R4=400
+; LOG("\t.should never happen"); @ native.bpf.c:487
+361: (18) r1 = 0xffffd1bb0075c004     ; R1_w=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=4)
+363: (71) r1 = *(u8 *)(r1 +1)         ; R1_w=0
+364: (55) if r1 != 0x1 goto pc+355
+mark_precise: frame0: last_idx 364 first_idx 360 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 363: (71) r1 = *(u8 *)(r1 +1)
+364: R1_w=0
+; LOG("[info] chunks is null for executable %llu", executable_id); @ native.bpf.c:613
+720: (79) r7 = *(u64 *)(r10 -136)     ; R7_w=ctx() R10=fp0 fp-136=ctx()
+721: (79) r6 = *(u64 *)(r10 -144)     ; R6_w=map_value(map=process_info,ks=4,vs=16032) R10=fp0 fp-144=map_value(map=process_info,ks=4,vs=16032)
+722: (79) r4 = *(u64 *)(r10 -112)     ; R4_w=scalar(id=2,umin=0x100000000) R10=fp0 fp-112=scalar(id=2,umin=0x100000000)
+; } else if (proc_info->is_jit_compiler) { @ native.bpf.c:1328
+723: (79) r1 = *(u64 *)(r6 +8)        ; R1=scalar() R6=map_value(map=process_info,ks=4,vs=16032)
+724: (15) if r1 == 0x0 goto pc+227    ; R1=scalar(umin=1)
+; LOG("[warn] IP 0x%llx not covered, may be JIT!.", unwind_state->ip); @ native.bpf.c:1329
+725: (18) r6 = 0xffffd1bb0075c004     ; R6_w=map_value(map=bpf__unw.rodata,ks=4,vs=4221,off=4)
+727: (71) r1 = *(u8 *)(r6 +1)
+frame 0: propagating r1
+mark_precise: frame0: last_idx 728 first_idx 724 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 727: (71) r1 = *(u8 *)(r6 +1)
+728: safe
+
+from 724 to 952: safe
+
+from 360 to 370: R0=scalar(smin=smin32=0,smax=umax=smax32=umax32=399,var_off=(0x0; 0x1ff)) R1=10 R2=0 R3=scalar(id=2,umin=0x100000000) R4=400 R5=scalar(id=35,smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff)) R6=scalar(id=34,umin=1) R7=scalar(id=11) R8=map_value(map=process_info,ks=4,vs=16032,off=32) R9=scalar() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-96=0 fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-120=0xfabadafabada fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx() fp-144=map_value(map=process_info,ks=4,vs=16032)
+370: R0=scalar(smin=smin32=0,smax=umax=smax32=umax32=399,var_off=(0x0; 0x1ff)) R1=10 R2=0 R3=scalar(id=2,umin=0x100000000) R4=400 R5=scalar(id=35,smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff)) R6=scalar(id=34,umin=1) R7=scalar(id=11) R8=map_value(map=process_info,ks=4,vs=16032,off=32) R9=scalar() R10=fp0 fp-8=mmmmmmmm fp-24=????mmmm fp-32=mmmm???? fp-96=0 fp-104=mmmm???? fp-112=scalar(id=2,umin=0x100000000) fp-120=0xfabadafabada fp-128=map_value(map=heap,ks=4,vs=1120) fp-136=ctx() fp-144=map_value(map=process_info,ks=4,vs=16032)
+; if (proc_info->mappings[mid].begin <= pc) { @ native.bpf.c:491
+370: (bf) r0 = r5                     ; R0_w=scalar(id=35,smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff)) R5=scalar(id=35,smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff))
+371: (57) r0 &= 511                   ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=511,var_off=(0x0; 0x1ff))
+372: (bf) r7 = r0                     ; R0_w=scalar(id=36,smin=smin32=0,smax=umax=smax32=umax32=511,var_off=(0x0; 0x1ff)) R7_w=scalar(id=36,smin=smin32=0,smax=umax=smax32=umax32=511,var_off=(0x0; 0x1ff))
+373: (27) r7 *= 40                    ; R7_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=20440,var_off=(0x0; 0x7ff8))
+374: (bf) r3 = r8                     ; R3_w=map_value(map=process_info,ks=4,vs=16032,off=32) R8=map_value(map=process_info,ks=4,vs=16032,off=32)
+375: (0f) r8 += r7
+mark_precise: frame0: last_idx 375 first_idx 360 subseq_idx -1 
+mark_precise: frame0: regs=r7 stack= before 374: (bf) r3 = r8
+mark_precise: frame0: regs=r7 stack= before 373: (27) r7 *= 40
+mark_precise: frame0: regs=r7 stack= before 372: (bf) r7 = r0
+mark_precise: frame0: regs=r0 stack= before 371: (57) r0 &= 511
+mark_precise: frame0: regs=r0 stack= before 370: (bf) r0 = r5
+mark_precise: frame0: regs=r5 stack= before 360: (2d) if r4 > r0 goto pc+9
+mark_precise: frame0: parent state regs=r5 stack=:  R0_rw=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R1_w=10 R2_w=0 R3_w=scalar(id=2,umin=0x100000000) R4_rw=400 R5_rw=Pscalar(id=35,smin=0,umax=0x7fffffffffffffff,var_off=(0x0; 0x7fffffffffffffff)) R6_w=scalar(id=34,umin=1) R7=scalar(id=11) R8_rw=map_value(map=process_info,ks=4,vs=16032,off=32) R9=scalar() R10=fp0 fp-8_r=mmmmmmmm fp-24_r=????mmmm fp-32_r=mmmm???? fp-96_w=0 fp-104=mmmm???? fp-112_r=scalar(id=2,umin=0x100000000) fp-120_w=0xfabadafabada fp-128=map_value(map=heap,ks=4,vs=1120) fp-136_r=ctx() fp-144_rw=map_value(map=process_info,ks=4,vs=16032)
+mark_precise: frame0: last_idx 359 first_idx 334 subseq_idx 360 
+mark_precise: frame0: regs=r5 stack= before 359: (77) r0 >>= 32
+mark_precise: frame0: regs=r5 stack= before 358: (67) r0 <<= 32
+mark_precise: frame0: regs=r5 stack= before 357: (bf) r0 = r5
+mark_precise: frame0: regs=r5 stack= before 356: (77) r5 >>= 1
+mark_precise: frame0: regs=r5 stack= before 355: (0f) r5 += r2
+mark_precise: frame0: regs=r2,r5 stack= before 354: (bf) r5 = r6
+mark_precise: frame0: regs=r2,r6 stack= before 353: (3d) if r2 >= r6 goto pc+33
+mark_precise: frame0: regs=r2,r6 stack= before 346: (05) goto pc+6
+mark_precise: frame0: regs=r2,r6 stack= before 345: (79) r3 = *(u64 *)(r10 -112)
+mark_precise: frame0: regs=r2,r6 stack= before 344: (b7) r4 = 400
+mark_precise: frame0: regs=r2,r6 stack= before 343: (79) r6 = *(u64 *)(r0 +24)
+mark_precise: frame0: regs=r2 stack= before 342: (07) r8 += 32
+mark_precise: frame0: regs=r2 stack= before 341: (bf) r8 = r0
+mark_precise: frame0: regs=r2 stack= before 340: (b7) r1 = 10
+mark_precise: frame0: regs=r2 stack= before 339: (7b) *(u64 *)(r10 -96) = r2
+mark_precise: frame0: regs=r2 stack= before 338: (b7) r2 = 0
+376: R7_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=20440,var_off=(0x0; 0x7ff8)) R8_w=map_value(map=process_info,ks=4,vs=16032,off=32,smin=smin32=0,smax=umax=smax32=umax32=20440,var_off=(0x0; 0x7ff8))
+376: (79) r7 = *(u64 *)(r8 +8)
+invalid access to map value, value_size=16032 off=20480 size=8
+R8 max value is outside of the allowed memory range
+verification time 1611 usec
+stack depth 144
+processed 396 insns (limit 1000000) max_states_per_insn 0 total_states 34 peak_states 34 mark_read 13
+-- END PROG LOAD LOG --
+libbpf: prog 'entrypoint': failed to load: -13
+libbpf: failed to load object '/home/test/wild/tmp/4259/parent-keep/bpf__unwinders__native.bpf.c.o'

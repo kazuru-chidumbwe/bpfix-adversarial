@@ -1,0 +1,18 @@
+error[BPFIX-E005]: scalar range at the rejected use is still verifier-unsafe
+  = class: source_bug
+  = confidence: medium
+  = diagnostic: supported, help: repair_hint, span: exact_pc
+  = next action: bounds
+  --> program.bpf.c:157
+   |
+110 | if (id < 0 || id >= SYSCALLS_COUNT)
+    | ----------------------------------- nearby source context for scalar range
+157 | syscall_bitmap->syscalls[id] = 0x01;
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ rejected here: R0 map-value access off=511 size=1 reaches byte 512, past value_size=501
+   |
+   = verifier[285]: invalid access to map value, value_size=501 off=511 size=1; R0 max value is outside of the allowed memory range
+   = note: nearest BPF instruction pc 131
+   = note: parsed 97 verifier state snapshots
+   = note[verifier-state]: verifier state shows the rejected scalar or pointer-offset register still has an unsafe range at the use
+   = required proof: prove R0's map-value byte range off=511 size=1 stays within value_size=501; verifier sees map_value(value_size=501,range(smin=0,smax=511,umax=511))
+help: Clamp or branch-check the exact scalar used by this helper, pointer arithmetic, stack access, or map-value access immediately before the rejected operation.

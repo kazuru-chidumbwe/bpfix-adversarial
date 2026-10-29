@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Invalid access to map value
+   519 | if (proc_info->mappings[mid].begin <= pc) { @ native.bpf.c:491
+       | in file /home/test/wild/tmp/4049/parent/bpf/unwinders/native.bpf.c
+Access is 4456 bytes past the end of the map value (capacity: 16032 bytes).
+
+Add or tighten a bounds check so the accessed range stays within the map value limits.
+
