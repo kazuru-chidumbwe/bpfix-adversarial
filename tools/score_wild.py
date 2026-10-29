@@ -285,7 +285,7 @@ def frac(t: dict) -> str:
 
 def render_md(p: dict) -> str:
     L = ["# Wild cases on the cite pin", "",
-         f"Rules `{p['protocol']}`. Included cases {p['n_cases']}; scored {p['n_scored']}.",
+         f"Rules `{p['protocol']}`. Case directories {p['n_cases']}; scored {p['n_scored']}.",
          "Oracle: lines of the developer's own parent → fix edit, per file. Intervals: Wilson 95% over distinct cases.", ""]
     L += ["## Yield per batch", "", "| batch | candidates | pass 1 | screened | " + " | ".join(CODES)
           + " | included / screened |", "| --- | " + " | ".join("---:" for _ in range(4 + len(CODES))) + " |"]

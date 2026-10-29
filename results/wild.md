@@ -1,6 +1,6 @@
 # Wild cases on the cite pin
 
-Rules `docs/WILD-CORPUS-PROTOCOL.md (scoring rules for the wild cases)`. Included cases 6; scored 5.
+Rules `docs/WILD-CORPUS-PROTOCOL.md (scoring rules for the wild cases)`. Case directories 6; scored 5.
 Oracle: lines of the developer's own parent → fix edit, per file. Intervals: Wilson 95% over distinct cases.
 
 ## Yield per batch
