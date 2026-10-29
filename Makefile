@@ -35,13 +35,15 @@ insets:
 	$(PYTHON) tools/emit_rq1_bpfix_cli.py
 	$(PYTHON) tools/emit_figures.py
 
-# The two natural corpora (main75 on the cite pin, rewrites, wild cases) and the verifier-state oracle,
+# The two natural corpora (main75 on the cite pin, rewrites, wild cases), the verifier-state oracle and the
+# Pretty Verifier line-lookup sensitivity,
 # re-scored offline from the committed logs. Run dirs: the same as tools/check_results_fresh.py.
 natural:
 	$(PYTHON) tools/score_main75_pin.py --run campaigns/main75/lab/testbed-a-20261026T044355Z
 	$(PYTHON) tools/score_main75_rewrites.py --run campaigns/n3/lab/testbed-a-20261026T060709Z
 	$(PYTHON) tools/score_wild.py
 	$(PYTHON) tools/score_state_oracle.py
+	$(PYTHON) tools/score_pv_lookup.py
 
 # Campaign v2 sources (campaigns/v2/README.md); committed, checked by tests.
 v2-mutants:

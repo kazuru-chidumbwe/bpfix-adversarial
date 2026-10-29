@@ -1,0 +1,2838 @@
+{
+ "generator": "tools/score_pv_lookup.py",
+ "inputs": [
+  "results/main75_pin.json",
+  "results/wild.json"
+ ],
+ "corpora": {
+  "main75": {
+   "n": 74,
+   "with_location": 60,
+   "line_differs": [
+    "rs_cilium_proxy_skc_assign_ref_leak_001",
+    "rs_tutorial_user_ringbuf_dynptr_merge_001",
+    "rs_xdp_tools_xdpdump_perf_map_type_001"
+   ],
+   "hits": {
+    "released": {
+     "R0": {
+      "primary_on_site": 27,
+      "label_on_site": 27,
+      "primary_within_3": 45
+     },
+     "R1": {
+      "primary_on_site": 35,
+      "label_on_site": 35,
+      "primary_within_3": 48
+     },
+     "R2": {
+      "primary_on_site": 31,
+      "label_on_site": 31,
+      "primary_within_3": 45
+     }
+    },
+    "log_line": {
+     "R0": {
+      "primary_on_site": 27,
+      "label_on_site": 27,
+      "primary_within_3": 45
+     },
+     "R1": {
+      "primary_on_site": 35,
+      "label_on_site": 35,
+      "primary_within_3": 49
+     },
+     "R2": {
+      "primary_on_site": 31,
+      "label_on_site": 31,
+      "primary_within_3": 45
+     }
+    }
+   }
+  },
+  "wild": {
+   "n": 5,
+   "with_location": 5,
+   "line_differs": [
+    "2043",
+    "4049"
+   ],
+   "hits": {
+    "released": {
+     "R0": {
+      "primary_on_site": 2,
+      "label_on_site": 2,
+      "primary_within_3": 3
+     },
+     "R1": {
+      "primary_on_site": 2,
+      "label_on_site": 2,
+      "primary_within_3": 3
+     },
+     "R2": {
+      "primary_on_site": 2,
+      "label_on_site": 2,
+      "primary_within_3": 3
+     }
+    },
+    "printed_in_its_file": {
+     "R0": {
+      "primary_on_site": 2,
+      "label_on_site": 2,
+      "primary_within_3": 3
+     },
+     "R1": {
+      "primary_on_site": 2,
+      "label_on_site": 2,
+      "primary_within_3": 3
+     },
+     "R2": {
+      "primary_on_site": 2,
+      "label_on_site": 2,
+      "primary_within_3": 3
+     }
+    },
+    "log_line": {
+     "R0": {
+      "primary_on_site": 2,
+      "label_on_site": 2,
+      "primary_within_3": 3
+     },
+     "R1": {
+      "primary_on_site": 3,
+      "label_on_site": 3,
+      "primary_within_3": 3
+     },
+     "R2": {
+      "primary_on_site": 2,
+      "label_on_site": 2,
+      "primary_within_3": 3
+     }
+    }
+   }
+  }
+ },
+ "rows": {
+  "main75": [
+   {
+    "case": "alu32_pointer_cookie_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      42
+     ],
+     "log": [
+      "buggy.bpf.c",
+      42
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "dynptr_slice_missing_null_check_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      33
+     ],
+     "log": [
+      "buggy.bpf.c",
+      33
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "dynptr_slice_short_mem_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      35
+     ],
+     "log": [
+      "buggy.bpf.c",
+      35
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 1
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "dynptr_slice_stack_buffer_001",
+    "loc": null,
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    }
+   },
+   {
+    "case": "dynptr_stack_copy_001",
+    "loc": null,
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    }
+   },
+   {
+    "case": "dynptr_uninitialized_slice_arg_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      27
+     ],
+     "log": [
+      "buggy.bpf.c",
+      27
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 1
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 1
+     }
+    }
+   },
+   {
+    "case": "helper_csum_diff_stack_len_001",
+    "loc": null,
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    }
+   },
+   {
+    "case": "helper_map_arg_stack_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      57
+     ],
+     "log": [
+      "buggy.bpf.c",
+      57
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "map_value_branch_merge_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      65
+     ],
+     "log": [
+      "buggy.bpf.c",
+      65
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 5
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 4
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 5
+     }
+    }
+   },
+   {
+    "case": "map_value_index_guard_oob_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      48
+     ],
+     "log": [
+      "buggy.bpf.c",
+      48
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "map_value_inline_cookie_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      67
+     ],
+     "log": [
+      "buggy.bpf.c",
+      67
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 1
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "map_value_pointer_cookie_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      67
+     ],
+     "log": [
+      "buggy.bpf.c",
+      67
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 4
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 4
+     }
+    }
+   },
+   {
+    "case": "map_value_signed_index_001",
+    "loc": null,
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    }
+   },
+   {
+    "case": "map_value_spill_cookie_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      62
+     ],
+     "log": [
+      "buggy.bpf.c",
+      62
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 1
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     }
+    }
+   },
+   {
+    "case": "packet_checked_wrong_base_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      31
+     ],
+     "log": [
+      "buggy.bpf.c",
+      31
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "packet_eth_off_by_one_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      36
+     ],
+     "log": [
+      "buggy.bpf.c",
+      36
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 2
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     }
+    }
+   },
+   {
+    "case": "packet_ihl_udp_undercheck_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      72
+     ],
+     "log": [
+      "buggy.bpf.c",
+      72
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 1
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "packet_inline_return_cookie_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      54
+     ],
+     "log": [
+      "buggy.bpf.c",
+      54
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "packet_l4_branch_cookie_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      61
+     ],
+     "log": [
+      "buggy.bpf.c",
+      61
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "packet_macro_cookie_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      39
+     ],
+     "log": [
+      "buggy.bpf.c",
+      39
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "packet_macro_payload_undercheck_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      52
+     ],
+     "log": [
+      "buggy.bpf.c",
+      52
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 2
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 2
+     }
+    }
+   },
+   {
+    "case": "packet_vlan_cookie_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      67
+     ],
+     "log": [
+      "buggy.bpf.c",
+      67
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "perf_event_packet_payload_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      43
+     ],
+     "log": [
+      "buggy.bpf.c",
+      43
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "ringbuf_branch_cookie_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      59
+     ],
+     "log": [
+      "buggy.bpf.c",
+      59
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "ringbuf_double_submit_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      53
+     ],
+     "log": [
+      "buggy.bpf.c",
+      53
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "ringbuf_missing_null_check_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      35
+     ],
+     "log": [
+      "buggy.bpf.c",
+      35
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "ringbuf_nested_missing_null_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      48
+     ],
+     "log": [
+      "buggy.bpf.c",
+      48
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "ringbuf_nested_reserve_leak_001",
+    "loc": null,
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    }
+   },
+   {
+    "case": "ringbuf_pointer_cookie_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      72
+     ],
+     "log": [
+      "buggy.bpf.c",
+      72
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "ringbuf_ref_leak_001",
+    "loc": null,
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    }
+   },
+   {
+    "case": "ringbuf_stack_discard_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      33
+     ],
+     "log": [
+      "buggy.bpf.c",
+      33
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "ringbuf_stack_submit_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      37
+     ],
+     "log": [
+      "buggy.bpf.c",
+      37
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "ringbuf_submit_after_discard_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      49
+     ],
+     "log": [
+      "buggy.bpf.c",
+      49
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 1
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "ringbuf_two_record_cookie_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      63
+     ],
+     "log": [
+      "buggy.bpf.c",
+      63
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "rs_actplane_cap_dynptr_payload_null_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      94
+     ],
+     "log": [
+      "buggy.bpf.c",
+      94
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 2
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 2
+     }
+    }
+   },
+   {
+    "case": "rs_actplane_lsm_bpf_ringbuf_merge_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      54
+     ],
+     "log": [
+      "buggy.bpf.c",
+      54
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 4
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 4
+     }
+    }
+   },
+   {
+    "case": "rs_actplane_mmap_pending_merge_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      217
+     ],
+     "log": [
+      "buggy.bpf.c",
+      217
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "rs_actplane_policy_map_merge_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      57
+     ],
+     "log": [
+      "buggy.bpf.c",
+      57
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 2
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     }
+    }
+   },
+   {
+    "case": "rs_actplane_taint_loop_count_bound_001",
+    "loc": null,
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    }
+   },
+   {
+    "case": "rs_agentsight_fs_overflow_counter_merge_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      123
+     ],
+     "log": [
+      "buggy.bpf.c",
+      123
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 2
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     }
+    }
+   },
+   {
+    "case": "rs_agentsight_process_ringbuf_null_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      45
+     ],
+     "log": [
+      "buggy.bpf.c",
+      45
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "rs_agentsight_stdiocap_user_copy_len_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      57
+     ],
+     "log": [
+      "buggy.bpf.c",
+      57
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "rs_agentsight_write_ctx_merge_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      132
+     ],
+     "log": [
+      "buggy.bpf.c",
+      132
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 1
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 1
+     }
+    }
+   },
+   {
+    "case": "rs_bpftime_opensnoop_ringbuf_filter_ref_001",
+    "loc": null,
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    }
+   },
+   {
+    "case": "rs_bpftime_opensnoop_stack_wrong_prog_type_001",
+    "loc": null,
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    }
+   },
+   {
+    "case": "rs_cilium_change_proto_stale_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      43
+     ],
+     "log": [
+      "buggy.bpf.c",
+      43
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "rs_cilium_fib_lookup_param_len_001",
+    "loc": null,
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    }
+   },
+   {
+    "case": "rs_cilium_ip_options_traceid_payload_bound_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      37
+     ],
+     "log": [
+      "buggy.bpf.c",
+      37
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "rs_cilium_ipv6_exthdr_l4_offset_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      87
+     ],
+     "log": [
+      "buggy.bpf.c",
+      87
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 1
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 1
+     }
+    }
+   },
+   {
+    "case": "rs_cilium_mcast_igmpv3_grec_bound_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      86
+     ],
+     "log": [
+      "buggy.bpf.c",
+      86
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "rs_cilium_proxy_skc_assign_ref_leak_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      14
+     ],
+     "log": [
+      "buggy.bpf.c",
+      24
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 14
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 12
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 14
+     }
+    },
+    "log_line": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 4
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 2
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 4
+     }
+    }
+   },
+   {
+    "case": "rs_cilium_srv6_segment_bound_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      60
+     ],
+     "log": [
+      "buggy.bpf.c",
+      60
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 10
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 9
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 10
+     }
+    }
+   },
+   {
+    "case": "rs_datrail_browsertrace_start_ns_merge_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      69
+     ],
+     "log": [
+      "buggy.bpf.c",
+      69
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 6
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 4
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 6
+     }
+    }
+   },
+   {
+    "case": "rs_datrail_cgroup_filter_key_width_001",
+    "loc": null,
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    }
+   },
+   {
+    "case": "rs_eunomia_energy_runtime_merge_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      130
+     ],
+     "log": [
+      "buggy.bpf.c",
+      130
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 1
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 1
+     }
+    }
+   },
+   {
+    "case": "rs_eunomia_http_doff_copy_bound_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      131
+     ],
+     "log": [
+      "buggy.bpf.c",
+      131
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 14
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 13
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 14
+     }
+    }
+   },
+   {
+    "case": "rs_eunomia_wq_container_map_001",
+    "loc": null,
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    }
+   },
+   {
+    "case": "rs_nccl_cpu_observer_slot_merge_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      102
+     ],
+     "log": [
+      "buggy.bpf.c",
+      102
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 4
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 4
+     }
+    }
+   },
+   {
+    "case": "rs_tetragon_data_event_size_guard_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      51
+     ],
+     "log": [
+      "buggy.bpf.c",
+      51
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 45
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 44
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 45
+     }
+    }
+   },
+   {
+    "case": "rs_tutorial_dynptr_tc_ref_leak_001",
+    "loc": null,
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    }
+   },
+   {
+    "case": "rs_tutorial_memleak_free_info_merge_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      73
+     ],
+     "log": [
+      "buggy.bpf.c",
+      73
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "rs_tutorial_pidhide_tailcall_map_type_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      34
+     ],
+     "log": [
+      "buggy.bpf.c",
+      34
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 15
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 14
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 15
+     }
+    }
+   },
+   {
+    "case": "rs_tutorial_user_ringbuf_dynptr_merge_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      51
+     ],
+     "log": [
+      "buggy.bpf.c",
+      50
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 7
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 6
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 7
+     }
+    },
+    "log_line": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 6
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 5
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 6
+     }
+    }
+   },
+   {
+    "case": "rs_xdp_tools_ihl_macro_wrong_base_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      30
+     ],
+     "log": [
+      "buggy.bpf.c",
+      30
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 11
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 10
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 11
+     }
+    }
+   },
+   {
+    "case": "rs_xdp_tools_load_bytes_stack_len_001",
+    "loc": null,
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    }
+   },
+   {
+    "case": "rs_xdp_tools_xdpdump_perf_map_type_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      44
+     ],
+     "log": [
+      "buggy.bpf.c",
+      62
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 13
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 12
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 13
+     }
+    },
+    "log_line": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 31
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 30
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 31
+     }
+    }
+   },
+   {
+    "case": "rs_xdp_tools_xdpfilt_udp_macro_bound_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      92
+     ],
+     "log": [
+      "buggy.bpf.c",
+      92
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "rs_xdp_tools_xdpsock_redirect_map_type_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      38
+     ],
+     "log": [
+      "buggy.bpf.c",
+      38
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 20
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 19
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 20
+     }
+    }
+   },
+   {
+    "case": "subprog_adjust_tail_stale_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      37
+     ],
+     "log": [
+      "buggy.bpf.c",
+      37
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "subprog_map_value_null_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      55
+     ],
+     "log": [
+      "buggy.bpf.c",
+      55
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 1
+     },
+     "R1": {
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 1
+     }
+    }
+   },
+   {
+    "case": "xdp_adjust_head_map_value_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      59
+     ],
+     "log": [
+      "buggy.bpf.c",
+      59
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 6
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 4
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 6
+     }
+    }
+   },
+   {
+    "case": "xdp_adjust_head_ringbuf_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      59
+     ],
+     "log": [
+      "buggy.bpf.c",
+      59
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 2
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     }
+    }
+   },
+   {
+    "case": "xdp_adjust_head_stale_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      47
+     ],
+     "log": [
+      "buggy.bpf.c",
+      47
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 2
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     }
+    }
+   },
+   {
+    "case": "xdp_adjust_tail_stale_001",
+    "loc": {
+     "printed": [
+      "buggy.bpf.c",
+      43
+     ],
+     "log": [
+      "buggy.bpf.c",
+      43
+     ]
+    },
+    "released": {
+     "R0": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     },
+     "R1": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 2
+     },
+     "R2": {
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     }
+    }
+   }
+  ],
+  "wild": [
+   {
+    "case": "111",
+    "loc": {
+     "printed": [
+      "biosnoop.bpf.c",
+      182
+     ],
+     "log": [
+      "biosnoop.bpf.c",
+      182
+     ]
+    },
+    "released": {
+     "R0": {
+      "file": "biosnoop.bpf.c",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "file": "biosnoop.bpf.c",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "file": "biosnoop.bpf.c",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    },
+    "printed_in_its_file": {
+     "R0": {
+      "file": "biosnoop.bpf.c",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "file": "biosnoop.bpf.c",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "file": "biosnoop.bpf.c",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "2043",
+    "loc": {
+     "printed": [
+      "context.h",
+      63
+     ],
+     "log": [
+      "buffer.h",
+      368
+     ]
+    },
+    "released": {
+     "R0": {
+      "file": "tracee.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "file": "tracee.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "file": "tracee.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "printed_in_its_file": {
+     "R0": {
+      "file": "context.h",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R1": {
+      "file": "context.h",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     },
+     "R2": {
+      "file": "context.h",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": null
+     }
+    },
+    "log_line": {
+     "R0": {
+      "file": "buffer.h",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     },
+     "R1": {
+      "file": "buffer.h",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "file": "buffer.h",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 3
+     }
+    }
+   },
+   {
+    "case": "3285",
+    "loc": {
+     "printed": [
+      "xdp_meta.h",
+      41
+     ],
+     "log": [
+      "xdp_meta.h",
+      41
+     ]
+    },
+    "released": {
+     "R0": {
+      "file": "xdp_meta.h",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "file": "xdp_meta.h",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "file": "xdp_meta.h",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    },
+    "printed_in_its_file": {
+     "R0": {
+      "file": "xdp_meta.h",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R1": {
+      "file": "xdp_meta.h",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     },
+     "R2": {
+      "file": "xdp_meta.h",
+      "primary_on_site": true,
+      "label_on_site": true,
+      "primary_within_3": true,
+      "distance": 0
+     }
+    }
+   },
+   {
+    "case": "4049",
+    "loc": {
+     "printed": [
+      "native.bpf.c",
+      519
+     ],
+     "log": [
+      "native.bpf.c",
+      491
+     ]
+    },
+    "released": {
+     "R0": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 2
+     },
+     "R1": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 1
+     },
+     "R2": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 2
+     }
+    },
+    "printed_in_its_file": {
+     "R0": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 2
+     },
+     "R1": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 1
+     },
+     "R2": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": true,
+      "distance": 2
+     }
+    },
+    "log_line": {
+     "R0": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 5
+     },
+     "R1": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 4
+     },
+     "R2": {
+      "file": "native.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 5
+     }
+    }
+   },
+   {
+    "case": "6257",
+    "loc": {
+     "printed": [
+      "program.bpf.c",
+      157
+     ],
+     "log": [
+      "program.bpf.c",
+      157
+     ]
+    },
+    "released": {
+     "R0": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 57
+     },
+     "R1": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 54
+     },
+     "R2": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 57
+     }
+    },
+    "printed_in_its_file": {
+     "R0": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 57
+     },
+     "R1": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 54
+     },
+     "R2": {
+      "file": "program.bpf.c",
+      "primary_on_site": false,
+      "label_on_site": false,
+      "primary_within_3": false,
+      "distance": 57
+     }
+    }
+   }
+  ]
+ }
+}
