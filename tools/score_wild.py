@@ -4,7 +4,8 @@
 
 Reads fixtures/wild/cases/<rank>/ (parent and fix versions of every changed
 file, buggy.log, the reporter outputs stored beside it, meta.json) and
-fixtures/wild/hand_check.tsv, and writes ``results/wild.{json,md}``: per
+fixtures/wild/hand_check.tsv and the pass-2 decisions (fixtures/wild/pass2_decisions.tsv,
+fixtures/wild/batchN/pass2_decisions.tsv), and writes ``results/wild.{json,md}``: per
 reporter, primary on a repair site, any label on a repair site and primary
 within 3 lines, under R0, R1 and R2, per batch and pooled.
 
@@ -38,6 +39,7 @@ from tools.wild_replay import case_source  # noqa: E402
 WILD = ROOT / "fixtures" / "wild"
 CASES = WILD / "cases"
 HAND = WILD / "hand_check.tsv"
+PASS2 = (WILD / "pass2_decisions.tsv", WILD / "batch2" / "pass2_decisions.tsv", WILD / "batch3" / "pass2_decisions.tsv")
 OUT_JSON = ROOT / "results" / "wild.json"
 OUT_MD = ROOT / "results" / "wild.md"
 NEAR = 3
@@ -53,17 +55,55 @@ def batch_of(rank: int) -> str:
 
 
 BATCHES = ("batch 1", "batch 2", "batch 3")
-CODES = ("included", "I3", "I4", "C", "E4", "E5")
+CODES = ("included", "I3", "I4", "C", "E1", "E3", "N0", "E4", "E5")
+# Exclusion codes of the protocol a pass-2 decision or a hand check may carry.
+EXCLUSION_CODES = ("N0", "C", "E1", "E2", "E3", "E4", "E5", "I3", "I4")
+# Hand check verdicts: ``ok`` scores, ``artefact`` excludes (loader or placeholder),
+# an exclusion code excludes with that code (it must agree with pass 2).
+HAND_VERDICTS = ("ok", "artefact") + EXCLUSION_CODES
 
 
 def jsonl(p: Path) -> list[dict]:
     return [json.loads(ln) for ln in read(p).splitlines() if ln.strip()] if p.is_file() else []
 
 
-def yields() -> dict:
-    """Per batch: candidates, pass-1 survivors, screened, outcome codes (protocol, batch 3 item 7)."""
+def pass2_exclusions(paths=PASS2) -> dict[int, dict]:
+    """Ranks excluded at pass 2: {rank: {"code", "note"}} from every pass-2 decisions file."""
+    out: dict[int, dict] = {}
+    for p in paths:
+        if not p.is_file():
+            continue
+        for r in csv.DictReader(read(p).splitlines(), delimiter="\t"):
+            if (r.get("decision") or "").strip() == "exclude":
+                out[int(r["rank"])] = {"code": (r.get("code") or "").strip(), "note": (r.get("note") or "").strip()}
+    return out
+
+
+def consistency(hand: dict[int, dict], p2: dict[int, dict]) -> list[str]:
+    """Problems between the hand check and pass 2: unknown verdicts, codes that disagree."""
+    bad = []
+    for rank, h in sorted(hand.items()):
+        v = h["verdict"]
+        if v not in HAND_VERDICTS:
+            bad.append(f"rank {rank}: unknown hand check verdict {v!r}")
+        elif v in EXCLUSION_CODES and p2.get(rank, {}).get("code") != v:
+            bad.append(f"rank {rank}: hand check {v} has no matching pass-2 exclusion")
+        elif v == "ok" and rank in p2:
+            bad.append(f"rank {rank}: hand check ok but pass 2 excludes it ({p2[rank]['code']})")
+    for rank, e in sorted(p2.items()):
+        if e["code"] not in EXCLUSION_CODES:
+            bad.append(f"rank {rank}: unknown pass-2 exclusion code {e['code']!r}")
+    return bad
+
+
+def yields(p2: dict[int, dict] | None = None) -> dict:
+    """Per batch: candidates, pass-1 survivors, screened, outcome codes (protocol, batch 3 item 7).
+
+    A case the build decides as included and pass 2 then excludes is counted under its pass-2 code.
+    """
     from tools.wild_pass4 import final_outcome
 
+    p2 = pass2_exclusions() if p2 is None else p2
     out: dict = {}
     b1 = {r["screen_rank"]: r for r in jsonl(WILD / "pass3.jsonl")}
     b1.update({r["screen_rank"]: {**r, "outcome": final_outcome(r)} for r in jsonl(WILD / "pass4.jsonl")})
@@ -77,7 +117,7 @@ def yields() -> dict:
             continue
         n = json.loads(read(cands))["n"]
         p1 = sum(1 for r in jsonl(files) if r["pass1"] == "bpf-c")
-        codes = {c: sum(1 for r in rows if r["outcome"] == c) for c in CODES}
+        codes = {c: sum(1 for r in rows if final_code(r, p2) == c) for c in CODES}
         out[b] = {"candidates": n, "pass1_survivors": p1, "screened": len(rows), "outcomes": codes,
                   "included_over_screened": wilson(codes["included"], len(rows)) and
                   {"rate": round(codes["included"] / len(rows), 4), "wilson95": wilson(codes["included"], len(rows))}}
@@ -89,6 +129,15 @@ def yields() -> dict:
     tot["included_over_screened"] = {"rate": round(k / m, 4), "wilson95": wilson(k, m)} if m else None
     out["pooled"] = tot
     return out
+
+
+def final_code(build_row: dict, p2: dict[int, dict]) -> str:
+    """The build outcome, or the pass-2 code when pass 2 excludes a case the build included."""
+    o = build_row["outcome"]
+    rank = build_row.get("screen_rank")
+    if o == "included" and rank is not None and int(rank) in p2:
+        return p2[int(rank)]["code"]
+    return o
 
 
 def hand_checks() -> dict[int, dict]:
@@ -135,16 +184,21 @@ def outcome(file: str | None, primary: int | None, labels: list[int], unit: str,
     }
 
 
-def score_case(d: Path, hand: dict | None) -> dict:
+def score_case(d: Path, hand: dict | None, p2: dict | None = None) -> dict:
     meta = json.loads(read(d / "meta.json"))
     rank = int(meta["screen_rank"])
     row: dict = {"rank": rank, "batch": batch_of(rank), "repo": meta["repo"], "commit": meta["commit"],
                  "program": meta["program"], "section": meta.get("section"), "build_type": meta.get("build_type")}
+    if p2:  # excluded at pass 2 (for example E3, a later duplicate of an included case)
+        row["excluded"] = f"pass 2: {p2['code']} ({p2['note']})"
+        row["excluded_code"] = p2["code"]
+        return row
     if hand is None:
         row["excluded"] = "pending hand check"
         return row
     if hand["verdict"] != "ok":
         row["excluded"] = f"hand check: {hand['verdict']} ({hand.get('note', '')})"
+        row["excluded_code"] = hand["verdict"]
         return row
     missing = sorted(rep.name for rep in REGISTRY.values()
                      if rep.needs_artifact and not (d / f"buggy{rep.needs_artifact}").is_file())
@@ -196,8 +250,14 @@ def summarise(rows: list[dict]) -> dict:
 
 def main(argv: list[str] | None = None) -> int:
     hand = hand_checks()
+    p2 = pass2_exclusions()
+    problems = consistency(hand, p2)
+    if problems:
+        for msg in problems:
+            print("score_wild: " + msg, file=sys.stderr)
+        return 1
     dirs = sorted((p for p in CASES.iterdir() if (p / "meta.json").is_file()), key=lambda p: int(p.name))
-    rows = [score_case(d, hand.get(int(d.name))) for d in dirs]
+    rows = [score_case(d, hand.get(int(d.name)), p2.get(int(d.name))) for d in dirs]
     scored = [r for r in rows if not r["excluded"]]
     groups = {"pooled": scored}
     for b in BATCHES:
@@ -208,7 +268,7 @@ def main(argv: list[str] | None = None) -> int:
         "n_cases": len(rows),
         "n_scored": len(scored),
         "excluded": [{"rank": r["rank"], "reason": r["excluded"]} for r in rows if r["excluded"]],
-        "yield": yields(),
+        "yield": yields(p2),
         "summary": {g: summarise(rs) for g, rs in groups.items()},
         "rows": rows,
     }
@@ -231,7 +291,8 @@ def render_md(p: dict) -> str:
           + " | included / screened |", "| --- | " + " | ".join("---:" for _ in range(4 + len(CODES))) + " |"]
     for b, y in p["yield"].items():
         r = y["included_over_screened"]
-        rate = f"{r['rate']:.3f} ({r['wilson95'][0]:.3f}–{r['wilson95'][1]:.3f})" if r else "n/a"
+        k, m = y["outcomes"]["included"], y["screened"]  # from the counts: the stored rate is already rounded
+        rate = f"{k / m:.3f} ({r['wilson95'][0]:.3f}–{r['wilson95'][1]:.3f})" if r else "n/a"
         L.append(f"| {b} | {y['candidates']} | {y['pass1_survivors']} | {y['screened']} | "
                  + " | ".join(str(y["outcomes"][c]) for c in CODES) + f" | {rate} |")
     L.append("")
