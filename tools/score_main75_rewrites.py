@@ -53,10 +53,15 @@ def lines_of(p: Path) -> list[str]:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--run", type=Path, required=True)
+    ap.add_argument("--tag", help="configuration tag: read results/main75_pin.<tag>.json, write results/main75_rewrites.<tag>.{json,md}")
     args = ap.parse_args(argv)
+    main_json, out_json, out_md = MAIN, OUT_JSON, OUT_MD
+    if args.tag:
+        main_json = MAIN.with_name(f"main75_pin.{args.tag}.json")
+        out_json, out_md = (OUT_JSON.with_name(f"main75_rewrites.{args.tag}{s}") for s in (".json", ".md"))
     run = args.run if args.run.is_absolute() else ROOT / args.run
     man = load_manifest(run / "rewrites")
-    main75 = {r["case_id"]: r for r in json.loads(MAIN.read_text(encoding="utf-8"))["rows"]}
+    main75 = {r["case_id"]: r for r in json.loads(main_json.read_text(encoding="utf-8"))["rows"]}
     meta = json.loads((N3 / "rewrites.json").read_text(encoding="utf-8"))
     reporters = (*REGISTRY, CONTROL)
 
@@ -142,7 +147,7 @@ def main(argv: list[str] | None = None) -> int:
 
     payload = {"generator": "tools/score_main75_rewrites.py", "protocol": "docs/MAIN75-PIN-PROTOCOL.md Section 7",
                "run": run.relative_to(ROOT).as_posix(), "rewrites": per_rewrite}
-    OUT_JSON.write_text(json.dumps(payload, indent=1) + "\n", encoding="utf-8", newline="\n")
+    out_json.write_text(json.dumps(payload, indent=1) + "\n", encoding="utf-8", newline="\n")
 
     L = ["# Verifier-visible rewrites of main75 on the cite pin", "",
          f"Run `{payload['run']}` · rules `{payload['protocol']}`. A rewritten pair is valid when the rewritten "
@@ -193,8 +198,8 @@ def main(argv: list[str] | None = None) -> int:
     if inv:
         L += ["", "Invalid pairs: " + "; ".join(f"{rid} `{x['case_id']}` (buggy {x['buggy']}, fixed {x['fixed']})"
                                               for rid, x in inv)]
-    OUT_MD.write_text("\n".join(L) + "\n", encoding="utf-8", newline="\n")
-    print(f"wrote {OUT_JSON.relative_to(ROOT)} and {OUT_MD.relative_to(ROOT)}")
+    out_md.write_text("\n".join(L) + "\n", encoding="utf-8", newline="\n")
+    print(f"wrote {out_json.relative_to(ROOT)} and {out_md.relative_to(ROOT)}")
     return 0
 
 

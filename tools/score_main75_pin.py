@@ -210,7 +210,11 @@ def variant_pairs(rows: list[dict], var_m: dict[str, dict]) -> dict:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--run", type=Path, required=True)
+    ap.add_argument("--tag", help="configuration tag: write results/main75_pin.<tag>.{json,md}")
     args = ap.parse_args(argv)
+    out_json, out_md = OUT_JSON, OUT_MD
+    if args.tag:
+        out_json, out_md = (OUT_JSON.with_name(f"main75_pin.{args.tag}{s}") for s in (".json", ".md"))
     run = args.run if args.run.is_absolute() else ROOT / args.run
 
     buggy_m, fixed_m, var_m = (load_manifest(run / d) for d in ("buggy", "fixed", "variants"))
@@ -278,9 +282,9 @@ def main(argv: list[str] | None = None) -> int:
         "metamorphic_rows": {v: {rep: d["rows"] for rep, d in per.items()} for v, per in pairs.items()},
         "pad_processed_insns": pad_insns,
     }
-    OUT_JSON.write_text(json.dumps(payload, indent=1) + "\n", encoding="utf-8", newline="\n")
-    OUT_MD.write_text(render_md(payload), encoding="utf-8", newline="\n")
-    print(f"wrote {OUT_JSON.relative_to(ROOT)} and {OUT_MD.relative_to(ROOT)}")
+    out_json.write_text(json.dumps(payload, indent=1) + "\n", encoding="utf-8", newline="\n")
+    out_md.write_text(render_md(payload), encoding="utf-8", newline="\n")
+    print(f"wrote {out_json.relative_to(ROOT)} and {out_md.relative_to(ROOT)}")
     return 0
 
 
