@@ -1,0 +1,214 @@
+libbpf: loading object from /tmp/bpfix-cap-emmxormt/rs_tetragon_data_event_size_guard_001__pad32.o
+libbpf: elf: section(3) tracepoint/syscalls/sys_enter_write, size 1128, link 0, flags 6, type=1
+libbpf: sec 'tracepoint/syscalls/sys_enter_write': found program 'rs_tetragon_data_event_size_guard' at insn offset 0 (0 bytes), code size 141 insns (1128 bytes)
+libbpf: elf: section(4) .reltracepoint/syscalls/sys_enter_write, size 32, link 27, flags 40, type=9
+libbpf: elf: section(5) .maps, size 64, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 13, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-emmxormt/rs_tetragon_data_event_size_guard_001__pad32.o is Dual BSD/GPL
+libbpf: elf: section(17) .BTF, size 2668, link 0, flags 0, type=1
+libbpf: elf: section(19) .BTF.ext, size 956, link 0, flags 0, type=1
+libbpf: elf: section(27) .symtab, size 456, link 1, flags 0, type=2
+libbpf: looking for externs among 19 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'data_heap': at sec_idx 5, offset 0.
+libbpf: map 'data_heap': found type = 2.
+libbpf: map 'data_heap': found key [8], sz = 4.
+libbpf: map 'data_heap': found value [11], sz = 40.
+libbpf: map 'data_heap': found max_entries = 1.
+libbpf: map 'events': at sec_idx 5, offset 32.
+libbpf: map 'events': found type = 4.
+libbpf: map 'events': found key [2], sz = 4.
+libbpf: map 'events': found value [8], sz = 4.
+libbpf: map 'events': found max_entries = 0.
+libbpf: sec '.reltracepoint/syscalls/sys_enter_write': collecting relocation for section(3) 'tracepoint/syscalls/sys_enter_write'
+libbpf: sec '.reltracepoint/syscalls/sys_enter_write': relo #0: insn #5 against 'data_heap'
+libbpf: prog 'rs_tetragon_data_event_size_guard': found map 0 (data_heap, sec 5, off 0) for insn #5
+libbpf: sec '.reltracepoint/syscalls/sys_enter_write': relo #1: insn #127 against 'events'
+libbpf: prog 'rs_tetragon_data_event_size_guard': found map 1 (events, sec 5, off 32) for insn #127
+libbpf: loading kernel BTF '/sys/kernel/btf/vmlinux': 0
+libbpf: sec 'tracepoint/syscalls/sys_enter_write': found 2 CO-RE relocations
+libbpf: CO-RE relocating [26] struct trace_event_raw_sys_enter: found target candidate [57757] struct trace_event_raw_sys_enter in [vmlinux]
+libbpf: prog 'rs_tetragon_data_event_size_guard': relo #0: <byte_off> [26] struct trace_event_raw_sys_enter.args[1] (0:2:1 @ offset 24)
+libbpf: prog 'rs_tetragon_data_event_size_guard': relo #0: matching candidate #0 <byte_off> [57757] struct trace_event_raw_sys_enter.args[1] (0:2:1 @ offset 24)
+libbpf: prog 'rs_tetragon_data_event_size_guard': relo #0: patched insn #10 (LDX/ST/STX) off 24 -> 24
+libbpf: prog 'rs_tetragon_data_event_size_guard': relo #1: <byte_off> [26] struct trace_event_raw_sys_enter.args[2] (0:2:2 @ offset 32)
+libbpf: prog 'rs_tetragon_data_event_size_guard': relo #1: matching candidate #0 <byte_off> [57757] struct trace_event_raw_sys_enter.args[2] (0:2:2 @ offset 32)
+libbpf: prog 'rs_tetragon_data_event_size_guard': relo #1: patched insn #11 (LDX/ST/STX) off 32 -> 32
+libbpf: map 'data_heap': created successfully, fd=4
+libbpf: map 'events': setting size to 16
+libbpf: map 'events': created successfully, fd=5
+libbpf: prog 'rs_tetragon_data_event_size_guard': BPF program load failed: Permission denied
+libbpf: prog 'rs_tetragon_data_event_size_guard': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_tetragon_data_event_size_guard(struct trace_event_raw_sys_enter *ctx)
+0: (bf) r7 = r1                       ; R1=ctx() R7_w=ctx()
+1: (b7) r6 = 0                        ; R6_w=0
+; __u32 zero = 0;
+2: (63) *(u32 *)(r10 -12) = r6
+mark_precise: frame0: last_idx 2 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r6 stack= before 1: (b7) r6 = 0
+3: R6_w=0 R10=fp0 fp-16=0000????
+3: (bf) r2 = r10                      ; R2_w=fp0 R10=fp0
+; 
+4: (07) r2 += -12                     ; R2_w=fp-12
+; msg = bpf_map_lookup_elem(&data_heap, &zero);
+5: (18) r1 = 0xffff8e21a5f46600       ; R1_w=map_ptr(map=data_heap,ks=4,vs=40)
+7: (85) call bpf_map_lookup_elem#1    ; R0_w=map_value_or_null(id=1,map=data_heap,ks=4,vs=40)
+8: (bf) r8 = r0                       ; R0_w=map_value_or_null(id=1,map=data_heap,ks=4,vs=40) R8_w=map_value_or_null(id=1,map=data_heap,ks=4,vs=40)
+; if (!msg)
+9: (15) if r8 == 0x0 goto pc+129      ; R8_w=map_value(map=data_heap,ks=4,vs=40)
+; user_ptr = ctx->args[1];
+10: (79) r3 = *(u64 *)(r7 +24)        ; R3_w=scalar() R7_w=ctx()
+; raw_size = ctx->args[2];
+11: (79) r6 = *(u64 *)(r7 +32)        ; R6_w=scalar() R7_w=ctx()
+12: (b7) r1 = 10                      ; R1_w=10
+; msg->common.op = MSG_OP_DATA;
+13: (63) *(u32 *)(r8 +0) = r1         ; R1_w=10 R8_w=map_value(map=data_heap,ks=4,vs=40)
+14: (b7) r1 = 0                       ; R1_w=0
+; volatile __u64 __bpfix_pad = 0;
+15: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=0 R10=fp0 fp-8_w=0
+; __bpfix_pad += 1;
+16: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8_w=0
+17: (07) r1 += 1                      ; R1_w=1
+18: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8_w=1
+; __bpfix_pad += 2;
+19: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=1 R10=fp0 fp-8_w=1
+20: (07) r1 += 2                      ; R1_w=3
+21: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=3 R10=fp0 fp-8_w=3
+; __bpfix_pad += 3;
+22: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=3 R10=fp0 fp-8_w=3
+23: (07) r1 += 3                      ; R1_w=6
+24: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=6 R10=fp0 fp-8_w=6
+; __bpfix_pad += 4;
+25: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=6 R10=fp0 fp-8_w=6
+26: (07) r1 += 4                      ; R1_w=10
+27: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=10 R10=fp0 fp-8_w=10
+; __bpfix_pad += 5;
+28: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=10 R10=fp0 fp-8_w=10
+29: (07) r1 += 5                      ; R1_w=15
+30: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=15 R10=fp0 fp-8_w=15
+; __bpfix_pad += 6;
+31: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=15 R10=fp0 fp-8_w=15
+32: (07) r1 += 6                      ; R1_w=21
+33: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=21 R10=fp0 fp-8_w=21
+; __bpfix_pad += 7;
+34: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=21 R10=fp0 fp-8_w=21
+35: (07) r1 += 7                      ; R1_w=28
+36: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=28 R10=fp0 fp-8_w=28
+; __bpfix_pad += 8;
+37: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=28 R10=fp0 fp-8_w=28
+38: (07) r1 += 8                      ; R1_w=36
+39: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=36 R10=fp0 fp-8_w=36
+; __bpfix_pad += 9;
+40: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=36 R10=fp0 fp-8_w=36
+41: (07) r1 += 9                      ; R1_w=45
+42: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=45 R10=fp0 fp-8_w=45
+; __bpfix_pad += 10;
+43: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=45 R10=fp0 fp-8_w=45
+44: (07) r1 += 10                     ; R1_w=55
+45: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=55 R10=fp0 fp-8_w=55
+; __bpfix_pad += 11;
+46: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=55 R10=fp0 fp-8_w=55
+47: (07) r1 += 11                     ; R1_w=66
+48: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=66 R10=fp0 fp-8_w=66
+; __bpfix_pad += 12;
+49: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=66 R10=fp0 fp-8_w=66
+50: (07) r1 += 12                     ; R1_w=78
+51: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=78 R10=fp0 fp-8_w=78
+; __bpfix_pad += 13;
+52: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=78 R10=fp0 fp-8_w=78
+53: (07) r1 += 13                     ; R1_w=91
+54: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=91 R10=fp0 fp-8_w=91
+; __bpfix_pad += 14;
+55: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=91 R10=fp0 fp-8_w=91
+56: (07) r1 += 14                     ; R1_w=105
+57: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=105 R10=fp0 fp-8_w=105
+; __bpfix_pad += 15;
+58: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=105 R10=fp0 fp-8_w=105
+59: (07) r1 += 15                     ; R1_w=120
+60: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=120 R10=fp0 fp-8_w=120
+; __bpfix_pad += 16;
+61: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=120 R10=fp0 fp-8_w=120
+62: (07) r1 += 16                     ; R1_w=136
+63: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=136 R10=fp0 fp-8_w=136
+; __bpfix_pad += 17;
+64: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=136 R10=fp0 fp-8_w=136
+65: (07) r1 += 17                     ; R1_w=153
+66: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=153 R10=fp0 fp-8_w=153
+; __bpfix_pad += 18;
+67: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=153 R10=fp0 fp-8_w=153
+68: (07) r1 += 18                     ; R1_w=171
+69: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=171 R10=fp0 fp-8_w=171
+; __bpfix_pad += 19;
+70: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=171 R10=fp0 fp-8_w=171
+71: (07) r1 += 19                     ; R1_w=190
+72: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=190 R10=fp0 fp-8_w=190
+; __bpfix_pad += 20;
+73: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=190 R10=fp0 fp-8_w=190
+74: (07) r1 += 20                     ; R1_w=210
+75: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=210 R10=fp0 fp-8_w=210
+; __bpfix_pad += 21;
+76: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=210 R10=fp0 fp-8_w=210
+77: (07) r1 += 21                     ; R1_w=231
+78: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=231 R10=fp0 fp-8_w=231
+; __bpfix_pad += 22;
+79: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=231 R10=fp0 fp-8_w=231
+80: (07) r1 += 22                     ; R1_w=253
+81: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=253 R10=fp0 fp-8_w=253
+; __bpfix_pad += 23;
+82: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=253 R10=fp0 fp-8_w=253
+83: (07) r1 += 23                     ; R1_w=276
+84: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=276 R10=fp0 fp-8_w=276
+; __bpfix_pad += 24;
+85: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=276 R10=fp0 fp-8_w=276
+86: (07) r1 += 24                     ; R1_w=300
+87: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=300 R10=fp0 fp-8_w=300
+; __bpfix_pad += 25;
+88: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=300 R10=fp0 fp-8_w=300
+89: (07) r1 += 25                     ; R1_w=325
+90: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=325 R10=fp0 fp-8_w=325
+; __bpfix_pad += 26;
+91: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=325 R10=fp0 fp-8_w=325
+92: (07) r1 += 26                     ; R1_w=351
+93: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=351 R10=fp0 fp-8_w=351
+; __bpfix_pad += 27;
+94: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=351 R10=fp0 fp-8_w=351
+95: (07) r1 += 27                     ; R1_w=378
+96: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=378 R10=fp0 fp-8_w=378
+; __bpfix_pad += 28;
+97: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=378 R10=fp0 fp-8_w=378
+98: (07) r1 += 28                     ; R1_w=406
+99: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=406 R10=fp0 fp-8_w=406
+; __bpfix_pad += 29;
+100: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=406 R10=fp0 fp-8_w=406
+101: (07) r1 += 29                    ; R1_w=435
+102: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=435 R10=fp0 fp-8_w=435
+; __bpfix_pad += 30;
+103: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=435 R10=fp0 fp-8_w=435
+104: (07) r1 += 30                    ; R1_w=465
+105: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=465 R10=fp0 fp-8_w=465
+; __bpfix_pad += 31;
+106: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=465 R10=fp0 fp-8_w=465
+107: (07) r1 += 31                    ; R1_w=496
+108: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=496 R10=fp0 fp-8_w=496
+; __bpfix_pad += 32;
+109: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=496 R10=fp0 fp-8_w=496
+110: (07) r1 += 32                    ; R1_w=528
+111: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=528 R10=fp0 fp-8_w=528
+; raw_size &= 0x7fffffff;
+112: (57) r6 &= 2147483647            ; R6_w=scalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff))
+; err = bpf_probe_read_user(&msg->arg[0], bytes, (const void *)user_ptr);
+113: (bf) r1 = r8                     ; R1_w=map_value(map=data_heap,ks=4,vs=40) R8_w=map_value(map=data_heap,ks=4,vs=40)
+114: (07) r1 += 8                     ; R1_w=map_value(map=data_heap,ks=4,vs=40,off=8)
+; err = bpf_probe_read_user(&msg->arg[0], bytes, (const void *)user_ptr);
+115: (bf) r2 = r6                     ; R2_w=scalar(id=2,smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R6_w=scalar(id=2,smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff))
+116: (85) call bpf_probe_read_user#112
+R2 unbounded memory access, use 'var &= const' or 'if (var < const)'
+verification time 411 usec
+stack depth 16
+processed 116 insns (limit 1000000) max_states_per_insn 0 total_states 0 peak_states 0 mark_read 0
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_tetragon_data_event_size_guard': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-emmxormt/rs_tetragon_data_event_size_guard_001__pad32.o'
+Error: failed to load object file

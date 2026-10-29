@@ -1,0 +1,169 @@
+libbpf: loading object from /tmp/bpfix-cap-wtbxxrtk/rs_agentsight_write_ctx_merge_001__VPADC.buggy.o
+libbpf: elf: section(3) xdp, size 1112, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'rs_agentsight_write_ctx_merge' at insn offset 0 (0 bytes), code size 139 insns (1112 bytes)
+libbpf: elf: section(4) .relxdp, size 96, link 27, flags 40, type=9
+libbpf: elf: section(5) .maps, size 96, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-wtbxxrtk/rs_agentsight_write_ctx_merge_001__VPADC.buggy.o is GPL
+libbpf: elf: section(17) .BTF, size 2768, link 0, flags 0, type=1
+libbpf: elf: section(19) .BTF.ext, size 1212, link 0, flags 0, type=1
+libbpf: elf: section(27) .symtab, size 552, link 1, flags 0, type=2
+libbpf: looking for externs among 23 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'write_ctx_map': at sec_idx 5, offset 0.
+libbpf: map 'write_ctx_map': found type = 1.
+libbpf: map 'write_ctx_map': found key [8], sz = 8.
+libbpf: map 'write_ctx_map': found value [11], sz = 4.
+libbpf: map 'write_ctx_map': found max_entries = 32.
+libbpf: map 'event_agg_map': at sec_idx 5, offset 32.
+libbpf: map 'event_agg_map': found type = 1.
+libbpf: map 'event_agg_map': found key [15], sz = 16.
+libbpf: map 'event_agg_map': found value [21], sz = 24.
+libbpf: map 'event_agg_map': found max_entries = 32.
+libbpf: map 'agg_overflow_count': at sec_idx 5, offset 64.
+libbpf: map 'agg_overflow_count': found type = 2.
+libbpf: map 'agg_overflow_count': found key [16], sz = 4.
+libbpf: map 'agg_overflow_count': found value [8], sz = 8.
+libbpf: map 'agg_overflow_count': found max_entries = 1.
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #18 against 'write_ctx_map'
+libbpf: prog 'rs_agentsight_write_ctx_merge': found map 0 (write_ctx_map, sec 5, off 0) for insn #18
+libbpf: sec '.relxdp': relo #1: insn #30 against 'write_ctx_map'
+libbpf: prog 'rs_agentsight_write_ctx_merge': found map 0 (write_ctx_map, sec 5, off 0) for insn #30
+libbpf: sec '.relxdp': relo #2: insn #69 against 'write_ctx_map'
+libbpf: prog 'rs_agentsight_write_ctx_merge': found map 0 (write_ctx_map, sec 5, off 0) for insn #69
+libbpf: sec '.relxdp': relo #3: insn #98 against 'event_agg_map'
+libbpf: prog 'rs_agentsight_write_ctx_merge': found map 1 (event_agg_map, sec 5, off 32) for insn #98
+libbpf: sec '.relxdp': relo #4: insn #123 against 'event_agg_map'
+libbpf: prog 'rs_agentsight_write_ctx_merge': found map 1 (event_agg_map, sec 5, off 32) for insn #123
+libbpf: sec '.relxdp': relo #5: insn #131 against 'agg_overflow_count'
+libbpf: prog 'rs_agentsight_write_ctx_merge': found map 2 (agg_overflow_count, sec 5, off 64) for insn #131
+libbpf: loading kernel BTF '/sys/kernel/btf/vmlinux': 0
+libbpf: sec 'xdp': found 2 CO-RE relocations
+libbpf: CO-RE relocating [30] struct xdp_md: found target candidate [7123] struct xdp_md in [vmlinux]
+libbpf: prog 'rs_agentsight_write_ctx_merge': relo #0: <byte_off> [30] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_agentsight_write_ctx_merge': relo #0: matching candidate #0 <byte_off> [7123] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_agentsight_write_ctx_merge': relo #0: patched insn #1 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'rs_agentsight_write_ctx_merge': relo #1: <byte_off> [30] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_agentsight_write_ctx_merge': relo #1: matching candidate #0 <byte_off> [7123] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_agentsight_write_ctx_merge': relo #1: patched insn #2 (LDX/ST/STX) off 0 -> 0
+libbpf: map 'write_ctx_map': created successfully, fd=4
+libbpf: map 'event_agg_map': created successfully, fd=5
+libbpf: map 'agg_overflow_count': created successfully, fd=6
+libbpf: prog 'rs_agentsight_write_ctx_merge': BPF program load failed: Permission denied
+libbpf: prog 'rs_agentsight_write_ctx_merge': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_agentsight_write_ctx_merge(struct xdp_md *ctx)
+0: (b7) r6 = 2                        ; R6_w=2
+; void *data_end = (void *)(long)ctx->data_end;
+1: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data;
+2: (61) r7 = *(u32 *)(r1 +0)          ; R1=ctx() R7_w=pkt(r=0)
+; if ((void *)(bytes + 5) > data_end)
+3: (bf) r1 = r7                       ; R1_w=pkt(r=0) R7_w=pkt(r=0)
+4: (07) r1 += 5                       ; R1_w=pkt(off=5,r=0)
+; if ((void *)(bytes + 5) > data_end)
+5: (2d) if r1 > r2 goto pc+105        ; R1_w=pkt(off=5,r=5) R2_w=pkt_end()
+; tid = bytes[1];
+6: (71) r1 = *(u8 *)(r7 +1)           ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_w=pkt(r=5)
+; pid = bytes[0];
+7: (71) r8 = *(u8 *)(r7 +0)           ; R7_w=pkt(r=5) R8_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; id = ((__u64)pid << 32) | tid;
+8: (bf) r2 = r8                       ; R2_w=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+9: (67) r2 <<= 32                     ; R2_w=scalar(smin=smin32=0,smax=umax=0xff00000000,smax32=umax32=0,var_off=(0x0; 0xff00000000))
+; id = ((__u64)pid << 32) | tid;
+10: (4f) r2 |= r1                     ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_w=scalar()
+; guarded = bytes[3];
+11: (71) r9 = *(u8 *)(r7 +3)          ; R7_w=pkt(r=5) R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; ret = bytes[2];
+12: (71) r1 = *(u8 *)(r7 +2)          ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_w=pkt(r=5)
+; id = ((__u64)pid << 32) | tid;
+13: (7b) *(u64 *)(r10 -56) = r2       ; R2_w=scalar() R10=fp0 fp-56_w=mmmmmmmm
+14: (7b) *(u64 *)(r10 -64) = r1       ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-64_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (ret == 0)
+15: (15) if r1 == 0x0 goto pc+95      ; R1_w=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+16: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+; fd_ptr = bpf_map_lookup_elem(&write_ctx_map, &id);
+17: (07) r2 += -56                    ; R2_w=fp-56
+18: (18) r1 = 0xffff8e204ce11c00      ; R1_w=map_ptr(map=write_ctx_map,ks=8,vs=4)
+20: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=2,map=write_ctx_map,ks=8,vs=4)
+; if (!fd_ptr)
+21: (15) if r0 == 0x0 goto pc+89      ; R0=map_value(map=write_ctx_map,ks=8,vs=4)
+; if (!(guarded & 1)) {
+22: (57) r9 &= 1                      ; R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; if (!(guarded & 1)) {
+23: (55) if r9 != 0x0 goto pc+9       ; R9_w=0
+; __u64 shadow_id = id + bytes[4];
+24: (71) r1 = *(u8 *)(r7 +4)          ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=pkt(r=5)
+; __u64 shadow_id = id + bytes[4];
+25: (79) r2 = *(u64 *)(r10 -56)       ; R2_w=scalar() R10=fp0 fp-56=mmmmmmmm
+; __u64 shadow_id = id + bytes[4];
+26: (0f) r2 += r1                     ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_w=scalar()
+; __u64 shadow_id = id + bytes[4];
+27: (7b) *(u64 *)(r10 -24) = r2       ; R2_w=scalar() R10=fp0 fp-24_w=mmmmmmmm
+28: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+; __u64 shadow_id = id + bytes[4];
+29: (07) r2 += -24                    ; R2_w=fp-24
+; fd_ptr = bpf_map_lookup_elem(&write_ctx_map, &shadow_id);
+30: (18) r1 = 0xffff8e204ce11c00      ; R1_w=map_ptr(map=write_ctx_map,ks=8,vs=4)
+32: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=3,map=write_ctx_map,ks=8,vs=4)
+33: (b7) r7 = 0                       ; R7_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+34: (63) *(u32 *)(r10 -24) = r7       ; R7_w=0 R10=fp0 fp-24=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+35: (61) r1 = *(u32 *)(r10 -24)       ; R1_w=0 R10=fp0 fp-24=mmmm0
+36: (07) r1 += 1                      ; R1_w=1
+37: (63) *(u32 *)(r10 -24) = r1       ; R1_w=1 R10=fp0 fp-24=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+38: (63) *(u32 *)(r10 -24) = r7       ; R7_w=0 R10=fp0 fp-24=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+39: (61) r1 = *(u32 *)(r10 -24)       ; R1_w=0 R10=fp0 fp-24=mmmm0
+40: (07) r1 += 1                      ; R1_w=1
+41: (63) *(u32 *)(r10 -24) = r1       ; R1_w=1 R10=fp0 fp-24=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+42: (63) *(u32 *)(r10 -24) = r7       ; R7_w=0 R10=fp0 fp-24=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+43: (61) r1 = *(u32 *)(r10 -24)       ; R1_w=0 R10=fp0 fp-24=mmmm0
+44: (07) r1 += 1                      ; R1_w=1
+45: (63) *(u32 *)(r10 -24) = r1       ; R1_w=1 R10=fp0 fp-24=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+46: (63) *(u32 *)(r10 -24) = r7       ; R7_w=0 R10=fp0 fp-24=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+47: (61) r1 = *(u32 *)(r10 -24)       ; R1_w=0 R10=fp0 fp-24=mmmm0
+48: (07) r1 += 1                      ; R1_w=1
+49: (63) *(u32 *)(r10 -24) = r1       ; R1_w=1 R10=fp0 fp-24=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+50: (63) *(u32 *)(r10 -24) = r7       ; R7_w=0 R10=fp0 fp-24=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+51: (61) r1 = *(u32 *)(r10 -24)       ; R1_w=0 R10=fp0 fp-24=mmmm0
+52: (07) r1 += 1                      ; R1_w=1
+53: (63) *(u32 *)(r10 -24) = r1       ; R1_w=1 R10=fp0 fp-24=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+54: (63) *(u32 *)(r10 -24) = r7       ; R7_w=0 R10=fp0 fp-24=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+55: (61) r1 = *(u32 *)(r10 -24)       ; R1_w=0 R10=fp0 fp-24=mmmm0
+56: (07) r1 += 1                      ; R1_w=1
+57: (63) *(u32 *)(r10 -24) = r1       ; R1_w=1 R10=fp0 fp-24=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+58: (63) *(u32 *)(r10 -24) = r7       ; R7_w=0 R10=fp0 fp-24=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+59: (61) r1 = *(u32 *)(r10 -24)       ; R1_w=0 R10=fp0 fp-24=mmmm0
+60: (07) r1 += 1                      ; R1_w=1
+61: (63) *(u32 *)(r10 -24) = r1       ; R1_w=1 R10=fp0 fp-24=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+62: (63) *(u32 *)(r10 -24) = r7       ; R7_w=0 R10=fp0 fp-24=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+63: (61) r1 = *(u32 *)(r10 -24)       ; R1_w=0 R10=fp0 fp-24=mmmm0
+64: (07) r1 += 1                      ; R1_w=1
+65: (63) *(u32 *)(r10 -24) = r1       ; R1_w=1 R10=fp0 fp-24=mmmm1
+; fd = *fd_ptr;
+66: (61) r9 = *(u32 *)(r0 +0)
+R0 invalid mem access 'map_value_or_null'
+verification time 279 usec
+stack depth 64
+processed 65 insns (limit 1000000) max_states_per_insn 0 total_states 2 peak_states 2 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_agentsight_write_ctx_merge': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-wtbxxrtk/rs_agentsight_write_ctx_merge_001__VPADC.buggy.o'
+Error: failed to load object file

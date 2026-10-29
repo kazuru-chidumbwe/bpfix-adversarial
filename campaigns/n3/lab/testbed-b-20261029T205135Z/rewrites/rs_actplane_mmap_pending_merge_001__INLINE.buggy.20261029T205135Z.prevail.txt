@@ -1,0 +1,10 @@
+PREVAIL exit=1
+(program xdp/rs_actplane_mmap_pending_merge)
+FAIL: xdp/rs_actplane_mmap_pending_merge
+
+; /home/test/bpfix-b/repo/campaigns/n3/rs_actplane_mmap_pending_merge_001/INLINE.buggy.bpf.c:219
+;     fd = pending->fd;
+
+30: Possible null access (valid_access(r7.offset, width=4) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

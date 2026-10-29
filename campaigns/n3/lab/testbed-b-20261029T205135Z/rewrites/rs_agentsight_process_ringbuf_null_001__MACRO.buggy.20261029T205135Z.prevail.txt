@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: tc/rs_agentsight_process_ringbuf_null
+
+; /home/test/bpfix-b/repo/campaigns/n3/rs_agentsight_process_ringbuf_null_001/MACRO.buggy.bpf.c:47
+;     ADV_STMT(e->type = 1);
+
+14: Possible null access (valid_access(r0.offset, width=4) for write)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

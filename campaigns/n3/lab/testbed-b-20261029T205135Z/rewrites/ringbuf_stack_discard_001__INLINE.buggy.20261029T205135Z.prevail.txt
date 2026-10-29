@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/ringbuf_stack_discard
+
+; /home/test/bpfix-b/repo/campaigns/n3/ringbuf_stack_discard_001/INLINE.buggy.bpf.c:35
+;     bpf_ringbuf_discard(&rec, 0);
+
+14: Invalid type (r1.type == alloc_mem)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

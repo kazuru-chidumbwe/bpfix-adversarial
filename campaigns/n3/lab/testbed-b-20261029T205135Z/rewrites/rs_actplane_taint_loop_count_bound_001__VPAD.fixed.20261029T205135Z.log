@@ -1,0 +1,647 @@
+libbpf: loading object from /tmp/bpfix-cap-wtbxxrtk/rs_actplane_taint_loop_count_bound_001__VPAD.fixed.o
+libbpf: elf: section(2) .text, size 344, link 0, flags 6, type=1
+libbpf: sec '.text': found program 'scan_slot_cb' at insn offset 0 (0 bytes), code size 43 insns (344 bytes)
+libbpf: elf: section(3) xdp, size 288, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'rs_actplane_taint_loop_count_bound' at insn offset 0 (0 bytes), code size 36 insns (288 bytes)
+libbpf: elf: section(4) .relxdp, size 16, link 26, flags 40, type=9
+libbpf: elf: section(5) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-wtbxxrtk/rs_actplane_taint_loop_count_bound_001__VPAD.fixed.o is GPL
+libbpf: elf: section(16) .BTF, size 1175, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 900, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 432, link 1, flags 0, type=2
+libbpf: looking for externs among 18 symbols...
+libbpf: collected 0 externs total
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #27 against '.text'
+libbpf: loading kernel BTF '/sys/kernel/btf/vmlinux': 0
+libbpf: sec 'xdp': found 2 CO-RE relocations
+libbpf: CO-RE relocating [2] struct xdp_md: found target candidate [7123] struct xdp_md in [vmlinux]
+libbpf: prog 'rs_actplane_taint_loop_count_bound': relo #0: <byte_off> [2] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_actplane_taint_loop_count_bound': relo #0: matching candidate #0 <byte_off> [7123] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_actplane_taint_loop_count_bound': relo #0: patched insn #0 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'rs_actplane_taint_loop_count_bound': relo #1: <byte_off> [2] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_actplane_taint_loop_count_bound': relo #1: matching candidate #0 <byte_off> [7123] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_actplane_taint_loop_count_bound': relo #1: patched insn #1 (LDX/ST/STX) off 0 -> 0
+libbpf: prog 'rs_actplane_taint_loop_count_bound': added 43 insns from sub-prog 'scan_slot_cb'
+libbpf: prog 'rs_actplane_taint_loop_count_bound': insn #27 relocated, imm 8 points to subprog 'scan_slot_cb' (now at 36 offset)
+libbpf: prog 'rs_actplane_taint_loop_count_bound': -- BEGIN PROG LOAD LOG --
+func#0 @0
+func#1 @36
+0: R1=ctx() R10=fp0
+; void *data_end = (void *)(long)ctx->data_end;
+0: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data;
+1: (61) r1 = *(u32 *)(r1 +0)          ; R1_w=pkt(r=0)
+2: (b7) r3 = 0                        ; R3_w=0
+; struct scan_ctx scan = {};
+3: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: last_idx 3 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r3 stack= before 2: (b7) r3 = 0
+4: R3_w=0 R10=fp0 fp-16=0000????
+4: (b7) r0 = 2                        ; R0_w=2
+; if ((void *)(bytes + SLOT_COUNT) > data_end)
+5: (bf) r3 = r1                       ; R1_w=pkt(r=0) R3_w=pkt(r=0)
+6: (07) r3 += 8                       ; R3_w=pkt(off=8,r=0)
+; if ((void *)(bytes + SLOT_COUNT) > data_end)
+7: (2d) if r3 > r2 goto pc+27         ; R2_w=pkt_end() R3_w=pkt(off=8,r=8)
+; scan.slots[i] = bytes[i];
+8: (71) r2 = *(u8 *)(r1 +0)           ; R1_w=pkt(r=8) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; scan.slots[i] = bytes[i];
+9: (73) *(u8 *)(r10 -8) = r2          ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=???????scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; scan.slots[i] = bytes[i];
+10: (71) r2 = *(u8 *)(r1 +1)          ; R1_w=pkt(r=8) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; scan.slots[i] = bytes[i];
+11: (73) *(u8 *)(r10 -7) = r2         ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=??????mm
+; scan.slots[i] = bytes[i];
+12: (71) r2 = *(u8 *)(r1 +2)          ; R1_w=pkt(r=8) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; scan.slots[i] = bytes[i];
+13: (73) *(u8 *)(r10 -6) = r2         ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=?????mmm
+; scan.slots[i] = bytes[i];
+14: (71) r2 = *(u8 *)(r1 +3)          ; R1_w=pkt(r=8) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; scan.slots[i] = bytes[i];
+15: (73) *(u8 *)(r10 -5) = r2         ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=????mmmm
+; scan.slots[i] = bytes[i];
+16: (71) r2 = *(u8 *)(r1 +4)          ; R1_w=pkt(r=8) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; scan.slots[i] = bytes[i];
+17: (73) *(u8 *)(r10 -4) = r2         ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=???mmmmm
+; scan.slots[i] = bytes[i];
+18: (71) r2 = *(u8 *)(r1 +5)          ; R1_w=pkt(r=8) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; scan.slots[i] = bytes[i];
+19: (73) *(u8 *)(r10 -3) = r2         ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=??mmmmmm
+; scan.slots[i] = bytes[i];
+20: (71) r2 = *(u8 *)(r1 +6)          ; R1_w=pkt(r=8) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; scan.slots[i] = bytes[i];
+21: (73) *(u8 *)(r10 -2) = r2         ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=?mmmmmmm
+; scan.slots[i] = bytes[i];
+22: (71) r1 = *(u8 *)(r1 +7)          ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; scan.slots[i] = bytes[i];
+23: (73) *(u8 *)(r10 -1) = r1         ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+24: (bf) r3 = r10                     ; R3_w=fp0 R10=fp0
+; 
+25: (07) r3 += -12                    ; R3_w=fp-12
+; bpf_loop(LOOP_COUNT, scan_slot_cb, &scan, 0);
+26: (b7) r1 = 16                      ; R1_w=16
+27: (18) r2 = 0x8                     ; R2_w=func()
+29: (b7) r4 = 0                       ; R4=0
+30: (85) call bpf_loop#181
+mark_precise: frame0: last_idx 30 first_idx 30 subseq_idx -1 
+mark_precise: frame0: parent state regs=r4 stack=:  R0_w=2 R1_rw=16 R2_rw=func() R3_rw=fp-12 R4_rw=P0 R10=fp0 fp-8=mmmmmmmm fp-16=0000????
+mark_precise: frame0: last_idx 29 first_idx 0 subseq_idx 30 
+mark_precise: frame0: regs=r4 stack= before 29: (b7) r4 = 0
+mark_precise: frame0: last_idx 30 first_idx 30 subseq_idx -1 
+mark_precise: frame0: parent state regs=r1 stack=:  R0_w=2 R1_rw=P16 R2_rw=func() R3_rw=fp-12 R4_rw=P0 R10=fp0 fp-8=mmmmmmmm fp-16=0000????
+mark_precise: frame0: last_idx 29 first_idx 0 subseq_idx 30 
+mark_precise: frame0: regs=r1 stack= before 29: (b7) r4 = 0
+mark_precise: frame0: regs=r1 stack= before 27: (18) r2 = 0x8
+mark_precise: frame0: regs=r1 stack= before 26: (b7) r1 = 16
+31: R0_w=scalar() R10=fp0 fp-8=mmmmmmmm fp-16=0000????
+31: (b7) r0 = 1                       ; R0_w=1
+; return scan.hits >= 2 ? XDP_DROP : XDP_PASS;
+32: (61) r1 = *(u32 *)(r10 -12)       ; R1_w=0 R10=fp0 fp-16=0000????
+; return scan.hits >= 2 ? XDP_DROP : XDP_PASS;
+33: (25) if r1 > 0x1 goto pc+1
+mark_precise: frame0: last_idx 33 first_idx 30 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 32: (61) r1 = *(u32 *)(r10 -12)
+33: R1_w=0
+34: (b7) r0 = 2                       ; R0_w=2
+; }
+35: (95) exit
+
+from 30 to 36: frame1: R1=scalar() R2=fp[0]-12 R10=fp0 cb
+36: frame1: R1=scalar() R2=fp[0]-12 R10=fp0 cb
+; static long scan_slot_cb(__u32 idx, void *data)
+36: (b7) r3 = 0                       ; frame1: R3_w=0 cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+37: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: last_idx 37 first_idx 30 subseq_idx -1 
+mark_precise: frame1: regs=r3 stack= before 36: (b7) r3 = 0
+38: frame1: R3_w=0 R10=fp0 fp-8=0000???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+38: (61) r4 = *(u32 *)(r10 -4)        ; frame1: R4_w=0 R10=fp0 fp-8=0000???? cb
+39: (07) r4 += 1                      ; frame1: R4_w=1 cb
+40: (63) *(u32 *)(r10 -4) = r4        ; frame1: R4_w=1 R10=fp0 fp-8=mmmm???? cb
+; __u8 marker = ctx->slots[idx];
+41: (57) r1 &= 7                      ; frame1: R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=7,var_off=(0x0; 0x7)) cb
+42: (bf) r4 = r2                      ; frame1: R2=fp[0]-12 R4_w=fp[0]-12 cb
+43: (0f) r4 += r1
+mark_precise: frame1: last_idx 43 first_idx 30 subseq_idx -1 
+mark_precise: frame1: regs=r1 stack= before 42: (bf) r4 = r2
+mark_precise: frame1: regs=r1 stack= before 41: (57) r1 &= 7
+mark_precise: frame1: regs=r1 stack= before 40: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame1: regs=r1 stack= before 39: (07) r4 += 1
+mark_precise: frame1: regs=r1 stack= before 38: (61) r4 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r1 stack= before 37: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r1 stack= before 36: (b7) r3 = 0
+mark_precise: frame1: regs=r1 stack= before 30: (85) call bpf_loop#181
+44: frame1: R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=7,var_off=(0x0; 0x7)) R4_w=fp[0](off=-12,smin=smin32=0,smax=umax=smax32=umax32=7,var_off=(0x0; 0x7)) cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+44: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: last_idx 44 first_idx 30 subseq_idx -1 
+mark_precise: frame1: regs=r3 stack= before 43: (0f) r4 += r1
+mark_precise: frame1: regs=r3 stack= before 42: (bf) r4 = r2
+mark_precise: frame1: regs=r3 stack= before 41: (57) r1 &= 7
+mark_precise: frame1: regs=r3 stack= before 40: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame1: regs=r3 stack= before 39: (07) r4 += 1
+mark_precise: frame1: regs=r3 stack= before 38: (61) r4 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 37: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 36: (b7) r3 = 0
+45: frame1: R3_w=0 R10=fp0 fp-8=0000???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+45: (61) r1 = *(u32 *)(r10 -4)        ; frame1: R1_w=0 R10=fp0 fp-8=0000???? cb
+46: (07) r1 += 1                      ; frame1: R1_w=1 cb
+47: (63) *(u32 *)(r10 -4) = r1        ; frame1: R1_w=1 R10=fp0 fp-8=mmmm???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+48: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: last_idx 48 first_idx 30 subseq_idx -1 
+mark_precise: frame1: regs=r3 stack= before 47: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 46: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 45: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 44: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 43: (0f) r4 += r1
+mark_precise: frame1: regs=r3 stack= before 42: (bf) r4 = r2
+mark_precise: frame1: regs=r3 stack= before 41: (57) r1 &= 7
+mark_precise: frame1: regs=r3 stack= before 40: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame1: regs=r3 stack= before 39: (07) r4 += 1
+mark_precise: frame1: regs=r3 stack= before 38: (61) r4 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 37: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 36: (b7) r3 = 0
+49: frame1: R3_w=0 R10=fp0 fp-8=0000???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+49: (61) r1 = *(u32 *)(r10 -4)        ; frame1: R1_w=0 R10=fp0 fp-8=0000???? cb
+50: (07) r1 += 1                      ; frame1: R1_w=1 cb
+51: (63) *(u32 *)(r10 -4) = r1        ; frame1: R1_w=1 R10=fp0 fp-8=mmmm???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+52: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: last_idx 52 first_idx 30 subseq_idx -1 
+mark_precise: frame1: regs=r3 stack= before 51: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 50: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 49: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 48: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 47: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 46: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 45: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 44: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 43: (0f) r4 += r1
+mark_precise: frame1: regs=r3 stack= before 42: (bf) r4 = r2
+mark_precise: frame1: regs=r3 stack= before 41: (57) r1 &= 7
+mark_precise: frame1: regs=r3 stack= before 40: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame1: regs=r3 stack= before 39: (07) r4 += 1
+mark_precise: frame1: regs=r3 stack= before 38: (61) r4 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 37: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 36: (b7) r3 = 0
+53: frame1: R3_w=0 R10=fp0 fp-8=0000???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+53: (61) r1 = *(u32 *)(r10 -4)        ; frame1: R1_w=0 R10=fp0 fp-8=0000???? cb
+54: (07) r1 += 1                      ; frame1: R1_w=1 cb
+55: (63) *(u32 *)(r10 -4) = r1        ; frame1: R1_w=1 R10=fp0 fp-8=mmmm???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+56: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: last_idx 56 first_idx 30 subseq_idx -1 
+mark_precise: frame1: regs=r3 stack= before 55: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 54: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 53: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 52: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 51: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 50: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 49: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 48: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 47: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 46: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 45: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 44: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 43: (0f) r4 += r1
+mark_precise: frame1: regs=r3 stack= before 42: (bf) r4 = r2
+mark_precise: frame1: regs=r3 stack= before 41: (57) r1 &= 7
+mark_precise: frame1: regs=r3 stack= before 40: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame1: regs=r3 stack= before 39: (07) r4 += 1
+mark_precise: frame1: regs=r3 stack= before 38: (61) r4 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 37: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 36: (b7) r3 = 0
+57: frame1: R3_w=0 R10=fp0 fp-8=0000???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+57: (61) r1 = *(u32 *)(r10 -4)        ; frame1: R1_w=0 R10=fp0 fp-8=0000???? cb
+58: (07) r1 += 1                      ; frame1: R1_w=1 cb
+59: (63) *(u32 *)(r10 -4) = r1        ; frame1: R1_w=1 R10=fp0 fp-8=mmmm???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+60: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: last_idx 60 first_idx 30 subseq_idx -1 
+mark_precise: frame1: regs=r3 stack= before 59: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 58: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 57: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 56: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 55: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 54: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 53: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 52: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 51: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 50: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 49: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 48: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 47: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 46: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 45: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 44: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 43: (0f) r4 += r1
+mark_precise: frame1: regs=r3 stack= before 42: (bf) r4 = r2
+mark_precise: frame1: regs=r3 stack= before 41: (57) r1 &= 7
+mark_precise: frame1: regs=r3 stack= before 40: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame1: regs=r3 stack= before 39: (07) r4 += 1
+mark_precise: frame1: regs=r3 stack= before 38: (61) r4 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 37: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 36: (b7) r3 = 0
+61: frame1: R3_w=0 R10=fp0 fp-8=0000???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+61: (61) r1 = *(u32 *)(r10 -4)        ; frame1: R1_w=0 R10=fp0 fp-8=0000???? cb
+62: (07) r1 += 1                      ; frame1: R1_w=1 cb
+63: (63) *(u32 *)(r10 -4) = r1        ; frame1: R1_w=1 R10=fp0 fp-8=mmmm???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+64: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: last_idx 64 first_idx 30 subseq_idx -1 
+mark_precise: frame1: regs=r3 stack= before 63: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 62: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 61: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 60: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 59: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 58: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 57: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 56: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 55: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 54: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 53: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 52: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 51: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 50: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 49: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 48: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 47: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 46: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 45: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 44: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 43: (0f) r4 += r1
+mark_precise: frame1: regs=r3 stack= before 42: (bf) r4 = r2
+mark_precise: frame1: regs=r3 stack= before 41: (57) r1 &= 7
+mark_precise: frame1: regs=r3 stack= before 40: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame1: regs=r3 stack= before 39: (07) r4 += 1
+mark_precise: frame1: regs=r3 stack= before 38: (61) r4 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 37: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 36: (b7) r3 = 0
+65: frame1: R3_w=0 R10=fp0 fp-8=0000???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+65: (61) r1 = *(u32 *)(r10 -4)        ; frame1: R1_w=0 R10=fp0 fp-8=0000???? cb
+66: (07) r1 += 1                      ; frame1: R1_w=1 cb
+67: (63) *(u32 *)(r10 -4) = r1        ; frame1: R1_w=1 R10=fp0 fp-8=mmmm???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+68: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: last_idx 68 first_idx 30 subseq_idx -1 
+mark_precise: frame1: regs=r3 stack= before 67: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 66: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 65: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 64: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 63: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 62: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 61: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 60: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 59: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 58: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 57: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 56: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 55: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 54: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 53: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 52: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 51: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 50: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 49: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 48: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 47: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 46: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 45: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 44: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 43: (0f) r4 += r1
+mark_precise: frame1: regs=r3 stack= before 42: (bf) r4 = r2
+mark_precise: frame1: regs=r3 stack= before 41: (57) r1 &= 7
+mark_precise: frame1: regs=r3 stack= before 40: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame1: regs=r3 stack= before 39: (07) r4 += 1
+mark_precise: frame1: regs=r3 stack= before 38: (61) r4 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 37: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 36: (b7) r3 = 0
+69: frame1: R3_w=0 R10=fp0 fp-8=0000???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+69: (61) r1 = *(u32 *)(r10 -4)        ; frame1: R1_w=0 R10=fp0 fp-8=0000???? cb
+70: (07) r1 += 1                      ; frame1: R1_w=1 cb
+71: (63) *(u32 *)(r10 -4) = r1        ; frame1: R1_w=1 R10=fp0 fp-8=mmmm???? cb
+; __u8 marker = ctx->slots[idx];
+72: (71) r1 = *(u8 *)(r4 +4)          ; frame1: R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=fp[0](off=-12,smin=smin32=0,smax=umax=smax32=umax32=7,var_off=(0x0; 0x7)) fp-8=mmmm???? cb
+; if (marker == 0xaa)
+73: (55) if r1 != 0xaa goto pc+3      ; frame1: R1=170 cb
+; ctx->hits++;
+74: (61) r1 = *(u32 *)(r2 +0)         ; frame1: R1_w=0 R2=fp[0]-12 cb
+75: (07) r1 += 1                      ; frame1: R1_w=1 cb
+76: (63) *(u32 *)(r2 +0) = r1         ; frame1: R1_w=1 R2=fp[0]-12 cb
+; return 0;
+77: (b7) r0 = 0                       ; frame1: R0_w=0 cb
+78: (95) exit
+mark_precise: frame1: last_idx 78 first_idx 73 subseq_idx -1 
+mark_precise: frame1: regs=r0 stack= before 77: (b7) r0 = 0
+returning from callee:
+ frame1: R0_w=0 R1_w=1 R2=fp[0]-12 R3=0 R4=fp[0](off=-12,smin=smin32=0,smax=umax=smax32=umax32=7,var_off=(0x0; 0x7)) R10=fp0 fp-8=mmmm???? cb
+to caller at 30:
+ R0=2 R1=16 R2=func() R3=fp-12 R4=0 R10=fp0 fp-8=mmmmmmmm fp-16=mmmm????
+
+from 78 to 30: R0=2 R1=16 R2=func() R3=fp-12 R4=0 R10=fp0 fp-8=mmmmmmmm fp-16=mmmm????
+; bpf_loop(LOOP_COUNT, scan_slot_cb, &scan, 0);
+30: (85) call bpf_loop#181
+mark_precise: frame0: last_idx 30 first_idx 30 subseq_idx -1 
+mark_precise: frame0: parent state regs=r4 stack=:  R0=2 R1_r=16 R2_r=func() R3_r=fp-12 R4_r=P0 R10=fp0 fp-8=mmmmmmmm fp-16=mmmm????
+mark_precise: frame0: last_idx 78 first_idx 73 subseq_idx 30 
+mark_precise: frame0: regs=r4 stack= before 78: (95) exit
+mark_precise: frame0: last_idx 30 first_idx 30 subseq_idx -1 
+mark_precise: frame0: parent state regs=r1 stack=:  R0=2 R1_r=P16 R2_r=func() R3_r=fp-12 R4_r=P0 R10=fp0 fp-8=mmmmmmmm fp-16=mmmm????
+mark_precise: frame0: last_idx 78 first_idx 73 subseq_idx 30 
+mark_precise: frame0: regs=r1 stack= before 78: (95) exit
+31: R0_w=scalar() R10=fp0 fp-8=mmmmmmmm fp-16=mmmm????
+31: (b7) r0 = 1                       ; R0_w=1
+; return scan.hits >= 2 ? XDP_DROP : XDP_PASS;
+32: (61) r1 = *(u32 *)(r10 -12)       ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-16=mmmm????
+; return scan.hits >= 2 ? XDP_DROP : XDP_PASS;
+33: (25) if r1 > 0x1 goto pc+1        ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+34: (b7) r0 = 2                       ; R0_w=2
+; }
+35: (95) exit
+
+from 33 to 35: R0_w=1 R1_w=scalar(smin=umin=umin32=2,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-8=mmmmmmmm fp-16=mmmm????
+35: R0_w=1 R1_w=scalar(smin=umin=umin32=2,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-8=mmmmmmmm fp-16=mmmm????
+35: (95) exit
+
+from 30 to 36: frame1: R1=scalar() R2=fp[0]-12 R10=fp0 cb
+36: frame1: R1=scalar() R2=fp[0]-12 R10=fp0 cb
+; static long scan_slot_cb(__u32 idx, void *data)
+36: (b7) r3 = 0                       ; frame1: R3_w=0 cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+37: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: last_idx 37 first_idx 30 subseq_idx -1 
+mark_precise: frame1: regs=r3 stack= before 36: (b7) r3 = 0
+38: frame1: R3_w=0 R10=fp0 fp-8=0000???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+38: (61) r4 = *(u32 *)(r10 -4)        ; frame1: R4_w=0 R10=fp0 fp-8=0000???? cb
+39: (07) r4 += 1                      ; frame1: R4_w=1 cb
+40: (63) *(u32 *)(r10 -4) = r4        ; frame1: R4_w=1 R10=fp0 fp-8=mmmm???? cb
+; __u8 marker = ctx->slots[idx];
+41: (57) r1 &= 7                      ; frame1: R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=7,var_off=(0x0; 0x7)) cb
+42: (bf) r4 = r2                      ; frame1: R2=fp[0]-12 R4_w=fp[0]-12 cb
+43: (0f) r4 += r1
+mark_precise: frame1: last_idx 43 first_idx 30 subseq_idx -1 
+mark_precise: frame1: regs=r1 stack= before 42: (bf) r4 = r2
+mark_precise: frame1: regs=r1 stack= before 41: (57) r1 &= 7
+mark_precise: frame1: regs=r1 stack= before 40: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame1: regs=r1 stack= before 39: (07) r4 += 1
+mark_precise: frame1: regs=r1 stack= before 38: (61) r4 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r1 stack= before 37: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r1 stack= before 36: (b7) r3 = 0
+mark_precise: frame1: regs=r1 stack= before 30: (85) call bpf_loop#181
+44: frame1: R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=7,var_off=(0x0; 0x7)) R4_w=fp[0](off=-12,smin=smin32=0,smax=umax=smax32=umax32=7,var_off=(0x0; 0x7)) cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+44: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: last_idx 44 first_idx 30 subseq_idx -1 
+mark_precise: frame1: regs=r3 stack= before 43: (0f) r4 += r1
+mark_precise: frame1: regs=r3 stack= before 42: (bf) r4 = r2
+mark_precise: frame1: regs=r3 stack= before 41: (57) r1 &= 7
+mark_precise: frame1: regs=r3 stack= before 40: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame1: regs=r3 stack= before 39: (07) r4 += 1
+mark_precise: frame1: regs=r3 stack= before 38: (61) r4 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 37: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 36: (b7) r3 = 0
+45: frame1: R3_w=0 R10=fp0 fp-8=0000???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+45: (61) r1 = *(u32 *)(r10 -4)        ; frame1: R1_w=0 R10=fp0 fp-8=0000???? cb
+46: (07) r1 += 1                      ; frame1: R1_w=1 cb
+47: (63) *(u32 *)(r10 -4) = r1        ; frame1: R1_w=1 R10=fp0 fp-8=mmmm???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+48: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: last_idx 48 first_idx 30 subseq_idx -1 
+mark_precise: frame1: regs=r3 stack= before 47: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 46: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 45: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 44: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 43: (0f) r4 += r1
+mark_precise: frame1: regs=r3 stack= before 42: (bf) r4 = r2
+mark_precise: frame1: regs=r3 stack= before 41: (57) r1 &= 7
+mark_precise: frame1: regs=r3 stack= before 40: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame1: regs=r3 stack= before 39: (07) r4 += 1
+mark_precise: frame1: regs=r3 stack= before 38: (61) r4 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 37: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 36: (b7) r3 = 0
+49: frame1: R3_w=0 R10=fp0 fp-8=0000???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+49: (61) r1 = *(u32 *)(r10 -4)        ; frame1: R1_w=0 R10=fp0 fp-8=0000???? cb
+50: (07) r1 += 1                      ; frame1: R1_w=1 cb
+51: (63) *(u32 *)(r10 -4) = r1        ; frame1: R1_w=1 R10=fp0 fp-8=mmmm???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+52: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: last_idx 52 first_idx 30 subseq_idx -1 
+mark_precise: frame1: regs=r3 stack= before 51: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 50: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 49: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 48: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 47: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 46: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 45: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 44: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 43: (0f) r4 += r1
+mark_precise: frame1: regs=r3 stack= before 42: (bf) r4 = r2
+mark_precise: frame1: regs=r3 stack= before 41: (57) r1 &= 7
+mark_precise: frame1: regs=r3 stack= before 40: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame1: regs=r3 stack= before 39: (07) r4 += 1
+mark_precise: frame1: regs=r3 stack= before 38: (61) r4 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 37: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 36: (b7) r3 = 0
+53: frame1: R3_w=0 R10=fp0 fp-8=0000???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+53: (61) r1 = *(u32 *)(r10 -4)        ; frame1: R1_w=0 R10=fp0 fp-8=0000???? cb
+54: (07) r1 += 1                      ; frame1: R1_w=1 cb
+55: (63) *(u32 *)(r10 -4) = r1        ; frame1: R1_w=1 R10=fp0 fp-8=mmmm???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+56: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: last_idx 56 first_idx 30 subseq_idx -1 
+mark_precise: frame1: regs=r3 stack= before 55: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 54: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 53: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 52: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 51: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 50: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 49: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 48: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 47: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 46: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 45: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 44: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 43: (0f) r4 += r1
+mark_precise: frame1: regs=r3 stack= before 42: (bf) r4 = r2
+mark_precise: frame1: regs=r3 stack= before 41: (57) r1 &= 7
+mark_precise: frame1: regs=r3 stack= before 40: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame1: regs=r3 stack= before 39: (07) r4 += 1
+mark_precise: frame1: regs=r3 stack= before 38: (61) r4 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 37: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 36: (b7) r3 = 0
+57: frame1: R3_w=0 R10=fp0 fp-8=0000???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+57: (61) r1 = *(u32 *)(r10 -4)        ; frame1: R1_w=0 R10=fp0 fp-8=0000???? cb
+58: (07) r1 += 1                      ; frame1: R1_w=1 cb
+59: (63) *(u32 *)(r10 -4) = r1        ; frame1: R1_w=1 R10=fp0 fp-8=mmmm???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+60: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: last_idx 60 first_idx 30 subseq_idx -1 
+mark_precise: frame1: regs=r3 stack= before 59: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 58: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 57: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 56: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 55: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 54: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 53: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 52: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 51: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 50: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 49: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 48: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 47: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 46: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 45: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 44: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 43: (0f) r4 += r1
+mark_precise: frame1: regs=r3 stack= before 42: (bf) r4 = r2
+mark_precise: frame1: regs=r3 stack= before 41: (57) r1 &= 7
+mark_precise: frame1: regs=r3 stack= before 40: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame1: regs=r3 stack= before 39: (07) r4 += 1
+mark_precise: frame1: regs=r3 stack= before 38: (61) r4 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 37: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 36: (b7) r3 = 0
+61: frame1: R3_w=0 R10=fp0 fp-8=0000???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+61: (61) r1 = *(u32 *)(r10 -4)        ; frame1: R1_w=0 R10=fp0 fp-8=0000???? cb
+62: (07) r1 += 1                      ; frame1: R1_w=1 cb
+63: (63) *(u32 *)(r10 -4) = r1        ; frame1: R1_w=1 R10=fp0 fp-8=mmmm???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+64: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: last_idx 64 first_idx 30 subseq_idx -1 
+mark_precise: frame1: regs=r3 stack= before 63: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 62: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 61: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 60: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 59: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 58: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 57: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 56: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 55: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 54: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 53: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 52: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 51: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 50: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 49: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 48: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 47: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 46: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 45: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 44: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 43: (0f) r4 += r1
+mark_precise: frame1: regs=r3 stack= before 42: (bf) r4 = r2
+mark_precise: frame1: regs=r3 stack= before 41: (57) r1 &= 7
+mark_precise: frame1: regs=r3 stack= before 40: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame1: regs=r3 stack= before 39: (07) r4 += 1
+mark_precise: frame1: regs=r3 stack= before 38: (61) r4 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 37: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 36: (b7) r3 = 0
+65: frame1: R3_w=0 R10=fp0 fp-8=0000???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+65: (61) r1 = *(u32 *)(r10 -4)        ; frame1: R1_w=0 R10=fp0 fp-8=0000???? cb
+66: (07) r1 += 1                      ; frame1: R1_w=1 cb
+67: (63) *(u32 *)(r10 -4) = r1        ; frame1: R1_w=1 R10=fp0 fp-8=mmmm???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+68: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: last_idx 68 first_idx 30 subseq_idx -1 
+mark_precise: frame1: regs=r3 stack= before 67: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 66: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 65: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 64: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 63: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 62: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 61: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 60: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 59: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 58: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 57: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 56: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 55: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 54: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 53: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 52: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 51: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 50: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 49: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 48: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 47: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame1: regs=r3 stack= before 46: (07) r1 += 1
+mark_precise: frame1: regs=r3 stack= before 45: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 44: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 43: (0f) r4 += r1
+mark_precise: frame1: regs=r3 stack= before 42: (bf) r4 = r2
+mark_precise: frame1: regs=r3 stack= before 41: (57) r1 &= 7
+mark_precise: frame1: regs=r3 stack= before 40: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame1: regs=r3 stack= before 39: (07) r4 += 1
+mark_precise: frame1: regs=r3 stack= before 38: (61) r4 = *(u32 *)(r10 -4)
+mark_precise: frame1: regs=r3 stack= before 37: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame1: regs=r3 stack= before 36: (b7) r3 = 0
+69: frame1: R3_w=0 R10=fp0 fp-8=0000???? cb
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+69: (61) r1 = *(u32 *)(r10 -4)        ; frame1: R1_w=0 R10=fp0 fp-8=0000???? cb
+70: (07) r1 += 1                      ; frame1: R1_w=1 cb
+71: (63) *(u32 *)(r10 -4) = r1        ; frame1: R1_w=1 R10=fp0 fp-8=mmmm???? cb
+; __u8 marker = ctx->slots[idx];
+72: (71) r1 = *(u8 *)(r4 +4)          ; frame1: R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=fp[0](off=-12,smin=smin32=0,smax=umax=smax32=umax32=7,var_off=(0x0; 0x7)) fp-8=mmmm???? cb
+; if (marker == 0xaa)
+73: (55) if r1 != 0xaa goto pc+3      ; frame1: R1_w=170 cb
+; ctx->hits++;
+74: (61) r1 = *(u32 *)(r2 +0)         ; frame1: R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R2=fp[0]-12 cb
+75: (07) r1 += 1                      ; frame1: R1_w=scalar(smin=umin=1,smax=umax=0x100000000,var_off=(0x0; 0x1ffffffff)) cb
+76: (63) *(u32 *)(r2 +0) = r1         ; frame1: R1=scalar(smin=umin=1,smax=umax=0x100000000,var_off=(0x0; 0x1ffffffff)) R2=fp[0]-12 cb
+; return 0;
+77: (b7) r0 = 0                       ; frame1: R0_w=0 cb
+78: (95) exit
+mark_precise: frame1: last_idx 78 first_idx 77 subseq_idx -1 
+mark_precise: frame1: regs=r0 stack= before 77: (b7) r0 = 0
+returning from callee:
+ frame1: R0_w=0 R1=scalar(smin=umin=1,smax=umax=0x100000000,var_off=(0x0; 0x1ffffffff)) R2=fp[0]-12 R3=0 R4=fp[0](off=-12,smin=smin32=0,smax=umax=smax32=umax32=7,var_off=(0x0; 0x7)) R10=fp0 fp-8=mmmm???? cb
+to caller at 30:
+ R0=2 R1=16 R2=func() R3=fp-12 R4=0 R10=fp0 fp-8=mmmmmmmm fp-16=mmmm????
+frame 0: propagating r1,r4
+mark_precise: frame0: last_idx 30 first_idx 77 subseq_idx -1 
+mark_precise: frame0: regs=r1,r4 stack= before 78: (95) exit
+
+from 78 to 30: safe
+
+from 73 to 77: safe
+
+from 73 to 77: frame1: R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=fp[0]-12 R3=0 R4=fp[0](off=-12,smin=smin32=0,smax=umax=smax32=umax32=7,var_off=(0x0; 0x7)) R10=fp0 fp-8=mmmm???? cb
+77: frame1: R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=fp[0]-12 R3=0 R4=fp[0](off=-12,smin=smin32=0,smax=umax=smax32=umax32=7,var_off=(0x0; 0x7)) R10=fp0 fp-8=mmmm???? cb
+77: (b7) r0 = 0                       ; frame1: R0_w=0 cb
+78: (95) exit
+mark_precise: frame1: last_idx 78 first_idx 73 subseq_idx -1 
+mark_precise: frame1: regs=r0 stack= before 77: (b7) r0 = 0
+returning from callee:
+ frame1: R0_w=0 R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=fp[0]-12 R3=0 R4=fp[0](off=-12,smin=smin32=0,smax=umax=smax32=umax32=7,var_off=(0x0; 0x7)) R10=fp0 fp-8=mmmm???? cb
+to caller at 30:
+ R0=2 R1=16 R2=func() R3=fp-12 R4=0 R10=fp0 fp-8=mmmmmmmm fp-16=0000????
+frame 0: propagating r1,r4
+mark_precise: frame0: last_idx 30 first_idx 73 subseq_idx -1 
+mark_precise: frame0: regs=r1,r4 stack= before 78: (95) exit
+
+from 78 to 30: safe
+
+from 7 to 35: R0_w=2 R1_w=pkt(r=0) R2_w=pkt_end() R3_w=pkt(off=8,r=0xfffffffffffffffe) R10=fp0 fp-16=0000????
+35: R0_w=2 R1_w=pkt(r=0) R2_w=pkt_end() R3_w=pkt(off=8,r=0xfffffffffffffffe) R10=fp0 fp-16=0000????
+; }
+35: (95) exit
+verification time 986 usec
+stack depth 40+8
+processed 134 insns (limit 1000000) max_states_per_insn 1 total_states 4 peak_states 4 mark_read 2
+-- END PROG LOAD LOG --

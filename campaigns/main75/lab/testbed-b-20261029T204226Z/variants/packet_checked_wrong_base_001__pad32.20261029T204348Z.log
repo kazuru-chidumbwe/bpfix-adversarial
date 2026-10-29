@@ -1,0 +1,176 @@
+libbpf: loading object from /tmp/bpfix-cap-emmxormt/packet_checked_wrong_base_001__pad32.o
+libbpf: elf: section(3) xdp, size 872, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'packet_checked_wrong_base' at insn offset 0 (0 bytes), code size 109 insns (872 bytes)
+libbpf: elf: section(4) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-emmxormt/packet_checked_wrong_base_001__pad32.o is GPL
+libbpf: elf: section(14) .BTF, size 1603, link 0, flags 0, type=1
+libbpf: elf: section(16) .BTF.ext, size 764, link 0, flags 0, type=1
+libbpf: elf: section(24) .symtab, size 336, link 1, flags 0, type=2
+libbpf: looking for externs among 14 symbols...
+libbpf: collected 0 externs total
+libbpf: loading kernel BTF '/sys/kernel/btf/vmlinux': 0
+libbpf: sec 'xdp': found 2 CO-RE relocations
+libbpf: CO-RE relocating [2] struct xdp_md: found target candidate [7123] struct xdp_md in [vmlinux]
+libbpf: prog 'packet_checked_wrong_base': relo #0: <byte_off> [2] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'packet_checked_wrong_base': relo #0: matching candidate #0 <byte_off> [7123] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'packet_checked_wrong_base': relo #0: patched insn #1 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'packet_checked_wrong_base': relo #1: <byte_off> [2] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'packet_checked_wrong_base': relo #1: matching candidate #0 <byte_off> [7123] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'packet_checked_wrong_base': relo #1: patched insn #2 (LDX/ST/STX) off 0 -> 0
+libbpf: prog 'packet_checked_wrong_base': BPF program load failed: Permission denied
+libbpf: prog 'packet_checked_wrong_base': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int packet_checked_wrong_base(struct xdp_md *ctx)
+0: (b7) r0 = 2                        ; R0_w=2
+; void *data_end = (void *)(long)ctx->data_end;
+1: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data;
+2: (61) r1 = *(u32 *)(r1 +0)          ; R1_w=pkt(r=0)
+; if (data + 14 > data_end)
+3: (bf) r3 = r1                       ; R1_w=pkt(r=0) R3_w=pkt(r=0)
+4: (07) r3 += 14                      ; R3_w=pkt(off=14,r=0)
+; if (data + 14 > data_end)
+5: (2d) if r3 > r2 goto pc+102        ; R2_w=pkt_end() R3_w=pkt(off=14,r=14)
+6: (b7) r2 = 0                        ; R2_w=0
+; volatile __u64 __bpfix_pad = 0;
+7: (7b) *(u64 *)(r10 -8) = r2         ; R2_w=0 R10=fp0 fp-8_w=0
+; __bpfix_pad += 1;
+8: (79) r2 = *(u64 *)(r10 -8)         ; R2_w=0 R10=fp0 fp-8_w=0
+9: (07) r2 += 1                       ; R2_w=1
+10: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=1 R10=fp0 fp-8_w=1
+; __bpfix_pad += 2;
+11: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=1 R10=fp0 fp-8_w=1
+12: (07) r2 += 2                      ; R2_w=3
+13: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=3 R10=fp0 fp-8_w=3
+; __bpfix_pad += 3;
+14: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=3 R10=fp0 fp-8_w=3
+15: (07) r2 += 3                      ; R2_w=6
+16: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=6 R10=fp0 fp-8_w=6
+; __bpfix_pad += 4;
+17: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=6 R10=fp0 fp-8_w=6
+18: (07) r2 += 4                      ; R2_w=10
+19: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=10 R10=fp0 fp-8_w=10
+; __bpfix_pad += 5;
+20: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=10 R10=fp0 fp-8_w=10
+21: (07) r2 += 5                      ; R2_w=15
+22: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=15 R10=fp0 fp-8_w=15
+; __bpfix_pad += 6;
+23: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=15 R10=fp0 fp-8_w=15
+24: (07) r2 += 6                      ; R2_w=21
+25: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=21 R10=fp0 fp-8_w=21
+; __bpfix_pad += 7;
+26: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=21 R10=fp0 fp-8_w=21
+27: (07) r2 += 7                      ; R2_w=28
+28: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=28 R10=fp0 fp-8_w=28
+; __bpfix_pad += 8;
+29: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=28 R10=fp0 fp-8_w=28
+30: (07) r2 += 8                      ; R2_w=36
+31: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=36 R10=fp0 fp-8_w=36
+; __bpfix_pad += 9;
+32: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=36 R10=fp0 fp-8_w=36
+33: (07) r2 += 9                      ; R2_w=45
+34: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=45 R10=fp0 fp-8_w=45
+; __bpfix_pad += 10;
+35: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=45 R10=fp0 fp-8_w=45
+36: (07) r2 += 10                     ; R2_w=55
+37: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=55 R10=fp0 fp-8_w=55
+; __bpfix_pad += 11;
+38: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=55 R10=fp0 fp-8_w=55
+39: (07) r2 += 11                     ; R2_w=66
+40: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=66 R10=fp0 fp-8_w=66
+; __bpfix_pad += 12;
+41: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=66 R10=fp0 fp-8_w=66
+42: (07) r2 += 12                     ; R2_w=78
+43: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=78 R10=fp0 fp-8_w=78
+; __bpfix_pad += 13;
+44: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=78 R10=fp0 fp-8_w=78
+45: (07) r2 += 13                     ; R2_w=91
+46: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=91 R10=fp0 fp-8_w=91
+; __bpfix_pad += 14;
+47: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=91 R10=fp0 fp-8_w=91
+48: (07) r2 += 14                     ; R2_w=105
+49: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=105 R10=fp0 fp-8_w=105
+; __bpfix_pad += 15;
+50: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=105 R10=fp0 fp-8_w=105
+51: (07) r2 += 15                     ; R2_w=120
+52: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=120 R10=fp0 fp-8_w=120
+; __bpfix_pad += 16;
+53: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=120 R10=fp0 fp-8_w=120
+54: (07) r2 += 16                     ; R2_w=136
+55: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=136 R10=fp0 fp-8_w=136
+; __bpfix_pad += 17;
+56: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=136 R10=fp0 fp-8_w=136
+57: (07) r2 += 17                     ; R2_w=153
+58: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=153 R10=fp0 fp-8_w=153
+; __bpfix_pad += 18;
+59: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=153 R10=fp0 fp-8_w=153
+60: (07) r2 += 18                     ; R2_w=171
+61: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=171 R10=fp0 fp-8_w=171
+; __bpfix_pad += 19;
+62: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=171 R10=fp0 fp-8_w=171
+63: (07) r2 += 19                     ; R2_w=190
+64: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=190 R10=fp0 fp-8_w=190
+; __bpfix_pad += 20;
+65: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=190 R10=fp0 fp-8_w=190
+66: (07) r2 += 20                     ; R2_w=210
+67: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=210 R10=fp0 fp-8_w=210
+; __bpfix_pad += 21;
+68: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=210 R10=fp0 fp-8_w=210
+69: (07) r2 += 21                     ; R2_w=231
+70: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=231 R10=fp0 fp-8_w=231
+; __bpfix_pad += 22;
+71: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=231 R10=fp0 fp-8_w=231
+72: (07) r2 += 22                     ; R2_w=253
+73: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=253 R10=fp0 fp-8_w=253
+; __bpfix_pad += 23;
+74: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=253 R10=fp0 fp-8_w=253
+75: (07) r2 += 23                     ; R2_w=276
+76: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=276 R10=fp0 fp-8_w=276
+; __bpfix_pad += 24;
+77: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=276 R10=fp0 fp-8_w=276
+78: (07) r2 += 24                     ; R2_w=300
+79: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=300 R10=fp0 fp-8_w=300
+; __bpfix_pad += 25;
+80: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=300 R10=fp0 fp-8_w=300
+81: (07) r2 += 25                     ; R2_w=325
+82: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=325 R10=fp0 fp-8_w=325
+; __bpfix_pad += 26;
+83: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=325 R10=fp0 fp-8_w=325
+84: (07) r2 += 26                     ; R2_w=351
+85: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=351 R10=fp0 fp-8_w=351
+; __bpfix_pad += 27;
+86: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=351 R10=fp0 fp-8_w=351
+87: (07) r2 += 27                     ; R2_w=378
+88: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=378 R10=fp0 fp-8_w=378
+; __bpfix_pad += 28;
+89: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=378 R10=fp0 fp-8_w=378
+90: (07) r2 += 28                     ; R2_w=406
+91: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=406 R10=fp0 fp-8_w=406
+; __bpfix_pad += 29;
+92: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=406 R10=fp0 fp-8_w=406
+93: (07) r2 += 29                     ; R2_w=435
+94: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=435 R10=fp0 fp-8_w=435
+; __bpfix_pad += 30;
+95: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=435 R10=fp0 fp-8_w=435
+96: (07) r2 += 30                     ; R2_w=465
+97: (7b) *(u64 *)(r10 -8) = r2        ; R2_w=465 R10=fp0 fp-8_w=465
+; __bpfix_pad += 31;
+98: (79) r2 = *(u64 *)(r10 -8)        ; R2_w=465 R10=fp0 fp-8_w=465
+99: (07) r2 += 31                     ; R2_w=496
+100: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=496 R10=fp0 fp-8_w=496
+; __bpfix_pad += 32;
+101: (79) r2 = *(u64 *)(r10 -8)       ; R2_w=496 R10=fp0 fp-8_w=496
+102: (07) r2 += 32                    ; R2_w=528
+103: (7b) *(u64 *)(r10 -8) = r2       ; R2_w=528 R10=fp0 fp-8_w=528
+; proto = *(__u16 *)(shifted + 12);
+104: (69) r1 = *(u16 *)(r1 +13)
+invalid access to packet, off=13 size=2, R1(id=0,off=13,r=14)
+R1 offset is outside of the packet
+verification time 421 usec
+stack depth 8
+processed 105 insns (limit 1000000) max_states_per_insn 0 total_states 0 peak_states 0 mark_read 0
+-- END PROG LOAD LOG --
+libbpf: prog 'packet_checked_wrong_base': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-emmxormt/packet_checked_wrong_base_001__pad32.o'
+Error: failed to load object file

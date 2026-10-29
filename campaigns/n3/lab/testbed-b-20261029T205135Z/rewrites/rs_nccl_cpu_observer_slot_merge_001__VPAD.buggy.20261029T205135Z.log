@@ -1,0 +1,685 @@
+libbpf: loading object from /tmp/bpfix-cap-wtbxxrtk/rs_nccl_cpu_observer_slot_merge_001__VPAD.buggy.o
+libbpf: elf: section(3) tp/sched/sched_switch, size 2176, link 0, flags 6, type=1
+libbpf: sec 'tp/sched/sched_switch': found program 'rs_nccl_cpu_observer_slot_merge' at insn offset 0 (0 bytes), code size 272 insns (2176 bytes)
+libbpf: elf: section(4) .reltp/sched/sched_switch, size 48, link 27, flags 40, type=9
+libbpf: elf: section(5) .maps, size 104, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-wtbxxrtk/rs_nccl_cpu_observer_slot_merge_001__VPAD.buggy.o is GPL
+libbpf: elf: section(17) .BTF, size 3725, link 0, flags 0, type=1
+libbpf: elf: section(19) .BTF.ext, size 2332, link 0, flags 0, type=1
+libbpf: elf: section(27) .symtab, size 600, link 1, flags 0, type=2
+libbpf: looking for externs among 25 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'config_map': at sec_idx 5, offset 0.
+libbpf: map 'config_map': found type = 2.
+libbpf: map 'config_map': found key [8], sz = 4.
+libbpf: map 'config_map': found value [11], sz = 16.
+libbpf: map 'config_map': found max_entries = 1.
+libbpf: map 'percpu_slot_map': at sec_idx 5, offset 32.
+libbpf: map 'percpu_slot_map': found type = 5.
+libbpf: map 'percpu_slot_map': found key [8], sz = 4.
+libbpf: map 'percpu_slot_map': found value [19], sz = 16.
+libbpf: map 'percpu_slot_map': found max_entries = 1024.
+libbpf: map 'state_map': at sec_idx 5, offset 64.
+libbpf: map 'state_map': found type = 2.
+libbpf: map 'state_map': found key [8], sz = 4.
+libbpf: map 'state_map': found value [25], sz = 24.
+libbpf: map 'state_map': found max_entries = 1.
+libbpf: map 'state_map': found map_flags = 0x400.
+libbpf: sec '.reltp/sched/sched_switch': collecting relocation for section(3) 'tp/sched/sched_switch'
+libbpf: sec '.reltp/sched/sched_switch': relo #0: insn #5 against 'config_map'
+libbpf: prog 'rs_nccl_cpu_observer_slot_merge': found map 0 (config_map, sec 5, off 0) for insn #5
+libbpf: sec '.reltp/sched/sched_switch': relo #1: insn #38 against 'percpu_slot_map'
+libbpf: prog 'rs_nccl_cpu_observer_slot_merge': found map 1 (percpu_slot_map, sec 5, off 32) for insn #38
+libbpf: sec '.reltp/sched/sched_switch': relo #2: insn #253 against 'state_map'
+libbpf: prog 'rs_nccl_cpu_observer_slot_merge': found map 2 (state_map, sec 5, off 64) for insn #253
+libbpf: loading kernel BTF '/sys/kernel/btf/vmlinux': 0
+libbpf: sec 'tp/sched/sched_switch': found 2 CO-RE relocations
+libbpf: CO-RE relocating [32] struct trace_event_raw_sched_switch: found target candidate [73034] struct trace_event_raw_sched_switch in [vmlinux]
+libbpf: prog 'rs_nccl_cpu_observer_slot_merge': relo #0: <byte_off> [32] struct trace_event_raw_sched_switch.next_pid (0:6 @ offset 56)
+libbpf: prog 'rs_nccl_cpu_observer_slot_merge': relo #0: matching candidate #0 <byte_off> [73034] struct trace_event_raw_sched_switch.next_pid (0:6 @ offset 56)
+libbpf: prog 'rs_nccl_cpu_observer_slot_merge': relo #0: patched insn #13 (LDX/ST/STX) off 56 -> 56
+libbpf: prog 'rs_nccl_cpu_observer_slot_merge': relo #1: <byte_off> [32] struct trace_event_raw_sched_switch.prev_pid (0:2 @ offset 24)
+libbpf: prog 'rs_nccl_cpu_observer_slot_merge': relo #1: matching candidate #0 <byte_off> [73034] struct trace_event_raw_sched_switch.prev_pid (0:2 @ offset 24)
+libbpf: prog 'rs_nccl_cpu_observer_slot_merge': relo #1: patched insn #14 (LDX/ST/STX) off 24 -> 24
+libbpf: map 'config_map': created successfully, fd=4
+libbpf: map 'percpu_slot_map': created successfully, fd=5
+libbpf: map 'state_map': created successfully, fd=6
+libbpf: prog 'rs_nccl_cpu_observer_slot_merge': BPF program load failed: Permission denied
+libbpf: prog 'rs_nccl_cpu_observer_slot_merge': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_nccl_cpu_observer_slot_merge(struct trace_event_raw_sched_switch *ctx)
+0: (bf) r6 = r1                       ; R1=ctx() R6_w=ctx()
+1: (b7) r1 = 0                        ; R1_w=0
+; __u32 zero = 0;
+2: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 2 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 1: (b7) r1 = 0
+3: R1_w=0 R10=fp0 fp-8=0000????
+3: (bf) r2 = r10                      ; R2_w=fp0 R10=fp0
+; 
+4: (07) r2 += -4                      ; R2_w=fp-4
+; struct cpu_observer_config *cfg = bpf_map_lookup_elem(&config_map, &zero);
+5: (18) r1 = 0xffff8e217b1f5400       ; R1_w=map_ptr(map=config_map,ks=4,vs=16)
+7: (85) call bpf_map_lookup_elem#1    ; R0_w=map_value_or_null(id=1,map=config_map,ks=4,vs=16)
+8: (bf) r7 = r0                       ; R0_w=map_value_or_null(id=1,map=config_map,ks=4,vs=16) R7_w=map_value_or_null(id=1,map=config_map,ks=4,vs=16)
+; if (!cfg)
+9: (15) if r7 == 0x0 goto pc+260      ; R7_w=map_value(map=config_map,ks=4,vs=16)
+; __u32 target_pid = cfg->target_pid;
+10: (61) r8 = *(u32 *)(r7 +0)         ; R7=map_value(map=config_map,ks=4,vs=16) R8=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; if (target_pid == 0)
+11: (15) if r8 == 0x0 goto pc+258     ; R8=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; __u64 pid_tgid = bpf_get_current_pid_tgid();
+12: (85) call bpf_get_current_pid_tgid#14     ; R0_w=scalar()
+; pid_t next_pid = ctx->next_pid;
+13: (61) r1 = *(u32 *)(r6 +56)        ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R6=ctx()
+; pid_t prev_pid = ctx->prev_pid;
+14: (61) r6 = *(u32 *)(r6 +24)        ; R6_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+15: (67) r6 <<= 32                    ; R6_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+16: (c7) r6 s>>= 32                   ; R6_w=scalar(smin=0xffffffff80000000,smax=0x7fffffff)
+; __u32 cur_tgid = (__u32)(pid_tgid >> 32);
+17: (77) r0 >>= 32                    ; R0_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; int relevant = (cur_tgid == target_pid) ||
+18: (1d) if r8 == r0 goto pc+5        ; R0_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R8=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+19: (bf) r2 = r6                      ; R2_w=scalar(id=2,smin=0xffffffff80000000,smax=0x7fffffff) R6_w=scalar(id=2,smin=0xffffffff80000000,smax=0x7fffffff)
+20: (67) r2 <<= 32                    ; R2_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+21: (77) r2 >>= 32                    ; R2=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+22: (1d) if r2 == r8 goto pc+1        ; R2=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R8=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+23: (5d) if r1 != r8 goto pc+246      ; R1=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R8=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; __u64 now_ns = bpf_ktime_get_ns();
+24: (85) call bpf_ktime_get_ns#5      ; R0_w=scalar()
+25: (bf) r9 = r0                      ; R0_w=scalar(id=3) R9_w=scalar(id=3)
+; __u32 cpu = bpf_get_smp_processor_id();
+26: (85) call bpf_get_smp_processor_id#8      ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=15,var_off=(0x0; 0xf))
+27: (67) r0 <<= 32                    ; R0_w=scalar(smin=smin32=0,smax=umax=0xf00000000,smax32=umax32=0,var_off=(0x0; 0xf00000000))
+28: (77) r0 >>= 32                    ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=15,var_off=(0x0; 0xf))
+29: (b7) r2 = 1                       ; R2_w=1
+; __u32 cpu_bit = cpu < 32u ? (1u << cpu) : 0u;
+30: (6f) r2 <<= r0                    ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=15,var_off=(0x0; 0xf)) R2_w=scalar()
+31: (b7) r1 = 32                      ; R1=32
+32: (2d) if r1 > r0 goto pc+1
+mark_precise: frame0: last_idx 32 first_idx 32 subseq_idx -1 
+mark_precise: frame0: parent state regs=r1 stack=:  R0_rw=scalar(smin=smin32=0,smax=umax=smax32=umax32=15,var_off=(0x0; 0xf)) R1_rw=P32 R2_w=scalar() R6=scalar(id=2,smin=0xffffffff80000000,smax=0x7fffffff) R7=map_value(map=config_map,ks=4,vs=16) R8=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R9_w=scalar(id=3) R10=fp0 fp-8=mmmm????
+mark_precise: frame0: last_idx 31 first_idx 22 subseq_idx 32 
+mark_precise: frame0: regs=r1 stack= before 31: (b7) r1 = 32
+mark_precise: frame0: last_idx 32 first_idx 32 subseq_idx -1 
+mark_precise: frame0: parent state regs=r0 stack=:  R0_rw=Pscalar(smin=smin32=0,smax=umax=smax32=umax32=15,var_off=(0x0; 0xf)) R1_rw=P32 R2_w=scalar() R6=scalar(id=2,smin=0xffffffff80000000,smax=0x7fffffff) R7=map_value(map=config_map,ks=4,vs=16) R8=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R9_w=scalar(id=3) R10=fp0 fp-8=mmmm????
+mark_precise: frame0: last_idx 31 first_idx 22 subseq_idx 32 
+mark_precise: frame0: regs=r0 stack= before 31: (b7) r1 = 32
+mark_precise: frame0: regs=r0 stack= before 30: (6f) r2 <<= r0
+mark_precise: frame0: regs=r0 stack= before 29: (b7) r2 = 1
+mark_precise: frame0: regs=r0 stack= before 28: (77) r0 >>= 32
+mark_precise: frame0: regs=r0 stack= before 27: (67) r0 <<= 32
+mark_precise: frame0: regs=r0 stack= before 26: (85) call bpf_get_smp_processor_id#8
+32: R0=scalar(smin=smin32=0,smax=umax=smax32=umax32=15,var_off=(0x0; 0xf)) R1=32
+34: (7b) *(u64 *)(r10 -40) = r2       ; R2=scalar() R10=fp0 fp-40_w=mmmmmmmm
+; __u32 slot_key = target_pid;
+35: (63) *(u32 *)(r10 -8) = r8        ; R8=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-8=mmmmscalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+36: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+; 
+37: (07) r2 += -8                     ; R2_w=fp-8
+; struct cpu_switch_slot *slot = bpf_map_lookup_elem(&percpu_slot_map, &slot_key);
+38: (18) r1 = 0xffff8e204ff68000      ; R1_w=map_ptr(map=percpu_slot_map,ks=4,vs=16)
+40: (85) call bpf_map_lookup_elem#1   ; R0_w=map_value_or_null(id=4,map=percpu_slot_map,ks=4,vs=16)
+; if (prev_pid < 0) {
+41: (65) if r6 s> 0xffffffff goto pc+5        ; R6=scalar(id=2,smin=0xffffffff80000000,smax=smax32=-1,umin=0xffffffff80000000,umin32=0x80000000,var_off=(0xffffffff80000000; 0x7fffffff))
+; if (!slot)
+42: (15) if r0 == 0x0 goto pc+227     ; R0=map_value(map=percpu_slot_map,ks=4,vs=16)
+; slot->cpu_seen_mask |= cpu_bit;
+43: (61) r1 = *(u32 *)(r0 +12)        ; R0=map_value(map=percpu_slot_map,ks=4,vs=16) R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+44: (79) r2 = *(u64 *)(r10 -40)       ; R2_w=scalar() R10=fp0 fp-40=mmmmmmmm
+45: (4f) r1 |= r2                     ; R1_w=scalar() R2_w=scalar()
+46: (63) *(u32 *)(r0 +12) = r1        ; R0=map_value(map=percpu_slot_map,ks=4,vs=16) R1_w=scalar()
+47: (b7) r1 = 0                       ; R1_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+48: (63) *(u32 *)(r10 -32) = r1       ; R1_w=0 R10=fp0 fp-32=????0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+49: (61) r2 = *(u32 *)(r10 -32)       ; R2_w=0 R10=fp0 fp-32=????0
+50: (07) r2 += 1                      ; R2_w=1
+51: (63) *(u32 *)(r10 -32) = r2       ; R2_w=1 R10=fp0 fp-32=????1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+52: (63) *(u32 *)(r10 -32) = r1       ; R1_w=0 R10=fp0 fp-32=????0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+53: (61) r2 = *(u32 *)(r10 -32)       ; R2_w=0 R10=fp0 fp-32=????0
+54: (07) r2 += 1                      ; R2_w=1
+55: (63) *(u32 *)(r10 -32) = r2       ; R2_w=1 R10=fp0 fp-32=????1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+56: (63) *(u32 *)(r10 -32) = r1       ; R1_w=0 R10=fp0 fp-32=????0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+57: (61) r2 = *(u32 *)(r10 -32)       ; R2_w=0 R10=fp0 fp-32=????0
+58: (07) r2 += 1                      ; R2_w=1
+59: (63) *(u32 *)(r10 -32) = r2       ; R2_w=1 R10=fp0 fp-32=????1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+60: (63) *(u32 *)(r10 -32) = r1       ; R1_w=0 R10=fp0 fp-32=????0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+61: (61) r2 = *(u32 *)(r10 -32)       ; R2_w=0 R10=fp0 fp-32=????0
+62: (07) r2 += 1                      ; R2_w=1
+63: (63) *(u32 *)(r10 -32) = r2       ; R2_w=1 R10=fp0 fp-32=????1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+64: (63) *(u32 *)(r10 -32) = r1       ; R1_w=0 R10=fp0 fp-32=????0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+65: (61) r2 = *(u32 *)(r10 -32)       ; R2_w=0 R10=fp0 fp-32=????0
+66: (07) r2 += 1                      ; R2_w=1
+67: (63) *(u32 *)(r10 -32) = r2       ; R2_w=1 R10=fp0 fp-32=????1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+68: (63) *(u32 *)(r10 -32) = r1       ; R1_w=0 R10=fp0 fp-32=????0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+69: (61) r2 = *(u32 *)(r10 -32)       ; R2_w=0 R10=fp0 fp-32=????0
+70: (07) r2 += 1                      ; R2_w=1
+71: (63) *(u32 *)(r10 -32) = r2       ; R2_w=1 R10=fp0 fp-32=????1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+72: (63) *(u32 *)(r10 -32) = r1       ; R1_w=0 R10=fp0 fp-32=????0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+73: (61) r2 = *(u32 *)(r10 -32)       ; R2_w=0 R10=fp0 fp-32=????0
+74: (07) r2 += 1                      ; R2_w=1
+75: (63) *(u32 *)(r10 -32) = r2       ; R2_w=1 R10=fp0 fp-32=????1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+76: (63) *(u32 *)(r10 -32) = r1       ; R1_w=0 R10=fp0 fp-32=????0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+77: (61) r1 = *(u32 *)(r10 -32)       ; R1_w=0 R10=fp0 fp-32=????0
+78: (07) r1 += 1                      ; R1_w=1
+79: (63) *(u32 *)(r10 -32) = r1       ; R1_w=1 R10=fp0 fp-32=????1
+; __u64 elapsed = now_ns - slot->window_start_ns;
+80: (79) r1 = *(u64 *)(r0 +0)         ; R0=map_value(map=percpu_slot_map,ks=4,vs=16) R1_w=scalar()
+; __u64 elapsed = now_ns - slot->window_start_ns;
+81: (bf) r3 = r9                      ; R3_w=scalar(id=3) R9=scalar(id=3)
+82: (1f) r3 -= r1                     ; R1_w=scalar() R3_w=scalar()
+; 
+83: (61) r8 = *(u32 *)(r0 +8)         ; R0=map_value(map=percpu_slot_map,ks=4,vs=16) R8_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+84: (b7) r2 = 1000000000              ; R2_w=0x3b9aca00
+; if (elapsed >= RATE_WINDOW_NS) {
+85: (2d) if r2 > r3 goto pc+178       ; R2_w=0x3b9aca00 R3_w=scalar(umin=0x3b9aca00)
+86: (7b) *(u64 *)(r10 -56) = r9       ; R9=scalar(id=3) R10=fp0 fp-56_w=mmmmmmmm
+87: (7b) *(u64 *)(r10 -64) = r0       ; R0=map_value(map=percpu_slot_map,ks=4,vs=16) R10=fp0 fp-64_w=map_value(map=percpu_slot_map,ks=4,vs=16)
+; __u32 allowed = popcount32(slot->cpu_seen_mask);
+88: (61) r2 = *(u32 *)(r0 +12)        ; R0=map_value(map=percpu_slot_map,ks=4,vs=16) R2_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; count += (value >> bit) & 1u;
+89: (bf) r5 = r2                      ; R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R5_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+90: (77) r5 >>= 13                    ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0x7ffff,var_off=(0x0; 0x7ffff))
+; count += (value >> bit) & 1u;
+91: (57) r5 &= 1                      ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+92: (bf) r4 = r2                      ; R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R4_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+93: (77) r4 >>= 5                     ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0x7ffffff,var_off=(0x0; 0x7ffffff))
+; count += (value >> bit) & 1u;
+94: (57) r4 &= 1                      ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+95: (0f) r4 += r5                     ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+96: (bf) r0 = r2                      ; R0_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+97: (77) r0 >>= 9                     ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0x7fffff,var_off=(0x0; 0x7fffff))
+; count += (value >> bit) & 1u;
+98: (57) r0 &= 1                      ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+99: (bf) r5 = r2                      ; R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R5_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+100: (77) r5 >>= 1                    ; R5_w=scalar(smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff))
+; count += (value >> bit) & 1u;
+101: (57) r5 &= 1                     ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+102: (0f) r5 += r0                    ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+; count += (value >> bit) & 1u;
+103: (bf) r0 = r2                     ; R0_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+104: (77) r0 >>= 15                   ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0x1ffff,var_off=(0x0; 0x1ffff))
+; count += (value >> bit) & 1u;
+105: (57) r0 &= 1                     ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+106: (bf) r6 = r2                     ; R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R6_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+107: (77) r6 >>= 7                    ; R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0x1ffffff,var_off=(0x0; 0x1ffffff))
+; count += (value >> bit) & 1u;
+108: (57) r6 &= 1                     ; R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+109: (0f) r6 += r0                    ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+; count += (value >> bit) & 1u;
+110: (bf) r9 = r2                     ; R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R9_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+111: (77) r9 >>= 11                   ; R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0x1fffff,var_off=(0x0; 0x1fffff))
+; count += (value >> bit) & 1u;
+112: (57) r9 &= 1                     ; R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+113: (bf) r0 = r2                     ; R0_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+114: (77) r0 >>= 3                    ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0x1fffffff,var_off=(0x0; 0x1fffffff))
+; count += (value >> bit) & 1u;
+115: (57) r0 &= 1                     ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+116: (0f) r0 += r9                    ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+117: (0f) r0 += r6                    ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+118: (0f) r5 += r4                    ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7))
+; count += (value >> bit) & 1u;
+119: (bf) r4 = r2                     ; R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R4_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+120: (77) r4 >>= 14                   ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0x3ffff,var_off=(0x0; 0x3ffff))
+; count += (value >> bit) & 1u;
+121: (57) r4 &= 1                     ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+122: (bf) r9 = r2                     ; R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R9_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+123: (77) r9 >>= 6                    ; R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0x3ffffff,var_off=(0x0; 0x3ffffff))
+; count += (value >> bit) & 1u;
+124: (57) r9 &= 1                     ; R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+125: (0f) r9 += r4                    ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+; count += (value >> bit) & 1u;
+126: (bf) r4 = r2                     ; R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R4_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+127: (77) r4 >>= 10                   ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0x3fffff,var_off=(0x0; 0x3fffff))
+; count += (value >> bit) & 1u;
+128: (57) r4 &= 1                     ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+129: (bf) r6 = r2                     ; R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R6_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+130: (77) r6 >>= 2                    ; R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0x3fffffff,var_off=(0x0; 0x3fffffff))
+; count += (value >> bit) & 1u;
+131: (57) r6 &= 1                     ; R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+132: (0f) r6 += r4                    ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+133: (0f) r5 += r0                    ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=8,var_off=(0x0; 0xf))
+134: (0f) r6 += r9                    ; R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+; count += (value >> bit) & 1u;
+135: (bf) r4 = r2                     ; R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R4_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+136: (77) r4 >>= 12                   ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xfffff,var_off=(0x0; 0xfffff))
+; count += (value >> bit) & 1u;
+137: (57) r4 &= 1                     ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+138: (bf) r0 = r2                     ; R0_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+139: (77) r0 >>= 4                    ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xfffffff,var_off=(0x0; 0xfffffff))
+; count += (value >> bit) & 1u;
+140: (57) r0 &= 1                     ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+141: (0f) r0 += r4                    ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+142: (bf) r9 = r2                     ; R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R9_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+143: (77) r9 >>= 8                    ; R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffffff,var_off=(0x0; 0xffffff))
+; count += (value >> bit) & 1u;
+144: (57) r9 &= 1                     ; R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+145: (bf) r4 = r2                     ; R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R4_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+146: (57) r4 &= 1                     ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+147: (0f) r4 += r9                    ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+148: (0f) r4 += r0                    ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7))
+149: (0f) r4 += r6                    ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=8,var_off=(0x0; 0xf)) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7))
+150: (0f) r4 += r5                    ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=16,var_off=(0x0; 0x1f)) R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=8,var_off=(0x0; 0xf))
+; count += (value >> bit) & 1u;
+151: (bf) r5 = r2                     ; R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R5_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+152: (77) r5 >>= 16                   ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+; count += (value >> bit) & 1u;
+153: (57) r5 &= 1                     ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+154: (0f) r4 += r5                    ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=17,var_off=(0x0; 0x1f)) R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+155: (bf) r0 = r2                     ; R0_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+156: (77) r0 >>= 18                   ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=16383,var_off=(0x0; 0x3fff))
+; count += (value >> bit) & 1u;
+157: (57) r0 &= 1                     ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+158: (bf) r5 = r2                     ; R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R5_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+159: (77) r5 >>= 17                   ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=32767,var_off=(0x0; 0x7fff))
+; count += (value >> bit) & 1u;
+160: (57) r5 &= 1                     ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+161: (0f) r5 += r0                    ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+; count += (value >> bit) & 1u;
+162: (bf) r0 = r2                     ; R0_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+163: (77) r0 >>= 30                   ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=3,var_off=(0x0; 0x3))
+; count += (value >> bit) & 1u;
+164: (57) r0 &= 1                     ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+165: (bf) r6 = r2                     ; R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R6_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+166: (77) r6 >>= 29                   ; R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=7,var_off=(0x0; 0x7))
+; count += (value >> bit) & 1u;
+167: (57) r6 &= 1                     ; R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+168: (0f) r6 += r0                    ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+; count += (value >> bit) & 1u;
+169: (bf) r9 = r2                     ; R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R9_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+170: (77) r9 >>= 28                   ; R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=15,var_off=(0x0; 0xf))
+; count += (value >> bit) & 1u;
+171: (57) r9 &= 1                     ; R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+172: (bf) r0 = r2                     ; R0_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R2_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+173: (77) r0 >>= 27                   ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=31,var_off=(0x0; 0x1f))
+; count += (value >> bit) & 1u;
+174: (57) r0 &= 1                     ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+175: (0f) r0 += r9                    ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; __u64 rate64 = ((__u64)slot->switches_in_window * RATE_WINDOW_NS) / duration_ns;
+176: (27) r8 *= 1000000000            ; R8_w=scalar(smin=0,smax=umax=0x3b9ac9ffc4653600,smax32=0x7ffffe00,umax32=0xfffffe00,var_off=(0x0; 0x3ffffffffffffe00))
+; __u32 cpuset_thresh = cfg->cpuset_limited_thresh_cpus ?: ALLOWED_CPUS_LIMITED_THRESH;
+177: (61) r9 = *(u32 *)(r7 +8)        ; R7=map_value(map=config_map,ks=4,vs=16) R9_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+178: (b7) r1 = 4                      ; R1_w=4
+; __u32 cpuset_thresh = cfg->cpuset_limited_thresh_cpus ?: ALLOWED_CPUS_LIMITED_THRESH;
+179: (7b) *(u64 *)(r10 -48) = r1      ; R1=4 R10=fp0 fp-48=4
+180: (15) if r9 == 0x0 goto pc+1      ; R9=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+181: (7b) *(u64 *)(r10 -48) = r9      ; R9=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-48_w=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; 
+182: (3f) r8 /= r3                    ; R3=scalar(umin=0x3b9aca00) R8_w=scalar()
+; count += (value >> bit) & 1u;
+183: (0f) r4 += r5                    ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=19,var_off=(0x0; 0x1f)) R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+; count += (value >> bit) & 1u;
+184: (bf) r3 = r2                     ; R2=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R3_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+185: (77) r3 >>= 22                   ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1023,var_off=(0x0; 0x3ff))
+; count += (value >> bit) & 1u;
+186: (57) r3 &= 1                     ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+187: (bf) r5 = r2                     ; R2=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R5_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+188: (77) r5 >>= 21                   ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2047,var_off=(0x0; 0x7ff))
+; count += (value >> bit) & 1u;
+189: (57) r5 &= 1                     ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+190: (0f) r5 += r3                    ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+; count += (value >> bit) & 1u;
+191: (bf) r3 = r2                     ; R2=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R3_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+192: (77) r3 >>= 20                   ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4095,var_off=(0x0; 0xfff))
+; count += (value >> bit) & 1u;
+193: (57) r3 &= 1                     ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+194: (bf) r9 = r2                     ; R2=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R9_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+195: (77) r9 >>= 19                   ; R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=8191,var_off=(0x0; 0x1fff))
+; count += (value >> bit) & 1u;
+196: (57) r9 &= 1                     ; R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+197: (0f) r9 += r3                    ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+198: (0f) r9 += r5                    ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7))
+199: (0f) r4 += r9                    ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=23,var_off=(0x0; 0x1f)) R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7))
+200: (0f) r0 += r6                    ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+; count += (value >> bit) & 1u;
+201: (bf) r3 = r2                     ; R2=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R3_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+202: (77) r3 >>= 26                   ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=63,var_off=(0x0; 0x3f))
+; count += (value >> bit) & 1u;
+203: (57) r3 &= 1                     ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+204: (bf) r5 = r2                     ; R2=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R5_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+205: (77) r5 >>= 25                   ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=127,var_off=(0x0; 0x7f))
+; count += (value >> bit) & 1u;
+206: (57) r5 &= 1                     ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+207: (0f) r5 += r3                    ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+; count += (value >> bit) & 1u;
+208: (bf) r3 = r2                     ; R2=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R3_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+209: (77) r3 >>= 24                   ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; count += (value >> bit) & 1u;
+210: (57) r3 &= 1                     ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+211: (bf) r6 = r2                     ; R2=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R6_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+212: (77) r6 >>= 23                   ; R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=511,var_off=(0x0; 0x1ff))
+; count += (value >> bit) & 1u;
+213: (57) r6 &= 1                     ; R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+214: (0f) r6 += r3                    ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+215: (0f) r6 += r5                    ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7))
+216: (0f) r6 += r0                    ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=8,var_off=(0x0; 0xf))
+217: (0f) r4 += r6                    ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=31,var_off=(0x0; 0x1f)) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=8,var_off=(0x0; 0xf))
+; count += (value >> bit) & 1u;
+218: (77) r2 >>= 31                   ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+219: (0f) r4 += r2                    ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=32,var_off=(0x0; 0x3f))
+220: (b7) r2 = 2                      ; R2_w=2
+221: (bf) r3 = r4                     ; R3_w=scalar(id=6,smin=smin32=0,smax=umax=smax32=umax32=32,var_off=(0x0; 0x3f)) R4_w=scalar(id=6,smin=smin32=0,smax=umax=smax32=umax32=32,var_off=(0x0; 0x3f))
+222: (67) r3 <<= 32                   ; R3_w=scalar(smin=smin32=0,smax=umax=0x2000000000,smax32=umax32=0,var_off=(0x0; 0x3f00000000))
+223: (77) r3 >>= 32                   ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=32,var_off=(0x0; 0x3f))
+224: (79) r6 = *(u64 *)(r10 -56)      ; R6_w=scalar() R10=fp0 fp-56=mmmmmmmm
+; if (allowed <= cpuset_thresh)
+225: (79) r1 = *(u64 *)(r10 -48)      ; R1_w=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-48_w=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+226: (3d) if r1 >= r3 goto pc+10      ; R1_w=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=31,var_off=(0x0; 0x1f)) R3_w=scalar(smin=umin=smin32=umin32=2,smax=umax=smax32=umax32=32,var_off=(0x0; 0x3f))
+; __u32 sat_thresh = cfg->saturation_thresh_hz ?: SCHED_SWITCH_SATURATION_THRESH_HZ;
+227: (61) r2 = *(u32 *)(r7 +4)        ; R2_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R7=map_value(map=config_map,ks=4,vs=16)
+228: (b7) r3 = 2000                   ; R3=2000
+; __u32 sat_thresh = cfg->saturation_thresh_hz ?: SCHED_SWITCH_SATURATION_THRESH_HZ;
+229: (15) if r2 == 0x0 goto pc+1      ; R2=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+230: (bf) r3 = r2                     ; R2=scalar(id=7,smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R3_w=scalar(id=7,smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+231: (b7) r2 = 0                      ; R2_w=0
+; __u32 rate = rate64 > 0xffffffffULL ? 0xffffffffU : (__u32)rate64;
+232: (bf) r5 = r8                     ; R5_w=scalar(id=8) R8=scalar(id=8)
+233: (67) r5 <<= 32                   ; R5_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+234: (77) r5 >>= 32                   ; R5_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; else if (rate >= sat_thresh)
+235: (2d) if r3 > r5 goto pc+1        ; R3_w=scalar(id=7,smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R5_w=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+236: (b7) r2 = 1                      ; R2=1
+; struct cpu_contention_state state = {
+237: (73) *(u8 *)(r10 -16) = r2       ; R2=1 R10=fp0 fp-16=???????1
+238: (63) *(u32 *)(r10 -20) = r4      ; R4=scalar(id=6,smin=smin32=0,smax=umax=smax32=umax32=32,var_off=(0x0; 0x3f)) R10=fp0 fp-24=mmmm????
+239: (63) *(u32 *)(r10 -24) = r8      ; R8=scalar(id=8) R10=fp0 fp-24=mmmmmmmm
+240: (b7) r1 = 0                      ; R1_w=0
+241: (73) *(u8 *)(r10 -12) = r1
+mark_precise: frame0: last_idx 241 first_idx 237 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 240: (b7) r1 = 0
+242: R1_w=0 R10=fp0 fp-16=???0???m
+242: (73) *(u8 *)(r10 -13) = r1
+mark_precise: frame0: last_idx 242 first_idx 237 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 241: (73) *(u8 *)(r10 -12) = r1
+mark_precise: frame0: regs=r1 stack= before 240: (b7) r1 = 0
+243: R1_w=0 R10=fp0 fp-16=???00??m
+243: (73) *(u8 *)(r10 -14) = r1
+mark_precise: frame0: last_idx 243 first_idx 237 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 242: (73) *(u8 *)(r10 -13) = r1
+mark_precise: frame0: regs=r1 stack= before 241: (73) *(u8 *)(r10 -12) = r1
+mark_precise: frame0: regs=r1 stack= before 240: (b7) r1 = 0
+244: R1_w=0 R10=fp0 fp-16=???000?m
+244: (73) *(u8 *)(r10 -15) = r1
+mark_precise: frame0: last_idx 244 first_idx 237 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 243: (73) *(u8 *)(r10 -14) = r1
+mark_precise: frame0: regs=r1 stack= before 242: (73) *(u8 *)(r10 -13) = r1
+mark_precise: frame0: regs=r1 stack= before 241: (73) *(u8 *)(r10 -12) = r1
+mark_precise: frame0: regs=r1 stack= before 240: (b7) r1 = 0
+245: R1_w=0 R10=fp0 fp-16=???0000m
+245: (73) *(u8 *)(r10 -10) = r1
+mark_precise: frame0: last_idx 245 first_idx 237 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 244: (73) *(u8 *)(r10 -15) = r1
+mark_precise: frame0: regs=r1 stack= before 243: (73) *(u8 *)(r10 -14) = r1
+mark_precise: frame0: regs=r1 stack= before 242: (73) *(u8 *)(r10 -13) = r1
+mark_precise: frame0: regs=r1 stack= before 241: (73) *(u8 *)(r10 -12) = r1
+mark_precise: frame0: regs=r1 stack= before 240: (b7) r1 = 0
+246: R1_w=0 R10=fp0 fp-16=?0?0000m
+246: (73) *(u8 *)(r10 -11) = r1
+mark_precise: frame0: last_idx 246 first_idx 237 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 245: (73) *(u8 *)(r10 -10) = r1
+mark_precise: frame0: regs=r1 stack= before 244: (73) *(u8 *)(r10 -15) = r1
+mark_precise: frame0: regs=r1 stack= before 243: (73) *(u8 *)(r10 -14) = r1
+mark_precise: frame0: regs=r1 stack= before 242: (73) *(u8 *)(r10 -13) = r1
+mark_precise: frame0: regs=r1 stack= before 241: (73) *(u8 *)(r10 -12) = r1
+mark_precise: frame0: regs=r1 stack= before 240: (b7) r1 = 0
+247: R1_w=0 R10=fp0 fp-16=?000000m
+247: (7b) *(u64 *)(r10 -32) = r6      ; R6=scalar() R10=fp0 fp-32_w=mmmmmmmm
+248: (73) *(u8 *)(r10 -9) = r1
+mark_precise: frame0: last_idx 248 first_idx 237 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 247: (7b) *(u64 *)(r10 -32) = r6
+mark_precise: frame0: regs=r1 stack= before 246: (73) *(u8 *)(r10 -11) = r1
+mark_precise: frame0: regs=r1 stack= before 245: (73) *(u8 *)(r10 -10) = r1
+mark_precise: frame0: regs=r1 stack= before 244: (73) *(u8 *)(r10 -15) = r1
+mark_precise: frame0: regs=r1 stack= before 243: (73) *(u8 *)(r10 -14) = r1
+mark_precise: frame0: regs=r1 stack= before 242: (73) *(u8 *)(r10 -13) = r1
+mark_precise: frame0: regs=r1 stack= before 241: (73) *(u8 *)(r10 -12) = r1
+mark_precise: frame0: regs=r1 stack= before 240: (b7) r1 = 0
+249: R1_w=0 R10=fp0 fp-16=0000000m
+249: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+; 
+250: (07) r2 += -4                    ; R2_w=fp-4
+251: (bf) r3 = r10                    ; R3_w=fp0 R10=fp0
+252: (07) r3 += -32                   ; R3_w=fp-32
+; bpf_map_update_elem(&state_map, &zero, &state, BPF_ANY);
+253: (18) r1 = 0xffffd3cc88f9eeb0     ; R1_w=map_ptr(map=state_map,ks=4,vs=24)
+255: (b7) r4 = 0                      ; R4_w=0
+256: (85) call bpf_map_update_elem#2          ; R0_w=scalar()
+; slot->cpu_seen_mask = cpu_bit;
+257: (79) r1 = *(u64 *)(r10 -40)      ; R1_w=scalar() R10=fp0 fp-40=mmmmmmmm
+258: (79) r2 = *(u64 *)(r10 -64)      ; R2_w=map_value(map=percpu_slot_map,ks=4,vs=16) R10=fp0 fp-64=map_value(map=percpu_slot_map,ks=4,vs=16)
+259: (63) *(u32 *)(r2 +12) = r1       ; R1_w=scalar() R2_w=map_value(map=percpu_slot_map,ks=4,vs=16)
+260: (b7) r1 = 1                      ; R1_w=1
+; slot->switches_in_window = 1;
+261: (63) *(u32 *)(r2 +8) = r1        ; R1_w=1 R2_w=map_value(map=percpu_slot_map,ks=4,vs=16)
+; slot->window_start_ns = now_ns;
+262: (7b) *(u64 *)(r2 +0) = r6        ; R2_w=map_value(map=percpu_slot_map,ks=4,vs=16) R6=scalar()
+263: (05) goto pc+6
+; }
+270: (b7) r0 = 0                      ; R0_w=0
+271: (95) exit
+
+from 235 to 237: safe
+
+from 229 to 231: R0=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=31,var_off=(0x0; 0x1f)) R2=0 R3=2000 R4=scalar(id=6,smin=smin32=0,smax=umax=smax32=umax32=32,var_off=(0x0; 0x3f)) R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R6=scalar() R7=map_value(map=config_map,ks=4,vs=16) R8=scalar() R9=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R10=fp0 fp-8=mmmmmmmm fp-32=????1 fp-40=mmmmmmmm fp-48=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) fp-56=mmmmmmmm fp-64=map_value(map=percpu_slot_map,ks=4,vs=16)
+231: R0=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=31,var_off=(0x0; 0x1f)) R2=0 R3=2000 R4=scalar(id=6,smin=smin32=0,smax=umax=smax32=umax32=32,var_off=(0x0; 0x3f)) R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R6=scalar() R7=map_value(map=config_map,ks=4,vs=16) R8=scalar() R9=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R10=fp0 fp-8=mmmmmmmm fp-32=????1 fp-40=mmmmmmmm fp-48=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) fp-56=mmmmmmmm fp-64=map_value(map=percpu_slot_map,ks=4,vs=16)
+; __u32 sat_thresh = cfg->saturation_thresh_hz ?: SCHED_SWITCH_SATURATION_THRESH_HZ;
+231: (b7) r2 = 0                      ; R2_w=0
+; __u32 rate = rate64 > 0xffffffffULL ? 0xffffffffU : (__u32)rate64;
+232: (bf) r5 = r8                     ; R5_w=scalar(id=9) R8=scalar(id=9)
+233: (67) r5 <<= 32                   ; R5_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+234: (77) r5 >>= 32                   ; R5_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; else if (rate >= sat_thresh)
+235: (2d) if r3 > r5 goto pc+1        ; R3=2000 R5_w=scalar(smin=umin=umin32=2000,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+236: (b7) r2 = 1
+237: safe
+
+from 235 to 237: safe
+
+from 226 to 237: safe
+
+from 180 to 182: R0=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R1=4 R2=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R3=scalar(umin=0x3b9aca00) R4=scalar(smin=smin32=0,smax=umax=smax32=umax32=17,var_off=(0x0; 0x1f)) R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R7=map_value(map=config_map,ks=4,vs=16) R8=scalar(smin=0,smax=umax=0x3b9ac9ffc4653600,smax32=0x7ffffe00,umax32=0xfffffe00,var_off=(0x0; 0x3ffffffffffffe00)) R9=0 R10=fp0 fp-8=mmmmmmmm fp-32=????1 fp-40=mmmmmmmm fp-48=4 fp-56=mmmmmmmm fp-64=map_value(map=percpu_slot_map,ks=4,vs=16)
+182: R0=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R1=4 R2=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R3=scalar(umin=0x3b9aca00) R4=scalar(smin=smin32=0,smax=umax=smax32=umax32=17,var_off=(0x0; 0x1f)) R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R7=map_value(map=config_map,ks=4,vs=16) R8=scalar(smin=0,smax=umax=0x3b9ac9ffc4653600,smax32=0x7ffffe00,umax32=0xfffffe00,var_off=(0x0; 0x3ffffffffffffe00)) R9=0 R10=fp0 fp-8=mmmmmmmm fp-32=????1 fp-40=mmmmmmmm fp-48=4 fp-56=mmmmmmmm fp-64=map_value(map=percpu_slot_map,ks=4,vs=16)
+; 
+182: (3f) r8 /= r3                    ; R3=scalar(umin=0x3b9aca00) R8_w=scalar()
+; count += (value >> bit) & 1u;
+183: (0f) r4 += r5                    ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=19,var_off=(0x0; 0x1f)) R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+; count += (value >> bit) & 1u;
+184: (bf) r3 = r2                     ; R2=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R3_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+185: (77) r3 >>= 22                   ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1023,var_off=(0x0; 0x3ff))
+; count += (value >> bit) & 1u;
+186: (57) r3 &= 1                     ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+187: (bf) r5 = r2                     ; R2=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R5_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+188: (77) r5 >>= 21                   ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2047,var_off=(0x0; 0x7ff))
+; count += (value >> bit) & 1u;
+189: (57) r5 &= 1                     ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+190: (0f) r5 += r3                    ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+; count += (value >> bit) & 1u;
+191: (bf) r3 = r2                     ; R2=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R3_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+192: (77) r3 >>= 20                   ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4095,var_off=(0x0; 0xfff))
+; count += (value >> bit) & 1u;
+193: (57) r3 &= 1                     ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+194: (bf) r9 = r2                     ; R2=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R9_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+195: (77) r9 >>= 19                   ; R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=8191,var_off=(0x0; 0x1fff))
+; count += (value >> bit) & 1u;
+196: (57) r9 &= 1                     ; R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+197: (0f) r9 += r3                    ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+198: (0f) r9 += r5                    ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7))
+199: (0f) r4 += r9                    ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=23,var_off=(0x0; 0x1f)) R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7))
+200: (0f) r0 += r6                    ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+; count += (value >> bit) & 1u;
+201: (bf) r3 = r2                     ; R2=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R3_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+202: (77) r3 >>= 26                   ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=63,var_off=(0x0; 0x3f))
+; count += (value >> bit) & 1u;
+203: (57) r3 &= 1                     ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+204: (bf) r5 = r2                     ; R2=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R5_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+205: (77) r5 >>= 25                   ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=127,var_off=(0x0; 0x7f))
+; count += (value >> bit) & 1u;
+206: (57) r5 &= 1                     ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+207: (0f) r5 += r3                    ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+; count += (value >> bit) & 1u;
+208: (bf) r3 = r2                     ; R2=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R3_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+209: (77) r3 >>= 24                   ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; count += (value >> bit) & 1u;
+210: (57) r3 &= 1                     ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+211: (bf) r6 = r2                     ; R2=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R6_w=scalar(id=5,smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+212: (77) r6 >>= 23                   ; R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=511,var_off=(0x0; 0x1ff))
+; count += (value >> bit) & 1u;
+213: (57) r6 &= 1                     ; R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+214: (0f) r6 += r3                    ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3))
+215: (0f) r6 += r5                    ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=2,var_off=(0x0; 0x3)) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7))
+216: (0f) r6 += r0                    ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=8,var_off=(0x0; 0xf))
+217: (0f) r4 += r6                    ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=31,var_off=(0x0; 0x1f)) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=8,var_off=(0x0; 0xf))
+; count += (value >> bit) & 1u;
+218: (77) r2 >>= 31                   ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; count += (value >> bit) & 1u;
+219: (0f) r4 += r2                    ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=32,var_off=(0x0; 0x3f))
+220: (b7) r2 = 2                      ; R2_w=2
+221: (bf) r3 = r4                     ; R3_w=scalar(id=10,smin=smin32=0,smax=umax=smax32=umax32=32,var_off=(0x0; 0x3f)) R4_w=scalar(id=10,smin=smin32=0,smax=umax=smax32=umax32=32,var_off=(0x0; 0x3f))
+222: (67) r3 <<= 32                   ; R3_w=scalar(smin=smin32=0,smax=umax=0x2000000000,smax32=umax32=0,var_off=(0x0; 0x3f00000000))
+223: (77) r3 >>= 32                   ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=32,var_off=(0x0; 0x3f))
+224: (79) r6 = *(u64 *)(r10 -56)      ; R6_w=scalar() R10=fp0 fp-56=mmmmmmmm
+; if (allowed <= cpuset_thresh)
+225: (79) r1 = *(u64 *)(r10 -48)      ; R1_w=4 R10=fp0 fp-48=4
+226: (3d) if r1 >= r3 goto pc+10      ; R1_w=4 R3_w=scalar(smin=umin=smin32=umin32=5,smax=umax=smax32=umax32=32,var_off=(0x0; 0x3f))
+; __u32 sat_thresh = cfg->saturation_thresh_hz ?: SCHED_SWITCH_SATURATION_THRESH_HZ;
+227: (61) r2 = *(u32 *)(r7 +4)        ; R2_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R7=map_value(map=config_map,ks=4,vs=16)
+228: (b7) r3 = 2000
+229: safe
+
+from 226 to 237: safe
+
+from 85 to 264: R0=map_value(map=percpu_slot_map,ks=4,vs=16) R1_w=scalar() R2_w=0x3b9aca00 R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0x3b9ac9ff,var_off=(0x0; 0x3fffffff)) R6=scalar(id=2,smin=0xffffffff80000000,smax=smax32=-1,umin=0xffffffff80000000,umin32=0x80000000,var_off=(0xffffffff80000000; 0x7fffffff)) R7=map_value(map=config_map,ks=4,vs=16) R8_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R9=scalar(id=3) R10=fp0 fp-8=mmmmmmmm fp-32=????1 fp-40=mmmmmmmm
+264: R0=map_value(map=percpu_slot_map,ks=4,vs=16) R1_w=scalar() R2_w=0x3b9aca00 R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0x3b9ac9ff,var_off=(0x0; 0x3fffffff)) R6=scalar(id=2,smin=0xffffffff80000000,smax=smax32=-1,umin=0xffffffff80000000,umin32=0x80000000,var_off=(0xffffffff80000000; 0x7fffffff)) R7=map_value(map=config_map,ks=4,vs=16) R8_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R9=scalar(id=3) R10=fp0 fp-8=mmmmmmmm fp-32=????1 fp-40=mmmmmmmm
+; slot->switches_in_window += 1;
+264: (07) r8 += 1                     ; R8_w=scalar(smin=umin=1,smax=umax=0x100000000,var_off=(0x0; 0x1ffffffff))
+265: (63) *(u32 *)(r0 +8) = r8        ; R0=map_value(map=percpu_slot_map,ks=4,vs=16) R8_w=scalar(smin=umin=1,smax=umax=0x100000000,var_off=(0x0; 0x1ffffffff))
+; slot->cpu_seen_mask |= cpu_bit;
+266: (61) r1 = *(u32 *)(r0 +12)       ; R0=map_value(map=percpu_slot_map,ks=4,vs=16) R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+267: (79) r2 = *(u64 *)(r10 -40)      ; R2_w=scalar() R10=fp0 fp-40=mmmmmmmm
+268: (4f) r1 |= r2                    ; R1_w=scalar() R2_w=scalar()
+269: (63) *(u32 *)(r0 +12) = r1
+270: safe
+
+from 42 to 270: safe
+
+from 41 to 47: R0_w=map_value_or_null(id=4,map=percpu_slot_map,ks=4,vs=16) R6=scalar(id=2,smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R7=map_value(map=config_map,ks=4,vs=16) R8=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R9=scalar(id=3) R10=fp0 fp-8=mmmmmmmm fp-40_w=mmmmmmmm
+47: R0_w=map_value_or_null(id=4,map=percpu_slot_map,ks=4,vs=16) R6=scalar(id=2,smin=smin32=0,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R7=map_value(map=config_map,ks=4,vs=16) R8=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R9=scalar(id=3) R10=fp0 fp-8=mmmmmmmm fp-40_w=mmmmmmmm
+; slot->cpu_seen_mask |= cpu_bit;
+47: (b7) r1 = 0                       ; R1_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+48: (63) *(u32 *)(r10 -32) = r1       ; R1_w=0 R10=fp0 fp-32=????0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+49: (61) r2 = *(u32 *)(r10 -32)       ; R2_w=0 R10=fp0 fp-32=????0
+50: (07) r2 += 1                      ; R2_w=1
+51: (63) *(u32 *)(r10 -32) = r2       ; R2_w=1 R10=fp0 fp-32=????1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+52: (63) *(u32 *)(r10 -32) = r1       ; R1_w=0 R10=fp0 fp-32=????0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+53: (61) r2 = *(u32 *)(r10 -32)       ; R2_w=0 R10=fp0 fp-32=????0
+54: (07) r2 += 1                      ; R2_w=1
+55: (63) *(u32 *)(r10 -32) = r2       ; R2_w=1 R10=fp0 fp-32=????1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+56: (63) *(u32 *)(r10 -32) = r1       ; R1_w=0 R10=fp0 fp-32=????0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+57: (61) r2 = *(u32 *)(r10 -32)       ; R2_w=0 R10=fp0 fp-32=????0
+58: (07) r2 += 1                      ; R2_w=1
+59: (63) *(u32 *)(r10 -32) = r2       ; R2_w=1 R10=fp0 fp-32=????1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+60: (63) *(u32 *)(r10 -32) = r1       ; R1_w=0 R10=fp0 fp-32=????0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+61: (61) r2 = *(u32 *)(r10 -32)       ; R2_w=0 R10=fp0 fp-32=????0
+62: (07) r2 += 1                      ; R2_w=1
+63: (63) *(u32 *)(r10 -32) = r2       ; R2_w=1 R10=fp0 fp-32=????1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+64: (63) *(u32 *)(r10 -32) = r1       ; R1_w=0 R10=fp0 fp-32=????0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+65: (61) r2 = *(u32 *)(r10 -32)       ; R2_w=0 R10=fp0 fp-32=????0
+66: (07) r2 += 1                      ; R2_w=1
+67: (63) *(u32 *)(r10 -32) = r2       ; R2_w=1 R10=fp0 fp-32=????1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+68: (63) *(u32 *)(r10 -32) = r1       ; R1_w=0 R10=fp0 fp-32=????0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+69: (61) r2 = *(u32 *)(r10 -32)       ; R2_w=0 R10=fp0 fp-32=????0
+70: (07) r2 += 1                      ; R2_w=1
+71: (63) *(u32 *)(r10 -32) = r2       ; R2_w=1 R10=fp0 fp-32=????1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+72: (63) *(u32 *)(r10 -32) = r1       ; R1_w=0 R10=fp0 fp-32=????0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+73: (61) r2 = *(u32 *)(r10 -32)       ; R2_w=0 R10=fp0 fp-32=????0
+74: (07) r2 += 1                      ; R2_w=1
+75: (63) *(u32 *)(r10 -32) = r2       ; R2_w=1 R10=fp0 fp-32=????1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+76: (63) *(u32 *)(r10 -32) = r1       ; R1_w=0 R10=fp0 fp-32=????0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+77: (61) r1 = *(u32 *)(r10 -32)       ; R1_w=0 R10=fp0 fp-32=????0
+78: (07) r1 += 1                      ; R1_w=1
+79: (63) *(u32 *)(r10 -32) = r1       ; R1_w=1 R10=fp0 fp-32=????1
+; __u64 elapsed = now_ns - slot->window_start_ns;
+80: (79) r1 = *(u64 *)(r0 +0)
+R0 invalid mem access 'map_value_or_null'
+verification time 1871 usec
+stack depth 64
+processed 363 insns (limit 1000000) max_states_per_insn 0 total_states 9 peak_states 9 mark_read 4
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_nccl_cpu_observer_slot_merge': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-wtbxxrtk/rs_nccl_cpu_observer_slot_merge_001__VPAD.buggy.o'
+Error: failed to load object file

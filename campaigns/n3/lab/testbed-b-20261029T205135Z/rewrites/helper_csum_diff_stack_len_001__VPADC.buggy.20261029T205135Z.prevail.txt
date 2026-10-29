@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/helper_csum_diff_stack_len
+
+; /home/test/bpfix-b/repo/campaigns/n3/helper_csum_diff_stack_len_001/VPADC.buggy.bpf.c:69
+;     sum = bpf_csum_diff(0, 0, (__be32 *)&pseudo, 12, 0);
+
+67: Upper bound must be at most total_stack_size ((r3.type == number and r3.value == 0) or valid_access(r3.offset, width=r4) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

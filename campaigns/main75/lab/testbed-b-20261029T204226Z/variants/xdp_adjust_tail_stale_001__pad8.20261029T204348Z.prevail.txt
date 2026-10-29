@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/xdp_adjust_tail_stale
+
+; /home/test/bpfix-b/repo/campaigns/v2/upstream/xdp_adjust_tail_stale_001/pad8.bpf.c:37
+;     if (bpf_xdp_adjust_tail(ctx, -4))
+
+14: Invalid type (r8.type in {number, ctx, stack, packet, shared})
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into ring buffer pointer to memory not null-checked
+   48 | rec->mark = is_ip ? 7 : 11;
+      | in file /home/test/bpfix-b/repo/campaigns/v2/upstream/ringbuf_nested_missing_null_001/orig.bpf.c
+

@@ -1,0 +1,5 @@
+COMPILE_FAIL
+/home/test/bpfix-b/repo/campaigns/n3/rs_agentsight_fs_overflow_counter_merge_001/INLINE.fixed.bpf.c:72:73: error: incompatible pointer to integer conversion returning '__u64 *' (aka 'unsigned long long *') from a function with result type 'int' [-Wint-conversion]
+   72 | static __always_inline int __adv_guard(__u64 *shadow_overflow) { return (shadow_overflow); }
+      |                                                                         ^~~~~~~~~~~~~~~~~
+1 error generated.

@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/rs_cilium_fib_lookup_param_len
+
+; /home/test/bpfix-b/repo/campaigns/v2/upstream/rs_cilium_fib_lookup_param_len_001/orig.bpf.c:46
+;     long rc = bpf_fib_lookup(ctx, &fib, sizeof(fib) + 4, 0);
+
+32: Upper bound must be at most total_stack_size (valid_access(r2.offset, width=r3) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

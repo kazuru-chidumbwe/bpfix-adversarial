@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into pointer to map element value not null-checked
+   66 | cfg->seen_packets += 1;
+      | in file /home/test/bpfix-b/repo/campaigns/v2/upstream/map_value_pointer_cookie_001/pad32.bpf.c
+

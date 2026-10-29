@@ -1,0 +1,9 @@
+Prettier Verifier ##
+#######################
+
+error: Map configuration error
+   36 | ADV_STMT(bpf_tail_call(ctx, &map_prog_array, PROG_01));
+      | in file /home/test/bpfix-b/repo/campaigns/n3/rs_tutorial_pidhide_tailcall_map_type_001/MACRO.buggy.bpf.c
+
+bpf_tail_call() must be used with a map of type BPF_MAP_TYPE_PROG_ARRAY
+

@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into pointer to map element value not null-checked
+   77 | event->delta_ns = ts - *tsp;
+      | in file /home/test/bpfix-b/repo/campaigns/n3/rs_datrail_browsertrace_start_ns_merge_001/VPADC.buggy.bpf.c
+

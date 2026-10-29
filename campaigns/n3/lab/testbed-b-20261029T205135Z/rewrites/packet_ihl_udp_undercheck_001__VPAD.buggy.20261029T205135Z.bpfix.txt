@@ -1,0 +1,14 @@
+error[BPFIX-E001]: packet bounds proof is missing
+  = class: source_bug
+  = confidence: medium
+  = diagnostic: supported, help: repair_hint, span: exact_pc
+  = next action: bounds
+  --> <verifier-log>:56
+   |
+   |
+   = verifier[56]: invalid access to packet, off=22 size=1, R1(id=1,off=22,r=21); R1 offset is outside of the packet
+   = note: nearest BPF instruction pc 26
+   = note: parsed 20 verifier state snapshots
+   = required proof: prove R1 has packet range at least 23 bytes before this access; verifier currently has range 21
+help: Add or move a packet bounds check immediately before the access or helper argument use.
+help: Check the exact pointer and byte length passed to the helper, not only an earlier header pointer.

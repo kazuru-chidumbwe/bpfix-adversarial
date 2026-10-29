@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into ring buffer pointer to memory not null-checked
+   45 | e->type = 1;
+      | in file /home/test/bpfix-b/repo/fixtures/upstream/bpfix-bench-cases/rs_agentsight_process_ringbuf_null_001/buggy.bpf.c
+

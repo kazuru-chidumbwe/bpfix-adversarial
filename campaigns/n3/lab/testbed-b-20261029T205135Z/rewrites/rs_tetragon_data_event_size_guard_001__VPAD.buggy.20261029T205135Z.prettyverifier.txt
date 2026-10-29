@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Unbounded memory access of the variable 'bytes'
+   59 | err = bpf_probe_read_user(&msg->arg[0], bytes, (const void *)user_ptr);
+      | in file /home/test/bpfix-b/repo/campaigns/n3/rs_tetragon_data_event_size_guard_001/VPAD.buggy.bpf.c
+
+Add 'bytes &= const' or 'if (bytes < const)'
+bytes must be smaller than the size of the dest buffer &msg->arg[0]
+

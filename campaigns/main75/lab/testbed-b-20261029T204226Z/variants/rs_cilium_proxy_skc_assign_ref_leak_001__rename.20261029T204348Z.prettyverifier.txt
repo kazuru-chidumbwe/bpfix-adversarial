@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Reference must be released before exiting
+   14 | ptr = bpf_skc_lookup_tcp(skb, &tuple, sizeof(tuple.ipv4), BPF_F_CURRENT_NETNS, 0);
+      | in file /home/test/bpfix-b/repo/campaigns/v2/upstream/rs_cilium_proxy_skc_assign_ref_leak_001/rename.bpf.c
+

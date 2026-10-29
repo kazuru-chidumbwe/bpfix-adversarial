@@ -1,0 +1,8 @@
+PREVAIL exit=1
+available programs:
+section=xdp function=dynptr_stack_copy [reject_load: Unresolved symbols found.]
+
+Unresolved external symbol bpf_dynptr_from_xdp in section xdp at location 4
+Unresolved external symbol bpf_dynptr_slice in section xdp at location 50
+Unresolved external symbol bpf_dynptr_slice in section xdp at location 59
+error: No executable sections

@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Invalid access to packet
+   30 | return bpf_ntohs(udp->dest) == 53 ? XDP_DROP : XDP_PASS;
+      | in file /home/test/bpfix-b/repo/fixtures/upstream/bpfix-bench-cases/rs_xdp_tools_ihl_macro_wrong_base_001/buggy.bpf.c
+Access involving 'udp->dest' is 18 bytes past the end of the checked packet range (0 bytes).
+
+Add or tighten a bounds check so the accessed range stays within the checked packet range.
+

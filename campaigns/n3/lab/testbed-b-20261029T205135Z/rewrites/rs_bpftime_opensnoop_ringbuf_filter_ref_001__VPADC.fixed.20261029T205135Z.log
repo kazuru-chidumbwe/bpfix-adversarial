@@ -1,0 +1,188 @@
+libbpf: loading object from /tmp/bpfix-cap-wtbxxrtk/rs_bpftime_opensnoop_ringbuf_filter_ref_001__VPADC.fixed.o
+libbpf: elf: section(3) tracepoint/syscalls/sys_enter_openat, size 152, link 0, flags 6, type=1
+libbpf: sec 'tracepoint/syscalls/sys_enter_openat': found program 'rs_bpftime_opensnoop_enter' at insn offset 0 (0 bytes), code size 19 insns (152 bytes)
+libbpf: elf: section(4) .reltracepoint/syscalls/sys_enter_openat, size 16, link 29, flags 40, type=9
+libbpf: elf: section(5) tracepoint/syscalls/sys_exit_openat, size 408, link 0, flags 6, type=1
+libbpf: sec 'tracepoint/syscalls/sys_exit_openat': found program 'rs_bpftime_opensnoop_exit' at insn offset 0 (0 bytes), code size 51 insns (408 bytes)
+libbpf: elf: section(6) .reltracepoint/syscalls/sys_exit_openat, size 48, link 29, flags 40, type=9
+libbpf: elf: section(7) .maps, size 48, link 0, flags 3, type=1
+libbpf: elf: section(8) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-wtbxxrtk/rs_bpftime_opensnoop_ringbuf_filter_ref_001__VPADC.fixed.o is GPL
+libbpf: elf: section(19) .BTF, size 2393, link 0, flags 0, type=1
+libbpf: elf: section(21) .BTF.ext, size 796, link 0, flags 0, type=1
+libbpf: elf: section(29) .symtab, size 480, link 1, flags 0, type=2
+libbpf: looking for externs among 20 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'start': at sec_idx 7, offset 0.
+libbpf: map 'start': found type = 1.
+libbpf: map 'start': found key [8], sz = 4.
+libbpf: map 'start': found value [11], sz = 16.
+libbpf: map 'start': found max_entries = 1024.
+libbpf: map 'rb': at sec_idx 7, offset 32.
+libbpf: map 'rb': found type = 27.
+libbpf: map 'rb': found max_entries = 262144.
+libbpf: sec '.reltracepoint/syscalls/sys_enter_openat': collecting relocation for section(3) 'tracepoint/syscalls/sys_enter_openat'
+libbpf: sec '.reltracepoint/syscalls/sys_enter_openat': relo #0: insn #13 against 'start'
+libbpf: prog 'rs_bpftime_opensnoop_enter': found map 0 (start, sec 7, off 0) for insn #13
+libbpf: sec '.reltracepoint/syscalls/sys_exit_openat': collecting relocation for section(5) 'tracepoint/syscalls/sys_exit_openat'
+libbpf: sec '.reltracepoint/syscalls/sys_exit_openat': relo #0: insn #7 against 'start'
+libbpf: prog 'rs_bpftime_opensnoop_exit': found map 0 (start, sec 7, off 0) for insn #7
+libbpf: sec '.reltracepoint/syscalls/sys_exit_openat': relo #1: insn #16 against 'rb'
+libbpf: prog 'rs_bpftime_opensnoop_exit': found map 1 (rb, sec 7, off 32) for insn #16
+libbpf: sec '.reltracepoint/syscalls/sys_exit_openat': relo #2: insn #46 against 'start'
+libbpf: prog 'rs_bpftime_opensnoop_exit': found map 0 (start, sec 7, off 0) for insn #46
+libbpf: loading kernel BTF '/sys/kernel/btf/vmlinux': 0
+libbpf: sec 'tracepoint/syscalls/sys_enter_openat': found 2 CO-RE relocations
+libbpf: CO-RE relocating [24] struct trace_event_raw_sys_enter: found target candidate [57757] struct trace_event_raw_sys_enter in [vmlinux]
+libbpf: prog 'rs_bpftime_opensnoop_enter': relo #0: <byte_off> [24] struct trace_event_raw_sys_enter.args[1] (0:2:1 @ offset 24)
+libbpf: prog 'rs_bpftime_opensnoop_enter': relo #0: matching candidate #0 <byte_off> [57757] struct trace_event_raw_sys_enter.args[1] (0:2:1 @ offset 24)
+libbpf: prog 'rs_bpftime_opensnoop_enter': relo #0: patched insn #5 (LDX/ST/STX) off 24 -> 24
+libbpf: prog 'rs_bpftime_opensnoop_enter': relo #1: <byte_off> [24] struct trace_event_raw_sys_enter.args[2] (0:2:2 @ offset 32)
+libbpf: prog 'rs_bpftime_opensnoop_enter': relo #1: matching candidate #0 <byte_off> [57757] struct trace_event_raw_sys_enter.args[2] (0:2:2 @ offset 32)
+libbpf: prog 'rs_bpftime_opensnoop_enter': relo #1: patched insn #7 (LDX/ST/STX) off 32 -> 32
+libbpf: sec 'tracepoint/syscalls/sys_exit_openat': found 1 CO-RE relocations
+libbpf: CO-RE relocating [35] struct trace_event_raw_sys_exit: found target candidate [57758] struct trace_event_raw_sys_exit in [vmlinux]
+libbpf: prog 'rs_bpftime_opensnoop_exit': relo #0: <byte_off> [35] struct trace_event_raw_sys_exit.ret (0:2 @ offset 16)
+libbpf: prog 'rs_bpftime_opensnoop_exit': relo #0: matching candidate #0 <byte_off> [57758] struct trace_event_raw_sys_exit.ret (0:2 @ offset 16)
+libbpf: prog 'rs_bpftime_opensnoop_exit': relo #0: patched insn #4 (LDX/ST/STX) off 16 -> 16
+libbpf: map 'start': created successfully, fd=4
+libbpf: map 'rb': created successfully, fd=5
+libbpf: prog 'rs_bpftime_opensnoop_enter': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_bpftime_opensnoop_enter(struct trace_event_raw_sys_enter *ctx)
+0: (bf) r6 = r1                       ; R1=ctx() R6_w=ctx()
+; __u64 id = bpf_get_current_pid_tgid();
+1: (85) call bpf_get_current_pid_tgid#14      ; R0_w=scalar()
+; __u32 pid = id;
+2: (63) *(u32 *)(r10 -4) = r0         ; R0_w=scalar() R10=fp0 fp-8=mmmm????
+3: (b7) r1 = 0                        ; R1_w=0
+; struct args_t args = {};
+4: (7b) *(u64 *)(r10 -16) = r1        ; R1_w=0 R10=fp0 fp-16_w=0
+; args.fname = (const char *)ctx->args[1];
+5: (79) r1 = *(u64 *)(r6 +24)         ; R1_w=scalar() R6_w=ctx()
+; args.fname = (const char *)ctx->args[1];
+6: (7b) *(u64 *)(r10 -24) = r1        ; R1_w=scalar() R10=fp0 fp-24_w=mmmmmmmm
+; args.flags = (int)ctx->args[2];
+7: (79) r1 = *(u64 *)(r6 +32)         ; R1_w=scalar() R6_w=ctx()
+; args.flags = (int)ctx->args[2];
+8: (63) *(u32 *)(r10 -16) = r1        ; R1_w=scalar() R10=fp0 fp-16_w=mmmmmmmm
+9: (bf) r2 = r10                      ; R2_w=fp0 R10=fp0
+; 
+10: (07) r2 += -4                     ; R2_w=fp-4
+11: (bf) r3 = r10                     ; R3_w=fp0 R10=fp0
+12: (07) r3 += -24                    ; R3_w=fp-24
+; bpf_map_update_elem(&start, &pid, &args, BPF_ANY);
+13: (18) r1 = 0xffff8e204dde9400      ; R1_w=map_ptr(map=start,ks=4,vs=16)
+15: (b7) r4 = 0                       ; R4_w=0
+16: (85) call bpf_map_update_elem#2   ; R0=scalar()
+; return 0;
+17: (b7) r0 = 0                       ; R0_w=0
+18: (95) exit
+verification time 93 usec
+stack depth 24
+processed 18 insns (limit 1000000) max_states_per_insn 0 total_states 1 peak_states 1 mark_read 0
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_bpftime_opensnoop_exit': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_bpftime_opensnoop_exit(struct trace_event_raw_sys_exit *ctx)
+0: (bf) r6 = r1                       ; R1=ctx() R6_w=ctx()
+; __u64 id = bpf_get_current_pid_tgid();
+1: (85) call bpf_get_current_pid_tgid#14      ; R0_w=scalar()
+2: (bf) r7 = r0                       ; R0_w=scalar(id=1) R7_w=scalar(id=1)
+; __u32 pid = id;
+3: (63) *(u32 *)(r10 -4) = r7         ; R7_w=scalar(id=1) R10=fp0 fp-8=mmmm????
+; int ret = (int)ctx->ret;
+4: (79) r9 = *(u64 *)(r6 +16)         ; R6_w=ctx() R9_w=scalar()
+5: (bf) r2 = r10                      ; R2_w=fp0 R10=fp0
+; 
+6: (07) r2 += -4                      ; R2_w=fp-4
+; ap = bpf_map_lookup_elem(&start, &pid);
+7: (18) r1 = 0xffff8e204dde9400       ; R1_w=map_ptr(map=start,ks=4,vs=16)
+9: (85) call bpf_map_lookup_elem#1    ; R0=map_value_or_null(id=2,map=start,ks=4,vs=16)
+10: (bf) r6 = r0                      ; R0=map_value_or_null(id=2,map=start,ks=4,vs=16) R6_w=map_value_or_null(id=2,map=start,ks=4,vs=16)
+; if (!ap)
+11: (15) if r6 == 0x0 goto pc+37      ; R6_w=map_value(map=start,ks=4,vs=16)
+; int ret = (int)ctx->ret;
+12: (bf) r1 = r9                      ; R1_w=scalar(id=3) R9=scalar(id=3)
+13: (67) r1 <<= 32                    ; R1_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+14: (c7) r1 s>>= 32                   ; R1_w=scalar(smin=0xffffffff80000000,smax=0x7fffffff)
+; if (ret >= 0)
+15: (65) if r1 s> 0xffffffff goto pc+28       ; R1_w=scalar(smin=0xffffffff80000000,smax=smax32=-1,umin=0xffffffff80000000,umin32=0x80000000,var_off=(0xffffffff80000000; 0x7fffffff))
+; event = bpf_ringbuf_reserve(&rb, sizeof(*event), 0);
+16: (18) r1 = 0xffff8e2178128000      ; R1_w=map_ptr(map=rb,ks=0,vs=0)
+18: (b7) r2 = 120                     ; R2_w=120
+19: (b7) r3 = 0                       ; R3_w=0
+20: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 20 first_idx 10 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 19: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 18: (b7) r2 = 120
+21: R0=ringbuf_mem_or_null(id=5,ref_obj_id=5,sz=120) refs=5
+21: (bf) r8 = r0                      ; R0=ringbuf_mem_or_null(id=5,ref_obj_id=5,sz=120) R8_w=ringbuf_mem_or_null(id=5,ref_obj_id=5,sz=120) refs=5
+; if (!event)
+22: (15) if r8 == 0x0 goto pc+21      ; R8_w=ringbuf_mem(ref_obj_id=5,sz=120) refs=5
+; 
+23: (77) r7 >>= 32                    ; R7_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) refs=5
+; event->ts = bpf_ktime_get_ns();
+24: (85) call bpf_ktime_get_ns#5      ; R0_w=scalar() refs=5
+; event->pid = tgid;
+25: (63) *(u32 *)(r8 +8) = r7         ; R7_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R8_w=ringbuf_mem(ref_obj_id=5,sz=120) refs=5
+; event->ts = bpf_ktime_get_ns();
+26: (7b) *(u64 *)(r8 +0) = r0         ; R0_w=scalar() R8_w=ringbuf_mem(ref_obj_id=5,sz=120) refs=5
+; event->uid = bpf_get_current_uid_gid();
+27: (85) call bpf_get_current_uid_gid#15      ; R0_w=scalar() refs=5
+; event->ret = ret;
+28: (63) *(u32 *)(r8 +16) = r9        ; R8_w=ringbuf_mem(ref_obj_id=5,sz=120) R9=scalar(id=3) refs=5
+; event->uid = bpf_get_current_uid_gid();
+29: (63) *(u32 *)(r8 +12) = r0        ; R0_w=scalar() R8_w=ringbuf_mem(ref_obj_id=5,sz=120) refs=5
+; event->flags = ap->flags;
+30: (61) r1 = *(u32 *)(r6 +8)         ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R6=map_value(map=start,ks=4,vs=16) refs=5
+; event->flags = ap->flags;
+31: (63) *(u32 *)(r8 +20) = r1        ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R8_w=ringbuf_mem(ref_obj_id=5,sz=120) refs=5
+; bpf_get_current_comm(&event->comm, sizeof(event->comm));
+32: (bf) r1 = r8                      ; R1_w=ringbuf_mem(ref_obj_id=5,sz=120) R8_w=ringbuf_mem(ref_obj_id=5,sz=120) refs=5
+33: (07) r1 += 24                     ; R1_w=ringbuf_mem(ref_obj_id=5,off=24,sz=120) refs=5
+; bpf_get_current_comm(&event->comm, sizeof(event->comm));
+34: (b7) r2 = 16                      ; R2_w=16 refs=5
+35: (85) call bpf_get_current_comm#16
+mark_precise: frame0: last_idx 35 first_idx 21 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 34: (b7) r2 = 16
+36: R0=scalar() refs=5
+; bpf_probe_read_user_str(&event->fname, sizeof(event->fname), ap->fname);
+36: (79) r3 = *(u64 *)(r6 +0)         ; R3_w=scalar() R6=map_value(map=start,ks=4,vs=16) refs=5
+; bpf_probe_read_user_str(&event->fname, sizeof(event->fname), ap->fname);
+37: (bf) r1 = r8                      ; R1_w=ringbuf_mem(ref_obj_id=5,sz=120) R8=ringbuf_mem(ref_obj_id=5,sz=120) refs=5
+38: (07) r1 += 40                     ; R1_w=ringbuf_mem(ref_obj_id=5,off=40,sz=120) refs=5
+; bpf_probe_read_user_str(&event->fname, sizeof(event->fname), ap->fname);
+39: (b7) r2 = 80                      ; R2_w=80 refs=5
+40: (85) call bpf_probe_read_user_str#114
+mark_precise: frame0: last_idx 40 first_idx 36 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 39: (b7) r2 = 80
+41: R0_w=scalar(smin=smin32=-4095,smax=smax32=80) refs=5
+; bpf_ringbuf_submit(event, 0);
+41: (bf) r1 = r8                      ; R1_w=ringbuf_mem(ref_obj_id=5,sz=120) R8=ringbuf_mem(ref_obj_id=5,sz=120) refs=5
+42: (b7) r2 = 0                       ; R2_w=0 refs=5
+43: (85) call bpf_ringbuf_submit#132          ;
+44: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+; cleanup:
+45: (07) r2 += -4                     ; R2_w=fp-4
+; bpf_map_delete_elem(&start, &pid);
+46: (18) r1 = 0xffff8e204dde9400      ; R1_w=map_ptr(map=start,ks=4,vs=16)
+48: (85) call bpf_map_delete_elem#3   ; R0_w=scalar()
+; }
+49: (b7) r0 = 0                       ; R0_w=0
+50: (95) exit
+
+from 22 to 44: safe
+
+from 15 to 44: safe
+
+from 11 to 49: R0=0 R6=0 R7=scalar(id=1) R9=scalar() R10=fp0 fp-8=mmmm????
+49: R0=0 R6=0 R7=scalar(id=1) R9=scalar() R10=fp0 fp-8=mmmm????
+49: (b7) r0 = 0                       ; R0_w=0
+50: (95) exit
+verification time 239 usec
+stack depth 8
+processed 52 insns (limit 1000000) max_states_per_insn 0 total_states 5 peak_states 5 mark_read 4
+-- END PROG LOAD LOG --

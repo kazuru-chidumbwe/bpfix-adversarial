@@ -1,0 +1,105 @@
+libbpf: loading object from /tmp/bpfix-cap-wtbxxrtk/ringbuf_stack_discard_001__VPADC.buggy.o
+libbpf: elf: section(3) xdp, size 424, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'ringbuf_stack_discard' at insn offset 0 (0 bytes), code size 53 insns (424 bytes)
+libbpf: elf: section(4) .relxdp, size 16, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 16, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-wtbxxrtk/ringbuf_stack_discard_001__VPADC.buggy.o is GPL
+libbpf: elf: section(16) .BTF, size 1007, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 464, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 360, link 1, flags 0, type=2
+libbpf: looking for externs among 15 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'events': at sec_idx 5, offset 0.
+libbpf: map 'events': found type = 27.
+libbpf: map 'events': found max_entries = 4096.
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #1 against 'events'
+libbpf: prog 'ringbuf_stack_discard': found map 0 (events, sec 5, off 0) for insn #1
+libbpf: map 'events': created successfully, fd=4
+libbpf: prog 'ringbuf_stack_discard': BPF program load failed: Permission denied
+libbpf: prog 'ringbuf_stack_discard': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int ringbuf_stack_discard(struct xdp_md *ctx)
+0: (b7) r6 = 0                        ; R6_w=0
+; audit = bpf_ringbuf_reserve(&events, sizeof(*audit), 0);
+1: (18) r1 = 0xffff8e21547c6a00       ; R1_w=map_ptr(map=events,ks=0,vs=0)
+3: (b7) r2 = 4                        ; R2_w=4
+4: (b7) r3 = 0                        ; R3_w=0
+5: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 5 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 4: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 3: (b7) r2 = 4
+6: R0_w=ringbuf_mem_or_null(id=2,ref_obj_id=2,sz=4) refs=2
+; if (!audit)
+6: (15) if r0 == 0x0 goto pc+44       ; R0_w=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+7: (b7) r1 = 3                        ; R1_w=3 refs=2
+; audit->mark = 3;
+8: (63) *(u32 *)(r0 +0) = r1          ; R0_w=ringbuf_mem(ref_obj_id=2,sz=4) R1_w=3 refs=2
+9: (b7) r1 = 7                        ; R1_w=7 refs=2
+; rec.mark = 7;
+10: (63) *(u32 *)(r10 -4) = r1        ; R1_w=7 R10=fp0 fp-8=mmmm???? refs=2
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+11: (63) *(u32 *)(r10 -8) = r6        ; R6_w=0 R10=fp0 fp-8=mmmm0 refs=2
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+12: (61) r1 = *(u32 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8=mmmm0 refs=2
+13: (07) r1 += 1                      ; R1_w=1 refs=2
+14: (63) *(u32 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm1 refs=2
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+15: (63) *(u32 *)(r10 -8) = r6        ; R6_w=0 R10=fp0 fp-8=mmmm0 refs=2
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+16: (61) r1 = *(u32 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8=mmmm0 refs=2
+17: (07) r1 += 1                      ; R1_w=1 refs=2
+18: (63) *(u32 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm1 refs=2
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+19: (63) *(u32 *)(r10 -8) = r6        ; R6_w=0 R10=fp0 fp-8=mmmm0 refs=2
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+20: (61) r1 = *(u32 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8=mmmm0 refs=2
+21: (07) r1 += 1                      ; R1_w=1 refs=2
+22: (63) *(u32 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm1 refs=2
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+23: (63) *(u32 *)(r10 -8) = r6        ; R6_w=0 R10=fp0 fp-8=mmmm0 refs=2
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+24: (61) r1 = *(u32 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8=mmmm0 refs=2
+25: (07) r1 += 1                      ; R1_w=1 refs=2
+26: (63) *(u32 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm1 refs=2
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+27: (63) *(u32 *)(r10 -8) = r6        ; R6_w=0 R10=fp0 fp-8=mmmm0 refs=2
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+28: (61) r1 = *(u32 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8=mmmm0 refs=2
+29: (07) r1 += 1                      ; R1_w=1 refs=2
+30: (63) *(u32 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm1 refs=2
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+31: (63) *(u32 *)(r10 -8) = r6        ; R6_w=0 R10=fp0 fp-8=mmmm0 refs=2
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+32: (61) r1 = *(u32 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8=mmmm0 refs=2
+33: (07) r1 += 1                      ; R1_w=1 refs=2
+34: (63) *(u32 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm1 refs=2
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+35: (63) *(u32 *)(r10 -8) = r6        ; R6_w=0 R10=fp0 fp-8=mmmm0 refs=2
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+36: (61) r1 = *(u32 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8=mmmm0 refs=2
+37: (07) r1 += 1                      ; R1_w=1 refs=2
+38: (63) *(u32 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm1 refs=2
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+39: (63) *(u32 *)(r10 -8) = r6        ; R6_w=0 R10=fp0 fp-8=mmmm0 refs=2
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+40: (61) r1 = *(u32 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8=mmmm0 refs=2
+41: (07) r1 += 1                      ; R1_w=1 refs=2
+42: (63) *(u32 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm1 refs=2
+43: (bf) r1 = r10                     ; R1_w=fp0 R10=fp0 refs=2
+; audit->mark = 3;
+44: (07) r1 += -4                     ; R1_w=fp-4 refs=2
+; bpf_ringbuf_discard(&rec, 0);
+45: (b7) r2 = 0                       ; R2_w=0 refs=2
+46: (bf) r6 = r0                      ; R0_w=ringbuf_mem(ref_obj_id=2,sz=4) R6_w=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+47: (85) call bpf_ringbuf_discard#133
+R1 type=fp expected=ringbuf_mem
+verification time 185 usec
+stack depth 8
+processed 47 insns (limit 1000000) max_states_per_insn 0 total_states 0 peak_states 0 mark_read 0
+-- END PROG LOAD LOG --
+libbpf: prog 'ringbuf_stack_discard': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-wtbxxrtk/ringbuf_stack_discard_001__VPADC.buggy.o'
+Error: failed to load object file

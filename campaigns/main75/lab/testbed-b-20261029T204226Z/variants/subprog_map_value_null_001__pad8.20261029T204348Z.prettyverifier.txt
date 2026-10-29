@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into pointer to map element value not null-checked
+   65 | cfg->key_xor ^= key;
+      | in file /home/test/bpfix-b/repo/campaigns/v2/upstream/subprog_map_value_null_001/pad8.bpf.c
+

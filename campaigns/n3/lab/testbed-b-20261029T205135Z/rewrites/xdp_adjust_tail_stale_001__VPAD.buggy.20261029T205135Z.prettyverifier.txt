@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into scalar value (not a pointer)
+   51 | if (iph->protocol != IPPROTO_UDP)
+      | in file /home/test/bpfix-b/repo/campaigns/n3/xdp_adjust_tail_stale_001/VPAD.buggy.bpf.c
+

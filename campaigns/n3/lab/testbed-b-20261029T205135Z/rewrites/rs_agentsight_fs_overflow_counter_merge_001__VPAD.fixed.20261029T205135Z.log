@@ -1,0 +1,1717 @@
+libbpf: loading object from /tmp/bpfix-cap-wtbxxrtk/rs_agentsight_fs_overflow_counter_merge_001__VPAD.fixed.o
+libbpf: elf: section(3) xdp, size 1400, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'rs_agentsight_fs_overflow_counter_merge' at insn offset 0 (0 bytes), code size 175 insns (1400 bytes)
+libbpf: elf: section(4) .relxdp, size 64, link 27, flags 40, type=9
+libbpf: elf: section(5) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-wtbxxrtk/rs_agentsight_fs_overflow_counter_merge_001__VPAD.fixed.o is GPL
+libbpf: elf: section(6) .maps, size 64, link 0, flags 3, type=1
+libbpf: elf: section(17) .BTF, size 2609, link 0, flags 0, type=1
+libbpf: elf: section(19) .BTF.ext, size 1532, link 0, flags 0, type=1
+libbpf: elf: section(27) .symtab, size 696, link 1, flags 0, type=2
+libbpf: looking for externs among 29 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'event_agg_map': at sec_idx 6, offset 0.
+libbpf: map 'event_agg_map': found type = 1.
+libbpf: map 'event_agg_map': found key [8], sz = 16.
+libbpf: map 'event_agg_map': found value [14], sz = 24.
+libbpf: map 'event_agg_map': found max_entries = 4.
+libbpf: map 'agg_overflow_count': at sec_idx 6, offset 32.
+libbpf: map 'agg_overflow_count': found type = 1.
+libbpf: map 'agg_overflow_count': found key [9], sz = 4.
+libbpf: map 'agg_overflow_count': found value [15], sz = 8.
+libbpf: map 'agg_overflow_count': found max_entries = 1.
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #70 against 'event_agg_map'
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': found map 0 (event_agg_map, sec 6, off 0) for insn #70
+libbpf: sec '.relxdp': relo #1: insn #108 against 'event_agg_map'
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': found map 0 (event_agg_map, sec 6, off 0) for insn #108
+libbpf: sec '.relxdp': relo #2: insn #118 against 'agg_overflow_count'
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': found map 1 (agg_overflow_count, sec 6, off 32) for insn #118
+libbpf: sec '.relxdp': relo #3: insn #129 against 'agg_overflow_count'
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': found map 1 (agg_overflow_count, sec 6, off 32) for insn #129
+libbpf: loading kernel BTF '/sys/kernel/btf/vmlinux': 0
+libbpf: sec 'xdp': found 2 CO-RE relocations
+libbpf: CO-RE relocating [24] struct xdp_md: found target candidate [7123] struct xdp_md in [vmlinux]
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': relo #0: <byte_off> [24] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': relo #0: matching candidate #0 <byte_off> [7123] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': relo #0: patched insn #1 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': relo #1: <byte_off> [24] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': relo #1: matching candidate #0 <byte_off> [7123] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': relo #1: patched insn #2 (LDX/ST/STX) off 0 -> 0
+libbpf: map 'event_agg_map': created successfully, fd=4
+libbpf: map 'agg_overflow_count': created successfully, fd=5
+libbpf: prog 'rs_agentsight_fs_overflow_counter_merge': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_agentsight_fs_overflow_counter_merge(struct xdp_md *ctx)
+0: (b7) r2 = 2                        ; R2_w=2
+; void *data_end = (void *)(long)ctx->data_end;
+1: (61) r3 = *(u32 *)(r1 +4)          ; R1=ctx() R3_w=pkt_end()
+; void *data = (void *)(long)ctx->data;
+2: (61) r4 = *(u32 *)(r1 +0)          ; R1=ctx() R4_w=pkt(r=0)
+; if (data + 3 + MAX_FILENAME_LEN > data_end)
+3: (bf) r1 = r4                       ; R1_w=pkt(r=0) R4_w=pkt(r=0)
+4: (07) r1 += 35                      ; R1_w=pkt(off=35,r=0)
+; if (data + 3 + MAX_FILENAME_LEN > data_end)
+5: (2d) if r1 > r3 goto pc+88         ; R1_w=pkt(off=35,r=35) R3_w=pkt_end()
+; __u8 event_selector = *(__u8 *)(data + 1);
+6: (71) r1 = *(u8 *)(r4 +1)           ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=pkt(r=35)
+; if (event_selector == 0)
+7: (15) if r1 == 0x0 goto pc+86       ; R1_w=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; 
+8: (71) r6 = *(u8 *)(r4 +2)           ; R4_w=pkt(r=35) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+9: (71) r7 = *(u8 *)(r4 +0)           ; R4_w=pkt(r=35) R7_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; filepath[i] = packet_path[i];
+10: (71) r1 = *(u8 *)(r4 +9)          ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=pkt(r=35)
+11: (71) r2 = *(u8 *)(r4 +8)          ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=pkt(r=35)
+12: (71) r3 = *(u8 *)(r4 +7)          ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=pkt(r=35)
+13: (71) r5 = *(u8 *)(r4 +6)          ; R4_w=pkt(r=35) R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+14: (71) r0 = *(u8 *)(r4 +5)          ; R0_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=pkt(r=35)
+15: (71) r8 = *(u8 *)(r4 +4)          ; R4_w=pkt(r=35) R8_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+16: (71) r4 = *(u8 *)(r4 +3)          ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+17: (b7) r9 = 0                       ; R9_w=0
+; struct agg_key key = {};
+18: (63) *(u32 *)(r10 -4) = r9
+mark_precise: frame0: last_idx 18 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r9 stack= before 17: (b7) r9 = 0
+19: R9_w=0 R10=fp0 fp-8=0000????
+19: (63) *(u32 *)(r10 -8) = r9        ; R9_w=0 R10=fp0 fp-8=00000
+20: (b7) r9 = 15                      ; R9_w=15
+; key.event_type = EVENT_TYPE_FILE_DELETE;
+21: (63) *(u32 *)(r10 -12) = r9       ; R9_w=15 R10=fp0 fp-16=mmmm????
+; key.pid = pid_byte;
+22: (63) *(u32 *)(r10 -16) = r7       ; R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (c == '\0')
+23: (15) if r4 == 0x0 goto pc+44      ; R4=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; out[i] = c;
+24: (73) *(u8 *)(r10 -8) = r4         ; R4=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=0000mmmscalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (c == '\0')
+25: (15) if r8 == 0x0 goto pc+42      ; R8=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+26: (b7) r4 = 1                       ; R4_w=1
+; if (c == '/')
+27: (15) if r8 == 0x2f goto pc+1      ; R8=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+28: (b7) r4 = 0                       ; R4_w=0
+; out[i] = c;
+29: (73) *(u8 *)(r10 -7) = r8         ; R8=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0')
+30: (15) if r0 == 0x0 goto pc+25      ; R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+31: (b7) r8 = 2                       ; R8=2
+; if (c == '/')
+32: (15) if r0 == 0x2f goto pc+1      ; R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+33: (bf) r8 = r4                      ; R4=0 R8_w=0
+; out[i] = c;
+34: (73) *(u8 *)(r10 -6) = r0         ; R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+35: (bf) r4 = r8                      ; R4_w=0 R8_w=0
+; if (c == '\0')
+36: (15) if r5 == 0x0 goto pc+19      ; R5=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+37: (b7) r4 = 3                       ; R4_w=3
+; if (c == '/')
+38: (15) if r5 == 0x2f goto pc+1      ; R5=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+39: (bf) r4 = r8                      ; R4=0 R8=0
+; out[i] = c;
+40: (73) *(u8 *)(r10 -5) = r5         ; R5=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0')
+41: (15) if r3 == 0x0 goto pc+14      ; R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+42: (b7) r5 = 4                       ; R5_w=4
+; if (c == '/')
+43: (15) if r3 == 0x2f goto pc+1      ; R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+44: (bf) r5 = r4                      ; R4=0 R5_w=0
+; out[i] = c;
+45: (73) *(u8 *)(r10 -4) = r3         ; R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+46: (bf) r4 = r5                      ; R4_w=0 R5_w=0
+; if (c == '\0')
+47: (15) if r2 == 0x0 goto pc+8       ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+48: (b7) r4 = 5                       ; R4=5
+; if (c == '/')
+49: (15) if r2 == 0x2f goto pc+1      ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+50: (bf) r4 = r5                      ; R4_w=0 R5=0
+; out[i] = c;
+51: (73) *(u8 *)(r10 -3) = r2         ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0')
+52: (15) if r1 == 0x0 goto pc+3       ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+53: (b7) r2 = 6                       ; R2_w=6
+; out[i] = c;
+54: (73) *(u8 *)(r10 -2) = r1         ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+55: (15) if r1 == 0x2f goto pc+5      ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (last_slash > 0)
+56: (bf) r1 = r4                      ; R1_w=0 R4_w=0
+57: (67) r1 <<= 32                    ; R1_w=0
+58: (77) r1 >>= 32                    ; R1_w=0
+59: (bf) r2 = r4                      ; R2=0 R4=0
+; if (last_slash > 0)
+60: (15) if r1 == 0x0 goto pc+7
+mark_precise: frame0: last_idx 60 first_idx 60 subseq_idx -1 
+mark_precise: frame0: parent state regs=r1 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_rw=P0 R2_w=0 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=0 R5=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 59 first_idx 49 subseq_idx 60 
+mark_precise: frame0: regs=r1 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r1 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r1 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r1 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: regs=r4 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r4 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r4 stack= before 53: (b7) r2 = 6
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 50: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs=r5 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=5 R5_rw=P0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 48 first_idx 40 subseq_idx 49 
+mark_precise: frame0: regs=r5 stack= before 48: (b7) r4 = 5
+mark_precise: frame0: regs=r5 stack= before 47: (15) if r2 == 0x0 goto pc+8
+mark_precise: frame0: regs=r5 stack= before 46: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 45: (73) *(u8 *)(r10 -4) = r3
+mark_precise: frame0: regs=r5 stack= before 44: (bf) r5 = r4
+mark_precise: frame0: regs=r4 stack= before 43: (15) if r3 == 0x2f goto pc+1
+mark_precise: frame0: regs=r4 stack= before 42: (b7) r5 = 4
+mark_precise: frame0: regs=r4 stack= before 41: (15) if r3 == 0x0 goto pc+14
+mark_precise: frame0: regs=r4 stack= before 40: (73) *(u8 *)(r10 -5) = r5
+mark_precise: frame0: parent state regs=r4 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P0 R5_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 39 first_idx 32 subseq_idx 40 
+mark_precise: frame0: regs=r4 stack= before 39: (bf) r4 = r8
+mark_precise: frame0: regs=r8 stack= before 38: (15) if r5 == 0x2f goto pc+1
+mark_precise: frame0: regs=r8 stack= before 37: (b7) r4 = 3
+mark_precise: frame0: regs=r8 stack= before 36: (15) if r5 == 0x0 goto pc+19
+mark_precise: frame0: regs=r8 stack= before 35: (bf) r4 = r8
+mark_precise: frame0: regs=r8 stack= before 34: (73) *(u8 *)(r10 -6) = r0
+mark_precise: frame0: regs=r8 stack= before 33: (bf) r8 = r4
+mark_precise: frame0: regs=r4 stack= before 32: (15) if r0 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs=r4 stack=:  R0_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P0 R5_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 31 first_idx 23 subseq_idx 32 
+mark_precise: frame0: regs=r4 stack= before 31: (b7) r8 = 2
+mark_precise: frame0: regs=r4 stack= before 30: (15) if r0 == 0x0 goto pc+25
+mark_precise: frame0: regs=r4 stack= before 29: (73) *(u8 *)(r10 -7) = r8
+mark_precise: frame0: regs=r4 stack= before 28: (b7) r4 = 0
+60: R1=0
+; out[last_slash] = '\0';
+68: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+; struct agg_value *val = bpf_map_lookup_elem(&event_agg_map, &key);
+69: (07) r2 += -16                    ; R2_w=fp-16
+70: (18) r1 = 0xffff8e204b5ee000      ; R1_w=map_ptr(map=event_agg_map,ks=16,vs=24)
+72: (85) call bpf_map_lookup_elem#1   ; R0_w=map_value_or_null(id=1,map=event_agg_map,ks=16,vs=24)
+; if (val) {
+73: (15) if r0 == 0x0 goto pc+22      ; R0_w=map_value(map=event_agg_map,ks=16,vs=24)
+74: (b7) r2 = 1                       ; R2_w=1
+; __sync_fetch_and_add(&val->count, 1);
+75: (b7) r1 = 1                       ; R1_w=1
+76: (db) lock *(u64 *)(r0 +0) += r1   ; R0_w=map_value(map=event_agg_map,ks=16,vs=24) R1_w=1
+; val->last_marker = pid_byte;
+77: (7b) *(u64 *)(r0 +8) = r7         ; R0_w=map_value(map=event_agg_map,ks=16,vs=24) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i];
+78: (71) r1 = *(u8 *)(r10 -8)         ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; dst[i] = src[i];
+79: (73) *(u8 *)(r0 +16) = r1         ; R0_w=map_value(map=event_agg_map,ks=16,vs=24) R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i];
+80: (71) r1 = *(u8 *)(r10 -7)         ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; dst[i] = src[i];
+81: (73) *(u8 *)(r0 +17) = r1         ; R0_w=map_value(map=event_agg_map,ks=16,vs=24) R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i];
+82: (71) r1 = *(u8 *)(r10 -6)         ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; dst[i] = src[i];
+83: (73) *(u8 *)(r0 +18) = r1         ; R0_w=map_value(map=event_agg_map,ks=16,vs=24) R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i];
+84: (71) r1 = *(u8 *)(r10 -5)         ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; dst[i] = src[i];
+85: (73) *(u8 *)(r0 +19) = r1         ; R0_w=map_value(map=event_agg_map,ks=16,vs=24) R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i];
+86: (71) r1 = *(u8 *)(r10 -4)         ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; dst[i] = src[i];
+87: (73) *(u8 *)(r0 +20) = r1         ; R0_w=map_value(map=event_agg_map,ks=16,vs=24) R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i];
+88: (71) r1 = *(u8 *)(r10 -3)         ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; dst[i] = src[i];
+89: (73) *(u8 *)(r0 +21) = r1         ; R0_w=map_value(map=event_agg_map,ks=16,vs=24) R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i];
+90: (71) r1 = *(u8 *)(r10 -2)         ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; dst[i] = src[i];
+91: (73) *(u8 *)(r0 +22) = r1         ; R0_w=map_value(map=event_agg_map,ks=16,vs=24) R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i];
+92: (71) r1 = *(u8 *)(r10 -1)         ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; dst[i] = src[i];
+93: (73) *(u8 *)(r0 +23) = r1         ; R0=map_value(map=event_agg_map,ks=16,vs=24) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; return aggregate_path_event(data, data_end);
+94: (bf) r0 = r2                      ; R0_w=1 R2=1
+95: (95) exit
+
+from 73 to 96: R0_w=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmmmmm
+96: R0_w=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmmmmm
+; new_val.last_marker = pid_byte;
+96: (7b) *(u64 *)(r10 -32) = r7       ; R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-32_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i];
+97: (61) r1 = *(u32 *)(r10 -4)        ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-8=mmmmmmmm
+98: (67) r1 <<= 32                    ; R1_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+99: (61) r2 = *(u32 *)(r10 -8)        ; R2_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-8=mmmmmmmm
+100: (4f) r1 |= r2                    ; R1_w=scalar() R2_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+101: (7b) *(u64 *)(r10 -24) = r1      ; R1_w=scalar() R10=fp0 fp-24_w=mmmmmmmm
+102: (b7) r1 = 1                      ; R1_w=1
+; new_val.count = 1;
+103: (7b) *(u64 *)(r10 -40) = r1      ; R1_w=1 R10=fp0 fp-40_w=1
+104: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+; 
+105: (07) r2 += -16                   ; R2_w=fp-16
+106: (bf) r3 = r10                    ; R3_w=fp0 R10=fp0
+107: (07) r3 += -40                   ; R3_w=fp-40
+; if (bpf_map_update_elem(&event_agg_map, &key, &new_val, BPF_NOEXIST) < 0) {
+108: (18) r1 = 0xffff8e204b5ee000     ; R1_w=map_ptr(map=event_agg_map,ks=16,vs=24)
+110: (b7) r4 = 1                      ; R4_w=1
+111: (85) call bpf_map_update_elem#2          ; R0=scalar()
+112: (b7) r2 = 1                      ; R2_w=1
+; if (bpf_map_update_elem(&event_agg_map, &key, &new_val, BPF_NOEXIST) < 0) {
+113: (65) if r0 s> 0xffffffff goto pc-20      ; R0=scalar(smax=-1,umin=0x8000000000000000,var_off=(0x8000000000000000; 0x7fffffffffffffff))
+114: (b7) r1 = 0                      ; R1_w=0
+; __u32 zero = 0;
+115: (63) *(u32 *)(r10 -44) = r1
+mark_precise: frame0: last_idx 115 first_idx 112 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 114: (b7) r1 = 0
+116: R1_w=0 R10=fp0 fp-48=0000????
+116: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+117: (07) r2 += -44                   ; R2_w=fp-44
+; __u64 *overflow = bpf_map_lookup_elem(&agg_overflow_count, &zero);
+118: (18) r1 = 0xffff8e204b5ea400     ; R1_w=map_ptr(map=agg_overflow_co,ks=4,vs=8)
+120: (85) call bpf_map_lookup_elem#1          ; R0=map_value_or_null(id=2,map=agg_overflow_co,ks=4,vs=8)
+; if (!overflow)
+121: (15) if r0 == 0x0 goto pc+51     ; R0=map_value(map=agg_overflow_co,ks=4,vs=8)
+; if (guarded_overflow & 1) {
+122: (bf) r1 = r6                     ; R1_w=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+123: (57) r1 &= 1                     ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+; if (guarded_overflow & 1) {
+124: (15) if r1 == 0x0 goto pc+11     ; R1_w=1
+125: (bf) r7 = r0                     ; R0=map_value(map=agg_overflow_co,ks=4,vs=8) R7_w=map_value(map=agg_overflow_co,ks=4,vs=8)
+; __u32 shadow_zero = guarded_overflow;
+126: (63) *(u32 *)(r10 -48) = r6      ; R6=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-48=mmmmscalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+127: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+128: (07) r2 += -48                   ; R2_w=fp-48
+; __u64 *shadow_overflow = bpf_map_lookup_elem(&agg_overflow_count, &shadow_zero);
+129: (18) r1 = 0xffff8e204b5ea400     ; R1_w=map_ptr(map=agg_overflow_co,ks=4,vs=8)
+131: (85) call bpf_map_lookup_elem#1          ; R0=map_value_or_null(id=4,map=agg_overflow_co,ks=4,vs=8)
+; if (shadow_overflow)
+132: (15) if r0 == 0x0 goto pc+2      ; R0=map_value(map=agg_overflow_co,ks=4,vs=8)
+133: (b7) r1 = 1                      ; R1_w=1
+; __sync_fetch_and_add(shadow_overflow, 1);
+134: (db) lock *(u64 *)(r0 +0) += r1          ; R0=map_value(map=agg_overflow_co,ks=4,vs=8) R1_w=1
+135: (bf) r0 = r7                     ; R0_w=map_value(map=agg_overflow_co,ks=4,vs=8) R7=map_value(map=agg_overflow_co,ks=4,vs=8)
+136: (b7) r1 = 0                      ; R1_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+137: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+138: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+139: (07) r2 += 1                     ; R2_w=1
+140: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+141: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+142: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+143: (07) r2 += 1                     ; R2_w=1
+144: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+145: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+146: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+147: (07) r2 += 1                     ; R2_w=1
+148: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+149: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+150: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+151: (07) r2 += 1                     ; R2_w=1
+152: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+153: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+154: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+155: (07) r2 += 1                     ; R2_w=1
+156: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+157: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+158: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+159: (07) r2 += 1                     ; R2_w=1
+160: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+161: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+162: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+163: (07) r2 += 1                     ; R2_w=1
+164: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+165: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+166: (61) r1 = *(u32 *)(r10 -48)      ; R1_w=0 R10=fp0 fp-48=mmmm0
+167: (07) r1 += 1                     ; R1_w=1
+168: (63) *(u32 *)(r10 -48) = r1      ; R1_w=1 R10=fp0 fp-48=mmmm1
+169: (b7) r2 = 1                      ; R2_w=1
+; __sync_fetch_and_add(overflow, 1);
+170: (b7) r1 = 1                      ; R1_w=1
+171: (db) lock *(u64 *)(r0 +0) += r1          ; R0_w=map_value(map=agg_overflow_co,ks=4,vs=8) R1_w=1
+172: (05) goto pc-79
+94: safe
+
+from 132 to 135: R0=0 R6=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=map_value(map=agg_overflow_co,ks=4,vs=8) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmmmmm fp-24=mmmmmmmm fp-32=mmmmmmmm fp-40=mmmmmmmm fp-48=mmmmmmmm
+135: R0=0 R6=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=map_value(map=agg_overflow_co,ks=4,vs=8) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmmmmm fp-24=mmmmmmmm fp-32=mmmmmmmm fp-40=mmmmmmmm fp-48=mmmmmmmm
+; __sync_fetch_and_add(shadow_overflow, 1);
+135: (bf) r0 = r7                     ; R0_w=map_value(map=agg_overflow_co,ks=4,vs=8) R7=map_value(map=agg_overflow_co,ks=4,vs=8)
+136: (b7) r1 = 0                      ; R1_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+137: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+138: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+139: (07) r2 += 1                     ; R2_w=1
+140: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+141: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+142: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+143: (07) r2 += 1                     ; R2_w=1
+144: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+145: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+146: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+147: (07) r2 += 1                     ; R2_w=1
+148: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+149: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+150: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+151: (07) r2 += 1                     ; R2_w=1
+152: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+153: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+154: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+155: (07) r2 += 1                     ; R2_w=1
+156: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+157: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+158: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+159: (07) r2 += 1                     ; R2_w=1
+160: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+161: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+162: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+163: (07) r2 += 1                     ; R2_w=1
+164: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+165: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+166: (61) r1 = *(u32 *)(r10 -48)      ; R1_w=0 R10=fp0 fp-48=mmmm0
+167: (07) r1 += 1                     ; R1_w=1
+168: (63) *(u32 *)(r10 -48) = r1      ; R1_w=1 R10=fp0 fp-48=mmmm1
+169: (b7) r2 = 1                      ; R2_w=1
+; __sync_fetch_and_add(overflow, 1);
+170: (b7) r1 = 1                      ; R1_w=1
+171: (db) lock *(u64 *)(r0 +0) += r1          ; R0_w=map_value(map=agg_overflow_co,ks=4,vs=8) R1_w=1
+172: (05) goto pc-79
+94: safe
+
+from 124 to 136: R0=map_value(map=agg_overflow_co,ks=4,vs=8) R1_w=0 R6=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmmmmm fp-24=mmmmmmmm fp-32=mmmmmmmm fp-40=mmmmmmmm fp-48=mmmm????
+136: R0=map_value(map=agg_overflow_co,ks=4,vs=8) R1_w=0 R6=scalar(id=3,smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmmmmm fp-24=mmmmmmmm fp-32=mmmmmmmm fp-40=mmmmmmmm fp-48=mmmm????
+; __sync_fetch_and_add(shadow_overflow, 1);
+136: (b7) r1 = 0                      ; R1_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+137: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+138: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+139: (07) r2 += 1                     ; R2_w=1
+140: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+141: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+142: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+143: (07) r2 += 1                     ; R2_w=1
+144: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+145: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+146: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+147: (07) r2 += 1                     ; R2_w=1
+148: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+149: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+150: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+151: (07) r2 += 1                     ; R2_w=1
+152: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+153: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+154: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+155: (07) r2 += 1                     ; R2_w=1
+156: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+157: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+158: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+159: (07) r2 += 1                     ; R2_w=1
+160: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+161: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+162: (61) r2 = *(u32 *)(r10 -48)      ; R2_w=0 R10=fp0 fp-48=mmmm0
+163: (07) r2 += 1                     ; R2_w=1
+164: (63) *(u32 *)(r10 -48) = r2      ; R2_w=1 R10=fp0 fp-48=mmmm1
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+165: (63) *(u32 *)(r10 -48) = r1      ; R1_w=0 R10=fp0 fp-48=mmmm0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+166: (61) r1 = *(u32 *)(r10 -48)      ; R1_w=0 R10=fp0 fp-48=mmmm0
+167: (07) r1 += 1                     ; R1_w=1
+168: (63) *(u32 *)(r10 -48) = r1      ; R1_w=1 R10=fp0 fp-48=mmmm1
+169: (b7) r2 = 1                      ; R2_w=1
+; __sync_fetch_and_add(overflow, 1);
+170: (b7) r1 = 1                      ; R1_w=1
+171: (db) lock *(u64 *)(r0 +0) += r1          ; R0=map_value(map=agg_overflow_co,ks=4,vs=8) R1_w=1
+172: (05) goto pc-79
+94: safe
+
+from 121 to 173: R0=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmmmmm fp-24=mmmmmmmm fp-32=mmmmmmmm fp-40=mmmmmmmm fp-48=mmmm????
+173: R0=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmmmmm fp-24=mmmmmmmm fp-32=mmmmmmmm fp-40=mmmmmmmm fp-48=mmmm????
+173: (b7) r2 = 2                      ; R2_w=2
+174: (05) goto pc-81
+94: safe
+
+from 113 to 94: safe
+
+from 55 to 61: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=47 R2_w=6 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=0 R5=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+61: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=47 R2_w=6 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=0 R5=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; 
+61: (bf) r1 = r10                     ; R1_w=fp0 R10=fp0
+62: (07) r1 += -8                     ; R1_w=fp-8
+63: (67) r2 <<= 32                    ; R2_w=0x600000000
+64: (77) r2 >>= 32                    ; R2_w=6
+; out[last_slash] = '\0';
+65: (0f) r1 += r2
+mark_precise: frame0: last_idx 65 first_idx 49 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 64: (77) r2 >>= 32
+mark_precise: frame0: regs=r2 stack= before 63: (67) r2 <<= 32
+mark_precise: frame0: regs=r2 stack= before 62: (07) r1 += -8
+mark_precise: frame0: regs=r2 stack= before 61: (bf) r1 = r10
+mark_precise: frame0: regs=r2 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r2 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r2 stack= before 53: (b7) r2 = 6
+66: R1_w=fp-2 R2_w=6
+66: (b7) r2 = 0                       ; R2_w=0
+; out[last_slash] = '\0';
+67: (73) *(u8 *)(r1 +0) = r2
+mark_precise: frame0: last_idx 67 first_idx 49 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 66: (b7) r2 = 0
+68: R1_w=fp-2 R2_w=0 fp-8=m0mmmmmm
+68: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+; struct agg_value *val = bpf_map_lookup_elem(&event_agg_map, &key);
+69: (07) r2 += -16                    ; R2_w=fp-16
+70: (18) r1 = 0xffff8e204b5ee000      ; R1_w=map_ptr(map=event_agg_map,ks=16,vs=24)
+72: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=5,map=event_agg_map,ks=16,vs=24)
+; if (val) {
+73: (15) if r0 == 0x0 goto pc+22      ; R0=map_value(map=event_agg_map,ks=16,vs=24)
+74: (b7) r2 = 1                       ; R2_w=1
+; __sync_fetch_and_add(&val->count, 1);
+75: (b7) r1 = 1                       ; R1_w=1
+76: (db) lock *(u64 *)(r0 +0) += r1   ; R0=map_value(map=event_agg_map,ks=16,vs=24) R1_w=1
+; val->last_marker = pid_byte;
+77: (7b) *(u64 *)(r0 +8) = r7         ; R0=map_value(map=event_agg_map,ks=16,vs=24) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i];
+78: (71) r1 = *(u8 *)(r10 -8)         ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; dst[i] = src[i];
+79: (73) *(u8 *)(r0 +16) = r1         ; R0=map_value(map=event_agg_map,ks=16,vs=24) R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i];
+80: (71) r1 = *(u8 *)(r10 -7)         ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; dst[i] = src[i];
+81: (73) *(u8 *)(r0 +17) = r1         ; R0=map_value(map=event_agg_map,ks=16,vs=24) R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i];
+82: (71) r1 = *(u8 *)(r10 -6)         ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; dst[i] = src[i];
+83: (73) *(u8 *)(r0 +18) = r1         ; R0=map_value(map=event_agg_map,ks=16,vs=24) R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i];
+84: (71) r1 = *(u8 *)(r10 -5)         ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; dst[i] = src[i];
+85: (73) *(u8 *)(r0 +19) = r1         ; R0=map_value(map=event_agg_map,ks=16,vs=24) R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i];
+86: (71) r1 = *(u8 *)(r10 -4)         ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; dst[i] = src[i];
+87: (73) *(u8 *)(r0 +20) = r1         ; R0=map_value(map=event_agg_map,ks=16,vs=24) R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i];
+88: (71) r1 = *(u8 *)(r10 -3)         ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; dst[i] = src[i];
+89: (73) *(u8 *)(r0 +21) = r1         ; R0=map_value(map=event_agg_map,ks=16,vs=24) R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i];
+90: (71) r1 = *(u8 *)(r10 -2)         ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; dst[i] = src[i];
+91: (73) *(u8 *)(r0 +22) = r1         ; R0=map_value(map=event_agg_map,ks=16,vs=24) R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i];
+92: (71) r1 = *(u8 *)(r10 -1)         ; R1_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; dst[i] = src[i];
+93: (73) *(u8 *)(r0 +23) = r1
+94: safe
+
+from 73 to 96: R0=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmmmmm
+96: R0=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmmmmm
+; new_val.last_marker = pid_byte;
+96: (7b) *(u64 *)(r10 -32) = r7       ; R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-32_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; dst[i] = src[i];
+97: (61) r1 = *(u32 *)(r10 -4)        ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-8=mmmmmmmm
+98: (67) r1 <<= 32                    ; R1_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+99: (61) r2 = *(u32 *)(r10 -8)        ; R2_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-8=mmmmmmmm
+100: (4f) r1 |= r2                    ; R1_w=scalar() R2_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+101: (7b) *(u64 *)(r10 -24) = r1      ; R1_w=scalar() R10=fp0 fp-24_w=mmmmmmmm
+102: (b7) r1 = 1                      ; R1_w=1
+; new_val.count = 1;
+103: (7b) *(u64 *)(r10 -40) = r1      ; R1_w=1 R10=fp0 fp-40_w=1
+104: (bf) r2 = r10                    ; R2_w=fp0 R10=fp0
+; 
+105: (07) r2 += -16                   ; R2_w=fp-16
+106: (bf) r3 = r10                    ; R3_w=fp0 R10=fp0
+107: (07) r3 += -40                   ; R3_w=fp-40
+; if (bpf_map_update_elem(&event_agg_map, &key, &new_val, BPF_NOEXIST) < 0) {
+108: (18) r1 = 0xffff8e204b5ee000     ; R1_w=map_ptr(map=event_agg_map,ks=16,vs=24)
+110: (b7) r4 = 1                      ; R4_w=1
+111: (85) call bpf_map_update_elem#2
+112: safe
+
+from 52 to 56: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=0 R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=0 R5=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+56: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=0 R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=0 R5=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (last_slash > 0)
+56: (bf) r1 = r4                      ; R1_w=0 R4=0
+57: (67) r1 <<= 32                    ; R1_w=0
+58: (77) r1 >>= 32                    ; R1_w=0
+59: (bf) r2 = r4
+frame 0: propagating r1
+mark_precise: frame0: last_idx 60 first_idx 56 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r1 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r1 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r1 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: parent state regs=r4 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=0 R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P0 R5=0 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 52 first_idx 49 subseq_idx 56 
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 50: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=5 R5_rw=P0 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+60: safe
+
+from 49 to 51: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=47 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=5 R5=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+51: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=47 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=5 R5=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; out[i] = c;
+51: (73) *(u8 *)(r10 -3) = r2         ; R2=47 R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0')
+52: (15) if r1 == 0x0 goto pc+3       ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+53: (b7) r2 = 6                       ; R2_w=6
+; out[i] = c;
+54: (73) *(u8 *)(r10 -2) = r1         ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+55: (15) if r1 == 0x2f goto pc+5      ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (last_slash > 0)
+56: (bf) r1 = r4                      ; R1_w=5 R4=5
+57: (67) r1 <<= 32                    ; R1_w=0x500000000
+58: (77) r1 >>= 32                    ; R1_w=5
+59: (bf) r2 = r4                      ; R2_w=5 R4=5
+; if (last_slash > 0)
+60: (15) if r1 == 0x0 goto pc+7
+mark_precise: frame0: last_idx 60 first_idx 56 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r1 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r1 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r1 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: parent state regs=r4 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_w=6 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_r=P5 R5=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 55 first_idx 49 subseq_idx 56 
+mark_precise: frame0: regs=r4 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r4 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r4 stack= before 53: (b7) r2 = 6
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs=r4 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P5 R5_rw=P0 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 48 first_idx 40 subseq_idx 49 
+mark_precise: frame0: regs=r4 stack= before 48: (b7) r4 = 5
+60: R1_w=5
+; 
+61: (bf) r1 = r10                     ; R1_w=fp0 R10=fp0
+62: (07) r1 += -8                     ; R1_w=fp-8
+63: (67) r2 <<= 32                    ; R2_w=0x500000000
+64: (77) r2 >>= 32                    ; R2_w=5
+; out[last_slash] = '\0';
+65: (0f) r1 += r2
+mark_precise: frame0: last_idx 65 first_idx 56 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 64: (77) r2 >>= 32
+mark_precise: frame0: regs=r2 stack= before 63: (67) r2 <<= 32
+mark_precise: frame0: regs=r2 stack= before 62: (07) r1 += -8
+mark_precise: frame0: regs=r2 stack= before 61: (bf) r1 = r10
+mark_precise: frame0: regs=r2 stack= before 60: (15) if r1 == 0x0 goto pc+7
+mark_precise: frame0: regs=r2 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r4 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r4 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r4 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_w=6 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_r=P5 R5=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+66: R1_w=fp-3 R2_w=5
+66: (b7) r2 = 0                       ; R2_w=0
+; out[last_slash] = '\0';
+67: (73) *(u8 *)(r1 +0) = r2
+mark_precise: frame0: last_idx 67 first_idx 56 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 66: (b7) r2 = 0
+68: R1_w=fp-3 R2_w=0 fp-8=mm0mmmmm
+68: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+; struct agg_value *val = bpf_map_lookup_elem(&event_agg_map, &key);
+69: (07) r2 += -16                    ; R2_w=fp-16
+70: (18) r1 = 0xffff8e204b5ee000      ; R1_w=map_ptr(map=event_agg_map,ks=16,vs=24)
+72: (85) call bpf_map_lookup_elem#1
+73: safe
+
+from 55 to 61: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=47 R2=6 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=5 R5=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+61: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=47 R2=6 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=5 R5=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; 
+61: (bf) r1 = r10                     ; R1_w=fp0 R10=fp0
+62: (07) r1 += -8                     ; R1_w=fp-8
+63: (67) r2 <<= 32                    ; R2_w=0x600000000
+64: (77) r2 >>= 32                    ; R2_w=6
+; out[last_slash] = '\0';
+65: (0f) r1 += r2
+mark_precise: frame0: last_idx 65 first_idx 61 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 64: (77) r2 >>= 32
+mark_precise: frame0: regs=r2 stack= before 63: (67) r2 <<= 32
+mark_precise: frame0: regs=r2 stack= before 62: (07) r1 += -8
+mark_precise: frame0: regs=r2 stack= before 61: (bf) r1 = r10
+mark_precise: frame0: parent state regs=r2 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=47 R2_rw=P6 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=5 R5=0 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 55 first_idx 49 subseq_idx 61 
+mark_precise: frame0: regs=r2 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r2 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r2 stack= before 53: (b7) r2 = 6
+66: R1_w=fp-2 R2_w=6
+66: (b7) r2 = 0                       ; R2_w=0
+; out[last_slash] = '\0';
+67: (73) *(u8 *)(r1 +0) = r2
+mark_precise: frame0: last_idx 67 first_idx 61 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 66: (b7) r2 = 0
+68: R1_w=fp-2 R2_w=0 fp-8=m0mmmmmm
+68: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+; struct agg_value *val = bpf_map_lookup_elem(&event_agg_map, &key);
+69: (07) r2 += -16                    ; R2_w=fp-16
+70: (18) r1 = 0xffff8e204b5ee000      ; R1_w=map_ptr(map=event_agg_map,ks=16,vs=24)
+72: (85) call bpf_map_lookup_elem#1
+73: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 49 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P5 R5_rw=P0 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+
+from 52 to 56: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 40 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 47: (15) if r2 == 0x0 goto pc+8
+mark_precise: frame0: regs=r4 stack= before 46: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 45: (73) *(u8 *)(r10 -4) = r3
+mark_precise: frame0: regs=r5 stack= before 44: (bf) r5 = r4
+mark_precise: frame0: regs=r4 stack= before 43: (15) if r3 == 0x2f goto pc+1
+mark_precise: frame0: regs=r4 stack= before 42: (b7) r5 = 4
+mark_precise: frame0: regs=r4 stack= before 41: (15) if r3 == 0x0 goto pc+14
+mark_precise: frame0: regs=r4 stack= before 40: (73) *(u8 *)(r10 -5) = r5
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P0 R5_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=0 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+
+from 47 to 56: safe
+
+from 43 to 45: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=47 R4=0 R5_w=4 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+45: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=47 R4=0 R5_w=4 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; out[i] = c;
+45: (73) *(u8 *)(r10 -4) = r3         ; R3=47 R10=fp0 fp-8=mmmmmmmm
+46: (bf) r4 = r5                      ; R4_w=4 R5_w=4
+; if (c == '\0')
+47: (15) if r2 == 0x0 goto pc+8       ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+48: (b7) r4 = 5                       ; R4=5
+; if (c == '/')
+49: (15) if r2 == 0x2f goto pc+1      ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+50: (bf) r4 = r5                      ; R4_w=4 R5=4
+; out[i] = c;
+51: (73) *(u8 *)(r10 -3) = r2         ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0')
+52: (15) if r1 == 0x0 goto pc+3       ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+53: (b7) r2 = 6                       ; R2_w=6
+; out[i] = c;
+54: (73) *(u8 *)(r10 -2) = r1         ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+55: (15) if r1 == 0x2f goto pc+5      ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (last_slash > 0)
+56: (bf) r1 = r4                      ; R1_w=4 R4_w=4
+57: (67) r1 <<= 32                    ; R1_w=0x400000000
+58: (77) r1 >>= 32                    ; R1_w=4
+59: (bf) r2 = r4                      ; R2=4 R4=4
+; if (last_slash > 0)
+60: (15) if r1 == 0x0 goto pc+7
+mark_precise: frame0: last_idx 60 first_idx 60 subseq_idx -1 
+mark_precise: frame0: parent state regs=r1 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_rw=P4 R2_w=4 R3=47 R4_w=4 R5=4 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 59 first_idx 49 subseq_idx 60 
+mark_precise: frame0: regs=r1 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r1 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r1 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r1 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: regs=r4 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r4 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r4 stack= before 53: (b7) r2 = 6
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 50: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs=r5 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=47 R4_w=5 R5_rw=P4 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 48 first_idx 40 subseq_idx 49 
+mark_precise: frame0: regs=r5 stack= before 48: (b7) r4 = 5
+mark_precise: frame0: regs=r5 stack= before 47: (15) if r2 == 0x0 goto pc+8
+mark_precise: frame0: regs=r5 stack= before 46: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 45: (73) *(u8 *)(r10 -4) = r3
+mark_precise: frame0: regs=r5 stack= before 43: (15) if r3 == 0x2f goto pc+1
+mark_precise: frame0: regs=r5 stack= before 42: (b7) r5 = 4
+60: R1=4
+; 
+61: (bf) r1 = r10                     ; R1_w=fp0 R10=fp0
+62: (07) r1 += -8                     ; R1_w=fp-8
+63: (67) r2 <<= 32                    ; R2_w=0x400000000
+64: (77) r2 >>= 32                    ; R2_w=4
+; out[last_slash] = '\0';
+65: (0f) r1 += r2
+mark_precise: frame0: last_idx 65 first_idx 60 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 64: (77) r2 >>= 32
+mark_precise: frame0: regs=r2 stack= before 63: (67) r2 <<= 32
+mark_precise: frame0: regs=r2 stack= before 62: (07) r1 += -8
+mark_precise: frame0: regs=r2 stack= before 61: (bf) r1 = r10
+mark_precise: frame0: regs=r2 stack= before 60: (15) if r1 == 0x0 goto pc+7
+mark_precise: frame0: parent state regs=r2 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_rw=P4 R2_rw=P4 R3=47 R4_w=4 R5=4 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 59 first_idx 49 subseq_idx 60 
+mark_precise: frame0: regs=r2 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r4 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r4 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r4 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: regs=r4 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r4 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r4 stack= before 53: (b7) r2 = 6
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 50: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=47 R4_w=5 R5_rw=P4 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+66: R1_w=fp-4 R2_w=4
+66: (b7) r2 = 0                       ; R2_w=0
+; out[last_slash] = '\0';
+67: (73) *(u8 *)(r1 +0) = r2
+mark_precise: frame0: last_idx 67 first_idx 60 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 66: (b7) r2 = 0
+68: R1_w=fp-4 R2_w=0 fp-8=mmm0mmmm
+68: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+; struct agg_value *val = bpf_map_lookup_elem(&event_agg_map, &key);
+69: (07) r2 += -16                    ; R2_w=fp-16
+70: (18) r1 = 0xffff8e204b5ee000      ; R1_w=map_ptr(map=event_agg_map,ks=16,vs=24)
+72: (85) call bpf_map_lookup_elem#1
+73: safe
+frame 0: propagating r2
+mark_precise: frame0: last_idx 61 first_idx 49 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r2 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r2 stack= before 53: (b7) r2 = 6
+
+from 55 to 61: safe
+
+from 52 to 56: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=0 R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=47 R4=4 R5=4 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+56: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=0 R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=47 R4=4 R5=4 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (last_slash > 0)
+56: (bf) r1 = r4                      ; R1_w=4 R4=4
+57: (67) r1 <<= 32                    ; R1_w=0x400000000
+58: (77) r1 >>= 32                    ; R1_w=4
+59: (bf) r2 = r4
+frame 0: propagating r1,r2
+mark_precise: frame0: last_idx 60 first_idx 56 subseq_idx -1 
+mark_precise: frame0: regs=r1,r2 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r1,r4 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r1,r4 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r1,r4 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: parent state regs=r4 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=0 R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=47 R4_rw=P4 R5=4 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 52 first_idx 49 subseq_idx 56 
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 50: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=47 R4_w=5 R5_rw=P4 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+60: safe
+
+from 49 to 51: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=47 R3=47 R4=5 R5=4 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+51: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=47 R3=47 R4=5 R5=4 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; out[i] = c;
+51: (73) *(u8 *)(r10 -3) = r2         ; R2=47 R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0')
+52: (15) if r1 == 0x0 goto pc+3       ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+53: (b7) r2 = 6                       ; R2_w=6
+; out[i] = c;
+54: (73) *(u8 *)(r10 -2) = r1         ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+55: (15) if r1 == 0x2f goto pc+5      ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 49 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r4 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r4 stack= before 53: (b7) r2 = 6
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs=r4 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=47 R4_rw=P5 R5_rw=P4 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 48 first_idx 40 subseq_idx 49 
+mark_precise: frame0: regs=r4 stack= before 48: (b7) r4 = 5
+56: safe
+frame 0: propagating r2
+mark_precise: frame0: last_idx 61 first_idx 49 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r2 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r2 stack= before 53: (b7) r2 = 6
+
+from 55 to 61: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 49 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=47 R4_rw=P5 R5_rw=P4 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+
+from 52 to 56: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 40 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 47: (15) if r2 == 0x0 goto pc+8
+mark_precise: frame0: regs=r4 stack= before 46: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 45: (73) *(u8 *)(r10 -4) = r3
+mark_precise: frame0: regs=r5 stack= before 43: (15) if r3 == 0x2f goto pc+1
+mark_precise: frame0: regs=r5 stack= before 42: (b7) r5 = 4
+
+from 47 to 56: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 40 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 41: (15) if r3 == 0x0 goto pc+14
+mark_precise: frame0: regs=r4 stack= before 40: (73) *(u8 *)(r10 -5) = r5
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P0 R5_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=0 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+
+from 41 to 56: safe
+
+from 38 to 40: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=3 R5=47 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+40: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=3 R5=47 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; out[i] = c;
+40: (73) *(u8 *)(r10 -5) = r5         ; R5=47 R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0')
+41: (15) if r3 == 0x0 goto pc+14      ; R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+42: (b7) r5 = 4                       ; R5_w=4
+; if (c == '/')
+43: (15) if r3 == 0x2f goto pc+1      ; R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+44: (bf) r5 = r4                      ; R4=3 R5_w=3
+; out[i] = c;
+45: (73) *(u8 *)(r10 -4) = r3         ; R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+46: (bf) r4 = r5                      ; R4_w=3 R5_w=3
+; if (c == '\0')
+47: (15) if r2 == 0x0 goto pc+8       ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+48: (b7) r4 = 5                       ; R4=5
+; if (c == '/')
+49: (15) if r2 == 0x2f goto pc+1      ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+50: (bf) r4 = r5                      ; R4_w=3 R5=3
+; out[i] = c;
+51: (73) *(u8 *)(r10 -3) = r2         ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0')
+52: (15) if r1 == 0x0 goto pc+3       ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+53: (b7) r2 = 6                       ; R2_w=6
+; out[i] = c;
+54: (73) *(u8 *)(r10 -2) = r1         ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+55: (15) if r1 == 0x2f goto pc+5      ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (last_slash > 0)
+56: (bf) r1 = r4                      ; R1_w=3 R4_w=3
+57: (67) r1 <<= 32                    ; R1_w=0x300000000
+58: (77) r1 >>= 32                    ; R1_w=3
+59: (bf) r2 = r4                      ; R2=3 R4=3
+; if (last_slash > 0)
+60: (15) if r1 == 0x0 goto pc+7
+mark_precise: frame0: last_idx 60 first_idx 60 subseq_idx -1 
+mark_precise: frame0: parent state regs=r1 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_rw=P3 R2_w=3 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=3 R5=3 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 59 first_idx 49 subseq_idx 60 
+mark_precise: frame0: regs=r1 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r1 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r1 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r1 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: regs=r4 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r4 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r4 stack= before 53: (b7) r2 = 6
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 50: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs=r5 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=5 R5_rw=P3 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 48 first_idx 40 subseq_idx 49 
+mark_precise: frame0: regs=r5 stack= before 48: (b7) r4 = 5
+mark_precise: frame0: regs=r5 stack= before 47: (15) if r2 == 0x0 goto pc+8
+mark_precise: frame0: regs=r5 stack= before 46: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 45: (73) *(u8 *)(r10 -4) = r3
+mark_precise: frame0: regs=r5 stack= before 44: (bf) r5 = r4
+mark_precise: frame0: regs=r4 stack= before 43: (15) if r3 == 0x2f goto pc+1
+mark_precise: frame0: regs=r4 stack= before 42: (b7) r5 = 4
+mark_precise: frame0: regs=r4 stack= before 41: (15) if r3 == 0x0 goto pc+14
+mark_precise: frame0: regs=r4 stack= before 40: (73) *(u8 *)(r10 -5) = r5
+mark_precise: frame0: parent state regs=r4 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P3 R5_r=47 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 38 first_idx 32 subseq_idx 40 
+mark_precise: frame0: regs=r4 stack= before 38: (15) if r5 == 0x2f goto pc+1
+mark_precise: frame0: regs=r4 stack= before 37: (b7) r4 = 3
+60: R1=3
+; 
+61: (bf) r1 = r10                     ; R1_w=fp0 R10=fp0
+62: (07) r1 += -8                     ; R1_w=fp-8
+63: (67) r2 <<= 32                    ; R2_w=0x300000000
+64: (77) r2 >>= 32                    ; R2_w=3
+; out[last_slash] = '\0';
+65: (0f) r1 += r2
+mark_precise: frame0: last_idx 65 first_idx 60 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 64: (77) r2 >>= 32
+mark_precise: frame0: regs=r2 stack= before 63: (67) r2 <<= 32
+mark_precise: frame0: regs=r2 stack= before 62: (07) r1 += -8
+mark_precise: frame0: regs=r2 stack= before 61: (bf) r1 = r10
+mark_precise: frame0: regs=r2 stack= before 60: (15) if r1 == 0x0 goto pc+7
+mark_precise: frame0: parent state regs=r2 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_rw=P3 R2_rw=P3 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=3 R5=3 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 59 first_idx 49 subseq_idx 60 
+mark_precise: frame0: regs=r2 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r4 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r4 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r4 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: regs=r4 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r4 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r4 stack= before 53: (b7) r2 = 6
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 50: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=5 R5_rw=P3 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+66: R1_w=fp-5 R2_w=3
+66: (b7) r2 = 0                       ; R2_w=0
+; out[last_slash] = '\0';
+67: (73) *(u8 *)(r1 +0) = r2
+mark_precise: frame0: last_idx 67 first_idx 60 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 66: (b7) r2 = 0
+68: R1_w=fp-5 R2_w=0 fp-8=mmmm0mmm
+68: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+; struct agg_value *val = bpf_map_lookup_elem(&event_agg_map, &key);
+69: (07) r2 += -16                    ; R2_w=fp-16
+70: (18) r1 = 0xffff8e204b5ee000      ; R1_w=map_ptr(map=event_agg_map,ks=16,vs=24)
+72: (85) call bpf_map_lookup_elem#1
+73: safe
+frame 0: propagating r2
+mark_precise: frame0: last_idx 61 first_idx 49 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r2 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r2 stack= before 53: (b7) r2 = 6
+
+from 55 to 61: safe
+
+from 52 to 56: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=0 R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=3 R5=3 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+56: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=0 R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=3 R5=3 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (last_slash > 0)
+56: (bf) r1 = r4                      ; R1_w=3 R4=3
+57: (67) r1 <<= 32                    ; R1_w=0x300000000
+58: (77) r1 >>= 32                    ; R1_w=3
+59: (bf) r2 = r4
+frame 0: propagating r1,r2
+mark_precise: frame0: last_idx 60 first_idx 56 subseq_idx -1 
+mark_precise: frame0: regs=r1,r2 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r1,r4 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r1,r4 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r1,r4 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: parent state regs=r4 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=0 R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P3 R5=3 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 52 first_idx 49 subseq_idx 56 
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 50: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=5 R5_rw=P3 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+60: safe
+
+from 49 to 51: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=47 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=5 R5=3 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+51: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=47 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=5 R5=3 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; out[i] = c;
+51: (73) *(u8 *)(r10 -3) = r2         ; R2=47 R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0')
+52: (15) if r1 == 0x0 goto pc+3       ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+53: (b7) r2 = 6                       ; R2_w=6
+; out[i] = c;
+54: (73) *(u8 *)(r10 -2) = r1         ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+55: (15) if r1 == 0x2f goto pc+5      ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 49 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r4 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r4 stack= before 53: (b7) r2 = 6
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs=r4 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P5 R5_rw=P3 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 48 first_idx 40 subseq_idx 49 
+mark_precise: frame0: regs=r4 stack= before 48: (b7) r4 = 5
+56: safe
+frame 0: propagating r2
+mark_precise: frame0: last_idx 61 first_idx 49 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r2 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r2 stack= before 53: (b7) r2 = 6
+
+from 55 to 61: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 49 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P5 R5_rw=P3 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+
+from 52 to 56: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 40 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 47: (15) if r2 == 0x0 goto pc+8
+mark_precise: frame0: regs=r4 stack= before 46: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 45: (73) *(u8 *)(r10 -4) = r3
+mark_precise: frame0: regs=r5 stack= before 44: (bf) r5 = r4
+mark_precise: frame0: regs=r4 stack= before 43: (15) if r3 == 0x2f goto pc+1
+mark_precise: frame0: regs=r4 stack= before 42: (b7) r5 = 4
+mark_precise: frame0: regs=r4 stack= before 41: (15) if r3 == 0x0 goto pc+14
+mark_precise: frame0: regs=r4 stack= before 40: (73) *(u8 *)(r10 -5) = r5
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P3 R5_r=47 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=0 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+
+from 47 to 56: safe
+
+from 43 to 45: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=47 R4=3 R5=4 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+45: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=47 R4=3 R5=4 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; out[i] = c;
+45: (73) *(u8 *)(r10 -4) = r3         ; R3=47 R10=fp0 fp-8=mmmmmmmm
+46: (bf) r4 = r5                      ; R4_w=4 R5=4
+; if (c == '\0')
+47: (15) if r2 == 0x0 goto pc+8       ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+48: (b7) r4 = 5
+frame 0: propagating r4,r5
+mark_precise: frame0: last_idx 49 first_idx 45 subseq_idx -1 
+mark_precise: frame0: regs=r4,r5 stack= before 48: (b7) r4 = 5
+mark_precise: frame0: regs=r5 stack= before 47: (15) if r2 == 0x0 goto pc+8
+mark_precise: frame0: regs=r5 stack= before 46: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 45: (73) *(u8 *)(r10 -4) = r3
+mark_precise: frame0: parent state regs=r5 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=47 R4=3 R5_rw=P4 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 43 first_idx 40 subseq_idx 45 
+mark_precise: frame0: regs=r5 stack= before 43: (15) if r3 == 0x2f goto pc+1
+mark_precise: frame0: regs=r5 stack= before 42: (b7) r5 = 4
+49: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 45 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 47: (15) if r2 == 0x0 goto pc+8
+mark_precise: frame0: regs=r4 stack= before 46: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 45: (73) *(u8 *)(r10 -4) = r3
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=47 R4=3 R5_rw=P4 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+
+from 47 to 56: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 40 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 41: (15) if r3 == 0x0 goto pc+14
+mark_precise: frame0: regs=r4 stack= before 40: (73) *(u8 *)(r10 -5) = r5
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P3 R5_r=47 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=0 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+
+from 41 to 56: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 32 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 36: (15) if r5 == 0x0 goto pc+19
+mark_precise: frame0: regs=r4 stack= before 35: (bf) r4 = r8
+mark_precise: frame0: regs=r8 stack= before 34: (73) *(u8 *)(r10 -6) = r0
+mark_precise: frame0: regs=r8 stack= before 33: (bf) r8 = r4
+mark_precise: frame0: regs=r4 stack= before 32: (15) if r0 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P0 R5_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=2 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+
+from 36 to 56: safe
+
+from 32 to 34: R0=47 R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=0 R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+34: R0=47 R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=0 R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; out[i] = c;
+34: (73) *(u8 *)(r10 -6) = r0         ; R0=47 R10=fp0 fp-8=mmmmmmmm
+35: (bf) r4 = r8                      ; R4_w=2 R8=2
+; if (c == '\0')
+36: (15) if r5 == 0x0 goto pc+19      ; R5=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+37: (b7) r4 = 3                       ; R4=3
+; if (c == '/')
+38: (15) if r5 == 0x2f goto pc+1      ; R5=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+39: (bf) r4 = r8                      ; R4_w=2 R8=2
+; out[i] = c;
+40: (73) *(u8 *)(r10 -5) = r5         ; R5=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0')
+41: (15) if r3 == 0x0 goto pc+14      ; R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+42: (b7) r5 = 4                       ; R5_w=4
+; if (c == '/')
+43: (15) if r3 == 0x2f goto pc+1      ; R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+44: (bf) r5 = r4                      ; R4_w=2 R5_w=2
+; out[i] = c;
+45: (73) *(u8 *)(r10 -4) = r3         ; R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+46: (bf) r4 = r5                      ; R4=2 R5=2
+; if (c == '\0')
+47: (15) if r2 == 0x0 goto pc+8       ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+48: (b7) r4 = 5                       ; R4_w=5
+; if (c == '/')
+49: (15) if r2 == 0x2f goto pc+1      ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+50: (bf) r4 = r5                      ; R4_w=2 R5=2
+; out[i] = c;
+51: (73) *(u8 *)(r10 -3) = r2         ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0')
+52: (15) if r1 == 0x0 goto pc+3       ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+53: (b7) r2 = 6                       ; R2_w=6
+; out[i] = c;
+54: (73) *(u8 *)(r10 -2) = r1         ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+55: (15) if r1 == 0x2f goto pc+5      ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (last_slash > 0)
+56: (bf) r1 = r4                      ; R1_w=2 R4=2
+57: (67) r1 <<= 32                    ; R1_w=0x200000000
+58: (77) r1 >>= 32                    ; R1_w=2
+59: (bf) r2 = r4                      ; R2_w=2 R4=2
+; if (last_slash > 0)
+60: (15) if r1 == 0x0 goto pc+7
+mark_precise: frame0: last_idx 60 first_idx 55 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r1 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r1 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r1 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: regs=r4 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: parent state regs=r4 stack=:  R0=47 R1_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_w=6 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P2 R5=2 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 54 first_idx 47 subseq_idx 55 
+mark_precise: frame0: regs=r4 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r4 stack= before 53: (b7) r2 = 6
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 50: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: regs=r5 stack= before 48: (b7) r4 = 5
+mark_precise: frame0: regs=r5 stack= before 47: (15) if r2 == 0x0 goto pc+8
+mark_precise: frame0: parent state regs=r5 stack=:  R0=47 R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=2 R5_rw=P2 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 46 first_idx 38 subseq_idx 47 
+mark_precise: frame0: regs=r5 stack= before 46: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 45: (73) *(u8 *)(r10 -4) = r3
+mark_precise: frame0: regs=r5 stack= before 44: (bf) r5 = r4
+mark_precise: frame0: regs=r4 stack= before 43: (15) if r3 == 0x2f goto pc+1
+mark_precise: frame0: regs=r4 stack= before 42: (b7) r5 = 4
+mark_precise: frame0: regs=r4 stack= before 41: (15) if r3 == 0x0 goto pc+14
+mark_precise: frame0: regs=r4 stack= before 40: (73) *(u8 *)(r10 -5) = r5
+mark_precise: frame0: regs=r4 stack= before 39: (bf) r4 = r8
+mark_precise: frame0: regs=r8 stack= before 38: (15) if r5 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs=r8 stack=:  R0=47 R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=3 R5_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_r=P2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 37 first_idx 32 subseq_idx 38 
+mark_precise: frame0: regs=r8 stack= before 37: (b7) r4 = 3
+mark_precise: frame0: regs=r8 stack= before 36: (15) if r5 == 0x0 goto pc+19
+mark_precise: frame0: regs=r8 stack= before 35: (bf) r4 = r8
+mark_precise: frame0: regs=r8 stack= before 34: (73) *(u8 *)(r10 -6) = r0
+mark_precise: frame0: regs=r8 stack= before 32: (15) if r0 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs=r8 stack=:  R0_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P0 R5_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_rw=P2 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 31 first_idx 23 subseq_idx 32 
+mark_precise: frame0: regs=r8 stack= before 31: (b7) r8 = 2
+60: R1_w=2
+; 
+61: (bf) r1 = r10                     ; R1_w=fp0 R10=fp0
+62: (07) r1 += -8                     ; R1_w=fp-8
+63: (67) r2 <<= 32                    ; R2_w=0x200000000
+64: (77) r2 >>= 32                    ; R2_w=2
+; out[last_slash] = '\0';
+65: (0f) r1 += r2
+mark_precise: frame0: last_idx 65 first_idx 55 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 64: (77) r2 >>= 32
+mark_precise: frame0: regs=r2 stack= before 63: (67) r2 <<= 32
+mark_precise: frame0: regs=r2 stack= before 62: (07) r1 += -8
+mark_precise: frame0: regs=r2 stack= before 61: (bf) r1 = r10
+mark_precise: frame0: regs=r2 stack= before 60: (15) if r1 == 0x0 goto pc+7
+mark_precise: frame0: regs=r2 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r4 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r4 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r4 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: regs=r4 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: parent state regs= stack=:  R0=47 R1_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_w=6 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P2 R5=2 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+66: R1_w=fp-6 R2_w=2
+66: (b7) r2 = 0                       ; R2_w=0
+; out[last_slash] = '\0';
+67: (73) *(u8 *)(r1 +0) = r2
+mark_precise: frame0: last_idx 67 first_idx 55 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 66: (b7) r2 = 0
+68: R1=fp-6 R2=0 fp-8=mmmmm0mm
+68: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+; struct agg_value *val = bpf_map_lookup_elem(&event_agg_map, &key);
+69: (07) r2 += -16                    ; R2_w=fp-16
+70: (18) r1 = 0xffff8e204b5ee000      ; R1_w=map_ptr(map=event_agg_map,ks=16,vs=24)
+72: (85) call bpf_map_lookup_elem#1
+73: safe
+frame 0: propagating r2
+mark_precise: frame0: last_idx 61 first_idx 55 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: parent state regs=r2 stack=:  R0=47 R1_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_rw=P6 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P2 R5=2 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 54 first_idx 47 subseq_idx 55 
+mark_precise: frame0: regs=r2 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r2 stack= before 53: (b7) r2 = 6
+
+from 55 to 61: safe
+
+from 52 to 56: R0=47 R1=0 R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=2 R5=2 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+56: R0=47 R1=0 R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=2 R5=2 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (last_slash > 0)
+56: (bf) r1 = r4                      ; R1_w=2 R4_w=2
+57: (67) r1 <<= 32                    ; R1_w=0x200000000
+58: (77) r1 >>= 32                    ; R1_w=2
+59: (bf) r2 = r4                      ; R2_w=2 R4_w=2
+; if (last_slash > 0)
+60: (15) if r1 == 0x0 goto pc+7
+mark_precise: frame0: last_idx 60 first_idx 47 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r1 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r1 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r1 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 50: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: regs=r5 stack= before 48: (b7) r4 = 5
+mark_precise: frame0: regs=r5 stack= before 47: (15) if r2 == 0x0 goto pc+8
+mark_precise: frame0: parent state regs= stack=:  R0=47 R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=2 R5_rw=P2 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+60: R1_w=2
+; 
+61: (bf) r1 = r10                     ; R1_w=fp0 R10=fp0
+62: (07) r1 += -8                     ; R1_w=fp-8
+63: (67) r2 <<= 32                    ; R2_w=0x200000000
+64: (77) r2 >>= 32                    ; R2_w=2
+; out[last_slash] = '\0';
+65: (0f) r1 += r2
+mark_precise: frame0: last_idx 65 first_idx 61 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 64: (77) r2 >>= 32
+mark_precise: frame0: regs=r2 stack= before 63: (67) r2 <<= 32
+mark_precise: frame0: regs=r2 stack= before 62: (07) r1 += -8
+mark_precise: frame0: regs=r2 stack= before 61: (bf) r1 = r10
+mark_precise: frame0: parent state regs=r2 stack=:  R0=47 R1_w=2 R2_rw=P2 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=2 R5=2 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 60 first_idx 47 subseq_idx 61 
+mark_precise: frame0: regs=r2 stack= before 60: (15) if r1 == 0x0 goto pc+7
+mark_precise: frame0: regs=r2 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r4 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r4 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r4 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 50: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: regs=r5 stack= before 48: (b7) r4 = 5
+mark_precise: frame0: regs=r5 stack= before 47: (15) if r2 == 0x0 goto pc+8
+mark_precise: frame0: parent state regs= stack=:  R0=47 R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=2 R5_rw=P2 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+66: R1_w=fp-6 R2_w=2
+66: (b7) r2 = 0                       ; R2_w=0
+; out[last_slash] = '\0';
+67: (73) *(u8 *)(r1 +0) = r2
+mark_precise: frame0: last_idx 67 first_idx 61 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 66: (b7) r2 = 0
+68: safe
+
+from 49 to 51: R0=47 R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=47 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=5 R5=2 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+51: R0=47 R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=47 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=5 R5=2 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; out[i] = c;
+51: (73) *(u8 *)(r10 -3) = r2         ; R2=47 R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0')
+52: (15) if r1 == 0x0 goto pc+3       ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+53: (b7) r2 = 6                       ; R2_w=6
+; out[i] = c;
+54: (73) *(u8 *)(r10 -2) = r1         ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+55: (15) if r1 == 0x2f goto pc+5      ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 47 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r4 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r4 stack= before 53: (b7) r2 = 6
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: regs=r4 stack= before 48: (b7) r4 = 5
+56: safe
+frame 0: propagating r2
+mark_precise: frame0: last_idx 61 first_idx 47 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r2 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r2 stack= before 53: (b7) r2 = 6
+
+from 55 to 61: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 47 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: regs=r4 stack= before 48: (b7) r4 = 5
+
+from 52 to 56: safe
+
+from 47 to 56: R0=47 R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=0 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=2 R5=2 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+56: R0=47 R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=0 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=2 R5=2 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (last_slash > 0)
+56: (bf) r1 = r4                      ; R1_w=2 R4=2
+57: (67) r1 <<= 32                    ; R1_w=0x200000000
+58: (77) r1 >>= 32                    ; R1_w=2
+59: (bf) r2 = r4                      ; R2_w=2 R4=2
+; if (last_slash > 0)
+60: (15) if r1 == 0x0 goto pc+7
+mark_precise: frame0: last_idx 60 first_idx 56 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r1 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r1 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r1 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: parent state regs=r4 stack=:  R0=47 R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=0 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_r=P2 R5=2 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 47 first_idx 47 subseq_idx 56 
+mark_precise: frame0: regs=r4 stack= before 47: (15) if r2 == 0x0 goto pc+8
+mark_precise: frame0: parent state regs=r4 stack=:  R0=47 R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P2 R5_rw=P2 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 46 first_idx 38 subseq_idx 47 
+mark_precise: frame0: regs=r4 stack= before 46: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 45: (73) *(u8 *)(r10 -4) = r3
+mark_precise: frame0: regs=r5 stack= before 44: (bf) r5 = r4
+mark_precise: frame0: regs=r4 stack= before 43: (15) if r3 == 0x2f goto pc+1
+mark_precise: frame0: regs=r4 stack= before 42: (b7) r5 = 4
+mark_precise: frame0: regs=r4 stack= before 41: (15) if r3 == 0x0 goto pc+14
+mark_precise: frame0: regs=r4 stack= before 40: (73) *(u8 *)(r10 -5) = r5
+mark_precise: frame0: regs=r4 stack= before 39: (bf) r4 = r8
+mark_precise: frame0: regs=r8 stack= before 38: (15) if r5 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0=47 R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=3 R5_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_r=P2 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+60: R1_w=2
+frame 0: propagating r2
+mark_precise: frame0: last_idx 61 first_idx 56 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 60: (15) if r1 == 0x0 goto pc+7
+mark_precise: frame0: regs=r2 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r4 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r4 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r4 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: parent state regs= stack=:  R0=47 R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=0 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_r=P2 R5=2 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+61: safe
+frame 0: propagating r5
+mark_precise: frame0: last_idx 45 first_idx 38 subseq_idx -1 
+mark_precise: frame0: regs=r5 stack= before 43: (15) if r3 == 0x2f goto pc+1
+mark_precise: frame0: regs=r5 stack= before 42: (b7) r5 = 4
+
+from 43 to 45: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 38 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 41: (15) if r3 == 0x0 goto pc+14
+mark_precise: frame0: regs=r4 stack= before 40: (73) *(u8 *)(r10 -5) = r5
+mark_precise: frame0: regs=r4 stack= before 39: (bf) r4 = r8
+mark_precise: frame0: regs=r8 stack= before 38: (15) if r5 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0=47 R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=3 R5_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_r=P2 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+
+from 41 to 56: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 40 first_idx 38 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 38: (15) if r5 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs=r4 stack=:  R0=47 R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P3 R5_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_r=P2 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 37 first_idx 32 subseq_idx 38 
+mark_precise: frame0: regs=r4 stack= before 37: (b7) r4 = 3
+
+from 38 to 40: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 32 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 36: (15) if r5 == 0x0 goto pc+19
+mark_precise: frame0: regs=r4 stack= before 35: (bf) r4 = r8
+mark_precise: frame0: regs=r8 stack= before 34: (73) *(u8 *)(r10 -6) = r0
+mark_precise: frame0: regs=r8 stack= before 32: (15) if r0 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P0 R5_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_rw=P2 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+
+from 36 to 56: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 23 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 30: (15) if r0 == 0x0 goto pc+25
+mark_precise: frame0: regs=r4 stack= before 29: (73) *(u8 *)(r10 -7) = r8
+mark_precise: frame0: regs=r4 stack= before 28: (b7) r4 = 0
+
+from 30 to 56: safe
+
+from 27 to 29: R0=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=1 R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=47 R9=15 R10=fp0 fp-8=0000mmmscalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+29: R0=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=1 R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=47 R9=15 R10=fp0 fp-8=0000mmmscalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; out[i] = c;
+29: (73) *(u8 *)(r10 -7) = r8         ; R8=47 R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0')
+30: (15) if r0 == 0x0 goto pc+25      ; R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+31: (b7) r8 = 2                       ; R8=2
+; if (c == '/')
+32: (15) if r0 == 0x2f goto pc+1      ; R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+33: (bf) r8 = r4                      ; R4=1 R8_w=1
+; out[i] = c;
+34: (73) *(u8 *)(r10 -6) = r0         ; R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+35: (bf) r4 = r8                      ; R4_w=1 R8_w=1
+; if (c == '\0')
+36: (15) if r5 == 0x0 goto pc+19      ; R5=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+37: (b7) r4 = 3                       ; R4_w=3
+; if (c == '/')
+38: (15) if r5 == 0x2f goto pc+1      ; R5=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+39: (bf) r4 = r8                      ; R4=1 R8=1
+; out[i] = c;
+40: (73) *(u8 *)(r10 -5) = r5         ; R5=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0')
+41: (15) if r3 == 0x0 goto pc+14      ; R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+42: (b7) r5 = 4                       ; R5_w=4
+; if (c == '/')
+43: (15) if r3 == 0x2f goto pc+1      ; R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+44: (bf) r5 = r4                      ; R4=1 R5_w=1
+; out[i] = c;
+45: (73) *(u8 *)(r10 -4) = r3         ; R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+46: (bf) r4 = r5                      ; R4_w=1 R5_w=1
+; if (c == '\0')
+47: (15) if r2 == 0x0 goto pc+8       ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+48: (b7) r4 = 5                       ; R4=5
+; if (c == '/')
+49: (15) if r2 == 0x2f goto pc+1      ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+50: (bf) r4 = r5                      ; R4_w=1 R5=1
+; out[i] = c;
+51: (73) *(u8 *)(r10 -3) = r2         ; R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0')
+52: (15) if r1 == 0x0 goto pc+3       ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+53: (b7) r2 = 6                       ; R2_w=6
+; out[i] = c;
+54: (73) *(u8 *)(r10 -2) = r1         ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+55: (15) if r1 == 0x2f goto pc+5      ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (last_slash > 0)
+56: (bf) r1 = r4                      ; R1_w=1 R4_w=1
+57: (67) r1 <<= 32                    ; R1_w=0x100000000
+58: (77) r1 >>= 32                    ; R1_w=1
+59: (bf) r2 = r4                      ; R2=1 R4=1
+; if (last_slash > 0)
+60: (15) if r1 == 0x0 goto pc+7
+mark_precise: frame0: last_idx 60 first_idx 60 subseq_idx -1 
+mark_precise: frame0: parent state regs=r1 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_rw=P1 R2_w=1 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=1 R5=1 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=1 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 59 first_idx 49 subseq_idx 60 
+mark_precise: frame0: regs=r1 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r1 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r1 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r1 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: regs=r4 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r4 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r4 stack= before 53: (b7) r2 = 6
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 50: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs=r5 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=5 R5_rw=P1 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=1 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 48 first_idx 40 subseq_idx 49 
+mark_precise: frame0: regs=r5 stack= before 48: (b7) r4 = 5
+mark_precise: frame0: regs=r5 stack= before 47: (15) if r2 == 0x0 goto pc+8
+mark_precise: frame0: regs=r5 stack= before 46: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 45: (73) *(u8 *)(r10 -4) = r3
+mark_precise: frame0: regs=r5 stack= before 44: (bf) r5 = r4
+mark_precise: frame0: regs=r4 stack= before 43: (15) if r3 == 0x2f goto pc+1
+mark_precise: frame0: regs=r4 stack= before 42: (b7) r5 = 4
+mark_precise: frame0: regs=r4 stack= before 41: (15) if r3 == 0x0 goto pc+14
+mark_precise: frame0: regs=r4 stack= before 40: (73) *(u8 *)(r10 -5) = r5
+mark_precise: frame0: parent state regs=r4 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P1 R5_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=1 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 39 first_idx 32 subseq_idx 40 
+mark_precise: frame0: regs=r4 stack= before 39: (bf) r4 = r8
+mark_precise: frame0: regs=r8 stack= before 38: (15) if r5 == 0x2f goto pc+1
+mark_precise: frame0: regs=r8 stack= before 37: (b7) r4 = 3
+mark_precise: frame0: regs=r8 stack= before 36: (15) if r5 == 0x0 goto pc+19
+mark_precise: frame0: regs=r8 stack= before 35: (bf) r4 = r8
+mark_precise: frame0: regs=r8 stack= before 34: (73) *(u8 *)(r10 -6) = r0
+mark_precise: frame0: regs=r8 stack= before 33: (bf) r8 = r4
+mark_precise: frame0: regs=r4 stack= before 32: (15) if r0 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs=r4 stack=:  R0_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P1 R5_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 31 first_idx 23 subseq_idx 32 
+mark_precise: frame0: regs=r4 stack= before 31: (b7) r8 = 2
+mark_precise: frame0: regs=r4 stack= before 30: (15) if r0 == 0x0 goto pc+25
+mark_precise: frame0: regs=r4 stack= before 29: (73) *(u8 *)(r10 -7) = r8
+mark_precise: frame0: regs=r4 stack= before 27: (15) if r8 == 0x2f goto pc+1
+mark_precise: frame0: regs=r4 stack= before 26: (b7) r4 = 1
+60: R1=1
+; 
+61: (bf) r1 = r10                     ; R1_w=fp0 R10=fp0
+62: (07) r1 += -8                     ; R1_w=fp-8
+63: (67) r2 <<= 32                    ; R2_w=0x100000000
+64: (77) r2 >>= 32                    ; R2_w=1
+; out[last_slash] = '\0';
+65: (0f) r1 += r2
+mark_precise: frame0: last_idx 65 first_idx 60 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 64: (77) r2 >>= 32
+mark_precise: frame0: regs=r2 stack= before 63: (67) r2 <<= 32
+mark_precise: frame0: regs=r2 stack= before 62: (07) r1 += -8
+mark_precise: frame0: regs=r2 stack= before 61: (bf) r1 = r10
+mark_precise: frame0: regs=r2 stack= before 60: (15) if r1 == 0x0 goto pc+7
+mark_precise: frame0: parent state regs=r2 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_rw=P1 R2_rw=P1 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=1 R5=1 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=1 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 59 first_idx 49 subseq_idx 60 
+mark_precise: frame0: regs=r2 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r4 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r4 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r4 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: regs=r4 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r4 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r4 stack= before 53: (b7) r2 = 6
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 50: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=5 R5_rw=P1 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=1 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+66: R1_w=fp-7 R2_w=1
+66: (b7) r2 = 0                       ; R2_w=0
+; out[last_slash] = '\0';
+67: (73) *(u8 *)(r1 +0) = r2
+mark_precise: frame0: last_idx 67 first_idx 60 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 66: (b7) r2 = 0
+68: R1_w=fp-7 R2_w=0 fp-8=mmmmmm0m
+68: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+; struct agg_value *val = bpf_map_lookup_elem(&event_agg_map, &key);
+69: (07) r2 += -16                    ; R2_w=fp-16
+70: (18) r1 = 0xffff8e204b5ee000      ; R1_w=map_ptr(map=event_agg_map,ks=16,vs=24)
+72: (85) call bpf_map_lookup_elem#1
+73: safe
+frame 0: propagating r2
+mark_precise: frame0: last_idx 61 first_idx 49 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r2 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r2 stack= before 53: (b7) r2 = 6
+
+from 55 to 61: safe
+
+from 52 to 56: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=0 R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=1 R5=1 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=1 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+56: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=0 R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=1 R5=1 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=1 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (last_slash > 0)
+56: (bf) r1 = r4                      ; R1_w=1 R4=1
+57: (67) r1 <<= 32                    ; R1_w=0x100000000
+58: (77) r1 >>= 32                    ; R1_w=1
+59: (bf) r2 = r4
+frame 0: propagating r1,r2
+mark_precise: frame0: last_idx 60 first_idx 56 subseq_idx -1 
+mark_precise: frame0: regs=r1,r2 stack= before 59: (bf) r2 = r4
+mark_precise: frame0: regs=r1,r4 stack= before 58: (77) r1 >>= 32
+mark_precise: frame0: regs=r1,r4 stack= before 57: (67) r1 <<= 32
+mark_precise: frame0: regs=r1,r4 stack= before 56: (bf) r1 = r4
+mark_precise: frame0: parent state regs=r4 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=0 R2=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P1 R5=1 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=1 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 52 first_idx 49 subseq_idx 56 
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 50: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_w=5 R5_rw=P1 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=1 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+60: safe
+
+from 49 to 51: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=47 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=5 R5=1 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=1 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+51: R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=47 R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=5 R5=1 R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=1 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; out[i] = c;
+51: (73) *(u8 *)(r10 -3) = r2         ; R2=47 R10=fp0 fp-8=mmmmmmmm
+; if (c == '\0')
+52: (15) if r1 == 0x0 goto pc+3       ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+53: (b7) r2 = 6                       ; R2_w=6
+; out[i] = c;
+54: (73) *(u8 *)(r10 -2) = r1         ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 fp-8=mmmmmmmm
+55: (15) if r1 == 0x2f goto pc+5      ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 49 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r4 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r4 stack= before 53: (b7) r2 = 6
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs=r4 stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P5 R5_rw=P1 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=1 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 48 first_idx 40 subseq_idx 49 
+mark_precise: frame0: regs=r4 stack= before 48: (b7) r4 = 5
+56: safe
+frame 0: propagating r2
+mark_precise: frame0: last_idx 61 first_idx 49 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 55: (15) if r1 == 0x2f goto pc+5
+mark_precise: frame0: regs=r2 stack= before 54: (73) *(u8 *)(r10 -2) = r1
+mark_precise: frame0: regs=r2 stack= before 53: (b7) r2 = 6
+
+from 55 to 61: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 49 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 52: (15) if r1 == 0x0 goto pc+3
+mark_precise: frame0: regs=r4 stack= before 51: (73) *(u8 *)(r10 -3) = r2
+mark_precise: frame0: regs=r4 stack= before 49: (15) if r2 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P5 R5_rw=P1 R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=1 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+
+from 52 to 56: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 40 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 47: (15) if r2 == 0x0 goto pc+8
+mark_precise: frame0: regs=r4 stack= before 46: (bf) r4 = r5
+mark_precise: frame0: regs=r5 stack= before 45: (73) *(u8 *)(r10 -4) = r3
+mark_precise: frame0: regs=r5 stack= before 44: (bf) r5 = r4
+mark_precise: frame0: regs=r4 stack= before 43: (15) if r3 == 0x2f goto pc+1
+mark_precise: frame0: regs=r4 stack= before 42: (b7) r5 = 4
+mark_precise: frame0: regs=r4 stack= before 41: (15) if r3 == 0x0 goto pc+14
+mark_precise: frame0: regs=r4 stack= before 40: (73) *(u8 *)(r10 -5) = r5
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P1 R5_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=1 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+
+from 47 to 56: safe
+frame 0: propagating r5
+mark_precise: frame0: last_idx 45 first_idx 40 subseq_idx -1 
+mark_precise: frame0: regs=r5 stack= before 43: (15) if r3 == 0x2f goto pc+1
+mark_precise: frame0: regs=r5 stack= before 42: (b7) r5 = 4
+
+from 43 to 45: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 40 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 41: (15) if r3 == 0x0 goto pc+14
+mark_precise: frame0: regs=r4 stack= before 40: (73) *(u8 *)(r10 -5) = r5
+mark_precise: frame0: parent state regs= stack=:  R0=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P1 R5_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=1 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+
+from 41 to 56: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 40 first_idx 32 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 38: (15) if r5 == 0x2f goto pc+1
+mark_precise: frame0: regs=r4 stack= before 37: (b7) r4 = 3
+
+from 38 to 40: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 32 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 36: (15) if r5 == 0x0 goto pc+19
+mark_precise: frame0: regs=r4 stack= before 35: (bf) r4 = r8
+mark_precise: frame0: regs=r8 stack= before 34: (73) *(u8 *)(r10 -6) = r0
+mark_precise: frame0: regs=r8 stack= before 33: (bf) r8 = r4
+mark_precise: frame0: regs=r4 stack= before 32: (15) if r0 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs= stack=:  R0_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P1 R5_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_w=2 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+
+from 36 to 56: safe
+
+from 32 to 34: R0=47 R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=1 R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+34: R0=47 R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=1 R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=2 R9=15 R10=fp0 fp-8=mmmmmmmm fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; out[i] = c;
+34: (73) *(u8 *)(r10 -6) = r0         ; R0=47 R10=fp0 fp-8=mmmmmmmm
+35: (bf) r4 = r8                      ; R4_w=2 R8=2
+; if (c == '\0')
+36: (15) if r5 == 0x0 goto pc+19      ; R5=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+37: (b7) r4 = 3
+frame 0: propagating r4,r8
+mark_precise: frame0: last_idx 38 first_idx 34 subseq_idx -1 
+mark_precise: frame0: regs=r4,r8 stack= before 37: (b7) r4 = 3
+mark_precise: frame0: regs=r8 stack= before 36: (15) if r5 == 0x0 goto pc+19
+mark_precise: frame0: regs=r8 stack= before 35: (bf) r4 = r8
+mark_precise: frame0: regs=r8 stack= before 34: (73) *(u8 *)(r10 -6) = r0
+mark_precise: frame0: parent state regs=r8 stack=:  R0_r=47 R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=1 R5_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_r=P2 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 32 first_idx 32 subseq_idx 34 
+mark_precise: frame0: regs=r8 stack= before 32: (15) if r0 == 0x2f goto pc+1
+mark_precise: frame0: parent state regs=r8 stack=:  R0_r=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4_rw=P1 R5_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_rw=P2 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+mark_precise: frame0: last_idx 31 first_idx 23 subseq_idx 32 
+mark_precise: frame0: regs=r8 stack= before 31: (b7) r8 = 2
+38: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 34 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 36: (15) if r5 == 0x0 goto pc+19
+mark_precise: frame0: regs=r4 stack= before 35: (bf) r4 = r8
+mark_precise: frame0: regs=r8 stack= before 34: (73) *(u8 *)(r10 -6) = r0
+mark_precise: frame0: parent state regs= stack=:  R0_r=47 R1_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=1 R5_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7_r=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8_r=P2 R9=15 R10=fp0 fp-8_r=mmmmmmmm fp-16_r=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+
+from 36 to 56: safe
+frame 0: propagating r4
+mark_precise: frame0: last_idx 56 first_idx 23 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 30: (15) if r0 == 0x0 goto pc+25
+mark_precise: frame0: regs=r4 stack= before 29: (73) *(u8 *)(r10 -7) = r8
+mark_precise: frame0: regs=r4 stack= before 27: (15) if r8 == 0x2f goto pc+1
+mark_precise: frame0: regs=r4 stack= before 26: (b7) r4 = 1
+
+from 30 to 56: safe
+
+from 25 to 68: R0=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=0000mmmscalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+68: R0=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=scalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=0 R9=15 R10=fp0 fp-8=0000mmmscalar(smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; out[last_slash] = '\0';
+68: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+; struct agg_value *val = bpf_map_lookup_elem(&event_agg_map, &key);
+69: (07) r2 += -16                    ; R2_w=fp-16
+70: (18) r1 = 0xffff8e204b5ee000      ; R1_w=map_ptr(map=event_agg_map,ks=16,vs=24)
+72: (85) call bpf_map_lookup_elem#1
+73: safe
+
+from 23 to 68: R0=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=0 R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R9=15 R10=fp0 fp-8=00000 fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+68: R0=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R1=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R4=0 R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R8=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R9=15 R10=fp0 fp-8=00000 fp-16=mmmmscalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; out[last_slash] = '\0';
+68: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+; struct agg_value *val = bpf_map_lookup_elem(&event_agg_map, &key);
+69: (07) r2 += -16                    ; R2_w=fp-16
+70: (18) r1 = 0xffff8e204b5ee000      ; R1_w=map_ptr(map=event_agg_map,ks=16,vs=24)
+72: (85) call bpf_map_lookup_elem#1
+73: safe
+
+from 7 to 94: safe
+
+from 5 to 94: safe
+verification time 4493 usec
+stack depth 48
+processed 588 insns (limit 1000000) max_states_per_insn 5 total_states 36 peak_states 35 mark_read 7
+-- END PROG LOAD LOG --

@@ -1,0 +1,14 @@
+error[BPFIX-E005]: scalar range at the rejected use is still verifier-unsafe
+  = class: source_bug
+  = confidence: medium
+  = diagnostic: supported, help: repair_hint, span: exact_pc
+  = next action: bounds
+  --> <verifier-log>:64
+   |
+   |
+   = verifier[64]: math between map_value pointer and register with unbounded min value is not allowed
+   = note: nearest BPF instruction pc 26
+   = note: parsed 22 verifier state snapshots
+   = note[verifier-state]: verifier state shows the rejected scalar or pointer-offset register still has an unsafe range at the use
+   = required proof: prove R7 has a bounded non-negative scalar range before this pointer arithmetic or helper memory access; verifier sees scalar(smax=9223372036854775804,umax=18446744073709551612)
+help: Clamp or branch-check the exact scalar used by this helper, pointer arithmetic, stack access, or map-value access immediately before the rejected operation.

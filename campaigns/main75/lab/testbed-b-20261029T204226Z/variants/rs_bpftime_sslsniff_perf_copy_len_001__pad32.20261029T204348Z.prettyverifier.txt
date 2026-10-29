@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Invalid access to map value
+   135 | ret = bpf_probe_read_user(data->buf, copy_size, (void *)*bufp);
+       | in file /home/test/bpfix-b/repo/campaigns/v2/upstream/rs_bpftime_sslsniff_perf_copy_len_001/pad32.bpf.c
+Access involving 'data->buf' is 8 bytes past the end of the map value (capacity: 64 bytes).
+
+Add or tighten a bounds check so the accessed range stays within the map value limits.
+

@@ -1,0 +1,215 @@
+libbpf: loading object from /tmp/bpfix-cap-wtbxxrtk/rs_xdp_tools_load_bytes_stack_len_001__VPADC.buggy.o
+libbpf: elf: section(3) xdp, size 368, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'rs_xdp_tools_load_bytes_stack_len' at insn offset 0 (0 bytes), code size 46 insns (368 bytes)
+libbpf: elf: section(4) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-wtbxxrtk/rs_xdp_tools_load_bytes_stack_len_001__VPADC.buggy.o is GPL
+libbpf: elf: section(14) .BTF, size 760, link 0, flags 0, type=1
+libbpf: elf: section(16) .BTF.ext, size 400, link 0, flags 0, type=1
+libbpf: elf: section(24) .symtab, size 336, link 1, flags 0, type=2
+libbpf: looking for externs among 14 symbols...
+libbpf: collected 0 externs total
+libbpf: prog 'rs_xdp_tools_load_bytes_stack_len': BPF program load failed: Invalid argument
+libbpf: prog 'rs_xdp_tools_load_bytes_stack_len': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_xdp_tools_load_bytes_stack_len(struct xdp_md *ctx)
+0: (b7) r2 = 0                        ; R2_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+1: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: last_idx 1 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 0: (b7) r2 = 0
+2: R2_w=0 R10=fp0 fp-16=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+2: (61) r3 = *(u32 *)(r10 -12)        ; R3_w=0 R10=fp0 fp-16=0000????
+3: (07) r3 += 1                       ; R3_w=1
+4: (63) *(u32 *)(r10 -12) = r3        ; R3_w=1 R10=fp0 fp-16=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+5: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: last_idx 5 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 4: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 3: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 2: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 1: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 0: (b7) r2 = 0
+6: R2_w=0 R10=fp0 fp-16=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+6: (61) r3 = *(u32 *)(r10 -12)        ; R3_w=0 R10=fp0 fp-16=0000????
+7: (07) r3 += 1                       ; R3_w=1
+8: (63) *(u32 *)(r10 -12) = r3        ; R3_w=1 R10=fp0 fp-16=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+9: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: last_idx 9 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 8: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 7: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 6: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 5: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 4: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 3: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 2: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 1: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 0: (b7) r2 = 0
+10: R2_w=0 R10=fp0 fp-16=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+10: (61) r3 = *(u32 *)(r10 -12)       ; R3_w=0 R10=fp0 fp-16=0000????
+11: (07) r3 += 1                      ; R3_w=1
+12: (63) *(u32 *)(r10 -12) = r3       ; R3_w=1 R10=fp0 fp-16=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+13: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: last_idx 13 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 12: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 11: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 10: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 9: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 8: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 7: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 6: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 5: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 4: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 3: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 2: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 1: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 0: (b7) r2 = 0
+14: R2_w=0 R10=fp0 fp-16=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+14: (61) r3 = *(u32 *)(r10 -12)       ; R3_w=0 R10=fp0 fp-16=0000????
+15: (07) r3 += 1                      ; R3_w=1
+16: (63) *(u32 *)(r10 -12) = r3       ; R3_w=1 R10=fp0 fp-16=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+17: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: last_idx 17 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 16: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 15: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 14: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 13: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 12: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 11: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 10: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 9: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 8: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 7: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 6: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 5: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 4: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 3: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 2: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 1: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 0: (b7) r2 = 0
+18: R2_w=0 R10=fp0 fp-16=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+18: (61) r3 = *(u32 *)(r10 -12)       ; R3_w=0 R10=fp0 fp-16=0000????
+19: (07) r3 += 1                      ; R3_w=1
+20: (63) *(u32 *)(r10 -12) = r3       ; R3_w=1 R10=fp0 fp-16=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+21: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: last_idx 21 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 20: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 19: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 18: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 17: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 16: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 15: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 14: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 13: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 12: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 11: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 10: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 9: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 8: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 7: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 6: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 5: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 4: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 3: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 2: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 1: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 0: (b7) r2 = 0
+22: R2_w=0 R10=fp0 fp-16=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+22: (61) r3 = *(u32 *)(r10 -12)       ; R3_w=0 R10=fp0 fp-16=0000????
+23: (07) r3 += 1                      ; R3_w=1
+24: (63) *(u32 *)(r10 -12) = r3       ; R3_w=1 R10=fp0 fp-16=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+25: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: last_idx 25 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 24: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 23: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 22: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 21: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 20: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 19: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 18: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 17: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 16: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 15: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 14: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 13: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 12: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 11: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 10: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 9: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 8: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 7: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 6: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 5: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 4: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 3: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 2: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 1: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 0: (b7) r2 = 0
+26: R2_w=0 R10=fp0 fp-16=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+26: (61) r3 = *(u32 *)(r10 -12)       ; R3_w=0 R10=fp0 fp-16=0000????
+27: (07) r3 += 1                      ; R3_w=1
+28: (63) *(u32 *)(r10 -12) = r3       ; R3_w=1 R10=fp0 fp-16=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+29: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: last_idx 29 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 28: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 27: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 26: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 25: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 24: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 23: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 22: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 21: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 20: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 19: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 18: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 17: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 16: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 15: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 14: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 13: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 12: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 11: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 10: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 9: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 8: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 7: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 6: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 5: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 4: (63) *(u32 *)(r10 -12) = r3
+mark_precise: frame0: regs=r2 stack= before 3: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 2: (61) r3 = *(u32 *)(r10 -12)
+mark_precise: frame0: regs=r2 stack= before 1: (63) *(u32 *)(r10 -12) = r2
+mark_precise: frame0: regs=r2 stack= before 0: (b7) r2 = 0
+30: R2_w=0 R10=fp0 fp-16=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+30: (61) r2 = *(u32 *)(r10 -12)       ; R2_w=0 R10=fp0 fp-16=0000????
+31: (07) r2 += 1                      ; R2_w=1
+32: (63) *(u32 *)(r10 -12) = r2       ; R2_w=1 R10=fp0 fp-16=mmmm????
+33: (bf) r3 = r10                     ; R3_w=fp0 R10=fp0
+; 
+34: (07) r3 += -12                    ; R3_w=fp-12
+; err = bpf_xdp_load_bytes(ctx, WIRE_OFFSET, head, WIRE_BYTES);
+35: (b7) r2 = 2                       ; R2_w=2
+36: (b7) r4 = 18                      ; R4_w=18
+37: (85) call bpf_xdp_load_bytes#189
+invalid indirect access to stack R3 off=-12 size=18
+verification time 267 usec
+stack depth 16
+processed 38 insns (limit 1000000) max_states_per_insn 0 total_states 0 peak_states 0 mark_read 0
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_xdp_tools_load_bytes_stack_len': failed to load: -22
+libbpf: failed to load object '/tmp/bpfix-cap-wtbxxrtk/rs_xdp_tools_load_bytes_stack_len_001__VPADC.buggy.o'
+Error: failed to load object file

@@ -1,0 +1,172 @@
+libbpf: loading object from /tmp/bpfix-cap-xr_8wsp5/rs_bpftime_sslsniff_perf_copy_len_001__buggy.o
+libbpf: elf: section(3) uretprobe/SSL_read, size 792, link 0, flags 6, type=1
+libbpf: sec 'uretprobe/SSL_read': found program 'rs_bpftime_sslsniff_perf_copy_len' at insn offset 0 (0 bytes), code size 99 insns (792 bytes)
+libbpf: elf: section(4) .reluretprobe/SSL_read, size 96, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 120, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-xr_8wsp5/rs_bpftime_sslsniff_perf_copy_len_001__buggy.o is GPL
+libbpf: elf: section(16) .BTF, size 3227, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 796, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 480, link 1, flags 0, type=2
+libbpf: looking for externs among 20 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'bufs': at sec_idx 5, offset 0.
+libbpf: map 'bufs': found type = 1.
+libbpf: map 'bufs': found key [8], sz = 4.
+libbpf: map 'bufs': found value [11], sz = 8.
+libbpf: map 'bufs': found max_entries = 10240.
+libbpf: map 'start_ns': at sec_idx 5, offset 32.
+libbpf: map 'start_ns': found type = 1.
+libbpf: map 'start_ns': found key [8], sz = 4.
+libbpf: map 'start_ns': found value [11], sz = 8.
+libbpf: map 'start_ns': found max_entries = 10240.
+libbpf: map 'ssl_data': at sec_idx 5, offset 64.
+libbpf: map 'ssl_data': found type = 6.
+libbpf: map 'ssl_data': found key [8], sz = 4.
+libbpf: map 'ssl_data': found value [20], sz = 64.
+libbpf: map 'ssl_data': found max_entries = 1.
+libbpf: map 'perf_SSL_events': at sec_idx 5, offset 96.
+libbpf: map 'perf_SSL_events': found type = 4.
+libbpf: map 'perf_SSL_events': found key_size = 4.
+libbpf: map 'perf_SSL_events': found value_size = 4.
+libbpf: sec '.reluretprobe/SSL_read': collecting relocation for section(3) 'uretprobe/SSL_read'
+libbpf: sec '.reluretprobe/SSL_read': relo #0: insn #19 against 'bufs'
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': found map 0 (bufs, sec 5, off 0) for insn #19
+libbpf: sec '.reluretprobe/SSL_read': relo #1: insn #26 against 'start_ns'
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': found map 1 (start_ns, sec 5, off 32) for insn #26
+libbpf: sec '.reluretprobe/SSL_read': relo #2: insn #33 against 'ssl_data'
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': found map 2 (ssl_data, sec 5, off 64) for insn #33
+libbpf: sec '.reluretprobe/SSL_read': relo #3: insn #81 against 'bufs'
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': found map 0 (bufs, sec 5, off 0) for insn #81
+libbpf: sec '.reluretprobe/SSL_read': relo #4: insn #85 against 'start_ns'
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': found map 1 (start_ns, sec 5, off 32) for insn #85
+libbpf: sec '.reluretprobe/SSL_read': relo #5: insn #90 against 'perf_SSL_events'
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': found map 3 (perf_SSL_events, sec 5, off 96) for insn #90
+libbpf: loading kernel BTF '/sys/kernel/btf/vmlinux': 0
+libbpf: sec 'uretprobe/SSL_read': found 1 CO-RE relocations
+libbpf: CO-RE relocating [31] struct pt_regs: found target candidate [88] struct pt_regs in [vmlinux]
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': relo #0: <byte_off> [31] struct pt_regs.ax (0:10 @ offset 80)
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': relo #0: matching candidate #0 <byte_off> [88] struct pt_regs.ax (0:10 @ offset 80)
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': relo #0: patched insn #11 (LDX/ST/STX) off 80 -> 80
+libbpf: map 'bufs': created successfully, fd=4
+libbpf: map 'start_ns': created successfully, fd=5
+libbpf: map 'ssl_data': created successfully, fd=6
+libbpf: map 'perf_SSL_events': setting size to 16
+libbpf: map 'perf_SSL_events': created successfully, fd=7
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': BPF program load failed: Permission denied
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_bpftime_sslsniff_perf_copy_len(struct pt_regs *ctx)
+0: (bf) r7 = r1                       ; R1=ctx() R7_w=ctx()
+; __u64 pid_tgid = bpf_get_current_pid_tgid();
+1: (85) call bpf_get_current_pid_tgid#14      ; R0_w=scalar()
+2: (bf) r6 = r0                       ; R0_w=scalar(id=1) R6_w=scalar(id=1)
+; __u32 tid = (__u32)pid_tgid;
+3: (63) *(u32 *)(r10 -4) = r6         ; R6_w=scalar(id=1) R10=fp0 fp-8=mmmm????
+; __u32 uid = bpf_get_current_uid_gid();
+4: (85) call bpf_get_current_uid_gid#15       ; R0_w=scalar()
+5: (7b) *(u64 *)(r10 -24) = r0        ; R0_w=scalar() R10=fp0 fp-24_w=mmmmmmmm
+; __u64 ts = bpf_ktime_get_ns();
+6: (85) call bpf_ktime_get_ns#5       ; R0=scalar()
+7: (bf) r8 = r0                       ; R0=scalar(id=2) R8_w=scalar(id=2)
+8: (b7) r1 = 0                        ; R1_w=0
+; __u32 zero = 0;
+9: (63) *(u32 *)(r10 -8) = r1         ; R1_w=0 R10=fp0 fp-8=mmmm0
+10: (7b) *(u64 *)(r10 -16) = r7       ; R7=ctx() R10=fp0 fp-16_w=ctx()
+; int len = PT_REGS_RC(ctx);
+11: (79) r7 = *(u64 *)(r7 +80)        ; R7_w=scalar()
+12: (bf) r1 = r7                      ; R1_w=scalar(id=3) R7_w=scalar(id=3)
+13: (67) r1 <<= 32                    ; R1_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+14: (c7) r1 s>>= 32                   ; R1_w=scalar(smin=0xffffffff80000000,smax=0x7fffffff)
+15: (b7) r2 = 1                       ; R2_w=1
+; if (len <= 0)
+16: (6d) if r2 s> r1 goto pc+80       ; R1_w=scalar(smin=umin=smin32=umin32=1,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R2_w=1
+17: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+; 
+18: (07) r2 += -4                     ; R2_w=fp-4
+; bufp = bpf_map_lookup_elem(&bufs, &tid);
+19: (18) r1 = 0xffff8e20ed938400      ; R1_w=map_ptr(map=bufs,ks=4,vs=8)
+21: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=4,map=bufs,ks=4,vs=8)
+22: (7b) *(u64 *)(r10 -32) = r0       ; R0=map_value_or_null(id=4,map=bufs,ks=4,vs=8) R10=fp0 fp-32_w=map_value_or_null(id=4,map=bufs,ks=4,vs=8)
+; if (!bufp)
+23: (15) if r0 == 0x0 goto pc+73      ; R0=map_value(map=bufs,ks=4,vs=8)
+24: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+; 
+25: (07) r2 += -4                     ; R2_w=fp-4
+; tsp = bpf_map_lookup_elem(&start_ns, &tid);
+26: (18) r1 = 0xffff8e20ed93e000      ; R1_w=map_ptr(map=start_ns,ks=4,vs=8)
+28: (85) call bpf_map_lookup_elem#1   ; R0_w=map_value_or_null(id=5,map=start_ns,ks=4,vs=8)
+29: (bf) r9 = r0                      ; R0_w=map_value_or_null(id=5,map=start_ns,ks=4,vs=8) R9_w=map_value_or_null(id=5,map=start_ns,ks=4,vs=8)
+; if (!tsp)
+30: (15) if r9 == 0x0 goto pc+66      ; R9_w=map_value(map=start_ns,ks=4,vs=8)
+31: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+; 
+32: (07) r2 += -8                     ; R2_w=fp-8
+; data = bpf_map_lookup_elem(&ssl_data, &zero);
+33: (18) r1 = 0xffff8e21ab5b5c00      ; R1_w=map_ptr(map=ssl_data,ks=4,vs=64)
+35: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=6,map=ssl_data,ks=4,vs=64)
+; if (!data)
+36: (15) if r0 == 0x0 goto pc+60      ; R0=map_value(map=ssl_data,ks=4,vs=64)
+; 
+37: (77) r6 >>= 32                    ; R6_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+38: (bf) r2 = r0                      ; R0=map_value(map=ssl_data,ks=4,vs=64) R2_w=map_value(map=ssl_data,ks=4,vs=64)
+; data->timestamp_ns = ts;
+39: (7b) *(u64 *)(r2 +0) = r8         ; R2_w=map_value(map=ssl_data,ks=4,vs=64) R8=scalar(id=2)
+; data->delta_ns = ts - *tsp;
+40: (79) r1 = *(u64 *)(r9 +0)         ; R1_w=scalar() R9=map_value(map=start_ns,ks=4,vs=8)
+; data->pid = pid;
+41: (63) *(u32 *)(r2 +16) = r6        ; R2_w=map_value(map=ssl_data,ks=4,vs=64) R6_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; data->delta_ns = ts - *tsp;
+42: (1f) r8 -= r1                     ; R1_w=scalar() R8_w=scalar()
+; data->delta_ns = ts - *tsp;
+43: (7b) *(u64 *)(r2 +8) = r8         ; R2_w=map_value(map=ssl_data,ks=4,vs=64) R8_w=scalar()
+44: (bf) r8 = r2                      ; R2_w=map_value(map=ssl_data,ks=4,vs=64) R8_w=map_value(map=ssl_data,ks=4,vs=64)
+; data->tid = tid;
+45: (61) r1 = *(u32 *)(r10 -4)        ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-8=mmmmmmmm
+46: (b7) r2 = 0                       ; R2_w=0
+; data->buf_filled = 0;
+47: (7b) *(u64 *)(r8 +32) = r2        ; R2_w=0 R8_w=map_value(map=ssl_data,ks=4,vs=64)
+; data->uid = uid;
+48: (79) r2 = *(u64 *)(r10 -24)       ; R2_w=scalar() R10=fp0 fp-24=mmmmmmmm
+49: (63) *(u32 *)(r8 +24) = r2        ; R2_w=scalar() R8_w=map_value(map=ssl_data,ks=4,vs=64)
+; data->tid = tid;
+50: (63) *(u32 *)(r8 +20) = r1        ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R8_w=map_value(map=ssl_data,ks=4,vs=64)
+; data->len = (__u32)len;
+51: (63) *(u32 *)(r8 +28) = r7        ; R7=scalar(id=3) R8_w=map_value(map=ssl_data,ks=4,vs=64)
+52: (bf) r9 = r0                      ; R0=map_value(map=ssl_data,ks=4,vs=64) R9_w=map_value(map=ssl_data,ks=4,vs=64)
+; bpf_get_current_comm(data->comm, sizeof(data->comm));
+53: (bf) r1 = r0                      ; R0=map_value(map=ssl_data,ks=4,vs=64) R1_w=map_value(map=ssl_data,ks=4,vs=64)
+54: (07) r1 += 40                     ; R1_w=map_value(map=ssl_data,ks=4,vs=64,off=40)
+55: (b7) r6 = 16                      ; R6_w=16
+; bpf_get_current_comm(data->comm, sizeof(data->comm));
+56: (b7) r2 = 16                      ; R2_w=16
+57: (85) call bpf_get_current_comm#16
+mark_precise: frame0: last_idx 57 first_idx 36 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 56: (b7) r2 = 16
+58: R0=scalar()
+; int len = PT_REGS_RC(ctx);
+58: (67) r7 <<= 32                    ; R7_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+59: (77) r7 >>= 32                    ; R7_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+; if (copy_size > MAX_BUF_SIZE)
+60: (2d) if r6 > r7 goto pc+1         ; R6=16 R7_w=scalar(smin=umin=umin32=16,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+61: (b7) r7 = 16                      ; R7_w=16
+62: (bf) r2 = r9                      ; R2_w=map_value(map=ssl_data,ks=4,vs=64) R9=map_value(map=ssl_data,ks=4,vs=64)
+; ret = bpf_probe_read_user(data->buf, copy_size, (void *)*bufp);
+63: (07) r2 += 56                     ; R2_w=map_value(map=ssl_data,ks=4,vs=64,off=56)
+; ret = bpf_probe_read_user(data->buf, copy_size, (void *)*bufp);
+64: (79) r1 = *(u64 *)(r10 -32)       ; R1_w=map_value(map=bufs,ks=4,vs=8) R10=fp0 fp-32=map_value(map=bufs,ks=4,vs=8)
+65: (79) r3 = *(u64 *)(r1 +0)         ; R1_w=map_value(map=bufs,ks=4,vs=8) R3_w=scalar()
+; ret = bpf_probe_read_user(data->buf, copy_size, (void *)*bufp);
+66: (bf) r1 = r2                      ; R1_w=map_value(map=ssl_data,ks=4,vs=64,off=56) R2_w=map_value(map=ssl_data,ks=4,vs=64,off=56)
+67: (bf) r2 = r7                      ; R2_w=16 R7_w=16
+68: (85) call bpf_probe_read_user#112
+invalid access to map value, value_size=64 off=56 size=16
+R1 min value is outside of the allowed memory range
+verification time 320 usec
+stack depth 32
+processed 66 insns (limit 1000000) max_states_per_insn 0 total_states 4 peak_states 4 mark_read 3
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_bpftime_sslsniff_perf_copy_len': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-xr_8wsp5/rs_bpftime_sslsniff_perf_copy_len_001__buggy.o'
+Error: failed to load object file

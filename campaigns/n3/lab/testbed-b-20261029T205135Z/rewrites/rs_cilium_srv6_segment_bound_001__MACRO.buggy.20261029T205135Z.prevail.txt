@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/rs_cilium_srv6_segment_bound
+
+; /home/test/bpfix-b/repo/campaigns/n3/rs_cilium_srv6_segment_bound_001/MACRO.buggy.bpf.c:62
+;     ADV_STMT(*tag = bpf_ntohl(sid->in6_u.u6_addr32[3]));
+
+20: Upper bound must be at most packet_size (valid_access(r3.offset+12, width=4) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

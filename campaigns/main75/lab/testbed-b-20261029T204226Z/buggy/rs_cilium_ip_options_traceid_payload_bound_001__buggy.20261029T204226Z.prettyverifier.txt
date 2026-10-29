@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Invalid access to packet
+   37 | *value = bpf_ntohs(*raw);
+      | in file /home/test/bpfix-b/repo/fixtures/upstream/bpfix-bench-cases/rs_cilium_ip_options_traceid_payload_bound_001/buggy.bpf.c
+Access is 2 bytes past the end of the checked packet range (36 bytes).
+
+Add or tighten a bounds check so the accessed range stays within the checked packet range.
+

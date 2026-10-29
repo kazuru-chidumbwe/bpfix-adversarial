@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/rs_eunomia_energy_runtime_merge
+
+; /home/test/bpfix-b/repo/campaigns/n3/rs_eunomia_energy_runtime_merge_001/VPADC.buggy.bpf.c:138
+;     __u64 old_ns = *old_ts;
+
+81: Possible null access (valid_access(r0.offset, width=8) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

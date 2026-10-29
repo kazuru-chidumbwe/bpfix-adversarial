@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into pointer to map element value not null-checked
+   132 | __u64 old_ns = *old_ts;
+       | in file /home/test/bpfix-b/repo/campaigns/n3/rs_eunomia_energy_runtime_merge_001/INLINE.buggy.bpf.c
+

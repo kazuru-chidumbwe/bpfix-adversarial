@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into scalar value (not a pointer)
+   55 | audit->mark = 99;
+      | in file /home/test/bpfix-b/repo/campaigns/n3/ringbuf_double_submit_001/INLINE.buggy.bpf.c
+

@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Map 2 cannot be passed into function 'bpf_redirect_map' because of type incompatibility
+   46 | return bpf_redirect_map(&xsks_map, rr, XDP_DROP);
+      | in file /home/test/bpfix-b/repo/campaigns/n3/rs_xdp_tools_xdpsock_redirect_map_type_001/VPAD.buggy.bpf.c
+

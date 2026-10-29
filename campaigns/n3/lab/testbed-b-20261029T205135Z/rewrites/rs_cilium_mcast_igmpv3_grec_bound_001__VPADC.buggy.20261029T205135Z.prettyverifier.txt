@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Invalid access to packet
+   94 | if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+      | in file /home/test/bpfix-b/repo/campaigns/n3/rs_cilium_mcast_igmpv3_grec_bound_001/VPADC.buggy.bpf.c
+Access is 1 byte past the end of the checked packet range (22 bytes).
+
+Add or tighten a bounds check so the accessed range stays within the checked packet range.
+

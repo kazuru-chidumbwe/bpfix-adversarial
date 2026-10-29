@@ -1,0 +1,10 @@
+PREVAIL exit=1
+(program xdp/subprog_map_value_null)
+FAIL: xdp/subprog_map_value_null
+
+; /home/test/bpfix-b/repo/campaigns/v2/upstream/subprog_map_value_null_001/pad32.bpf.c:89
+;     cfg->key_xor ^= key;
+
+110: Possible null access (valid_access(r1.offset+12, width=4) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

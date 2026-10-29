@@ -1,0 +1,248 @@
+libbpf: loading object from /tmp/bpfix-cap-emmxormt/ringbuf_two_record_cookie_001__pad32.o
+libbpf: elf: section(3) xdp, size 1168, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'ringbuf_two_record_cookie' at insn offset 0 (0 bytes), code size 146 insns (1168 bytes)
+libbpf: elf: section(4) .relxdp, size 32, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 16, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-emmxormt/ringbuf_two_record_cookie_001__pad32.o is GPL
+libbpf: elf: section(16) .BTF, size 2830, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 1004, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 432, link 1, flags 0, type=2
+libbpf: looking for externs among 18 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'events': at sec_idx 5, offset 0.
+libbpf: map 'events': found type = 27.
+libbpf: map 'events': found max_entries = 4096.
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #11 against 'events'
+libbpf: prog 'ringbuf_two_record_cookie': found map 0 (events, sec 5, off 0) for insn #11
+libbpf: sec '.relxdp': relo #1: insn #21 against 'events'
+libbpf: prog 'ringbuf_two_record_cookie': found map 0 (events, sec 5, off 0) for insn #21
+libbpf: loading kernel BTF '/sys/kernel/btf/vmlinux': 0
+libbpf: sec 'xdp': found 4 CO-RE relocations
+libbpf: CO-RE relocating [10] struct xdp_md: found target candidate [7123] struct xdp_md in [vmlinux]
+libbpf: prog 'ringbuf_two_record_cookie': relo #0: <byte_off> [10] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'ringbuf_two_record_cookie': relo #0: matching candidate #0 <byte_off> [7123] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'ringbuf_two_record_cookie': relo #0: patched insn #1 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'ringbuf_two_record_cookie': relo #1: <byte_off> [10] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'ringbuf_two_record_cookie': relo #1: matching candidate #0 <byte_off> [7123] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'ringbuf_two_record_cookie': relo #1: patched insn #2 (LDX/ST/STX) off 0 -> 0
+libbpf: CO-RE relocating [15] struct ethhdr: found target candidate [9597] struct ethhdr in [vmlinux]
+libbpf: prog 'ringbuf_two_record_cookie': relo #2: <byte_off> [15] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'ringbuf_two_record_cookie': relo #2: matching candidate #0 <byte_off> [9597] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'ringbuf_two_record_cookie': relo #2: patched insn #6 (LDX/ST/STX) off 12 -> 12
+libbpf: CO-RE relocating [21] struct iphdr: found target candidate [9864] struct iphdr in [vmlinux]
+libbpf: prog 'ringbuf_two_record_cookie': relo #3: <byte_off> [21] struct iphdr.protocol (0:7 @ offset 9)
+libbpf: prog 'ringbuf_two_record_cookie': relo #3: matching candidate #0 <byte_off> [9864] struct iphdr.protocol (0:7 @ offset 9)
+libbpf: prog 'ringbuf_two_record_cookie': relo #3: patched insn #10 (LDX/ST/STX) off 9 -> 9
+libbpf: map 'events': created successfully, fd=4
+libbpf: prog 'ringbuf_two_record_cookie': BPF program load failed: Permission denied
+libbpf: prog 'ringbuf_two_record_cookie': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int ringbuf_two_record_cookie(struct xdp_md *ctx)
+0: (b7) r0 = 2                        ; R0_w=2
+; void *data_end = (void *)(long)ctx->data_end;
+1: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data;
+2: (61) r3 = *(u32 *)(r1 +0)          ; R1=ctx() R3_w=pkt(r=0)
+; if ((void *)(eth + 1) > data_end)
+3: (bf) r1 = r3                       ; R1_w=pkt(r=0) R3_w=pkt(r=0)
+4: (07) r1 += 14                      ; R1_w=pkt(off=14,r=0)
+; if ((void *)(eth + 1) > data_end)
+5: (2d) if r1 > r2 goto pc+139        ; R1_w=pkt(off=14,r=14) R2_w=pkt_end()
+; if (bpf_ntohs(eth->h_proto) != ETH_P_IP)
+6: (69) r4 = *(u16 *)(r3 +12)         ; R3_w=pkt(r=14) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+; if (bpf_ntohs(eth->h_proto) != ETH_P_IP)
+7: (55) if r4 != 0x8 goto pc+137      ; R4_w=8
+8: (07) r3 += 34                      ; R3=pkt(off=34,r=14)
+9: (2d) if r3 > r2 goto pc+135        ; R2=pkt_end() R3=pkt(off=34,r=34)
+; proto = iph->protocol;
+10: (71) r7 = *(u8 *)(r1 +9)          ; R1=pkt(off=14,r=34) R7_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; struct event *audit = bpf_ringbuf_reserve(&events, sizeof(*audit), 0);
+11: (18) r1 = 0xffff8e217955de00      ; R1_w=map_ptr(map=events,ks=0,vs=0)
+13: (b7) r2 = 4                       ; R2_w=4
+14: (b7) r3 = 0                       ; R3_w=0
+15: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 15 first_idx 9 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 14: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 13: (b7) r2 = 4
+16: R0_w=ringbuf_mem_or_null(id=2,ref_obj_id=2,sz=4) refs=2
+16: (bf) r6 = r0                      ; R0_w=ringbuf_mem_or_null(id=2,ref_obj_id=2,sz=4) R6_w=ringbuf_mem_or_null(id=2,ref_obj_id=2,sz=4) refs=2
+17: (b7) r0 = 2                       ; R0=2 refs=2
+; if (!audit)
+18: (15) if r6 == 0x0 goto pc+126     ; R6=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+19: (b7) r1 = 3                       ; R1_w=3 refs=2
+; audit->mark = 3;
+20: (63) *(u32 *)(r6 +0) = r1         ; R1_w=3 R6=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+; struct event *rec = bpf_ringbuf_reserve(&events, sizeof(*rec), 0);
+21: (18) r1 = 0xffff8e217955de00      ; R1_w=map_ptr(map=events,ks=0,vs=0) refs=2
+23: (b7) r2 = 4                       ; R2_w=4 refs=2
+24: (b7) r3 = 0                       ; R3_w=0 refs=2
+25: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 25 first_idx 18 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 24: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 23: (b7) r2 = 4
+26: R0_w=ringbuf_mem_or_null(id=4,ref_obj_id=4,sz=4) refs=2,4
+; if (!rec) {
+26: (55) if r0 != 0x0 goto pc+4       ; R0_w=0 refs=2
+; bpf_ringbuf_discard(audit, 0);
+27: (bf) r1 = r6                      ; R1_w=ringbuf_mem(ref_obj_id=2,sz=4) R6=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+28: (b7) r2 = 0                       ; R2_w=0 refs=2
+29: (85) call bpf_ringbuf_discard#133         ;
+30: (05) goto pc+113
+; return proto == IPPROTO_UDP ? XDP_DROP : XDP_PASS;
+144: (b7) r0 = 2                      ; R0_w=2
+; }
+145: (95) exit
+
+from 26 to 31: R0_w=ringbuf_mem(ref_obj_id=4,sz=4) R6=ringbuf_mem(ref_obj_id=2,sz=4) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 refs=2,4
+31: R0_w=ringbuf_mem(ref_obj_id=4,sz=4) R6=ringbuf_mem(ref_obj_id=2,sz=4) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R10=fp0 refs=2,4
+; bpf_ringbuf_discard(audit, 0);
+31: (b7) r1 = 7                       ; R1_w=7 refs=2,4
+; rec->mark = proto == IPPROTO_UDP ? 7 : 11;
+32: (15) if r7 == 0x11 goto pc+1      ; R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) refs=2,4
+33: (b7) r1 = 11                      ; R1_w=11 refs=2,4
+; rec->mark = proto == IPPROTO_UDP ? 7 : 11;
+34: (63) *(u32 *)(r0 +0) = r1         ; R0_w=ringbuf_mem(ref_obj_id=4,sz=4) R1_w=11 refs=2,4
+35: (b7) r1 = 0                       ; R1_w=0 refs=2,4
+; volatile __u64 __bpfix_pad = 0;
+36: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=0 R10=fp0 fp-8_w=0 refs=2,4
+; __bpfix_pad += 1;
+37: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8_w=0 refs=2,4
+38: (07) r1 += 1                      ; R1_w=1 refs=2,4
+39: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8_w=1 refs=2,4
+; __bpfix_pad += 2;
+40: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=1 R10=fp0 fp-8_w=1 refs=2,4
+41: (07) r1 += 2                      ; R1_w=3 refs=2,4
+42: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=3 R10=fp0 fp-8_w=3 refs=2,4
+; __bpfix_pad += 3;
+43: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=3 R10=fp0 fp-8_w=3 refs=2,4
+44: (07) r1 += 3                      ; R1_w=6 refs=2,4
+45: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=6 R10=fp0 fp-8_w=6 refs=2,4
+; __bpfix_pad += 4;
+46: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=6 R10=fp0 fp-8_w=6 refs=2,4
+47: (07) r1 += 4                      ; R1_w=10 refs=2,4
+48: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=10 R10=fp0 fp-8_w=10 refs=2,4
+; __bpfix_pad += 5;
+49: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=10 R10=fp0 fp-8_w=10 refs=2,4
+50: (07) r1 += 5                      ; R1_w=15 refs=2,4
+51: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=15 R10=fp0 fp-8_w=15 refs=2,4
+; __bpfix_pad += 6;
+52: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=15 R10=fp0 fp-8_w=15 refs=2,4
+53: (07) r1 += 6                      ; R1_w=21 refs=2,4
+54: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=21 R10=fp0 fp-8_w=21 refs=2,4
+; __bpfix_pad += 7;
+55: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=21 R10=fp0 fp-8_w=21 refs=2,4
+56: (07) r1 += 7                      ; R1_w=28 refs=2,4
+57: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=28 R10=fp0 fp-8_w=28 refs=2,4
+; __bpfix_pad += 8;
+58: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=28 R10=fp0 fp-8_w=28 refs=2,4
+59: (07) r1 += 8                      ; R1_w=36 refs=2,4
+60: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=36 R10=fp0 fp-8_w=36 refs=2,4
+; __bpfix_pad += 9;
+61: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=36 R10=fp0 fp-8_w=36 refs=2,4
+62: (07) r1 += 9                      ; R1_w=45 refs=2,4
+63: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=45 R10=fp0 fp-8_w=45 refs=2,4
+; __bpfix_pad += 10;
+64: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=45 R10=fp0 fp-8_w=45 refs=2,4
+65: (07) r1 += 10                     ; R1_w=55 refs=2,4
+66: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=55 R10=fp0 fp-8_w=55 refs=2,4
+; __bpfix_pad += 11;
+67: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=55 R10=fp0 fp-8_w=55 refs=2,4
+68: (07) r1 += 11                     ; R1_w=66 refs=2,4
+69: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=66 R10=fp0 fp-8_w=66 refs=2,4
+; __bpfix_pad += 12;
+70: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=66 R10=fp0 fp-8_w=66 refs=2,4
+71: (07) r1 += 12                     ; R1_w=78 refs=2,4
+72: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=78 R10=fp0 fp-8_w=78 refs=2,4
+; __bpfix_pad += 13;
+73: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=78 R10=fp0 fp-8_w=78 refs=2,4
+74: (07) r1 += 13                     ; R1_w=91 refs=2,4
+75: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=91 R10=fp0 fp-8_w=91 refs=2,4
+; __bpfix_pad += 14;
+76: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=91 R10=fp0 fp-8_w=91 refs=2,4
+77: (07) r1 += 14                     ; R1_w=105 refs=2,4
+78: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=105 R10=fp0 fp-8_w=105 refs=2,4
+; __bpfix_pad += 15;
+79: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=105 R10=fp0 fp-8_w=105 refs=2,4
+80: (07) r1 += 15                     ; R1_w=120 refs=2,4
+81: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=120 R10=fp0 fp-8_w=120 refs=2,4
+; __bpfix_pad += 16;
+82: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=120 R10=fp0 fp-8_w=120 refs=2,4
+83: (07) r1 += 16                     ; R1_w=136 refs=2,4
+84: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=136 R10=fp0 fp-8_w=136 refs=2,4
+; __bpfix_pad += 17;
+85: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=136 R10=fp0 fp-8_w=136 refs=2,4
+86: (07) r1 += 17                     ; R1_w=153 refs=2,4
+87: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=153 R10=fp0 fp-8_w=153 refs=2,4
+; __bpfix_pad += 18;
+88: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=153 R10=fp0 fp-8_w=153 refs=2,4
+89: (07) r1 += 18                     ; R1_w=171 refs=2,4
+90: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=171 R10=fp0 fp-8_w=171 refs=2,4
+; __bpfix_pad += 19;
+91: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=171 R10=fp0 fp-8_w=171 refs=2,4
+92: (07) r1 += 19                     ; R1_w=190 refs=2,4
+93: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=190 R10=fp0 fp-8_w=190 refs=2,4
+; __bpfix_pad += 20;
+94: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=190 R10=fp0 fp-8_w=190 refs=2,4
+95: (07) r1 += 20                     ; R1_w=210 refs=2,4
+96: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=210 R10=fp0 fp-8_w=210 refs=2,4
+; __bpfix_pad += 21;
+97: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=210 R10=fp0 fp-8_w=210 refs=2,4
+98: (07) r1 += 21                     ; R1_w=231 refs=2,4
+99: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=231 R10=fp0 fp-8_w=231 refs=2,4
+; __bpfix_pad += 22;
+100: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=231 R10=fp0 fp-8_w=231 refs=2,4
+101: (07) r1 += 22                    ; R1_w=253 refs=2,4
+102: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=253 R10=fp0 fp-8_w=253 refs=2,4
+; __bpfix_pad += 23;
+103: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=253 R10=fp0 fp-8_w=253 refs=2,4
+104: (07) r1 += 23                    ; R1_w=276 refs=2,4
+105: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=276 R10=fp0 fp-8_w=276 refs=2,4
+; __bpfix_pad += 24;
+106: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=276 R10=fp0 fp-8_w=276 refs=2,4
+107: (07) r1 += 24                    ; R1_w=300 refs=2,4
+108: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=300 R10=fp0 fp-8_w=300 refs=2,4
+; __bpfix_pad += 25;
+109: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=300 R10=fp0 fp-8_w=300 refs=2,4
+110: (07) r1 += 25                    ; R1_w=325 refs=2,4
+111: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=325 R10=fp0 fp-8_w=325 refs=2,4
+; __bpfix_pad += 26;
+112: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=325 R10=fp0 fp-8_w=325 refs=2,4
+113: (07) r1 += 26                    ; R1_w=351 refs=2,4
+114: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=351 R10=fp0 fp-8_w=351 refs=2,4
+; __bpfix_pad += 27;
+115: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=351 R10=fp0 fp-8_w=351 refs=2,4
+116: (07) r1 += 27                    ; R1_w=378 refs=2,4
+117: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=378 R10=fp0 fp-8_w=378 refs=2,4
+; __bpfix_pad += 28;
+118: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=378 R10=fp0 fp-8_w=378 refs=2,4
+119: (07) r1 += 28                    ; R1_w=406 refs=2,4
+120: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=406 R10=fp0 fp-8_w=406 refs=2,4
+; __bpfix_pad += 29;
+121: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=406 R10=fp0 fp-8_w=406 refs=2,4
+122: (07) r1 += 29                    ; R1_w=435 refs=2,4
+123: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=435 R10=fp0 fp-8_w=435 refs=2,4
+; __bpfix_pad += 30;
+124: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=435 R10=fp0 fp-8_w=435 refs=2,4
+125: (07) r1 += 30                    ; R1_w=465 refs=2,4
+126: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=465 R10=fp0 fp-8_w=465 refs=2,4
+; __bpfix_pad += 31;
+127: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=465 R10=fp0 fp-8_w=465 refs=2,4
+128: (07) r1 += 31                    ; R1_w=496 refs=2,4
+129: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=496 R10=fp0 fp-8_w=496 refs=2,4
+; __bpfix_pad += 32;
+130: (79) r1 = *(u64 *)(r10 -8)       ; R1_w=496 R10=fp0 fp-8_w=496 refs=2,4
+131: (07) r1 += 32                    ; R1_w=528 refs=2,4
+132: (7b) *(u64 *)(r10 -8) = r1       ; R1_w=528 R10=fp0 fp-8_w=528 refs=2,4
+; asm volatile("%[cookie] <<= 32; %[cookie] >>= 32" : [cookie] "+r"(cookie));
+133: (67) r0 <<= 32
+R0 pointer arithmetic with <<= operator prohibited
+verification time 541 usec
+stack depth 8
+processed 134 insns (limit 1000000) max_states_per_insn 0 total_states 3 peak_states 3 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'ringbuf_two_record_cookie': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-emmxormt/ringbuf_two_record_cookie_001__pad32.o'
+Error: failed to load object file

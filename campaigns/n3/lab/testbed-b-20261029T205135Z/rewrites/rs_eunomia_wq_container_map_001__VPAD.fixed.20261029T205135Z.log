@@ -1,0 +1,20 @@
+COMPILE_FAIL
+/home/test/bpfix-b/repo/campaigns/n3/rs_eunomia_wq_container_map_001/VPAD.fixed.bpf.c:29:16: error: field has incomplete type 'struct bpf_wq'
+   29 |         struct bpf_wq work;
+      |                       ^
+/home/test/bpfix-b/repo/campaigns/n3/rs_eunomia_wq_container_map_001/VPAD.fixed.bpf.c:29:9: note: forward declaration of 'struct bpf_wq'
+   29 |         struct bpf_wq work;
+      |                ^
+/home/test/bpfix-b/repo/campaigns/n3/rs_eunomia_wq_container_map_001/VPAD.fixed.bpf.c:107:6: error: call to undeclared function 'bpf_wq_init'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+  107 |         if (bpf_wq_init(wq, &work_items, 0))
+      |             ^
+/home/test/bpfix-b/repo/campaigns/n3/rs_eunomia_wq_container_map_001/VPAD.fixed.bpf.c:113:6: error: call to undeclared function 'bpf_wq_set_callback_impl'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+  113 |         if (bpf_wq_set_callback(wq, wq_callback, 0))
+      |             ^
+/home/test/bpfix-b/repo/campaigns/n3/rs_eunomia_wq_container_map_001/VPAD.fixed.bpf.c:17:2: note: expanded from macro 'bpf_wq_set_callback'
+   17 |         bpf_wq_set_callback_impl((wq), (cb), (flags), NULL)
+      |         ^
+/home/test/bpfix-b/repo/campaigns/n3/rs_eunomia_wq_container_map_001/VPAD.fixed.bpf.c:115:6: error: call to undeclared function 'bpf_wq_start'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+  115 |         if (bpf_wq_start(wq, 0))
+      |             ^
+4 errors generated.

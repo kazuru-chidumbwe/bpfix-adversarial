@@ -1,0 +1,100 @@
+libbpf: loading object from /tmp/bpfix-cap-xr_8wsp5/subprog_map_value_null_001__buggy.o
+libbpf: elf: section(2) .text, size 56, link 0, flags 6, type=1
+libbpf: sec '.text': found program 'lookup_config' at insn offset 0 (0 bytes), code size 7 insns (56 bytes)
+libbpf: elf: section(3) .rel.text, size 16, link 28, flags 40, type=9
+libbpf: elf: section(4) xdp, size 216, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'subprog_map_value_null' at insn offset 0 (0 bytes), code size 27 insns (216 bytes)
+libbpf: elf: section(5) .relxdp, size 16, link 28, flags 40, type=9
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-xr_8wsp5/subprog_map_value_null_001__buggy.o is GPL
+libbpf: elf: section(7) .maps, size 32, link 0, flags 3, type=1
+libbpf: elf: section(18) .BTF, size 1686, link 0, flags 0, type=1
+libbpf: elf: section(20) .BTF.ext, size 484, link 0, flags 0, type=1
+libbpf: elf: section(28) .symtab, size 432, link 1, flags 0, type=2
+libbpf: looking for externs among 18 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'configs': at sec_idx 7, offset 0.
+libbpf: map 'configs': found type = 1.
+libbpf: map 'configs': found key [8], sz = 4.
+libbpf: map 'configs': found value [11], sz = 16.
+libbpf: map 'configs': found max_entries = 2.
+libbpf: sec '.rel.text': collecting relocation for section(2) '.text'
+libbpf: sec '.rel.text': relo #0: insn #3 against 'configs'
+libbpf: prog 'lookup_config': found map 0 (configs, sec 7, off 0) for insn #3
+libbpf: sec '.relxdp': collecting relocation for section(4) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #10 against '.text'
+libbpf: loading kernel BTF '/sys/kernel/btf/vmlinux': 0
+libbpf: sec 'xdp': found 4 CO-RE relocations
+libbpf: CO-RE relocating [15] struct xdp_md: found target candidate [7123] struct xdp_md in [vmlinux]
+libbpf: prog 'subprog_map_value_null': relo #0: <byte_off> [15] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'subprog_map_value_null': relo #0: matching candidate #0 <byte_off> [7123] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'subprog_map_value_null': relo #0: patched insn #1 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'subprog_map_value_null': relo #1: <byte_off> [15] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'subprog_map_value_null': relo #1: matching candidate #0 <byte_off> [7123] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'subprog_map_value_null': relo #1: patched insn #2 (LDX/ST/STX) off 0 -> 0
+libbpf: CO-RE relocating [18] struct ethhdr: found target candidate [9597] struct ethhdr in [vmlinux]
+libbpf: prog 'subprog_map_value_null': relo #2: <byte_off> [18] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'subprog_map_value_null': relo #2: matching candidate #0 <byte_off> [9597] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'subprog_map_value_null': relo #2: patched insn #6 (LDX/ST/STX) off 12 -> 12
+libbpf: prog 'subprog_map_value_null': relo #3: <byte_off> [18] struct ethhdr.h_dest[5] (0:0:5 @ offset 5)
+libbpf: prog 'subprog_map_value_null': relo #3: matching candidate #0 <byte_off> [9597] struct ethhdr.h_dest[5] (0:0:5 @ offset 5)
+libbpf: prog 'subprog_map_value_null': relo #3: patched insn #7 (LDX/ST/STX) off 5 -> 5
+libbpf: prog 'subprog_map_value_null': added 7 insns from sub-prog 'lookup_config'
+libbpf: prog 'subprog_map_value_null': insn #10 relocated, imm 16 points to subprog 'lookup_config' (now at 27 offset)
+libbpf: map 'configs': created successfully, fd=4
+libbpf: prog 'subprog_map_value_null': BPF program load failed: Permission denied
+libbpf: prog 'subprog_map_value_null': -- BEGIN PROG LOAD LOG --
+func#0 @0
+func#1 @27
+0: R1=ctx() R10=fp0
+; int subprog_map_value_null(struct xdp_md *ctx)
+0: (b7) r0 = 2                        ; R0_w=2
+; void *data_end = (void *)(long)ctx->data_end;
+1: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data;
+2: (61) r1 = *(u32 *)(r1 +0)          ; R1_w=pkt(r=0)
+; if ((void *)(eth + 1) > data_end)
+3: (bf) r3 = r1                       ; R1_w=pkt(r=0) R3_w=pkt(r=0)
+4: (07) r3 += 14                      ; R3_w=pkt(off=14,r=0)
+; if ((void *)(eth + 1) > data_end)
+5: (2d) if r3 > r2 goto pc+20         ; R2_w=pkt_end() R3_w=pkt(off=14,r=14)
+; proto = bpf_ntohs(eth->h_proto);
+6: (69) r7 = *(u16 *)(r1 +12)         ; R1_w=pkt(r=14) R7_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+; key = eth->h_dest[5] & 1;
+7: (71) r6 = *(u8 *)(r1 +5)           ; R1_w=pkt(r=14) R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; cfg = lookup_config(key);
+8: (57) r6 &= 1                       ; R6_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+9: (bf) r1 = r6                       ; R1_w=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R6_w=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1))
+10: (85) call pc+16
+caller:
+ R6_w=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R7_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R10=fp0
+callee:
+ frame1: R1_w=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R2_w=pkt_end() R3_w=pkt(off=14,r=14) R10=fp0
+27: frame1: R1=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R2=pkt_end() R3=pkt(off=14,r=14) R10=fp0
+; static __noinline struct config *lookup_config(__u32 key)
+27: (63) *(u32 *)(r10 -4) = r1        ; frame1: R1=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R10=fp0 fp-8=mmmm????
+28: (bf) r2 = r10                     ; frame1: R2_w=fp0 R10=fp0
+; return bpf_map_lookup_elem(&configs, &key);
+29: (07) r2 += -4                     ; frame1: R2_w=fp-4
+30: (18) r1 = 0xffff8e204fb0b400      ; frame1: R1_w=map_ptr(map=configs,ks=4,vs=16)
+32: (85) call bpf_map_lookup_elem#1   ; frame1: R0_w=map_value_or_null(id=2,map=configs,ks=4,vs=16)
+; return bpf_map_lookup_elem(&configs, &key);
+33: (95) exit
+returning from callee:
+ frame1: R0_w=map_value_or_null(id=2,map=configs,ks=4,vs=16) R10=fp0 fp-8=mmmm????
+to caller at 11:
+ R0_w=map_value_or_null(id=2,map=configs,ks=4,vs=16) R6=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R10=fp0
+
+from 33 to 11: R0_w=map_value_or_null(id=2,map=configs,ks=4,vs=16) R6=scalar(id=1,smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R7=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R10=fp0
+; cfg = lookup_config(key);
+11: (bf) r1 = r0                      ; R0_w=map_value_or_null(id=2,map=configs,ks=4,vs=16) R1_w=map_value_or_null(id=2,map=configs,ks=4,vs=16)
+; cfg->key_xor ^= key;
+12: (61) r2 = *(u32 *)(r1 +12)
+R1 invalid mem access 'map_value_or_null'
+verification time 166 usec
+stack depth 0+8
+processed 19 insns (limit 1000000) max_states_per_insn 0 total_states 1 peak_states 1 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'subprog_map_value_null': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-xr_8wsp5/subprog_map_value_null_001__buggy.o'
+Error: failed to load object file

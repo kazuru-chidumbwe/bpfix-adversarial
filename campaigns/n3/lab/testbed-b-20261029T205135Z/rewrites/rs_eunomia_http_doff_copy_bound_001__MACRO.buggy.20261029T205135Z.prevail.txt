@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/rs_eunomia_http_doff_copy_bound
+
+; /home/test/bpfix-b/repo/campaigns/n3/rs_eunomia_http_doff_copy_bound_001/MACRO.buggy.bpf.c:133
+;             ADV_STMT(rec->bytes[i] = *((__u8 *)tcp + i));
+
+175: Upper bound must be at most packet_size (valid_access(r8.offset+20, width=1) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into scalar value (not a pointer)
+   45 | return bpf_ntohs(eth->h_proto) == ETH_P_IP ? XDP_DROP : XDP_PASS;
+      | in file /home/test/bpfix-b/repo/campaigns/n3/subprog_adjust_tail_stale_001/VPAD.buggy.bpf.c
+

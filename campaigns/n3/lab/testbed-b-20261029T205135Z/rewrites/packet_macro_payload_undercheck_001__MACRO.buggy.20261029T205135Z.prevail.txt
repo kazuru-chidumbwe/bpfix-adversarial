@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/packet_macro_payload_undercheck
+
+; /home/test/bpfix-b/repo/campaigns/n3/packet_macro_payload_undercheck_001/MACRO.buggy.bpf.c:54
+;     ADV_STMT(check = udp->check);
+
+23: Upper bound must be at most packet_size (valid_access(r3.offset+6, width=2) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

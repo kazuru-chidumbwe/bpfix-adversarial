@@ -1,0 +1,8 @@
+Prettier Verifier ##
+#######################
+
+error: Wrong argument passed to helper function
+   67 | cfg = bpf_map_lookup_elem(&key, &key);
+      | in file /home/test/bpfix-b/repo/campaigns/v2/upstream/helper_map_arg_stack_001/pad8.bpf.c
+1° argument (&key) is a pointer to locally defined data (frame pointer), but a pointer to map is expected
+

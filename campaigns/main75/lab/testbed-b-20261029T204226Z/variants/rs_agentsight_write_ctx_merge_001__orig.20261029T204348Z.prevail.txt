@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/rs_agentsight_write_ctx_merge
+
+; /home/test/bpfix-b/repo/campaigns/v2/upstream/rs_agentsight_write_ctx_merge_001/orig.bpf.c:132
+;     fd = *fd_ptr;
+
+33: Possible null access (valid_access(r0.offset, width=4) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

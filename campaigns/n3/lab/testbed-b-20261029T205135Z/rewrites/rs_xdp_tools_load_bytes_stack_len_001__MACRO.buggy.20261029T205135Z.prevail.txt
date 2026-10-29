@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/rs_xdp_tools_load_bytes_stack_len
+
+; /home/test/bpfix-b/repo/campaigns/n3/rs_xdp_tools_load_bytes_stack_len_001/MACRO.buggy.bpf.c:32
+;     ADV_STMT(err = bpf_xdp_load_bytes(ctx, WIRE_OFFSET, head, WIRE_BYTES));
+
+4: Upper bound must be at most total_stack_size (valid_access(r3.offset, width=r4) for write)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

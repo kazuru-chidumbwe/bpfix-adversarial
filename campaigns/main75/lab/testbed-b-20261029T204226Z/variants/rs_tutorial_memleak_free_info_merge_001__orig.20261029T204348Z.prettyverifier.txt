@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into pointer to map element value not null-checked
+   73 | update_statistics_del(info->stack_id, info->size);
+      | in file /home/test/bpfix-b/repo/campaigns/v2/upstream/rs_tutorial_memleak_free_info_merge_001/orig.bpf.c
+

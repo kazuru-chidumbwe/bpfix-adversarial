@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: tracepoint/syscalls/sys_enter_write/rs_tetragon_data_event_size_guard
+
+; /home/test/bpfix-b/repo/campaigns/v2/upstream/rs_tetragon_data_event_size_guard_001/pad32.bpf.c:85
+;     err = bpf_probe_read_user(&msg->arg[0], bytes, (const void *)user_ptr);
+
+116: Upper bound must be at most r1.shared_region_size (valid_access(r1.offset, width=r2) for write)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

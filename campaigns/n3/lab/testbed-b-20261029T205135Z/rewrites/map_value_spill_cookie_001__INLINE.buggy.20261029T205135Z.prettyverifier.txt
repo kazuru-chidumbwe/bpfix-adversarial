@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into pointer to map element value not null-checked
+   64 | return cfg->drop_proto == proto ? XDP_DROP : XDP_PASS;
+      | in file /home/test/bpfix-b/repo/campaigns/n3/map_value_spill_cookie_001/INLINE.buggy.bpf.c
+

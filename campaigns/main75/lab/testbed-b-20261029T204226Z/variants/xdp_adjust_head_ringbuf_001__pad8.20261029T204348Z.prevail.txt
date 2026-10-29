@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/xdp_adjust_head_ringbuf
+
+; /home/test/bpfix-b/repo/campaigns/v2/upstream/xdp_adjust_head_ringbuf_001/pad8.bpf.c:69
+;     return iph->protocol == IPPROTO_UDP ? XDP_DROP : XDP_PASS;
+
+59: Invalid type (r7.type in {ctx, stack, packet, shared, socket, alloc_mem})
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

@@ -1,0 +1,8 @@
+PREVAIL exit=1
+available programs:
+section=xdp function=dynptr_slice_short_mem [reject_load: Unresolved symbols found.]
+
+Unresolved external symbol bpf_dynptr_from_xdp in section xdp at location 3
+Unresolved external symbol bpf_dynptr_slice in section xdp at location 14
+Unresolved external symbol bpf_dynptr_slice in section xdp at location 120
+error: No executable sections

@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/rs_cilium_ip_options_traceid_payload_bound
+
+; /home/test/bpfix-b/repo/campaigns/n3/rs_cilium_ip_options_traceid_payload_bound_001/MACRO.buggy.bpf.c:39
+;         ADV_STMT(*value = bpf_ntohs(*raw));
+
+67: Upper bound must be at most packet_size (valid_access(r4.offset, width=2) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

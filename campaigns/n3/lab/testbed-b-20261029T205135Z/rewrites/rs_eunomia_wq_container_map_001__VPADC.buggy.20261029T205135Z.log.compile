@@ -1,0 +1,25 @@
+/home/test/bpfix-b/repo/campaigns/n3/rs_eunomia_wq_container_map_001/VPADC.buggy.bpf.c:29:16: error: field has incomplete type 'struct bpf_wq'
+   29 |         struct bpf_wq work;
+      |                       ^
+/home/test/bpfix-b/repo/campaigns/n3/rs_eunomia_wq_container_map_001/VPADC.buggy.bpf.c:29:9: note: forward declaration of 'struct bpf_wq'
+   29 |         struct bpf_wq work;
+      |                ^
+/home/test/bpfix-b/repo/campaigns/n3/rs_eunomia_wq_container_map_001/VPADC.buggy.bpf.c:70:16: error: variable has incomplete type 'struct bpf_wq'
+   70 |         struct bpf_wq local_wq = {};
+      |                       ^
+/home/test/bpfix-b/repo/campaigns/n3/rs_eunomia_wq_container_map_001/VPADC.buggy.bpf.c:29:9: note: forward declaration of 'struct bpf_wq'
+   29 |         struct bpf_wq work;
+      |                ^
+/home/test/bpfix-b/repo/campaigns/n3/rs_eunomia_wq_container_map_001/VPADC.buggy.bpf.c:108:6: error: call to undeclared function 'bpf_wq_init'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+  108 |         if (bpf_wq_init(wq, &work_items, 0))
+      |             ^
+/home/test/bpfix-b/repo/campaigns/n3/rs_eunomia_wq_container_map_001/VPADC.buggy.bpf.c:114:6: error: call to undeclared function 'bpf_wq_set_callback_impl'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+  114 |         if (bpf_wq_set_callback(wq, wq_callback, 0))
+      |             ^
+/home/test/bpfix-b/repo/campaigns/n3/rs_eunomia_wq_container_map_001/VPADC.buggy.bpf.c:17:2: note: expanded from macro 'bpf_wq_set_callback'
+   17 |         bpf_wq_set_callback_impl((wq), (cb), (flags), NULL)
+      |         ^
+/home/test/bpfix-b/repo/campaigns/n3/rs_eunomia_wq_container_map_001/VPADC.buggy.bpf.c:116:6: error: call to undeclared function 'bpf_wq_start'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+  116 |         if (bpf_wq_start(wq, 0))
+      |             ^
+5 errors generated.

@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/ringbuf_pointer_cookie
+
+; /home/test/bpfix-b/repo/campaigns/n3/ringbuf_pointer_cookie_001/VPADC.buggy.bpf.c:80
+;     asm volatile("%[cookie] <<= 32; %[cookie] >>= 32" : [cookie] "+r"(cookie));
+
+74: Invalid type (r0.type == number)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

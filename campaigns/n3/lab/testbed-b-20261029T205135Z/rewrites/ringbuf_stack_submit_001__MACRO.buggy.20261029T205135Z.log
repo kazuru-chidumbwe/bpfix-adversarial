@@ -1,0 +1,71 @@
+libbpf: loading object from /tmp/bpfix-cap-wtbxxrtk/ringbuf_stack_submit_001__MACRO.buggy.o
+libbpf: elf: section(3) xdp, size 184, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'ringbuf_stack_submit' at insn offset 0 (0 bytes), code size 23 insns (184 bytes)
+libbpf: elf: section(4) .relxdp, size 16, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 16, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-wtbxxrtk/ringbuf_stack_submit_001__MACRO.buggy.o is GPL
+libbpf: elf: section(16) .BTF, size 971, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 268, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 384, link 1, flags 0, type=2
+libbpf: looking for externs among 16 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'events': at sec_idx 5, offset 0.
+libbpf: map 'events': found type = 27.
+libbpf: map 'events': found max_entries = 4096.
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #1 against 'events'
+libbpf: prog 'ringbuf_stack_submit': found map 0 (events, sec 5, off 0) for insn #1
+libbpf: loading kernel BTF '/sys/kernel/btf/vmlinux': 0
+libbpf: sec 'xdp': found 1 CO-RE relocations
+libbpf: CO-RE relocating [10] struct xdp_md: found target candidate [7123] struct xdp_md in [vmlinux]
+libbpf: prog 'ringbuf_stack_submit': relo #0: <byte_off> [10] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'ringbuf_stack_submit': relo #0: matching candidate #0 <byte_off> [7123] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'ringbuf_stack_submit': relo #0: patched insn #9 (LDX/ST/STX) off 0 -> 0
+libbpf: map 'events': created successfully, fd=4
+libbpf: prog 'ringbuf_stack_submit': BPF program load failed: Permission denied
+libbpf: prog 'ringbuf_stack_submit': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int ringbuf_stack_submit(struct xdp_md *ctx)
+0: (bf) r6 = r1                       ; R1=ctx() R6_w=ctx()
+; audit = bpf_ringbuf_reserve(&events, sizeof(*audit), 0);
+1: (18) r1 = 0xffff8e21547c4200       ; R1_w=map_ptr(map=events,ks=0,vs=0)
+3: (b7) r2 = 4                        ; R2_w=4
+4: (b7) r3 = 0                        ; R3_w=0
+5: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 5 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 4: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 3: (b7) r2 = 4
+6: R0_w=ringbuf_mem_or_null(id=2,ref_obj_id=2,sz=4) refs=2
+; if (!audit)
+6: (15) if r0 == 0x0 goto pc+14       ; R0_w=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+7: (b7) r1 = 3                        ; R1_w=3 refs=2
+; audit->mark = 3;
+8: (63) *(u32 *)(r0 +0) = r1          ; R0_w=ringbuf_mem(ref_obj_id=2,sz=4) R1_w=3 refs=2
+; if (ctx->data == 0)
+9: (61) r2 = *(u32 *)(r6 +0)          ; R2_w=pkt(r=0) R6_w=ctx() refs=2
+10: (b7) r1 = 11                      ; R1=11 refs=2
+; if (ctx->data == 0)
+11: (15) if r2 == 0x0 goto pc+1       ; R2=pkt(r=0) refs=2
+12: (b7) r1 = 7                       ; R1_w=7 refs=2
+; 
+13: (63) *(u32 *)(r10 -4) = r1        ; R1_w=7 R10=fp0 fp-8=mmmm???? refs=2
+; bpf_ringbuf_submit(audit, 0);
+14: (bf) r1 = r0                      ; R0=ringbuf_mem(ref_obj_id=2,sz=4) R1_w=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+15: (b7) r2 = 0                       ; R2_w=0 refs=2
+16: (85) call bpf_ringbuf_submit#132          ;
+17: (bf) r1 = r10                     ; R1_w=fp0 R10=fp0
+; 
+18: (07) r1 += -4                     ; R1_w=fp-4
+; ADV_STMT(bpf_ringbuf_submit(&ev, 0));
+19: (b7) r2 = 0                       ; R2_w=0
+20: (85) call bpf_ringbuf_submit#132
+R1 type=fp expected=ringbuf_mem
+verification time 101 usec
+stack depth 8
+processed 20 insns (limit 1000000) max_states_per_insn 0 total_states 1 peak_states 1 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'ringbuf_stack_submit': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-wtbxxrtk/ringbuf_stack_submit_001__MACRO.buggy.o'
+Error: failed to load object file

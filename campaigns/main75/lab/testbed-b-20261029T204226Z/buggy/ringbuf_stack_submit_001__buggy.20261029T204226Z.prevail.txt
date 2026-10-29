@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/ringbuf_stack_submit
+
+; /home/test/bpfix-b/repo/fixtures/upstream/bpfix-bench-cases/ringbuf_stack_submit_001/buggy.bpf.c:37
+;     bpf_ringbuf_submit(&ev, 0);
+
+20: Invalid type (r1.type == alloc_mem)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

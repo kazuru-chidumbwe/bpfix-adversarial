@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/ringbuf_stack_submit
+
+; /home/test/bpfix-b/repo/campaigns/v2/upstream/ringbuf_stack_submit_001/pad32.bpf.c:71
+;     bpf_ringbuf_submit(&ev, 0);
+
+118: Invalid type (r1.type == alloc_mem)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

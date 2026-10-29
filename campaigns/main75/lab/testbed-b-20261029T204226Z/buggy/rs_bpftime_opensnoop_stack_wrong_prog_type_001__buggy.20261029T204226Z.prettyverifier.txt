@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Unknown function bpf_get_current_pid_tgid
+   40 | __u32 pid = bpf_get_current_pid_tgid();
+      | in file /home/test/bpfix-b/repo/fixtures/upstream/bpfix-bench-cases/rs_bpftime_opensnoop_stack_wrong_prog_type_001/buggy.bpf.c
+
+Check if the helper function you are using is compatible with the program type xdp
+for your kernel version 6.8 at https://docs.ebpf.io/linux/helper-function/bpf_get_current_pid_tgid/
+

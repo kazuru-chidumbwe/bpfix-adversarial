@@ -1,0 +1,13 @@
+error[BPFIX-E010]: helper or subprogram argument contract is not satisfied
+  = class: source_bug
+  = confidence: medium
+  = diagnostic: supported, help: repair_hint, span: terminal_line_only
+  = next action: protocol
+  --> <verifier-log>:82
+   |
+   |
+   = verifier[82]: arg#2 arg#3 memory, len pair leads to invalid memory access
+   = note: parsed 49 verifier state snapshots
+   = required proof: pass verifier-recognized argument types, ranges, and pointer lifetimes to the helper, kfunc, or subprogram
+help: Check the exact register passed as each helper or subprogram argument.
+help: Keep argument range, nullability, and pointer type refinements visible at the call site.

@@ -1,0 +1,14 @@
+error[BPFIX-E010]: helper or subprogram argument contract is not satisfied
+  = class: source_bug
+  = confidence: medium
+  = diagnostic: supported, help: repair_hint, span: exact_pc
+  = next action: protocol
+  --> <verifier-log>:211
+   |
+   |
+   = verifier[211]: helper access to the packet is not allowed
+   = note: nearest BPF instruction pc 48
+   = note: parsed 45 verifier state snapshots
+   = required proof: pass verifier-recognized argument types, ranges, and pointer lifetimes to the helper, kfunc, or subprogram
+help: Check the exact register passed as each helper or subprogram argument.
+help: Keep argument range, nullability, and pointer type refinements visible at the call site.

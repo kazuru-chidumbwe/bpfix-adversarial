@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into ring buffer pointer to memory not null-checked
+   54 | event->cmd = (__u32)cmd;
+      | in file /home/test/bpfix-b/repo/fixtures/upstream/bpfix-bench-cases/rs_actplane_lsm_bpf_ringbuf_merge_001/buggy.bpf.c
+

@@ -1,0 +1,2 @@
+PREVAIL exit=0
+PASS: xdp/ringbuf_ref_leak

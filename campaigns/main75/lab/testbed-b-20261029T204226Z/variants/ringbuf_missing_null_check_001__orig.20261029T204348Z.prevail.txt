@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/ringbuf_missing_null
+
+; /home/test/bpfix-b/repo/campaigns/v2/upstream/ringbuf_missing_null_check_001/orig.bpf.c:35
+;     rec->mark = 7;
+
+17: Possible null access (valid_access(r7.offset, width=4) for write)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

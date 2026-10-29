@@ -1,0 +1,202 @@
+libbpf: loading object from /tmp/bpfix-cap-emmxormt/ringbuf_stack_submit_001__pad32.o
+libbpf: elf: section(3) xdp, size 968, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'ringbuf_stack_submit' at insn offset 0 (0 bytes), code size 121 insns (968 bytes)
+libbpf: elf: section(4) .relxdp, size 16, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 16, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-emmxormt/ringbuf_stack_submit_001__pad32.o is GPL
+libbpf: elf: section(16) .BTF, size 1727, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 796, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 384, link 1, flags 0, type=2
+libbpf: looking for externs among 16 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'events': at sec_idx 5, offset 0.
+libbpf: map 'events': found type = 27.
+libbpf: map 'events': found max_entries = 4096.
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #2 against 'events'
+libbpf: prog 'ringbuf_stack_submit': found map 0 (events, sec 5, off 0) for insn #2
+libbpf: loading kernel BTF '/sys/kernel/btf/vmlinux': 0
+libbpf: sec 'xdp': found 1 CO-RE relocations
+libbpf: CO-RE relocating [10] struct xdp_md: found target candidate [7123] struct xdp_md in [vmlinux]
+libbpf: prog 'ringbuf_stack_submit': relo #0: <byte_off> [10] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'ringbuf_stack_submit': relo #0: matching candidate #0 <byte_off> [7123] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'ringbuf_stack_submit': relo #0: patched insn #107 (LDX/ST/STX) off 0 -> 0
+libbpf: map 'events': created successfully, fd=4
+libbpf: prog 'ringbuf_stack_submit': BPF program load failed: Permission denied
+libbpf: prog 'ringbuf_stack_submit': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int ringbuf_stack_submit(struct xdp_md *ctx)
+0: (bf) r6 = r1                       ; R1=ctx() R6_w=ctx()
+1: (b7) r7 = 0                        ; R7_w=0
+; audit = bpf_ringbuf_reserve(&events, sizeof(*audit), 0);
+2: (18) r1 = 0xffff8e204bf8c800       ; R1_w=map_ptr(map=events,ks=0,vs=0)
+4: (b7) r2 = 4                        ; R2_w=4
+5: (b7) r3 = 0                        ; R3_w=0
+6: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 6 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 5: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 4: (b7) r2 = 4
+7: R0_w=ringbuf_mem_or_null(id=2,ref_obj_id=2,sz=4) refs=2
+; if (!audit)
+7: (15) if r0 == 0x0 goto pc+111      ; R0_w=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+; volatile __u64 __bpfix_pad = 0;
+8: (7b) *(u64 *)(r10 -16) = r7        ; R7_w=0 R10=fp0 fp-16_w=0 refs=2
+; __bpfix_pad += 1;
+9: (79) r1 = *(u64 *)(r10 -16)        ; R1_w=0 R10=fp0 fp-16_w=0 refs=2
+10: (07) r1 += 1                      ; R1_w=1 refs=2
+11: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=1 R10=fp0 fp-16_w=1 refs=2
+; __bpfix_pad += 2;
+12: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=1 R10=fp0 fp-16_w=1 refs=2
+13: (07) r1 += 2                      ; R1_w=3 refs=2
+14: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=3 R10=fp0 fp-16_w=3 refs=2
+; __bpfix_pad += 3;
+15: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=3 R10=fp0 fp-16_w=3 refs=2
+16: (07) r1 += 3                      ; R1_w=6 refs=2
+17: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=6 R10=fp0 fp-16_w=6 refs=2
+; __bpfix_pad += 4;
+18: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=6 R10=fp0 fp-16_w=6 refs=2
+19: (07) r1 += 4                      ; R1_w=10 refs=2
+20: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=10 R10=fp0 fp-16_w=10 refs=2
+; __bpfix_pad += 5;
+21: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=10 R10=fp0 fp-16_w=10 refs=2
+22: (07) r1 += 5                      ; R1_w=15 refs=2
+23: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=15 R10=fp0 fp-16_w=15 refs=2
+; __bpfix_pad += 6;
+24: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=15 R10=fp0 fp-16_w=15 refs=2
+25: (07) r1 += 6                      ; R1_w=21 refs=2
+26: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=21 R10=fp0 fp-16_w=21 refs=2
+; __bpfix_pad += 7;
+27: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=21 R10=fp0 fp-16_w=21 refs=2
+28: (07) r1 += 7                      ; R1_w=28 refs=2
+29: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=28 R10=fp0 fp-16_w=28 refs=2
+; __bpfix_pad += 8;
+30: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=28 R10=fp0 fp-16_w=28 refs=2
+31: (07) r1 += 8                      ; R1_w=36 refs=2
+32: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=36 R10=fp0 fp-16_w=36 refs=2
+; __bpfix_pad += 9;
+33: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=36 R10=fp0 fp-16_w=36 refs=2
+34: (07) r1 += 9                      ; R1_w=45 refs=2
+35: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=45 R10=fp0 fp-16_w=45 refs=2
+; __bpfix_pad += 10;
+36: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=45 R10=fp0 fp-16_w=45 refs=2
+37: (07) r1 += 10                     ; R1_w=55 refs=2
+38: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=55 R10=fp0 fp-16_w=55 refs=2
+; __bpfix_pad += 11;
+39: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=55 R10=fp0 fp-16_w=55 refs=2
+40: (07) r1 += 11                     ; R1_w=66 refs=2
+41: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=66 R10=fp0 fp-16_w=66 refs=2
+; __bpfix_pad += 12;
+42: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=66 R10=fp0 fp-16_w=66 refs=2
+43: (07) r1 += 12                     ; R1_w=78 refs=2
+44: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=78 R10=fp0 fp-16_w=78 refs=2
+; __bpfix_pad += 13;
+45: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=78 R10=fp0 fp-16_w=78 refs=2
+46: (07) r1 += 13                     ; R1_w=91 refs=2
+47: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=91 R10=fp0 fp-16_w=91 refs=2
+; __bpfix_pad += 14;
+48: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=91 R10=fp0 fp-16_w=91 refs=2
+49: (07) r1 += 14                     ; R1_w=105 refs=2
+50: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=105 R10=fp0 fp-16_w=105 refs=2
+; __bpfix_pad += 15;
+51: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=105 R10=fp0 fp-16_w=105 refs=2
+52: (07) r1 += 15                     ; R1_w=120 refs=2
+53: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=120 R10=fp0 fp-16_w=120 refs=2
+; __bpfix_pad += 16;
+54: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=120 R10=fp0 fp-16_w=120 refs=2
+55: (07) r1 += 16                     ; R1_w=136 refs=2
+56: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=136 R10=fp0 fp-16_w=136 refs=2
+; __bpfix_pad += 17;
+57: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=136 R10=fp0 fp-16_w=136 refs=2
+58: (07) r1 += 17                     ; R1_w=153 refs=2
+59: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=153 R10=fp0 fp-16_w=153 refs=2
+; __bpfix_pad += 18;
+60: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=153 R10=fp0 fp-16_w=153 refs=2
+61: (07) r1 += 18                     ; R1_w=171 refs=2
+62: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=171 R10=fp0 fp-16_w=171 refs=2
+; __bpfix_pad += 19;
+63: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=171 R10=fp0 fp-16_w=171 refs=2
+64: (07) r1 += 19                     ; R1_w=190 refs=2
+65: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=190 R10=fp0 fp-16_w=190 refs=2
+; __bpfix_pad += 20;
+66: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=190 R10=fp0 fp-16_w=190 refs=2
+67: (07) r1 += 20                     ; R1_w=210 refs=2
+68: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=210 R10=fp0 fp-16_w=210 refs=2
+; __bpfix_pad += 21;
+69: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=210 R10=fp0 fp-16_w=210 refs=2
+70: (07) r1 += 21                     ; R1_w=231 refs=2
+71: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=231 R10=fp0 fp-16_w=231 refs=2
+; __bpfix_pad += 22;
+72: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=231 R10=fp0 fp-16_w=231 refs=2
+73: (07) r1 += 22                     ; R1_w=253 refs=2
+74: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=253 R10=fp0 fp-16_w=253 refs=2
+; __bpfix_pad += 23;
+75: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=253 R10=fp0 fp-16_w=253 refs=2
+76: (07) r1 += 23                     ; R1_w=276 refs=2
+77: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=276 R10=fp0 fp-16_w=276 refs=2
+; __bpfix_pad += 24;
+78: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=276 R10=fp0 fp-16_w=276 refs=2
+79: (07) r1 += 24                     ; R1_w=300 refs=2
+80: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=300 R10=fp0 fp-16_w=300 refs=2
+; __bpfix_pad += 25;
+81: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=300 R10=fp0 fp-16_w=300 refs=2
+82: (07) r1 += 25                     ; R1_w=325 refs=2
+83: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=325 R10=fp0 fp-16_w=325 refs=2
+; __bpfix_pad += 26;
+84: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=325 R10=fp0 fp-16_w=325 refs=2
+85: (07) r1 += 26                     ; R1_w=351 refs=2
+86: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=351 R10=fp0 fp-16_w=351 refs=2
+; __bpfix_pad += 27;
+87: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=351 R10=fp0 fp-16_w=351 refs=2
+88: (07) r1 += 27                     ; R1_w=378 refs=2
+89: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=378 R10=fp0 fp-16_w=378 refs=2
+; __bpfix_pad += 28;
+90: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=378 R10=fp0 fp-16_w=378 refs=2
+91: (07) r1 += 28                     ; R1_w=406 refs=2
+92: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=406 R10=fp0 fp-16_w=406 refs=2
+; __bpfix_pad += 29;
+93: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=406 R10=fp0 fp-16_w=406 refs=2
+94: (07) r1 += 29                     ; R1_w=435 refs=2
+95: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=435 R10=fp0 fp-16_w=435 refs=2
+; __bpfix_pad += 30;
+96: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=435 R10=fp0 fp-16_w=435 refs=2
+97: (07) r1 += 30                     ; R1_w=465 refs=2
+98: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=465 R10=fp0 fp-16_w=465 refs=2
+; __bpfix_pad += 31;
+99: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=465 R10=fp0 fp-16_w=465 refs=2
+100: (07) r1 += 31                    ; R1_w=496 refs=2
+101: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=496 R10=fp0 fp-16_w=496 refs=2
+; __bpfix_pad += 32;
+102: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=496 R10=fp0 fp-16_w=496 refs=2
+103: (07) r1 += 32                    ; R1_w=528 refs=2
+104: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=528 R10=fp0 fp-16_w=528 refs=2
+105: (b7) r1 = 3                      ; R1_w=3 refs=2
+; audit->mark = 3;
+106: (63) *(u32 *)(r0 +0) = r1        ; R0_w=ringbuf_mem(ref_obj_id=2,sz=4) R1_w=3 refs=2
+; if (ctx->data == 0)
+107: (61) r2 = *(u32 *)(r6 +0)        ; R2_w=pkt(r=0) R6_w=ctx() refs=2
+108: (b7) r1 = 11                     ; R1=11 refs=2
+; if (ctx->data == 0)
+109: (15) if r2 == 0x0 goto pc+1      ; R2=pkt(r=0) refs=2
+110: (b7) r1 = 7                      ; R1_w=7 refs=2
+; 
+111: (63) *(u32 *)(r10 -4) = r1       ; R1_w=7 R10=fp0 fp-8=mmmm???? refs=2
+; bpf_ringbuf_submit(audit, 0);
+112: (bf) r1 = r0                     ; R0=ringbuf_mem(ref_obj_id=2,sz=4) R1_w=ringbuf_mem(ref_obj_id=2,sz=4) refs=2
+113: (b7) r2 = 0                      ; R2_w=0 refs=2
+114: (85) call bpf_ringbuf_submit#132         ;
+115: (bf) r1 = r10                    ; R1_w=fp0 R10=fp0
+; 
+116: (07) r1 += -4                    ; R1_w=fp-4
+; bpf_ringbuf_submit(&ev, 0);
+117: (b7) r2 = 0                      ; R2_w=0
+118: (85) call bpf_ringbuf_submit#132
+R1 type=fp expected=ringbuf_mem
+verification time 381 usec
+stack depth 16
+processed 118 insns (limit 1000000) max_states_per_insn 0 total_states 1 peak_states 1 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'ringbuf_stack_submit': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-emmxormt/ringbuf_stack_submit_001__pad32.o'
+Error: failed to load object file

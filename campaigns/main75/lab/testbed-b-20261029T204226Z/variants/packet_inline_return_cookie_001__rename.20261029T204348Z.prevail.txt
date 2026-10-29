@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/packet_inline_return_cookie
+
+; /home/test/bpfix-b/repo/campaigns/v2/upstream/packet_inline_return_cookie_001/rename.bpf.c:54
+;     asm volatile("%[cookie] <<= 32; %[cookie] >>= 32" : [cookie] "+r"(cookie));
+
+15: Invalid type (r3.type == number)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

@@ -1,0 +1,10 @@
+Prettier Verifier ##
+#######################
+
+error: Invalid access to packet
+   52 | check = udp->check;
+      | in file /home/test/bpfix-b/repo/fixtures/upstream/bpfix-bench-cases/packet_macro_payload_undercheck_001/buggy.bpf.c
+Access is 1 byte past the end of the checked packet range (21 bytes).
+
+Add or tighten a bounds check so the accessed range stays within the checked packet range.
+

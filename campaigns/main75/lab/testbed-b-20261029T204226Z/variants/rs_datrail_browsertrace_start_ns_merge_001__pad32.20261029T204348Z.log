@@ -1,0 +1,877 @@
+libbpf: loading object from /tmp/bpfix-cap-emmxormt/rs_datrail_browsertrace_start_ns_merge_001__pad32.o
+libbpf: elf: section(3) tp/syscalls/sys_exit_read, size 1424, link 0, flags 6, type=1
+libbpf: sec 'tp/syscalls/sys_exit_read': found program 'rs_datrail_browsertrace_start_ns_merge' at insn offset 0 (0 bytes), code size 178 insns (1424 bytes)
+libbpf: elf: section(4) .reltp/syscalls/sys_exit_read, size 80, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 80, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-emmxormt/rs_datrail_browsertrace_start_ns_merge_001__pad32.o is GPL
+libbpf: elf: section(16) .BTF, size 2866, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 1180, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 480, link 1, flags 0, type=2
+libbpf: looking for externs among 20 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'bufs': at sec_idx 5, offset 0.
+libbpf: map 'bufs': found type = 1.
+libbpf: map 'bufs': found key [8], sz = 4.
+libbpf: map 'bufs': found value [11], sz = 8.
+libbpf: map 'bufs': found max_entries = 1024.
+libbpf: map 'start_ns': at sec_idx 5, offset 32.
+libbpf: map 'start_ns': found type = 1.
+libbpf: map 'start_ns': found key [8], sz = 4.
+libbpf: map 'start_ns': found value [11], sz = 8.
+libbpf: map 'start_ns': found max_entries = 1024.
+libbpf: map 'rb': at sec_idx 5, offset 64.
+libbpf: map 'rb': found type = 27.
+libbpf: map 'rb': found max_entries = 4096.
+libbpf: sec '.reltp/syscalls/sys_exit_read': collecting relocation for section(3) 'tp/syscalls/sys_exit_read'
+libbpf: sec '.reltp/syscalls/sys_exit_read': relo #0: insn #14 against 'bufs'
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': found map 0 (bufs, sec 5, off 0) for insn #14
+libbpf: sec '.reltp/syscalls/sys_exit_read': relo #1: insn #22 against 'start_ns'
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': found map 1 (start_ns, sec 5, off 32) for insn #22
+libbpf: sec '.reltp/syscalls/sys_exit_read': relo #2: insn #27 against 'rb'
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': found map 2 (rb, sec 5, off 64) for insn #27
+libbpf: sec '.reltp/syscalls/sys_exit_read': relo #3: insn #165 against 'bufs'
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': found map 0 (bufs, sec 5, off 0) for insn #165
+libbpf: sec '.reltp/syscalls/sys_exit_read': relo #4: insn #169 against 'start_ns'
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': found map 1 (start_ns, sec 5, off 32) for insn #169
+libbpf: loading kernel BTF '/sys/kernel/btf/vmlinux': 0
+libbpf: sec 'tp/syscalls/sys_exit_read': found 1 CO-RE relocations
+libbpf: CO-RE relocating [24] struct trace_event_raw_sys_exit: found target candidate [57758] struct trace_event_raw_sys_exit in [vmlinux]
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': relo #0: <byte_off> [24] struct trace_event_raw_sys_exit.ret (0:2 @ offset 16)
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': relo #0: matching candidate #0 <byte_off> [57758] struct trace_event_raw_sys_exit.ret (0:2 @ offset 16)
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': relo #0: patched insn #6 (LDX/ST/STX) off 16 -> 16
+libbpf: map 'bufs': created successfully, fd=4
+libbpf: map 'start_ns': created successfully, fd=5
+libbpf: map 'rb': created successfully, fd=6
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': BPF program load failed: Permission denied
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_datrail_browsertrace_start_ns_merge(struct trace_event_raw_sys_exit *ctx)
+0: (bf) r8 = r1                       ; R1=ctx() R8_w=ctx()
+; __u64 pid_tgid = bpf_get_current_pid_tgid();
+1: (85) call bpf_get_current_pid_tgid#14      ; R0_w=scalar()
+2: (bf) r6 = r0                       ; R0_w=scalar(id=1) R6_w=scalar(id=1)
+; __u32 tid = (__u32)pid_tgid;
+3: (63) *(u32 *)(r10 -4) = r6         ; R6_w=scalar(id=1) R10=fp0 fp-8=mmmm????
+; __u64 ts = bpf_ktime_get_ns();
+4: (85) call bpf_ktime_get_ns#5       ; R0_w=scalar()
+5: (bf) r7 = r0                       ; R0_w=scalar(id=2) R7_w=scalar(id=2)
+; int len = ctx->ret;
+6: (79) r9 = *(u64 *)(r8 +16)         ; R8_w=ctx() R9_w=scalar()
+; int len = ctx->ret;
+7: (bf) r1 = r9                       ; R1_w=scalar(id=3) R9_w=scalar(id=3)
+8: (67) r1 <<= 32                     ; R1_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000))
+9: (c7) r1 s>>= 32                    ; R1_w=scalar(smin=0xffffffff80000000,smax=0x7fffffff)
+10: (b7) r2 = 1                       ; R2=1
+; if (len <= 0)
+11: (6d) if r2 s> r1 goto pc+164      ; R1=scalar(smin=umin=smin32=umin32=1,smax=umax=umax32=0x7fffffff,var_off=(0x0; 0x7fffffff)) R2=1
+12: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+; 
+13: (07) r2 += -4                     ; R2_w=fp-4
+; bufp = bpf_map_lookup_elem(&bufs, &tid);
+14: (18) r1 = 0xffff8e204ccda400      ; R1_w=map_ptr(map=bufs,ks=4,vs=8)
+16: (85) call bpf_map_lookup_elem#1   ; R0_w=map_value_or_null(id=4,map=bufs,ks=4,vs=8)
+17: (bf) r8 = r0                      ; R0_w=map_value_or_null(id=4,map=bufs,ks=4,vs=8) R8_w=map_value_or_null(id=4,map=bufs,ks=4,vs=8)
+; if (!bufp)
+18: (15) if r8 == 0x0 goto pc+157     ; R8_w=map_value(map=bufs,ks=4,vs=8)
+; 
+19: (77) r6 >>= 32                    ; R6_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+20: (bf) r2 = r10                     ; R2_w=fp0 R10=fp0
+21: (07) r2 += -4                     ; R2_w=fp-4
+; tsp = bpf_map_lookup_elem(&start_ns, &tid);
+22: (18) r1 = 0xffff8e204ccdf800      ; R1_w=map_ptr(map=start_ns,ks=4,vs=8)
+24: (85) call bpf_map_lookup_elem#1   ; R0=map_value_or_null(id=5,map=start_ns,ks=4,vs=8)
+; if (pid == 0) {
+25: (55) if r6 != 0x0 goto pc+1       ; R6=0
+26: (15) if r0 == 0x0 goto pc+149     ; R0=map_value(map=start_ns,ks=4,vs=8)
+; event = bpf_ringbuf_reserve(&rb, sizeof(*event), 0);
+27: (18) r1 = 0xffff8e21a5f47400      ; R1_w=map_ptr(map=rb,ks=0,vs=0)
+29: (b7) r2 = 40                      ; R2_w=40
+30: (7b) *(u64 *)(r10 -24) = r9       ; R9=scalar(id=3) R10=fp0 fp-24_w=mmmmmmmm
+31: (bf) r9 = r8                      ; R8=map_value(map=bufs,ks=4,vs=8) R9_w=map_value(map=bufs,ks=4,vs=8)
+32: (bf) r8 = r7                      ; R7=scalar(id=2) R8_w=scalar(id=2)
+33: (bf) r7 = r0                      ; R0=map_value(map=start_ns,ks=4,vs=8) R7_w=map_value(map=start_ns,ks=4,vs=8)
+34: (b7) r3 = 0                       ; R3_w=0
+35: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 35 first_idx 25 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 34: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 33: (bf) r7 = r0
+mark_precise: frame0: regs=r2 stack= before 32: (bf) r8 = r7
+mark_precise: frame0: regs=r2 stack= before 31: (bf) r9 = r8
+mark_precise: frame0: regs=r2 stack= before 30: (7b) *(u64 *)(r10 -24) = r9
+mark_precise: frame0: regs=r2 stack= before 29: (b7) r2 = 40
+36: R0=ringbuf_mem_or_null(id=7,ref_obj_id=7,sz=40) refs=7
+36: (bf) r3 = r7                      ; R3_w=map_value(map=start_ns,ks=4,vs=8) R7=map_value(map=start_ns,ks=4,vs=8) refs=7
+37: (bf) r4 = r8                      ; R4_w=scalar(id=2) R8=scalar(id=2) refs=7
+38: (bf) r5 = r9                      ; R5_w=map_value(map=bufs,ks=4,vs=8) R9=map_value(map=bufs,ks=4,vs=8) refs=7
+39: (79) r7 = *(u64 *)(r10 -24)       ; R7_w=scalar() R10=fp0 fp-24=mmmmmmmm refs=7
+; if (!event)
+40: (15) if r0 == 0x0 goto pc+135     ; R0=ringbuf_mem(ref_obj_id=7,sz=40) refs=7
+; 
+41: (bf) r2 = r0                      ; R0=ringbuf_mem(ref_obj_id=7,sz=40) R2_w=ringbuf_mem(ref_obj_id=7,sz=40) refs=7
+; volatile __u64 __bpfix_pad = 0;
+42: (b7) r1 = 0                       ; R1_w=0 refs=7
+43: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=0 R10=fp0 fp-16_w=0 refs=7
+; __bpfix_pad += 1;
+44: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=0 R10=fp0 fp-16_w=0 refs=7
+45: (07) r1 += 1                      ; R1_w=1 refs=7
+46: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=1 R10=fp0 fp-16_w=1 refs=7
+; __bpfix_pad += 2;
+47: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=1 R10=fp0 fp-16_w=1 refs=7
+48: (07) r1 += 2                      ; R1_w=3 refs=7
+49: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=3 R10=fp0 fp-16_w=3 refs=7
+; int len = ctx->ret;
+50: (bf) r9 = r7                      ; R7_w=scalar(id=8) R9_w=scalar(id=8) refs=7
+51: (67) r9 <<= 32                    ; R9_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000)) refs=7
+52: (77) r9 >>= 32                    ; R9_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) refs=7
+53: (b7) r1 = 16                      ; R1_w=16 refs=7
+54: (b7) r8 = 0                       ; R8_w=0 refs=7
+; if (copy_size > MAX_BUF_SIZE)
+55: (2d) if r1 > r9 goto pc+1         ; R1_w=16 R9_w=scalar(smin=umin=umin32=16,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) refs=7
+56: (b7) r9 = 16                      ; R9=16 refs=7
+; __bpfix_pad += 3;
+57: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=3 R10=fp0 fp-16=3 refs=7
+58: (07) r1 += 3                      ; R1_w=6 refs=7
+59: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=6 R10=fp0 fp-16_w=6 refs=7
+; __bpfix_pad += 4;
+60: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=6 R10=fp0 fp-16_w=6 refs=7
+61: (07) r1 += 4                      ; R1_w=10 refs=7
+62: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=10 R10=fp0 fp-16_w=10 refs=7
+; __bpfix_pad += 5;
+63: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=10 R10=fp0 fp-16_w=10 refs=7
+64: (07) r1 += 5                      ; R1_w=15 refs=7
+65: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=15 R10=fp0 fp-16_w=15 refs=7
+; __bpfix_pad += 6;
+66: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=15 R10=fp0 fp-16_w=15 refs=7
+67: (07) r1 += 6                      ; R1_w=21 refs=7
+68: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=21 R10=fp0 fp-16_w=21 refs=7
+; __bpfix_pad += 7;
+69: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=21 R10=fp0 fp-16_w=21 refs=7
+70: (07) r1 += 7                      ; R1_w=28 refs=7
+71: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=28 R10=fp0 fp-16_w=28 refs=7
+; __bpfix_pad += 8;
+72: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=28 R10=fp0 fp-16_w=28 refs=7
+73: (07) r1 += 8                      ; R1_w=36 refs=7
+74: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=36 R10=fp0 fp-16_w=36 refs=7
+; __bpfix_pad += 9;
+75: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=36 R10=fp0 fp-16_w=36 refs=7
+76: (07) r1 += 9                      ; R1_w=45 refs=7
+77: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=45 R10=fp0 fp-16_w=45 refs=7
+; __bpfix_pad += 10;
+78: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=45 R10=fp0 fp-16_w=45 refs=7
+79: (07) r1 += 10                     ; R1_w=55 refs=7
+80: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=55 R10=fp0 fp-16_w=55 refs=7
+; __bpfix_pad += 11;
+81: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=55 R10=fp0 fp-16_w=55 refs=7
+82: (07) r1 += 11                     ; R1_w=66 refs=7
+83: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=66 R10=fp0 fp-16_w=66 refs=7
+; __bpfix_pad += 12;
+84: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=66 R10=fp0 fp-16_w=66 refs=7
+85: (07) r1 += 12                     ; R1_w=78 refs=7
+86: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=78 R10=fp0 fp-16_w=78 refs=7
+; __bpfix_pad += 13;
+87: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=78 R10=fp0 fp-16_w=78 refs=7
+88: (07) r1 += 13                     ; R1_w=91 refs=7
+89: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=91 R10=fp0 fp-16_w=91 refs=7
+; __bpfix_pad += 14;
+90: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=91 R10=fp0 fp-16_w=91 refs=7
+91: (07) r1 += 14                     ; R1_w=105 refs=7
+92: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=105 R10=fp0 fp-16_w=105 refs=7
+; __bpfix_pad += 15;
+93: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=105 R10=fp0 fp-16_w=105 refs=7
+94: (07) r1 += 15                     ; R1_w=120 refs=7
+95: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=120 R10=fp0 fp-16_w=120 refs=7
+; __bpfix_pad += 16;
+96: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=120 R10=fp0 fp-16_w=120 refs=7
+97: (07) r1 += 16                     ; R1_w=136 refs=7
+98: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=136 R10=fp0 fp-16_w=136 refs=7
+; __bpfix_pad += 17;
+99: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=136 R10=fp0 fp-16_w=136 refs=7
+100: (07) r1 += 17                    ; R1_w=153 refs=7
+101: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=153 R10=fp0 fp-16_w=153 refs=7
+; __bpfix_pad += 18;
+102: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=153 R10=fp0 fp-16_w=153 refs=7
+103: (07) r1 += 18                    ; R1_w=171 refs=7
+104: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=171 R10=fp0 fp-16_w=171 refs=7
+; __bpfix_pad += 19;
+105: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=171 R10=fp0 fp-16_w=171 refs=7
+106: (07) r1 += 19                    ; R1_w=190 refs=7
+107: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=190 R10=fp0 fp-16_w=190 refs=7
+; __bpfix_pad += 20;
+108: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=190 R10=fp0 fp-16_w=190 refs=7
+109: (07) r1 += 20                    ; R1_w=210 refs=7
+110: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=210 R10=fp0 fp-16_w=210 refs=7
+; __bpfix_pad += 21;
+111: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=210 R10=fp0 fp-16_w=210 refs=7
+112: (07) r1 += 21                    ; R1_w=231 refs=7
+113: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=231 R10=fp0 fp-16_w=231 refs=7
+; __bpfix_pad += 22;
+114: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=231 R10=fp0 fp-16_w=231 refs=7
+115: (07) r1 += 22                    ; R1_w=253 refs=7
+116: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=253 R10=fp0 fp-16_w=253 refs=7
+; __bpfix_pad += 23;
+117: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=253 R10=fp0 fp-16_w=253 refs=7
+118: (07) r1 += 23                    ; R1_w=276 refs=7
+119: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=276 R10=fp0 fp-16_w=276 refs=7
+; __bpfix_pad += 24;
+120: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=276 R10=fp0 fp-16_w=276 refs=7
+121: (07) r1 += 24                    ; R1_w=300 refs=7
+122: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=300 R10=fp0 fp-16_w=300 refs=7
+; __bpfix_pad += 25;
+123: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=300 R10=fp0 fp-16_w=300 refs=7
+124: (07) r1 += 25                    ; R1_w=325 refs=7
+125: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=325 R10=fp0 fp-16_w=325 refs=7
+; __bpfix_pad += 26;
+126: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=325 R10=fp0 fp-16_w=325 refs=7
+127: (07) r1 += 26                    ; R1_w=351 refs=7
+128: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=351 R10=fp0 fp-16_w=351 refs=7
+; __bpfix_pad += 27;
+129: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=351 R10=fp0 fp-16_w=351 refs=7
+130: (07) r1 += 27                    ; R1_w=378 refs=7
+131: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=378 R10=fp0 fp-16_w=378 refs=7
+; __bpfix_pad += 28;
+132: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=378 R10=fp0 fp-16_w=378 refs=7
+133: (07) r1 += 28                    ; R1_w=406 refs=7
+134: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=406 R10=fp0 fp-16_w=406 refs=7
+; __bpfix_pad += 29;
+135: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=406 R10=fp0 fp-16_w=406 refs=7
+136: (07) r1 += 29                    ; R1_w=435 refs=7
+137: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=435 R10=fp0 fp-16_w=435 refs=7
+; __bpfix_pad += 30;
+138: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=435 R10=fp0 fp-16_w=435 refs=7
+139: (07) r1 += 30                    ; R1_w=465 refs=7
+140: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=465 R10=fp0 fp-16_w=465 refs=7
+; __bpfix_pad += 31;
+141: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=465 R10=fp0 fp-16_w=465 refs=7
+142: (07) r1 += 31                    ; R1_w=496 refs=7
+143: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=496 R10=fp0 fp-16_w=496 refs=7
+; __bpfix_pad += 32;
+144: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=496 R10=fp0 fp-16_w=496 refs=7
+145: (07) r1 += 32                    ; R1_w=528 refs=7
+146: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=528 R10=fp0 fp-16_w=528 refs=7
+; event->delta_ns = ts - *tsp;
+147: (79) r1 = *(u64 *)(r3 +0)        ; R1_w=scalar() R3=map_value(map=start_ns,ks=4,vs=8) refs=7
+; event->pid = pid;
+148: (63) *(u32 *)(r2 +8) = r6        ; R2=ringbuf_mem(ref_obj_id=7,sz=40) R6=0 refs=7
+; event->delta_ns = ts - *tsp;
+149: (1f) r4 -= r1                    ; R1_w=scalar() R4_w=scalar() refs=7
+; event->delta_ns = ts - *tsp;
+150: (7b) *(u64 *)(r2 +0) = r4        ; R2=ringbuf_mem(ref_obj_id=7,sz=40) R4_w=scalar() refs=7
+; event->tid = tid;
+151: (61) r1 = *(u32 *)(r10 -4)       ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-8=mmmm???? refs=7
+; event->buf_size = 0;
+152: (63) *(u32 *)(r2 +20) = r8       ; R2=ringbuf_mem(ref_obj_id=7,sz=40) R8=0 refs=7
+; event->len = (__u32)len;
+153: (63) *(u32 *)(r2 +16) = r7       ; R2=ringbuf_mem(ref_obj_id=7,sz=40) R7=scalar(id=8) refs=7
+; event->tid = tid;
+154: (63) *(u32 *)(r2 +12) = r1       ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R2=ringbuf_mem(ref_obj_id=7,sz=40) refs=7
+; if (!bpf_probe_read_user(event->buf, copy_size, (void *)*bufp))
+155: (07) r0 += 24                    ; R0_w=ringbuf_mem(ref_obj_id=7,off=24,sz=40) refs=7
+; if (!bpf_probe_read_user(event->buf, copy_size, (void *)*bufp))
+156: (79) r3 = *(u64 *)(r5 +0)        ; R3_w=scalar() R5=map_value(map=bufs,ks=4,vs=8) refs=7
+; if (!bpf_probe_read_user(event->buf, copy_size, (void *)*bufp))
+157: (bf) r1 = r0                     ; R0_w=ringbuf_mem(ref_obj_id=7,off=24,sz=40) R1_w=ringbuf_mem(ref_obj_id=7,off=24,sz=40) refs=7
+158: (bf) r7 = r2                     ; R2=ringbuf_mem(ref_obj_id=7,sz=40) R7_w=ringbuf_mem(ref_obj_id=7,sz=40) refs=7
+159: (bf) r2 = r9                     ; R2_w=16 R9=16 refs=7
+160: (85) call bpf_probe_read_user#112
+mark_precise: frame0: last_idx 160 first_idx 57 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 159: (bf) r2 = r9
+mark_precise: frame0: regs=r9 stack= before 158: (bf) r7 = r2
+mark_precise: frame0: regs=r9 stack= before 157: (bf) r1 = r0
+mark_precise: frame0: regs=r9 stack= before 156: (79) r3 = *(u64 *)(r5 +0)
+mark_precise: frame0: regs=r9 stack= before 155: (07) r0 += 24
+mark_precise: frame0: regs=r9 stack= before 154: (63) *(u32 *)(r2 +12) = r1
+mark_precise: frame0: regs=r9 stack= before 153: (63) *(u32 *)(r2 +16) = r7
+mark_precise: frame0: regs=r9 stack= before 152: (63) *(u32 *)(r2 +20) = r8
+mark_precise: frame0: regs=r9 stack= before 151: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 150: (7b) *(u64 *)(r2 +0) = r4
+mark_precise: frame0: regs=r9 stack= before 149: (1f) r4 -= r1
+mark_precise: frame0: regs=r9 stack= before 148: (63) *(u32 *)(r2 +8) = r6
+mark_precise: frame0: regs=r9 stack= before 147: (79) r1 = *(u64 *)(r3 +0)
+mark_precise: frame0: regs=r9 stack= before 146: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 145: (07) r1 += 32
+mark_precise: frame0: regs=r9 stack= before 144: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 143: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 142: (07) r1 += 31
+mark_precise: frame0: regs=r9 stack= before 141: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 140: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 139: (07) r1 += 30
+mark_precise: frame0: regs=r9 stack= before 138: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 137: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 136: (07) r1 += 29
+mark_precise: frame0: regs=r9 stack= before 135: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 134: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 133: (07) r1 += 28
+mark_precise: frame0: regs=r9 stack= before 132: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 131: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 130: (07) r1 += 27
+mark_precise: frame0: regs=r9 stack= before 129: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 128: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 127: (07) r1 += 26
+mark_precise: frame0: regs=r9 stack= before 126: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 125: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 124: (07) r1 += 25
+mark_precise: frame0: regs=r9 stack= before 123: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 122: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 121: (07) r1 += 24
+mark_precise: frame0: regs=r9 stack= before 120: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 119: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 118: (07) r1 += 23
+mark_precise: frame0: regs=r9 stack= before 117: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 116: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 115: (07) r1 += 22
+mark_precise: frame0: regs=r9 stack= before 114: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 113: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 112: (07) r1 += 21
+mark_precise: frame0: regs=r9 stack= before 111: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 110: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 109: (07) r1 += 20
+mark_precise: frame0: regs=r9 stack= before 108: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 107: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 106: (07) r1 += 19
+mark_precise: frame0: regs=r9 stack= before 105: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 104: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 103: (07) r1 += 18
+mark_precise: frame0: regs=r9 stack= before 102: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 101: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 100: (07) r1 += 17
+mark_precise: frame0: regs=r9 stack= before 99: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 98: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 97: (07) r1 += 16
+mark_precise: frame0: regs=r9 stack= before 96: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 95: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 94: (07) r1 += 15
+mark_precise: frame0: regs=r9 stack= before 93: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 92: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 91: (07) r1 += 14
+mark_precise: frame0: regs=r9 stack= before 90: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 89: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 88: (07) r1 += 13
+mark_precise: frame0: regs=r9 stack= before 87: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 86: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 85: (07) r1 += 12
+mark_precise: frame0: regs=r9 stack= before 84: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 83: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 82: (07) r1 += 11
+mark_precise: frame0: regs=r9 stack= before 81: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 80: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 79: (07) r1 += 10
+mark_precise: frame0: regs=r9 stack= before 78: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 77: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 76: (07) r1 += 9
+mark_precise: frame0: regs=r9 stack= before 75: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 74: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 73: (07) r1 += 8
+mark_precise: frame0: regs=r9 stack= before 72: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 71: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 70: (07) r1 += 7
+mark_precise: frame0: regs=r9 stack= before 69: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 68: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 67: (07) r1 += 6
+mark_precise: frame0: regs=r9 stack= before 66: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 65: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 64: (07) r1 += 5
+mark_precise: frame0: regs=r9 stack= before 63: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 62: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 61: (07) r1 += 4
+mark_precise: frame0: regs=r9 stack= before 60: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 59: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 58: (07) r1 += 3
+mark_precise: frame0: regs=r9 stack= before 57: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: parent state regs=r9 stack=:  R0_r=ringbuf_mem(ref_obj_id=7,sz=40) R1_w=16 R2_rw=ringbuf_mem(ref_obj_id=7,sz=40) R3_rw=map_value(map=start_ns,ks=4,vs=8) R4_rw=scalar(id=2) R5_rw=map_value(map=bufs,ks=4,vs=8) R6_r=0 R7_rw=scalar(id=8) R8_rw=0 R9_rw=P16 R10=fp0 fp-8_r=mmmm???? fp-16_rw=3 fp-24=mmmmmmmm refs=7
+mark_precise: frame0: last_idx 56 first_idx 36 subseq_idx 57 
+mark_precise: frame0: regs=r9 stack= before 56: (b7) r9 = 16
+161: R0=scalar() refs=7
+; if (!bpf_probe_read_user(event->buf, copy_size, (void *)*bufp))
+161: (55) if r0 != 0x0 goto pc+1      ; R0=0 refs=7
+; event->buf_size = copy_size;
+162: (63) *(u32 *)(r7 +20) = r9       ; R7=ringbuf_mem(ref_obj_id=7,sz=40) R9=16 refs=7
+163: (bf) r6 = r10                    ; R6_w=fp0 R10=fp0 refs=7
+; bpf_map_delete_elem(&bufs, &tid);
+164: (07) r6 += -4                    ; R6_w=fp-4 refs=7
+165: (18) r1 = 0xffff8e204ccda400     ; R1_w=map_ptr(map=bufs,ks=4,vs=8) refs=7
+167: (bf) r2 = r6                     ; R2_w=fp-4 R6_w=fp-4 refs=7
+168: (85) call bpf_map_delete_elem#3          ; R0_w=scalar() refs=7
+; bpf_map_delete_elem(&start_ns, &tid);
+169: (18) r1 = 0xffff8e204ccdf800     ; R1_w=map_ptr(map=start_ns,ks=4,vs=8) refs=7
+171: (bf) r2 = r6                     ; R2_w=fp-4 R6_w=fp-4 refs=7
+172: (85) call bpf_map_delete_elem#3          ; R0=scalar() refs=7
+; bpf_ringbuf_submit(event, 0);
+173: (bf) r1 = r7                     ; R1_w=ringbuf_mem(ref_obj_id=7,sz=40) R7=ringbuf_mem(ref_obj_id=7,sz=40) refs=7
+174: (b7) r2 = 0                      ; R2_w=0 refs=7
+175: (85) call bpf_ringbuf_submit#132         ;
+; }
+176: (b7) r0 = 0                      ; R0_w=0
+177: (95) exit
+
+from 161 to 163: R0=scalar(umin=1) R6=0 R7=ringbuf_mem(ref_obj_id=7,sz=40) R8=0 R9=16 R10=fp0 fp-8=mmmm???? fp-16=528 fp-24=mmmmmmmm refs=7
+163: R0=scalar(umin=1) R6=0 R7=ringbuf_mem(ref_obj_id=7,sz=40) R8=0 R9=16 R10=fp0 fp-8=mmmm???? fp-16=528 fp-24=mmmmmmmm refs=7
+; event->buf_size = copy_size;
+163: (bf) r6 = r10                    ; R6_w=fp0 R10=fp0 refs=7
+; bpf_map_delete_elem(&bufs, &tid);
+164: (07) r6 += -4                    ; R6_w=fp-4 refs=7
+165: (18) r1 = 0xffff8e204ccda400     ; R1_w=map_ptr(map=bufs,ks=4,vs=8) refs=7
+167: (bf) r2 = r6                     ; R2_w=fp-4 R6_w=fp-4 refs=7
+168: (85) call bpf_map_delete_elem#3          ; R0=scalar() refs=7
+; bpf_map_delete_elem(&start_ns, &tid);
+169: (18) r1 = 0xffff8e204ccdf800     ; R1_w=map_ptr(map=start_ns,ks=4,vs=8) refs=7
+171: (bf) r2 = r6                     ; R2_w=fp-4 R6=fp-4 refs=7
+172: (85) call bpf_map_delete_elem#3
+173: safe
+
+from 55 to 57: R0=ringbuf_mem(ref_obj_id=7,sz=40) R1_w=16 R2_w=ringbuf_mem(ref_obj_id=7,sz=40) R3_w=map_value(map=start_ns,ks=4,vs=8) R4_w=scalar(id=2) R5_w=map_value(map=bufs,ks=4,vs=8) R6=0 R7_w=scalar(id=8) R8_w=0 R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=15,var_off=(0x0; 0xf)) R10=fp0 fp-8=mmmm???? fp-16_w=3 fp-24=mmmmmmmm refs=7
+57: R0=ringbuf_mem(ref_obj_id=7,sz=40) R1_w=16 R2_w=ringbuf_mem(ref_obj_id=7,sz=40) R3_w=map_value(map=start_ns,ks=4,vs=8) R4_w=scalar(id=2) R5_w=map_value(map=bufs,ks=4,vs=8) R6=0 R7_w=scalar(id=8) R8_w=0 R9_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=15,var_off=(0x0; 0xf)) R10=fp0 fp-8=mmmm???? fp-16_w=3 fp-24=mmmmmmmm refs=7
+; __bpfix_pad += 3;
+57: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=3 R10=fp0 fp-16_w=3 refs=7
+58: (07) r1 += 3                      ; R1_w=6 refs=7
+59: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=6 R10=fp0 fp-16_w=6 refs=7
+; __bpfix_pad += 4;
+60: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=6 R10=fp0 fp-16_w=6 refs=7
+61: (07) r1 += 4                      ; R1_w=10 refs=7
+62: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=10 R10=fp0 fp-16_w=10 refs=7
+; __bpfix_pad += 5;
+63: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=10 R10=fp0 fp-16_w=10 refs=7
+64: (07) r1 += 5                      ; R1_w=15 refs=7
+65: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=15 R10=fp0 fp-16_w=15 refs=7
+; __bpfix_pad += 6;
+66: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=15 R10=fp0 fp-16_w=15 refs=7
+67: (07) r1 += 6                      ; R1_w=21 refs=7
+68: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=21 R10=fp0 fp-16_w=21 refs=7
+; __bpfix_pad += 7;
+69: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=21 R10=fp0 fp-16_w=21 refs=7
+70: (07) r1 += 7                      ; R1_w=28 refs=7
+71: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=28 R10=fp0 fp-16_w=28 refs=7
+; __bpfix_pad += 8;
+72: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=28 R10=fp0 fp-16_w=28 refs=7
+73: (07) r1 += 8                      ; R1_w=36 refs=7
+74: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=36 R10=fp0 fp-16_w=36 refs=7
+; __bpfix_pad += 9;
+75: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=36 R10=fp0 fp-16_w=36 refs=7
+76: (07) r1 += 9                      ; R1_w=45 refs=7
+77: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=45 R10=fp0 fp-16_w=45 refs=7
+; __bpfix_pad += 10;
+78: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=45 R10=fp0 fp-16_w=45 refs=7
+79: (07) r1 += 10                     ; R1_w=55 refs=7
+80: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=55 R10=fp0 fp-16_w=55 refs=7
+; __bpfix_pad += 11;
+81: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=55 R10=fp0 fp-16_w=55 refs=7
+82: (07) r1 += 11                     ; R1_w=66 refs=7
+83: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=66 R10=fp0 fp-16_w=66 refs=7
+; __bpfix_pad += 12;
+84: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=66 R10=fp0 fp-16_w=66 refs=7
+85: (07) r1 += 12                     ; R1_w=78 refs=7
+86: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=78 R10=fp0 fp-16_w=78 refs=7
+; __bpfix_pad += 13;
+87: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=78 R10=fp0 fp-16_w=78 refs=7
+88: (07) r1 += 13                     ; R1_w=91 refs=7
+89: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=91 R10=fp0 fp-16_w=91 refs=7
+; __bpfix_pad += 14;
+90: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=91 R10=fp0 fp-16_w=91 refs=7
+91: (07) r1 += 14                     ; R1_w=105 refs=7
+92: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=105 R10=fp0 fp-16_w=105 refs=7
+; __bpfix_pad += 15;
+93: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=105 R10=fp0 fp-16_w=105 refs=7
+94: (07) r1 += 15                     ; R1_w=120 refs=7
+95: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=120 R10=fp0 fp-16_w=120 refs=7
+; __bpfix_pad += 16;
+96: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=120 R10=fp0 fp-16_w=120 refs=7
+97: (07) r1 += 16                     ; R1_w=136 refs=7
+98: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=136 R10=fp0 fp-16_w=136 refs=7
+; __bpfix_pad += 17;
+99: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=136 R10=fp0 fp-16_w=136 refs=7
+100: (07) r1 += 17                    ; R1_w=153 refs=7
+101: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=153 R10=fp0 fp-16_w=153 refs=7
+; __bpfix_pad += 18;
+102: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=153 R10=fp0 fp-16_w=153 refs=7
+103: (07) r1 += 18                    ; R1_w=171 refs=7
+104: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=171 R10=fp0 fp-16_w=171 refs=7
+; __bpfix_pad += 19;
+105: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=171 R10=fp0 fp-16_w=171 refs=7
+106: (07) r1 += 19                    ; R1_w=190 refs=7
+107: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=190 R10=fp0 fp-16_w=190 refs=7
+; __bpfix_pad += 20;
+108: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=190 R10=fp0 fp-16_w=190 refs=7
+109: (07) r1 += 20                    ; R1_w=210 refs=7
+110: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=210 R10=fp0 fp-16_w=210 refs=7
+; __bpfix_pad += 21;
+111: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=210 R10=fp0 fp-16_w=210 refs=7
+112: (07) r1 += 21                    ; R1_w=231 refs=7
+113: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=231 R10=fp0 fp-16_w=231 refs=7
+; __bpfix_pad += 22;
+114: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=231 R10=fp0 fp-16_w=231 refs=7
+115: (07) r1 += 22                    ; R1_w=253 refs=7
+116: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=253 R10=fp0 fp-16_w=253 refs=7
+; __bpfix_pad += 23;
+117: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=253 R10=fp0 fp-16_w=253 refs=7
+118: (07) r1 += 23                    ; R1_w=276 refs=7
+119: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=276 R10=fp0 fp-16_w=276 refs=7
+; __bpfix_pad += 24;
+120: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=276 R10=fp0 fp-16_w=276 refs=7
+121: (07) r1 += 24                    ; R1_w=300 refs=7
+122: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=300 R10=fp0 fp-16_w=300 refs=7
+; __bpfix_pad += 25;
+123: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=300 R10=fp0 fp-16_w=300 refs=7
+124: (07) r1 += 25                    ; R1_w=325 refs=7
+125: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=325 R10=fp0 fp-16_w=325 refs=7
+; __bpfix_pad += 26;
+126: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=325 R10=fp0 fp-16_w=325 refs=7
+127: (07) r1 += 26                    ; R1_w=351 refs=7
+128: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=351 R10=fp0 fp-16_w=351 refs=7
+; __bpfix_pad += 27;
+129: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=351 R10=fp0 fp-16_w=351 refs=7
+130: (07) r1 += 27                    ; R1_w=378 refs=7
+131: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=378 R10=fp0 fp-16_w=378 refs=7
+; __bpfix_pad += 28;
+132: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=378 R10=fp0 fp-16_w=378 refs=7
+133: (07) r1 += 28                    ; R1_w=406 refs=7
+134: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=406 R10=fp0 fp-16_w=406 refs=7
+; __bpfix_pad += 29;
+135: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=406 R10=fp0 fp-16_w=406 refs=7
+136: (07) r1 += 29                    ; R1_w=435 refs=7
+137: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=435 R10=fp0 fp-16_w=435 refs=7
+; __bpfix_pad += 30;
+138: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=435 R10=fp0 fp-16_w=435 refs=7
+139: (07) r1 += 30                    ; R1_w=465 refs=7
+140: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=465 R10=fp0 fp-16_w=465 refs=7
+; __bpfix_pad += 31;
+141: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=465 R10=fp0 fp-16_w=465 refs=7
+142: (07) r1 += 31                    ; R1_w=496 refs=7
+143: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=496 R10=fp0 fp-16_w=496 refs=7
+; __bpfix_pad += 32;
+144: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=496 R10=fp0 fp-16_w=496 refs=7
+145: (07) r1 += 32                    ; R1_w=528 refs=7
+146: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=528 R10=fp0 fp-16_w=528 refs=7
+; event->delta_ns = ts - *tsp;
+147: (79) r1 = *(u64 *)(r3 +0)        ; R1_w=scalar() R3_w=map_value(map=start_ns,ks=4,vs=8) refs=7
+; event->pid = pid;
+148: (63) *(u32 *)(r2 +8) = r6        ; R2_w=ringbuf_mem(ref_obj_id=7,sz=40) R6=0 refs=7
+; event->delta_ns = ts - *tsp;
+149: (1f) r4 -= r1                    ; R1_w=scalar() R4_w=scalar() refs=7
+; event->delta_ns = ts - *tsp;
+150: (7b) *(u64 *)(r2 +0) = r4        ; R2_w=ringbuf_mem(ref_obj_id=7,sz=40) R4_w=scalar() refs=7
+; event->tid = tid;
+151: (61) r1 = *(u32 *)(r10 -4)       ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R10=fp0 fp-8=mmmm???? refs=7
+; event->buf_size = 0;
+152: (63) *(u32 *)(r2 +20) = r8       ; R2_w=ringbuf_mem(ref_obj_id=7,sz=40) R8_w=0 refs=7
+; event->len = (__u32)len;
+153: (63) *(u32 *)(r2 +16) = r7       ; R2_w=ringbuf_mem(ref_obj_id=7,sz=40) R7_w=scalar(id=8) refs=7
+; event->tid = tid;
+154: (63) *(u32 *)(r2 +12) = r1       ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R2_w=ringbuf_mem(ref_obj_id=7,sz=40) refs=7
+; if (!bpf_probe_read_user(event->buf, copy_size, (void *)*bufp))
+155: (07) r0 += 24                    ; R0_w=ringbuf_mem(ref_obj_id=7,off=24,sz=40) refs=7
+; if (!bpf_probe_read_user(event->buf, copy_size, (void *)*bufp))
+156: (79) r3 = *(u64 *)(r5 +0)        ; R3_w=scalar() R5_w=map_value(map=bufs,ks=4,vs=8) refs=7
+; if (!bpf_probe_read_user(event->buf, copy_size, (void *)*bufp))
+157: (bf) r1 = r0                     ; R0_w=ringbuf_mem(ref_obj_id=7,off=24,sz=40) R1_w=ringbuf_mem(ref_obj_id=7,off=24,sz=40) refs=7
+158: (bf) r7 = r2                     ; R2_w=ringbuf_mem(ref_obj_id=7,sz=40) R7_w=ringbuf_mem(ref_obj_id=7,sz=40) refs=7
+159: (bf) r2 = r9                     ; R2_w=scalar(id=9,smin=smin32=0,smax=umax=smax32=umax32=15,var_off=(0x0; 0xf)) R9_w=scalar(id=9,smin=smin32=0,smax=umax=smax32=umax32=15,var_off=(0x0; 0xf)) refs=7
+160: (85) call bpf_probe_read_user#112
+mark_precise: frame0: last_idx 160 first_idx 36 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 159: (bf) r2 = r9
+mark_precise: frame0: regs=r9 stack= before 158: (bf) r7 = r2
+mark_precise: frame0: regs=r9 stack= before 157: (bf) r1 = r0
+mark_precise: frame0: regs=r9 stack= before 156: (79) r3 = *(u64 *)(r5 +0)
+mark_precise: frame0: regs=r9 stack= before 155: (07) r0 += 24
+mark_precise: frame0: regs=r9 stack= before 154: (63) *(u32 *)(r2 +12) = r1
+mark_precise: frame0: regs=r9 stack= before 153: (63) *(u32 *)(r2 +16) = r7
+mark_precise: frame0: regs=r9 stack= before 152: (63) *(u32 *)(r2 +20) = r8
+mark_precise: frame0: regs=r9 stack= before 151: (61) r1 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r9 stack= before 150: (7b) *(u64 *)(r2 +0) = r4
+mark_precise: frame0: regs=r9 stack= before 149: (1f) r4 -= r1
+mark_precise: frame0: regs=r9 stack= before 148: (63) *(u32 *)(r2 +8) = r6
+mark_precise: frame0: regs=r9 stack= before 147: (79) r1 = *(u64 *)(r3 +0)
+mark_precise: frame0: regs=r9 stack= before 146: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 145: (07) r1 += 32
+mark_precise: frame0: regs=r9 stack= before 144: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 143: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 142: (07) r1 += 31
+mark_precise: frame0: regs=r9 stack= before 141: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 140: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 139: (07) r1 += 30
+mark_precise: frame0: regs=r9 stack= before 138: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 137: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 136: (07) r1 += 29
+mark_precise: frame0: regs=r9 stack= before 135: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 134: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 133: (07) r1 += 28
+mark_precise: frame0: regs=r9 stack= before 132: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 131: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 130: (07) r1 += 27
+mark_precise: frame0: regs=r9 stack= before 129: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 128: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 127: (07) r1 += 26
+mark_precise: frame0: regs=r9 stack= before 126: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 125: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 124: (07) r1 += 25
+mark_precise: frame0: regs=r9 stack= before 123: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 122: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 121: (07) r1 += 24
+mark_precise: frame0: regs=r9 stack= before 120: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 119: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 118: (07) r1 += 23
+mark_precise: frame0: regs=r9 stack= before 117: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 116: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 115: (07) r1 += 22
+mark_precise: frame0: regs=r9 stack= before 114: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 113: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 112: (07) r1 += 21
+mark_precise: frame0: regs=r9 stack= before 111: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 110: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 109: (07) r1 += 20
+mark_precise: frame0: regs=r9 stack= before 108: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 107: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 106: (07) r1 += 19
+mark_precise: frame0: regs=r9 stack= before 105: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 104: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 103: (07) r1 += 18
+mark_precise: frame0: regs=r9 stack= before 102: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 101: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 100: (07) r1 += 17
+mark_precise: frame0: regs=r9 stack= before 99: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 98: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 97: (07) r1 += 16
+mark_precise: frame0: regs=r9 stack= before 96: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 95: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 94: (07) r1 += 15
+mark_precise: frame0: regs=r9 stack= before 93: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 92: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 91: (07) r1 += 14
+mark_precise: frame0: regs=r9 stack= before 90: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 89: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 88: (07) r1 += 13
+mark_precise: frame0: regs=r9 stack= before 87: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 86: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 85: (07) r1 += 12
+mark_precise: frame0: regs=r9 stack= before 84: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 83: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 82: (07) r1 += 11
+mark_precise: frame0: regs=r9 stack= before 81: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 80: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 79: (07) r1 += 10
+mark_precise: frame0: regs=r9 stack= before 78: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 77: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 76: (07) r1 += 9
+mark_precise: frame0: regs=r9 stack= before 75: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 74: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 73: (07) r1 += 8
+mark_precise: frame0: regs=r9 stack= before 72: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 71: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 70: (07) r1 += 7
+mark_precise: frame0: regs=r9 stack= before 69: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 68: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 67: (07) r1 += 6
+mark_precise: frame0: regs=r9 stack= before 66: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 65: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 64: (07) r1 += 5
+mark_precise: frame0: regs=r9 stack= before 63: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 62: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 61: (07) r1 += 4
+mark_precise: frame0: regs=r9 stack= before 60: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 59: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r9 stack= before 58: (07) r1 += 3
+mark_precise: frame0: regs=r9 stack= before 57: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r9 stack= before 55: (2d) if r1 > r9 goto pc+1
+mark_precise: frame0: regs=r1,r9 stack= before 54: (b7) r8 = 0
+mark_precise: frame0: regs=r1,r9 stack= before 53: (b7) r1 = 16
+mark_precise: frame0: regs=r9 stack= before 52: (77) r9 >>= 32
+mark_precise: frame0: regs=r9 stack= before 51: (67) r9 <<= 32
+mark_precise: frame0: regs=r9 stack= before 50: (bf) r9 = r7
+mark_precise: frame0: regs=r7 stack= before 49: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r7 stack= before 48: (07) r1 += 2
+mark_precise: frame0: regs=r7 stack= before 47: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r7 stack= before 46: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r7 stack= before 45: (07) r1 += 1
+mark_precise: frame0: regs=r7 stack= before 44: (79) r1 = *(u64 *)(r10 -16)
+mark_precise: frame0: regs=r7 stack= before 43: (7b) *(u64 *)(r10 -16) = r1
+mark_precise: frame0: regs=r7 stack= before 42: (b7) r1 = 0
+mark_precise: frame0: regs=r7 stack= before 41: (bf) r2 = r0
+mark_precise: frame0: regs=r7 stack= before 40: (15) if r0 == 0x0 goto pc+135
+mark_precise: frame0: regs=r7 stack= before 39: (79) r7 = *(u64 *)(r10 -24)
+161: safe
+
+from 40 to 176: R0=0 R3=map_value(map=start_ns,ks=4,vs=8) R4=scalar(id=2) R5=map_value(map=bufs,ks=4,vs=8) R6=0 R7=scalar() R8=scalar(id=2) R9=map_value(map=bufs,ks=4,vs=8) R10=fp0 fp-8=mmmm???? fp-24=mmmmmmmm
+176: R0=0 R3=map_value(map=start_ns,ks=4,vs=8) R4=scalar(id=2) R5=map_value(map=bufs,ks=4,vs=8) R6=0 R7=scalar() R8=scalar(id=2) R9=map_value(map=bufs,ks=4,vs=8) R10=fp0 fp-8=mmmm???? fp-24=mmmmmmmm
+; }
+176: (b7) r0 = 0                      ; R0_w=0
+177: (95) exit
+
+from 26 to 176: safe
+
+from 25 to 27: R0=map_value_or_null(id=5,map=start_ns,ks=4,vs=8) R6=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R7=scalar(id=2) R8=map_value(map=bufs,ks=4,vs=8) R9=scalar(id=3) R10=fp0 fp-8=mmmm????
+27: R0=map_value_or_null(id=5,map=start_ns,ks=4,vs=8) R6=scalar(smin=umin=umin32=1,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R7=scalar(id=2) R8=map_value(map=bufs,ks=4,vs=8) R9=scalar(id=3) R10=fp0 fp-8=mmmm????
+; event = bpf_ringbuf_reserve(&rb, sizeof(*event), 0);
+27: (18) r1 = 0xffff8e21a5f47400      ; R1_w=map_ptr(map=rb,ks=0,vs=0)
+29: (b7) r2 = 40                      ; R2_w=40
+30: (7b) *(u64 *)(r10 -24) = r9       ; R9=scalar(id=3) R10=fp0 fp-24_w=mmmmmmmm
+31: (bf) r9 = r8                      ; R8=map_value(map=bufs,ks=4,vs=8) R9_w=map_value(map=bufs,ks=4,vs=8)
+32: (bf) r8 = r7                      ; R7=scalar(id=2) R8_w=scalar(id=2)
+33: (bf) r7 = r0                      ; R0=map_value_or_null(id=5,map=start_ns,ks=4,vs=8) R7_w=map_value_or_null(id=5,map=start_ns,ks=4,vs=8)
+34: (b7) r3 = 0                       ; R3_w=0
+35: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 35 first_idx 25 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 34: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 33: (bf) r7 = r0
+mark_precise: frame0: regs=r2 stack= before 32: (bf) r8 = r7
+mark_precise: frame0: regs=r2 stack= before 31: (bf) r9 = r8
+mark_precise: frame0: regs=r2 stack= before 30: (7b) *(u64 *)(r10 -24) = r9
+mark_precise: frame0: regs=r2 stack= before 29: (b7) r2 = 40
+36: R0=ringbuf_mem_or_null(id=11,ref_obj_id=11,sz=40) refs=11
+36: (bf) r3 = r7                      ; R3_w=map_value_or_null(id=5,map=start_ns,ks=4,vs=8) R7=map_value_or_null(id=5,map=start_ns,ks=4,vs=8) refs=11
+37: (bf) r4 = r8                      ; R4_w=scalar(id=2) R8=scalar(id=2) refs=11
+38: (bf) r5 = r9                      ; R5_w=map_value(map=bufs,ks=4,vs=8) R9=map_value(map=bufs,ks=4,vs=8) refs=11
+39: (79) r7 = *(u64 *)(r10 -24)       ; R7_w=scalar() R10=fp0 fp-24=mmmmmmmm refs=11
+; if (!event)
+40: (15) if r0 == 0x0 goto pc+135     ; R0=ringbuf_mem(ref_obj_id=11,sz=40) refs=11
+; 
+41: (bf) r2 = r0                      ; R0=ringbuf_mem(ref_obj_id=11,sz=40) R2_w=ringbuf_mem(ref_obj_id=11,sz=40) refs=11
+; volatile __u64 __bpfix_pad = 0;
+42: (b7) r1 = 0                       ; R1_w=0 refs=11
+43: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=0 R10=fp0 fp-16_w=0 refs=11
+; __bpfix_pad += 1;
+44: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=0 R10=fp0 fp-16_w=0 refs=11
+45: (07) r1 += 1                      ; R1_w=1 refs=11
+46: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=1 R10=fp0 fp-16_w=1 refs=11
+; __bpfix_pad += 2;
+47: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=1 R10=fp0 fp-16_w=1 refs=11
+48: (07) r1 += 2                      ; R1_w=3 refs=11
+49: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=3 R10=fp0 fp-16_w=3 refs=11
+; int len = ctx->ret;
+50: (bf) r9 = r7                      ; R7_w=scalar(id=12) R9_w=scalar(id=12) refs=11
+51: (67) r9 <<= 32                    ; R9_w=scalar(smax=0x7fffffff00000000,umax=0xffffffff00000000,smin32=0,smax32=umax32=0,var_off=(0x0; 0xffffffff00000000)) refs=11
+52: (77) r9 >>= 32                    ; R9_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) refs=11
+53: (b7) r1 = 16                      ; R1_w=16 refs=11
+54: (b7) r8 = 0                       ; R8_w=0 refs=11
+; if (copy_size > MAX_BUF_SIZE)
+55: (2d) if r1 > r9 goto pc+1         ; R1_w=16 R9_w=scalar(smin=umin=umin32=16,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) refs=11
+56: (b7) r9 = 16                      ; R9=16 refs=11
+; __bpfix_pad += 3;
+57: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=3 R10=fp0 fp-16=3 refs=11
+58: (07) r1 += 3                      ; R1_w=6 refs=11
+59: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=6 R10=fp0 fp-16_w=6 refs=11
+; __bpfix_pad += 4;
+60: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=6 R10=fp0 fp-16_w=6 refs=11
+61: (07) r1 += 4                      ; R1_w=10 refs=11
+62: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=10 R10=fp0 fp-16_w=10 refs=11
+; __bpfix_pad += 5;
+63: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=10 R10=fp0 fp-16_w=10 refs=11
+64: (07) r1 += 5                      ; R1_w=15 refs=11
+65: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=15 R10=fp0 fp-16_w=15 refs=11
+; __bpfix_pad += 6;
+66: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=15 R10=fp0 fp-16_w=15 refs=11
+67: (07) r1 += 6                      ; R1_w=21 refs=11
+68: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=21 R10=fp0 fp-16_w=21 refs=11
+; __bpfix_pad += 7;
+69: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=21 R10=fp0 fp-16_w=21 refs=11
+70: (07) r1 += 7                      ; R1_w=28 refs=11
+71: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=28 R10=fp0 fp-16_w=28 refs=11
+; __bpfix_pad += 8;
+72: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=28 R10=fp0 fp-16_w=28 refs=11
+73: (07) r1 += 8                      ; R1_w=36 refs=11
+74: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=36 R10=fp0 fp-16_w=36 refs=11
+; __bpfix_pad += 9;
+75: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=36 R10=fp0 fp-16_w=36 refs=11
+76: (07) r1 += 9                      ; R1_w=45 refs=11
+77: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=45 R10=fp0 fp-16_w=45 refs=11
+; __bpfix_pad += 10;
+78: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=45 R10=fp0 fp-16_w=45 refs=11
+79: (07) r1 += 10                     ; R1_w=55 refs=11
+80: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=55 R10=fp0 fp-16_w=55 refs=11
+; __bpfix_pad += 11;
+81: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=55 R10=fp0 fp-16_w=55 refs=11
+82: (07) r1 += 11                     ; R1_w=66 refs=11
+83: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=66 R10=fp0 fp-16_w=66 refs=11
+; __bpfix_pad += 12;
+84: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=66 R10=fp0 fp-16_w=66 refs=11
+85: (07) r1 += 12                     ; R1_w=78 refs=11
+86: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=78 R10=fp0 fp-16_w=78 refs=11
+; __bpfix_pad += 13;
+87: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=78 R10=fp0 fp-16_w=78 refs=11
+88: (07) r1 += 13                     ; R1_w=91 refs=11
+89: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=91 R10=fp0 fp-16_w=91 refs=11
+; __bpfix_pad += 14;
+90: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=91 R10=fp0 fp-16_w=91 refs=11
+91: (07) r1 += 14                     ; R1_w=105 refs=11
+92: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=105 R10=fp0 fp-16_w=105 refs=11
+; __bpfix_pad += 15;
+93: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=105 R10=fp0 fp-16_w=105 refs=11
+94: (07) r1 += 15                     ; R1_w=120 refs=11
+95: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=120 R10=fp0 fp-16_w=120 refs=11
+; __bpfix_pad += 16;
+96: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=120 R10=fp0 fp-16_w=120 refs=11
+97: (07) r1 += 16                     ; R1_w=136 refs=11
+98: (7b) *(u64 *)(r10 -16) = r1       ; R1_w=136 R10=fp0 fp-16_w=136 refs=11
+; __bpfix_pad += 17;
+99: (79) r1 = *(u64 *)(r10 -16)       ; R1_w=136 R10=fp0 fp-16_w=136 refs=11
+100: (07) r1 += 17                    ; R1_w=153 refs=11
+101: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=153 R10=fp0 fp-16_w=153 refs=11
+; __bpfix_pad += 18;
+102: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=153 R10=fp0 fp-16_w=153 refs=11
+103: (07) r1 += 18                    ; R1_w=171 refs=11
+104: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=171 R10=fp0 fp-16_w=171 refs=11
+; __bpfix_pad += 19;
+105: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=171 R10=fp0 fp-16_w=171 refs=11
+106: (07) r1 += 19                    ; R1_w=190 refs=11
+107: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=190 R10=fp0 fp-16_w=190 refs=11
+; __bpfix_pad += 20;
+108: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=190 R10=fp0 fp-16_w=190 refs=11
+109: (07) r1 += 20                    ; R1_w=210 refs=11
+110: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=210 R10=fp0 fp-16_w=210 refs=11
+; __bpfix_pad += 21;
+111: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=210 R10=fp0 fp-16_w=210 refs=11
+112: (07) r1 += 21                    ; R1_w=231 refs=11
+113: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=231 R10=fp0 fp-16_w=231 refs=11
+; __bpfix_pad += 22;
+114: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=231 R10=fp0 fp-16_w=231 refs=11
+115: (07) r1 += 22                    ; R1_w=253 refs=11
+116: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=253 R10=fp0 fp-16_w=253 refs=11
+; __bpfix_pad += 23;
+117: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=253 R10=fp0 fp-16_w=253 refs=11
+118: (07) r1 += 23                    ; R1_w=276 refs=11
+119: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=276 R10=fp0 fp-16_w=276 refs=11
+; __bpfix_pad += 24;
+120: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=276 R10=fp0 fp-16_w=276 refs=11
+121: (07) r1 += 24                    ; R1_w=300 refs=11
+122: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=300 R10=fp0 fp-16_w=300 refs=11
+; __bpfix_pad += 25;
+123: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=300 R10=fp0 fp-16_w=300 refs=11
+124: (07) r1 += 25                    ; R1_w=325 refs=11
+125: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=325 R10=fp0 fp-16_w=325 refs=11
+; __bpfix_pad += 26;
+126: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=325 R10=fp0 fp-16_w=325 refs=11
+127: (07) r1 += 26                    ; R1_w=351 refs=11
+128: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=351 R10=fp0 fp-16_w=351 refs=11
+; __bpfix_pad += 27;
+129: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=351 R10=fp0 fp-16_w=351 refs=11
+130: (07) r1 += 27                    ; R1_w=378 refs=11
+131: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=378 R10=fp0 fp-16_w=378 refs=11
+; __bpfix_pad += 28;
+132: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=378 R10=fp0 fp-16_w=378 refs=11
+133: (07) r1 += 28                    ; R1_w=406 refs=11
+134: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=406 R10=fp0 fp-16_w=406 refs=11
+; __bpfix_pad += 29;
+135: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=406 R10=fp0 fp-16_w=406 refs=11
+136: (07) r1 += 29                    ; R1_w=435 refs=11
+137: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=435 R10=fp0 fp-16_w=435 refs=11
+; __bpfix_pad += 30;
+138: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=435 R10=fp0 fp-16_w=435 refs=11
+139: (07) r1 += 30                    ; R1_w=465 refs=11
+140: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=465 R10=fp0 fp-16_w=465 refs=11
+; __bpfix_pad += 31;
+141: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=465 R10=fp0 fp-16_w=465 refs=11
+142: (07) r1 += 31                    ; R1_w=496 refs=11
+143: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=496 R10=fp0 fp-16_w=496 refs=11
+; __bpfix_pad += 32;
+144: (79) r1 = *(u64 *)(r10 -16)      ; R1_w=496 R10=fp0 fp-16_w=496 refs=11
+145: (07) r1 += 32                    ; R1_w=528 refs=11
+146: (7b) *(u64 *)(r10 -16) = r1      ; R1_w=528 R10=fp0 fp-16_w=528 refs=11
+; event->delta_ns = ts - *tsp;
+147: (79) r1 = *(u64 *)(r3 +0)
+R3 invalid mem access 'map_value_or_null'
+verification time 1673 usec
+stack depth 24
+processed 410 insns (limit 1000000) max_states_per_insn 1 total_states 10 peak_states 10 mark_read 3
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_datrail_browsertrace_start_ns_merge': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-emmxormt/rs_datrail_browsertrace_start_ns_merge_001__pad32.o'
+Error: failed to load object file

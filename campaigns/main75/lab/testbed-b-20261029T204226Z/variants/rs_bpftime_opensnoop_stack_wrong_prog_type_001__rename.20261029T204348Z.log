@@ -1,0 +1,45 @@
+libbpf: loading object from /tmp/bpfix-cap-emmxormt/rs_bpftime_opensnoop_stack_wrong_prog_type_001__rename.o
+libbpf: elf: section(3) xdp, size 344, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'rs_bpftime_opensnoop_stack_wrong_prog_type' at insn offset 0 (0 bytes), code size 43 insns (344 bytes)
+libbpf: elf: section(4) .relxdp, size 32, link 27, flags 40, type=9
+libbpf: elf: section(5) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-emmxormt/rs_bpftime_opensnoop_stack_wrong_prog_type_001__rename.o is GPL
+libbpf: elf: section(6) .maps, size 56, link 0, flags 3, type=1
+libbpf: elf: section(17) .BTF, size 1523, link 0, flags 0, type=1
+libbpf: elf: section(19) .BTF.ext, size 416, link 0, flags 0, type=1
+libbpf: elf: section(27) .symtab, size 456, link 1, flags 0, type=2
+libbpf: looking for externs among 19 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'start': at sec_idx 6, offset 0.
+libbpf: map 'start': found type = 1.
+libbpf: map 'start': found key [8], sz = 4.
+libbpf: map 'start': found value [11], sz = 4.
+libbpf: map 'start': found max_entries = 1024.
+libbpf: map 'events': at sec_idx 6, offset 32.
+libbpf: map 'events': found type = 4.
+libbpf: map 'events': found key_size = 4.
+libbpf: map 'events': found value_size = 4.
+libbpf: sec '.relxdp': collecting relocation for section(3) 'xdp'
+libbpf: sec '.relxdp': relo #0: insn #5 against 'start'
+libbpf: prog 'rs_bpftime_opensnoop_stack_wrong_prog_type': found map 0 (start, sec 6, off 0) for insn #5
+libbpf: sec '.relxdp': relo #1: insn #32 against 'events'
+libbpf: prog 'rs_bpftime_opensnoop_stack_wrong_prog_type': found map 1 (events, sec 6, off 32) for insn #32
+libbpf: map 'start': created successfully, fd=4
+libbpf: map 'events': setting size to 16
+libbpf: map 'events': created successfully, fd=5
+libbpf: prog 'rs_bpftime_opensnoop_stack_wrong_prog_type': BPF program load failed: Invalid argument
+libbpf: prog 'rs_bpftime_opensnoop_stack_wrong_prog_type': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_bpftime_opensnoop_stack_wrong_prog_type(struct xdp_md *ctx)
+0: (bf) r6 = r1                       ; R1=ctx() R6_w=ctx()
+; __u32 pid = bpf_get_current_pid_tgid();
+1: (85) call bpf_get_current_pid_tgid#14
+unknown func bpf_get_current_pid_tgid#14
+verification time 31 usec
+stack depth 0
+processed 2 insns (limit 1000000) max_states_per_insn 0 total_states 0 peak_states 0 mark_read 0
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_bpftime_opensnoop_stack_wrong_prog_type': failed to load: -22
+libbpf: failed to load object '/tmp/bpfix-cap-emmxormt/rs_bpftime_opensnoop_stack_wrong_prog_type_001__rename.o'
+Error: failed to load object file

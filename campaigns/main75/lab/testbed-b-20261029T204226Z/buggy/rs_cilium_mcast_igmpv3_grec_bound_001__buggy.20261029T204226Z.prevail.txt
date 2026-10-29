@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/cilium_mcast_igmpv3_grec_bound
+
+; /home/test/bpfix-b/repo/fixtures/upstream/bpfix-bench-cases/rs_cilium_mcast_igmpv3_grec_bound_001/buggy.bpf.c:86
+;             if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+
+26: Upper bound must be at most packet_size (valid_access(r4.offset, width=1) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

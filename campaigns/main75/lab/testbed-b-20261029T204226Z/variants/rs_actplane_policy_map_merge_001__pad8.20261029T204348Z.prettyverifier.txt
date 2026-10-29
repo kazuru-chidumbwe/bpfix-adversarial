@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into pointer to map element value not null-checked
+   67 | return policy->drop_proto == proto ? TC_ACT_SHOT : TC_ACT_OK;
+      | in file /home/test/bpfix-b/repo/campaigns/v2/upstream/rs_actplane_policy_map_merge_001/pad8.bpf.c
+

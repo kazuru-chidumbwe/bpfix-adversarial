@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/xdp_adjust_head_stale
+
+; /home/test/bpfix-b/repo/campaigns/n3/xdp_adjust_head_stale_001/INLINE.buggy.bpf.c:25
+; static __always_inline int __adv_guard(void *data_end, struct iphdr *iph) { return ((void *)(iph + 1) > data_end); }
+
+13: Invalid type (r8.type in {number, ctx, stack, packet, shared})
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

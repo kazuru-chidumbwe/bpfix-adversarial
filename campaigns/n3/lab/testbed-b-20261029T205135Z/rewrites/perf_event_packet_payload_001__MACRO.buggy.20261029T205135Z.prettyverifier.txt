@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Helper function cannot access packet
+   45 | ADV_STMT(bpf_perf_event_output(ctx, &events, BPF_F_CURRENT_CPU, data, SAMPLE_BYTES));
+      | in file /home/test/bpfix-b/repo/campaigns/n3/perf_event_packet_payload_001/MACRO.buggy.bpf.c
+

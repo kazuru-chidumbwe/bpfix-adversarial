@@ -1,0 +1,10 @@
+PREVAIL exit=1
+(program xdp/subprog_adjust_tail_stale)
+FAIL: xdp/subprog_adjust_tail_stale
+
+; /home/test/bpfix-b/repo/campaigns/n3/subprog_adjust_tail_stale_001/VPAD.buggy.bpf.c:45
+;     return bpf_ntohs(eth->h_proto) == ETH_P_IP ? XDP_DROP : XDP_PASS;
+
+43: Invalid type (r7.type in {ctx, stack, packet, shared, socket, alloc_mem})
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

@@ -1,0 +1,8 @@
+Prettier Verifier ##
+#######################
+
+error: Wrong argument passed to helper function
+   49 | bpf_ringbuf_submit(rec, 0);
+      | in file /home/test/bpfix-b/repo/campaigns/v2/upstream/ringbuf_submit_after_discard_001/orig.bpf.c
+1° argument (rec) is a scalar value (not a pointer), but a ring buffer pointer to memory is expected
+

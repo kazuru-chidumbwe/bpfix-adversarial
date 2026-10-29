@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into pointer to memory not null-checked
+   128 | if (r->index >= MAX_TAINT_UPDATES)
+       | in file /home/test/bpfix-b/repo/campaigns/v2/upstream/rs_actplane_cap_dynptr_payload_null_001/pad32.bpf.c
+

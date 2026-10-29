@@ -1,0 +1,107 @@
+libbpf: loading object from /tmp/bpfix-cap-emmxormt/rs_agentsight_process_ringbuf_null_001__pad8.o
+libbpf: elf: section(3) tc, size 440, link 0, flags 6, type=1
+libbpf: sec 'tc': found program 'rs_agentsight_process_ringbuf_null' at insn offset 0 (0 bytes), code size 55 insns (440 bytes)
+libbpf: elf: section(4) .reltc, size 16, link 26, flags 40, type=9
+libbpf: elf: section(5) .maps, size 16, link 0, flags 3, type=1
+libbpf: elf: section(6) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-emmxormt/rs_agentsight_process_ringbuf_null_001__pad8.o is GPL
+libbpf: elf: section(16) .BTF, size 2433, link 0, flags 0, type=1
+libbpf: elf: section(18) .BTF.ext, size 556, link 0, flags 0, type=1
+libbpf: elf: section(26) .symtab, size 384, link 1, flags 0, type=2
+libbpf: looking for externs among 16 symbols...
+libbpf: collected 0 externs total
+libbpf: map 'rb': at sec_idx 5, offset 0.
+libbpf: map 'rb': found type = 27.
+libbpf: map 'rb': found max_entries = 4096.
+libbpf: sec '.reltc': collecting relocation for section(3) 'tc'
+libbpf: sec '.reltc': relo #0: insn #8 against 'rb'
+libbpf: prog 'rs_agentsight_process_ringbuf_null': found map 0 (rb, sec 5, off 0) for insn #8
+libbpf: loading kernel BTF '/sys/kernel/btf/vmlinux': 0
+libbpf: sec 'tc': found 4 CO-RE relocations
+libbpf: CO-RE relocating [10] struct __sk_buff: found target candidate [15767] struct __sk_buff in [vmlinux]
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #0: <byte_off> [10] struct __sk_buff.data_end (0:16 @ offset 80)
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #0: matching candidate #0 <byte_off> [15767] struct __sk_buff.data_end (0:16 @ offset 80)
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #0: patched insn #2 (LDX/ST/STX) off 80 -> 80
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #1: <byte_off> [10] struct __sk_buff.data (0:15 @ offset 76)
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #1: matching candidate #0 <byte_off> [15767] struct __sk_buff.data (0:15 @ offset 76)
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #1: patched insn #3 (LDX/ST/STX) off 76 -> 76
+libbpf: CO-RE relocating [25] struct ethhdr: found target candidate [9597] struct ethhdr in [vmlinux]
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #2: <byte_off> [25] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #2: matching candidate #0 <byte_off> [9597] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #2: patched insn #7 (LDX/ST/STX) off 12 -> 12
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #3: <byte_off> [10] struct __sk_buff.mark (0:2 @ offset 8)
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #3: matching candidate #0 <byte_off> [15767] struct __sk_buff.mark (0:2 @ offset 8)
+libbpf: prog 'rs_agentsight_process_ringbuf_null': relo #3: patched insn #40 (LDX/ST/STX) off 8 -> 8
+libbpf: map 'rb': created successfully, fd=4
+libbpf: prog 'rs_agentsight_process_ringbuf_null': BPF program load failed: Permission denied
+libbpf: prog 'rs_agentsight_process_ringbuf_null': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_agentsight_process_ringbuf_null(struct __sk_buff *skb)
+0: (bf) r6 = r1                       ; R1=ctx() R6_w=ctx()
+1: (b7) r7 = 0                        ; R7_w=0
+; void *data_end = (void *)(long)skb->data_end;
+2: (61) r2 = *(u32 *)(r6 +80)         ; R2_w=pkt_end() R6_w=ctx()
+; void *data = (void *)(long)skb->data;
+3: (61) r1 = *(u32 *)(r6 +76)         ; R1_w=pkt(r=0) R6_w=ctx()
+; if ((void *)(eth + 1) > data_end)
+4: (bf) r3 = r1                       ; R1_w=pkt(r=0) R3_w=pkt(r=0)
+5: (07) r3 += 14                      ; R3_w=pkt(off=14,r=0)
+; if ((void *)(eth + 1) > data_end)
+6: (2d) if r3 > r2 goto pc+46         ; R2_w=pkt_end() R3_w=pkt(off=14,r=14)
+; proto = bpf_ntohs(eth->h_proto);
+7: (69) r8 = *(u16 *)(r1 +12)         ; R1_w=pkt(r=14) R8_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+; e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
+8: (18) r1 = 0xffff8e21547c4400       ; R1_w=map_ptr(map=rb,ks=0,vs=0)
+10: (b7) r2 = 16                      ; R2_w=16
+11: (b7) r3 = 0                       ; R3_w=0
+12: (85) call bpf_ringbuf_reserve#131
+mark_precise: frame0: last_idx 12 first_idx 0 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 11: (b7) r3 = 0
+mark_precise: frame0: regs=r2 stack= before 10: (b7) r2 = 16
+13: R0=ringbuf_mem_or_null(id=2,ref_obj_id=2,sz=16) refs=2
+; volatile __u64 __bpfix_pad = 0;
+13: (7b) *(u64 *)(r10 -8) = r7        ; R7=0 R10=fp0 fp-8_w=0 refs=2
+; __bpfix_pad += 1;
+14: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=0 R10=fp0 fp-8_w=0 refs=2
+15: (07) r1 += 1                      ; R1_w=1 refs=2
+16: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=1 R10=fp0 fp-8_w=1 refs=2
+; __bpfix_pad += 2;
+17: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=1 R10=fp0 fp-8_w=1 refs=2
+18: (07) r1 += 2                      ; R1_w=3 refs=2
+19: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=3 R10=fp0 fp-8_w=3 refs=2
+; __bpfix_pad += 3;
+20: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=3 R10=fp0 fp-8_w=3 refs=2
+21: (07) r1 += 3                      ; R1_w=6 refs=2
+22: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=6 R10=fp0 fp-8_w=6 refs=2
+; __bpfix_pad += 4;
+23: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=6 R10=fp0 fp-8_w=6 refs=2
+24: (07) r1 += 4                      ; R1_w=10 refs=2
+25: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=10 R10=fp0 fp-8_w=10 refs=2
+; __bpfix_pad += 5;
+26: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=10 R10=fp0 fp-8_w=10 refs=2
+27: (07) r1 += 5                      ; R1_w=15 refs=2
+28: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=15 R10=fp0 fp-8_w=15 refs=2
+; __bpfix_pad += 6;
+29: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=15 R10=fp0 fp-8_w=15 refs=2
+30: (07) r1 += 6                      ; R1_w=21 refs=2
+31: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=21 R10=fp0 fp-8_w=21 refs=2
+; __bpfix_pad += 7;
+32: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=21 R10=fp0 fp-8_w=21 refs=2
+33: (07) r1 += 7                      ; R1_w=28 refs=2
+34: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=28 R10=fp0 fp-8_w=28 refs=2
+; __bpfix_pad += 8;
+35: (79) r1 = *(u64 *)(r10 -8)        ; R1_w=28 R10=fp0 fp-8_w=28 refs=2
+36: (07) r1 += 8                      ; R1_w=36 refs=2
+37: (7b) *(u64 *)(r10 -8) = r1        ; R1_w=36 R10=fp0 fp-8_w=36 refs=2
+38: (b7) r7 = 1                       ; R7_w=1 refs=2
+; e->type = 1;
+39: (63) *(u32 *)(r0 +0) = r7
+R0 invalid mem access 'ringbuf_mem_or_null'
+verification time 163 usec
+stack depth 8
+processed 39 insns (limit 1000000) max_states_per_insn 0 total_states 1 peak_states 1 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_agentsight_process_ringbuf_null': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-emmxormt/rs_agentsight_process_ringbuf_null_001__pad8.o'
+Error: failed to load object file

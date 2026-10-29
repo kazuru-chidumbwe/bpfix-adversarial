@@ -1,0 +1,3 @@
+PREVAIL exit=1
+(program tracepoint/syscalls/sys_exit_kill/rs_tutorial_user_ringbuf_dynptr_merge)
+error: rejected: helper function is unavailable on this platform (at 6)

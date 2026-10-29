@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/rs_xdp_tools_xdpfilt_udp_macro_bound
+
+; /home/test/bpfix-b/repo/campaigns/v2/upstream/rs_xdp_tools_xdpfilt_udp_macro_bound_001/pad32.bpf.c:126
+;     DROP_DNS_UDP(udp);
+
+116: Upper bound must be at most packet_size (valid_access(r1.offset+2, width=2) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

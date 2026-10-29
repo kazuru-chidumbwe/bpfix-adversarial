@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: tc/rs_cilium_change_proto_stale
+
+; /home/test/bpfix-b/repo/fixtures/upstream/bpfix-bench-cases/rs_cilium_change_proto_stale_001/buggy.bpf.c:43
+;     eth->h_proto = bpf_htons(ETH_P_IP);
+
+22: Invalid type (r6.type in {ctx, stack, packet, shared, socket, alloc_mem})
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

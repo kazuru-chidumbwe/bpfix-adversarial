@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into scalar value (not a pointer)
+   45 | ADV_STMT(eth->h_proto = bpf_htons(ETH_P_IP));
+      | in file /home/test/bpfix-b/repo/campaigns/n3/rs_cilium_change_proto_stale_001/MACRO.buggy.bpf.c
+

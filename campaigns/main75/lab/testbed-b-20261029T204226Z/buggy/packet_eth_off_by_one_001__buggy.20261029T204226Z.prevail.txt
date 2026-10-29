@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/packet_eth_off_by_one
+
+; /home/test/bpfix-b/repo/fixtures/upstream/bpfix-bench-cases/packet_eth_off_by_one_001/buggy.bpf.c:36
+;     proto = *(__u16 *)(data + 12);
+
+7: Upper bound must be at most packet_size (valid_access(r1.offset+12, width=2) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

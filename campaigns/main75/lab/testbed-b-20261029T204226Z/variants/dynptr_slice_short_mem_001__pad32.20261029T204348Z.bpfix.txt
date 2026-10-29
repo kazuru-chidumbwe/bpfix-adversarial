@@ -1,0 +1,14 @@
+error[BPFIX-E005]: memory-object access exceeds the verifier-visible object size
+  = class: source_bug
+  = confidence: medium
+  = diagnostic: supported, help: repair_hint, span: exact_pc
+  = next action: bounds
+  --> <verifier-log>:157
+   |
+   |
+   = verifier[157]: invalid access to memory, mem_size=13 off=12 size=2; R0 min value is outside of the allowed memory range
+   = note: nearest BPF instruction pc 113
+   = note: parsed 112 verifier state snapshots
+   = note[verifier-state]: verifier state shows the rejected memory pointer has a fixed object size and the access crosses that object boundary
+   = required proof: prove the memory pointer offset plus access width stays inside the verifier-reported object size at the rejected access
+help: Keep dynptr slice or helper-returned memory accesses inside the verifier-reported object size; clamp the offset and width before dereferencing the memory pointer.

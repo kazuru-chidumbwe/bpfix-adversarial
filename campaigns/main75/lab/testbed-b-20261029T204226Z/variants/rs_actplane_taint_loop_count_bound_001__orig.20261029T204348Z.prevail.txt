@@ -1,0 +1,10 @@
+PREVAIL exit=1
+(program xdp/rs_actplane_taint_loop_count_bound)
+FAIL: xdp/rs_actplane_taint_loop_count_bound
+
+; /home/test/bpfix-b/repo/campaigns/v2/upstream/rs_actplane_taint_loop_count_bound_001/orig.bpf.c:51
+;     bpf_loop(LOOP_COUNT, scan_slot_cb, &scan, 0);
+
+30: Invalid type (r2.type == func)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

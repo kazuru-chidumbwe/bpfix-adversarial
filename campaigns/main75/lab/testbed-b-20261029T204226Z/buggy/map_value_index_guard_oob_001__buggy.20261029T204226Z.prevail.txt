@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/map_value_index_guard_oob
+
+; /home/test/bpfix-b/repo/fixtures/upstream/bpfix-bench-cases/map_value_index_guard_oob_001/buggy.bpf.c:48
+;     return cfg->slots[selector] ? XDP_DROP : XDP_PASS;
+
+25: Upper bound must be at most r1.shared_region_size (valid_access(r1.offset, width=4) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

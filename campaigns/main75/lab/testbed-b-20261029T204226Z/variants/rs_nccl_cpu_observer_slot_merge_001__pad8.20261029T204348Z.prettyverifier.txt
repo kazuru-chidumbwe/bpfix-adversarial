@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Cannot write into pointer to map element value not null-checked
+   112 | __u64 elapsed = now_ns - slot->window_start_ns;
+       | in file /home/test/bpfix-b/repo/campaigns/v2/upstream/rs_nccl_cpu_observer_slot_merge_001/pad8.bpf.c
+

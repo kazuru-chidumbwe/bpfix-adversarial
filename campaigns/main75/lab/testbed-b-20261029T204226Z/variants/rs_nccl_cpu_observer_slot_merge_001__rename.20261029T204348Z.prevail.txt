@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: tp/sched/sched_switch/rs_nccl_cpu_observer_slot_merge
+
+; /home/test/bpfix-b/repo/campaigns/v2/upstream/rs_nccl_cpu_observer_slot_merge_001/rename.bpf.c:102
+;     __u64 elapsed = now_ns - slot->window_start_ns;
+
+47: Possible null access (valid_access(r0.offset, width=8) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

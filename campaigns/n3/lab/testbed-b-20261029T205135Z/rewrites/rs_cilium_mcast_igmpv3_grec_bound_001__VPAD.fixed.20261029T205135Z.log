@@ -1,0 +1,1798 @@
+libbpf: loading object from /tmp/bpfix-cap-wtbxxrtk/rs_cilium_mcast_igmpv3_grec_bound_001__VPAD.fixed.o
+libbpf: elf: section(3) xdp, size 1656, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'cilium_mcast_igmpv3_grec_bound' at insn offset 0 (0 bytes), code size 207 insns (1656 bytes)
+libbpf: elf: section(4) license, size 13, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-wtbxxrtk/rs_cilium_mcast_igmpv3_grec_bound_001__VPAD.fixed.o is Dual BSD/GPL
+libbpf: elf: section(15) .BTF, size 1933, link 0, flags 0, type=1
+libbpf: elf: section(17) .BTF.ext, size 1916, link 0, flags 0, type=1
+libbpf: elf: section(25) .symtab, size 456, link 1, flags 0, type=2
+libbpf: looking for externs among 19 symbols...
+libbpf: collected 0 externs total
+libbpf: loading kernel BTF '/sys/kernel/btf/vmlinux': 0
+libbpf: sec 'xdp': found 5 CO-RE relocations
+libbpf: CO-RE relocating [2] struct xdp_md: found target candidate [7123] struct xdp_md in [vmlinux]
+libbpf: prog 'cilium_mcast_igmpv3_grec_bound': relo #0: <byte_off> [2] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'cilium_mcast_igmpv3_grec_bound': relo #0: matching candidate #0 <byte_off> [7123] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'cilium_mcast_igmpv3_grec_bound': relo #0: patched insn #1 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'cilium_mcast_igmpv3_grec_bound': relo #1: <byte_off> [2] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'cilium_mcast_igmpv3_grec_bound': relo #1: matching candidate #0 <byte_off> [7123] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'cilium_mcast_igmpv3_grec_bound': relo #1: patched insn #2 (LDX/ST/STX) off 0 -> 0
+libbpf: CO-RE relocating [8] struct ethhdr: found target candidate [9597] struct ethhdr in [vmlinux]
+libbpf: prog 'cilium_mcast_igmpv3_grec_bound': relo #2: <byte_off> [8] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'cilium_mcast_igmpv3_grec_bound': relo #2: matching candidate #0 <byte_off> [9597] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'cilium_mcast_igmpv3_grec_bound': relo #2: patched insn #6 (LDX/ST/STX) off 12 -> 12
+libbpf: CO-RE relocating [15] struct iphdr: found target candidate [9864] struct iphdr in [vmlinux]
+libbpf: prog 'cilium_mcast_igmpv3_grec_bound': relo #3: <byte_off> [15] struct iphdr.protocol (0:7 @ offset 9)
+libbpf: prog 'cilium_mcast_igmpv3_grec_bound': relo #3: matching candidate #0 <byte_off> [9864] struct iphdr.protocol (0:7 @ offset 9)
+libbpf: prog 'cilium_mcast_igmpv3_grec_bound': relo #3: patched insn #10 (LDX/ST/STX) off 9 -> 9
+libbpf: prog 'cilium_mcast_igmpv3_grec_bound': relo #4: <byte_off> [15] struct iphdr.ihl (0:0 @ offset 0)
+libbpf: prog 'cilium_mcast_igmpv3_grec_bound': relo #4: matching candidate #0 <byte_off> [9864] struct iphdr.ihl (0:0 @ offset 0)
+libbpf: prog 'cilium_mcast_igmpv3_grec_bound': relo #4: patched insn #12 (LDX/ST/STX) off 0 -> 0
+libbpf: prog 'cilium_mcast_igmpv3_grec_bound': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int cilium_mcast_igmpv3_grec_bound(struct xdp_md *ctx)
+0: (b7) r0 = 2                        ; R0_w=2
+; void *data_end = (void *)(long)ctx->data_end;
+1: (61) r2 = *(u32 *)(r1 +4)          ; R1=ctx() R2_w=pkt_end()
+; void *data = (void *)(long)ctx->data;
+2: (61) r3 = *(u32 *)(r1 +0)          ; R1=ctx() R3_w=pkt(r=0)
+; if ((void *)(eth + 1) > data_end)
+3: (bf) r1 = r3                       ; R1_w=pkt(r=0) R3_w=pkt(r=0)
+4: (07) r1 += 14                      ; R1_w=pkt(off=14,r=0)
+; if ((void *)(eth + 1) > data_end)
+5: (2d) if r1 > r2 goto pc+200        ; R1_w=pkt(off=14,r=14) R2_w=pkt_end()
+; if (bpf_ntohs(eth->h_proto) != ETH_P_IP)
+6: (69) r4 = *(u16 *)(r3 +12)         ; R3_w=pkt(r=14) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+; if (bpf_ntohs(eth->h_proto) != ETH_P_IP)
+7: (55) if r4 != 0x8 goto pc+198      ; R4_w=8
+8: (07) r3 += 34                      ; R3=pkt(off=34,r=14)
+9: (2d) if r3 > r2 goto pc+196        ; R2=pkt_end() R3=pkt(off=34,r=34)
+; return ip4->protocol == IPPROTO_IGMP;
+10: (71) r3 = *(u8 *)(r1 +9)          ; R1=pkt(off=14,r=34) R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (!cilium_mcast_ipv4_is_igmp(ip4))
+11: (55) if r3 != 0x2 goto pc+194     ; R3_w=2
+; ip_len = (__u32)ip4->ihl << 2;
+12: (71) r3 = *(u8 *)(r1 +0)          ; R1=pkt(off=14,r=34) R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; ip_len = (__u32)ip4->ihl << 2;
+13: (67) r3 <<= 2                     ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1020,var_off=(0x0; 0x3fc))
+14: (57) r3 &= 60                     ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+15: (b7) r4 = 20                      ; R4_w=20
+; if (ip_len < sizeof(*ip4))
+16: (2d) if r4 > r3 goto pc+189       ; R3_w=scalar(smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R4_w=20
+; if ((void *)ip4 + ip_len + sizeof(*rep) > data_end)
+17: (0f) r1 += r3
+mark_precise: frame0: last_idx 17 first_idx 9 subseq_idx -1 
+mark_precise: frame0: regs=r3 stack= before 16: (2d) if r4 > r3 goto pc+189
+mark_precise: frame0: regs=r3,r4 stack= before 15: (b7) r4 = 20
+mark_precise: frame0: regs=r3 stack= before 14: (57) r3 &= 60
+mark_precise: frame0: regs=r3 stack= before 13: (67) r3 <<= 2
+mark_precise: frame0: regs=r3 stack= before 12: (71) r3 = *(u8 *)(r1 +0)
+18: R1_w=pkt(id=1,off=14,r=0,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R3_w=scalar(smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+; if ((void *)ip4 + ip_len + sizeof(*rep) > data_end)
+18: (bf) r5 = r1                      ; R1_w=pkt(id=1,off=14,r=0,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R5_w=pkt(id=1,off=14,r=0,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+19: (07) r5 += 8                      ; R5=pkt(id=1,off=22,r=0,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+; if ((void *)ip4 + ip_len + sizeof(*rep) > data_end)
+20: (2d) if r5 > r2 goto pc+185       ; R2=pkt_end() R5=pkt(id=1,off=22,r=22,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+; ngrec = bpf_ntohs(rep->ngrec);
+21: (69) r3 = *(u16 *)(r1 +6)         ; R1=pkt(id=1,off=14,r=22,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+22: (bf) r4 = r3                      ; R3_w=scalar(id=2,smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R4_w=scalar(id=2,smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+23: (dc) r4 = be16 r4                 ; R4_w=scalar()
+; if (ngrec > CILIUM_MCAST_MAX_GREC)
+24: (25) if r4 > 0x4 goto pc+181      ; R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7))
+; if (i < ngrec) {
+25: (15) if r3 == 0x0 goto pc+43      ; R3_w=scalar(id=2,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+; if ((void *)rec + sizeof(*rec) > data_end)
+26: (bf) r6 = r1                      ; R1=pkt(id=1,off=14,r=22,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R6_w=pkt(id=1,off=14,r=22,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+27: (07) r6 += 16                     ; R6=pkt(id=1,off=30,r=22,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+; if ((void *)rec + sizeof(*rec) > data_end)
+28: (2d) if r6 > r2 goto pc+177       ; R2=pkt_end() R6=pkt(id=1,off=30,r=30,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+29: (b7) r0 = 0                       ; R0_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+30: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: last_idx 30 first_idx 28 subseq_idx -1 
+mark_precise: frame0: regs=r0 stack= before 29: (b7) r0 = 0
+31: R0_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+31: (61) r6 = *(u32 *)(r10 -4)        ; R6_w=0 R10=fp0 fp-8=0000????
+32: (07) r6 += 1                      ; R6_w=1
+33: (63) *(u32 *)(r10 -4) = r6        ; R6_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+34: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: last_idx 34 first_idx 28 subseq_idx -1 
+mark_precise: frame0: regs=r0 stack= before 33: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 32: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 31: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 30: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 29: (b7) r0 = 0
+35: R0_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+35: (61) r6 = *(u32 *)(r10 -4)        ; R6_w=0 R10=fp0 fp-8=0000????
+36: (07) r6 += 1                      ; R6_w=1
+37: (63) *(u32 *)(r10 -4) = r6        ; R6_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+38: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: last_idx 38 first_idx 28 subseq_idx -1 
+mark_precise: frame0: regs=r0 stack= before 37: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 36: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 35: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 34: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 33: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 32: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 31: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 30: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 29: (b7) r0 = 0
+39: R0_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+39: (61) r6 = *(u32 *)(r10 -4)        ; R6_w=0 R10=fp0 fp-8=0000????
+40: (07) r6 += 1                      ; R6_w=1
+41: (63) *(u32 *)(r10 -4) = r6        ; R6_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+42: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: last_idx 42 first_idx 28 subseq_idx -1 
+mark_precise: frame0: regs=r0 stack= before 41: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 40: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 39: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 38: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 37: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 36: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 35: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 34: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 33: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 32: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 31: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 30: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 29: (b7) r0 = 0
+43: R0_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+43: (61) r6 = *(u32 *)(r10 -4)        ; R6_w=0 R10=fp0 fp-8=0000????
+44: (07) r6 += 1                      ; R6_w=1
+45: (63) *(u32 *)(r10 -4) = r6        ; R6_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+46: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: last_idx 46 first_idx 28 subseq_idx -1 
+mark_precise: frame0: regs=r0 stack= before 45: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 44: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 43: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 42: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 41: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 40: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 39: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 38: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 37: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 36: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 35: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 34: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 33: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 32: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 31: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 30: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 29: (b7) r0 = 0
+47: R0_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+47: (61) r6 = *(u32 *)(r10 -4)        ; R6_w=0 R10=fp0 fp-8=0000????
+48: (07) r6 += 1                      ; R6_w=1
+49: (63) *(u32 *)(r10 -4) = r6        ; R6_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+50: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: last_idx 50 first_idx 28 subseq_idx -1 
+mark_precise: frame0: regs=r0 stack= before 49: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 48: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 47: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 46: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 45: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 44: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 43: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 42: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 41: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 40: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 39: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 38: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 37: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 36: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 35: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 34: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 33: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 32: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 31: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 30: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 29: (b7) r0 = 0
+51: R0_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+51: (61) r6 = *(u32 *)(r10 -4)        ; R6_w=0 R10=fp0 fp-8=0000????
+52: (07) r6 += 1                      ; R6_w=1
+53: (63) *(u32 *)(r10 -4) = r6        ; R6_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+54: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: last_idx 54 first_idx 28 subseq_idx -1 
+mark_precise: frame0: regs=r0 stack= before 53: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 52: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 51: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 50: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 49: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 48: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 47: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 46: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 45: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 44: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 43: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 42: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 41: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 40: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 39: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 38: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 37: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 36: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 35: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 34: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 33: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 32: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 31: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 30: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 29: (b7) r0 = 0
+55: R0_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+55: (61) r6 = *(u32 *)(r10 -4)        ; R6_w=0 R10=fp0 fp-8=0000????
+56: (07) r6 += 1                      ; R6_w=1
+57: (63) *(u32 *)(r10 -4) = r6        ; R6_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+58: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: last_idx 58 first_idx 28 subseq_idx -1 
+mark_precise: frame0: regs=r0 stack= before 57: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 56: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 55: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 54: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 53: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 52: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 51: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 50: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 49: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 48: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 47: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 46: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 45: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 44: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 43: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 42: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 41: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 40: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 39: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 38: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 37: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 36: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 35: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 34: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 33: (63) *(u32 *)(r10 -4) = r6
+mark_precise: frame0: regs=r0 stack= before 32: (07) r6 += 1
+mark_precise: frame0: regs=r0 stack= before 31: (61) r6 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r0 stack= before 30: (63) *(u32 *)(r10 -4) = r0
+mark_precise: frame0: regs=r0 stack= before 29: (b7) r0 = 0
+59: R0_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+59: (61) r0 = *(u32 *)(r10 -4)        ; R0_w=0 R10=fp0 fp-8=0000????
+60: (07) r0 += 1                      ; R0_w=1
+61: (63) *(u32 *)(r10 -4) = r0        ; R0_w=1 R10=fp0 fp-8=mmmm????
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+62: (71) r5 = *(u8 *)(r5 +0)          ; R5_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+63: (55) if r5 != 0x4 goto pc+5       ; R5_w=4
+64: (b7) r0 = 1                       ; R0_w=1
+; rec->grec_mca == bpf_htonl(CILIUM_MDNS_GROUP))
+65: (61) r5 = *(u32 *)(r1 +12)        ; R1=pkt(id=1,off=14,r=30,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R5_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+66: (18) r6 = 0xfb0000e0              ; R6=0xfb0000e0
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+68: (1d) if r5 == r6 goto pc+137      ; R5=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R6=0xfb0000e0
+69: (b7) r5 = 2                       ; R5_w=2
+; if (i < ngrec) {
+70: (2d) if r5 > r4 goto pc+89        ; R4=scalar(smin=umin=smin32=umin32=2,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R5_w=2
+; if ((void *)rec + sizeof(*rec) > data_end)
+71: (bf) r4 = r1                      ; R1=pkt(id=1,off=14,r=30,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R4_w=pkt(id=1,off=14,r=30,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+72: (07) r4 += 24                     ; R4_w=pkt(id=1,off=38,r=30,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+73: (b7) r0 = 2                       ; R0_w=2
+; if ((void *)rec + sizeof(*rec) > data_end)
+74: (2d) if r4 > r2 goto pc+131       ; R2=pkt_end() R4_w=pkt(id=1,off=38,r=38,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+75: (b7) r4 = 0                       ; R4_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 76 first_idx 68 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+77: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+77: (61) r5 = *(u32 *)(r10 -4)        ; R5_w=0 R10=fp0 fp-8=0000????
+78: (07) r5 += 1                      ; R5_w=1
+79: (63) *(u32 *)(r10 -4) = r5        ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 80 first_idx 68 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+81: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+81: (61) r5 = *(u32 *)(r10 -4)        ; R5_w=0 R10=fp0 fp-8=0000????
+82: (07) r5 += 1                      ; R5_w=1
+83: (63) *(u32 *)(r10 -4) = r5        ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+84: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 84 first_idx 68 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 83: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 82: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 81: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+85: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+85: (61) r5 = *(u32 *)(r10 -4)        ; R5_w=0 R10=fp0 fp-8=0000????
+86: (07) r5 += 1                      ; R5_w=1
+87: (63) *(u32 *)(r10 -4) = r5        ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+88: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 88 first_idx 68 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 87: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 86: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 85: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 84: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 83: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 82: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 81: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+89: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+89: (61) r5 = *(u32 *)(r10 -4)        ; R5_w=0 R10=fp0 fp-8=0000????
+90: (07) r5 += 1                      ; R5_w=1
+91: (63) *(u32 *)(r10 -4) = r5        ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+92: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 92 first_idx 68 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 91: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 90: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 89: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 88: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 87: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 86: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 85: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 84: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 83: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 82: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 81: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+93: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+93: (61) r5 = *(u32 *)(r10 -4)        ; R5_w=0 R10=fp0 fp-8=0000????
+94: (07) r5 += 1                      ; R5_w=1
+95: (63) *(u32 *)(r10 -4) = r5        ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+96: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 96 first_idx 68 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 95: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 94: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 93: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 92: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 91: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 90: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 89: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 88: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 87: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 86: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 85: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 84: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 83: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 82: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 81: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+97: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+97: (61) r5 = *(u32 *)(r10 -4)        ; R5_w=0 R10=fp0 fp-8=0000????
+98: (07) r5 += 1                      ; R5_w=1
+99: (63) *(u32 *)(r10 -4) = r5        ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+100: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 100 first_idx 68 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 99: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 98: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 97: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 96: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 95: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 94: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 93: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 92: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 91: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 90: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 89: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 88: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 87: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 86: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 85: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 84: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 83: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 82: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 81: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+101: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+101: (61) r5 = *(u32 *)(r10 -4)       ; R5_w=0 R10=fp0 fp-8=0000????
+102: (07) r5 += 1                     ; R5_w=1
+103: (63) *(u32 *)(r10 -4) = r5       ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+104: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 104 first_idx 68 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 103: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 102: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 101: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 100: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 99: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 98: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 97: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 96: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 95: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 94: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 93: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 92: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 91: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 90: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 89: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 88: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 87: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 86: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 85: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 84: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 83: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 82: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 81: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+105: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+105: (61) r4 = *(u32 *)(r10 -4)       ; R4_w=0 R10=fp0 fp-8=0000????
+106: (07) r4 += 1                     ; R4_w=1
+107: (63) *(u32 *)(r10 -4) = r4       ; R4_w=1 R10=fp0 fp-8=mmmm????
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+108: (71) r4 = *(u8 *)(r1 +16)        ; R1=pkt(id=1,off=14,r=38,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R4=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+109: (55) if r4 != 0x4 goto pc+5      ; R4=4
+110: (b7) r0 = 1                      ; R0_w=1
+; rec->grec_mca == bpf_htonl(CILIUM_MDNS_GROUP))
+111: (61) r4 = *(u32 *)(r1 +20)       ; R1=pkt(id=1,off=14,r=38,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R4_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+112: (18) r5 = 0xfb0000e0             ; R5_w=0xfb0000e0
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+114: (1d) if r4 == r5 goto pc+91      ; R4_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R5_w=0xfb0000e0
+; if (i < ngrec) {
+115: (15) if r3 == 0x200 goto pc+89   ; R3=scalar(id=2,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+; if ((void *)rec + sizeof(*rec) > data_end)
+116: (bf) r4 = r1                     ; R1=pkt(id=1,off=14,r=38,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R4_w=pkt(id=1,off=14,r=38,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+117: (07) r4 += 32                    ; R4_w=pkt(id=1,off=46,r=38,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+118: (b7) r0 = 2                      ; R0=2
+; if ((void *)rec + sizeof(*rec) > data_end)
+119: (2d) if r4 > r2 goto pc+86       ; R2=pkt_end() R4=pkt(id=1,off=46,r=46,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+120: (b7) r4 = 0                      ; R4_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+121: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 121 first_idx 119 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 120: (b7) r4 = 0
+122: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+122: (61) r5 = *(u32 *)(r10 -4)       ; R5_w=0 R10=fp0 fp-8=0000????
+123: (07) r5 += 1                     ; R5_w=1
+124: (63) *(u32 *)(r10 -4) = r5       ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+125: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 125 first_idx 119 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 124: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 123: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 122: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 121: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 120: (b7) r4 = 0
+126: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+126: (61) r5 = *(u32 *)(r10 -4)       ; R5_w=0 R10=fp0 fp-8=0000????
+127: (07) r5 += 1                     ; R5_w=1
+128: (63) *(u32 *)(r10 -4) = r5       ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+129: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 129 first_idx 119 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 128: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 127: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 126: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 125: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 124: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 123: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 122: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 121: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 120: (b7) r4 = 0
+130: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+130: (61) r5 = *(u32 *)(r10 -4)       ; R5_w=0 R10=fp0 fp-8=0000????
+131: (07) r5 += 1                     ; R5_w=1
+132: (63) *(u32 *)(r10 -4) = r5       ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+133: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 133 first_idx 119 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 132: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 131: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 130: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 129: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 128: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 127: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 126: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 125: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 124: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 123: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 122: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 121: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 120: (b7) r4 = 0
+134: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+134: (61) r5 = *(u32 *)(r10 -4)       ; R5_w=0 R10=fp0 fp-8=0000????
+135: (07) r5 += 1                     ; R5_w=1
+136: (63) *(u32 *)(r10 -4) = r5       ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+137: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 137 first_idx 119 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 136: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 135: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 134: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 133: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 132: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 131: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 130: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 129: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 128: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 127: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 126: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 125: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 124: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 123: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 122: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 121: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 120: (b7) r4 = 0
+138: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+138: (61) r5 = *(u32 *)(r10 -4)       ; R5_w=0 R10=fp0 fp-8=0000????
+139: (07) r5 += 1                     ; R5_w=1
+140: (63) *(u32 *)(r10 -4) = r5       ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+141: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 141 first_idx 119 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 140: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 139: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 138: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 137: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 136: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 135: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 134: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 133: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 132: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 131: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 130: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 129: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 128: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 127: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 126: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 125: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 124: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 123: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 122: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 121: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 120: (b7) r4 = 0
+142: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+142: (61) r5 = *(u32 *)(r10 -4)       ; R5_w=0 R10=fp0 fp-8=0000????
+143: (07) r5 += 1                     ; R5_w=1
+144: (63) *(u32 *)(r10 -4) = r5       ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+145: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 145 first_idx 119 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 144: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 143: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 142: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 141: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 140: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 139: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 138: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 137: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 136: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 135: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 134: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 133: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 132: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 131: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 130: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 129: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 128: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 127: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 126: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 125: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 124: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 123: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 122: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 121: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 120: (b7) r4 = 0
+146: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+146: (61) r5 = *(u32 *)(r10 -4)       ; R5_w=0 R10=fp0 fp-8=0000????
+147: (07) r5 += 1                     ; R5_w=1
+148: (63) *(u32 *)(r10 -4) = r5       ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+149: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 149 first_idx 119 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 148: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 147: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 146: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 145: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 144: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 143: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 142: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 141: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 140: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 139: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 138: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 137: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 136: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 135: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 134: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 133: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 132: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 131: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 130: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 129: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 128: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 127: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 126: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 125: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 124: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 123: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 122: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 121: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 120: (b7) r4 = 0
+150: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+150: (61) r4 = *(u32 *)(r10 -4)       ; R4_w=0 R10=fp0 fp-8=0000????
+151: (07) r4 += 1                     ; R4_w=1
+152: (63) *(u32 *)(r10 -4) = r4       ; R4_w=1 R10=fp0 fp-8=mmmm????
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+153: (71) r4 = *(u8 *)(r1 +24)        ; R1=pkt(id=1,off=14,r=46,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+154: (55) if r4 != 0x4 goto pc+5      ; R4_w=4
+155: (b7) r0 = 1                      ; R0_w=1
+; rec->grec_mca == bpf_htonl(CILIUM_MDNS_GROUP))
+156: (61) r4 = *(u32 *)(r1 +28)       ; R1=pkt(id=1,off=14,r=46,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R4_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+157: (18) r5 = 0xfb0000e0             ; R5=0xfb0000e0
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+159: (1d) if r4 == r5 goto pc+46      ; R4=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R5=0xfb0000e0
+; if (i < ngrec) {
+160: (55) if r3 != 0x400 goto pc+44   ; R3=1024
+161: (b7) r0 = 2                      ; R0_w=2
+; if ((void *)rec + sizeof(*rec) > data_end)
+162: (bf) r3 = r1                     ; R1=pkt(id=1,off=14,r=46,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R3_w=pkt(id=1,off=14,r=46,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+163: (07) r3 += 40                    ; R3_w=pkt(id=1,off=54,r=46,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+; if ((void *)rec + sizeof(*rec) > data_end)
+164: (2d) if r3 > r2 goto pc+41       ; R2=pkt_end() R3_w=pkt(id=1,off=54,r=54,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+165: (b7) r2 = 0                      ; R2_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 166 first_idx 159 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+167: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+167: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+168: (07) r3 += 1                     ; R3_w=1
+169: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 170 first_idx 159 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+171: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+171: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+172: (07) r3 += 1                     ; R3_w=1
+173: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+174: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 174 first_idx 159 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 173: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 172: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 171: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+175: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+175: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+176: (07) r3 += 1                     ; R3_w=1
+177: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+178: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 178 first_idx 159 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 177: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 176: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 175: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 174: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 173: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 172: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 171: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+179: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+179: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+180: (07) r3 += 1                     ; R3_w=1
+181: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+182: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 182 first_idx 159 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 181: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 180: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 179: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 178: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 177: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 176: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 175: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 174: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 173: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 172: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 171: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+183: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+183: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+184: (07) r3 += 1                     ; R3_w=1
+185: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+186: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 186 first_idx 159 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 185: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 184: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 183: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 182: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 181: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 180: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 179: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 178: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 177: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 176: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 175: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 174: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 173: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 172: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 171: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+187: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+187: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+188: (07) r3 += 1                     ; R3_w=1
+189: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+190: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 190 first_idx 159 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 189: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 188: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 187: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 186: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 185: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 184: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 183: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 182: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 181: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 180: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 179: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 178: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 177: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 176: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 175: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 174: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 173: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 172: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 171: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+191: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+191: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+192: (07) r3 += 1                     ; R3_w=1
+193: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+194: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 194 first_idx 159 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 193: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 192: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 191: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 190: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 189: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 188: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 187: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 186: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 185: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 184: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 183: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 182: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 181: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 180: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 179: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 178: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 177: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 176: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 175: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 174: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 173: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 172: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 171: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+195: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+195: (61) r2 = *(u32 *)(r10 -4)       ; R2_w=0 R10=fp0 fp-8=0000????
+196: (07) r2 += 1                     ; R2_w=1
+197: (63) *(u32 *)(r10 -4) = r2       ; R2_w=1 R10=fp0 fp-8=mmmm????
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+198: (71) r2 = *(u8 *)(r1 +32)        ; R1=pkt(id=1,off=14,r=54,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff))
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+199: (55) if r2 != 0x4 goto pc+5      ; R2=4
+200: (b7) r0 = 1                      ; R0_w=1
+; rec->grec_mca == bpf_htonl(CILIUM_MDNS_GROUP))
+201: (61) r1 = *(u32 *)(r1 +36)       ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff))
+202: (18) r2 = 0xfb0000e0             ; R2_w=0xfb0000e0
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+204: (1d) if r1 == r2 goto pc+1       ; R1_w=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R2_w=0xfb0000e0
+205: (b7) r0 = 2                      ; R0_w=2
+; }
+206: (95) exit
+
+from 204 to 206: R0_w=1 R1_w=0xfb0000e0 R2_w=0xfb0000e0 R3=1 R4=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R5=0xfb0000e0 R6=0xfb0000e0 R10=fp0 fp-8=mmmm????
+206: R0_w=1 R1_w=0xfb0000e0 R2_w=0xfb0000e0 R3=1 R4=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R5=0xfb0000e0 R6=0xfb0000e0 R10=fp0 fp-8=mmmm????
+206: (95) exit
+
+from 199 to 205: R0=2 R1=pkt(id=1,off=14,r=54,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=1 R4=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R5=0xfb0000e0 R6=0xfb0000e0 R10=fp0 fp-8=mmmm????
+205: R0=2 R1=pkt(id=1,off=14,r=54,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R3=1 R4=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R5=0xfb0000e0 R6=0xfb0000e0 R10=fp0 fp-8=mmmm????
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+205: (b7) r0 = 2                      ; R0_w=2
+; }
+206: (95) exit
+
+from 164 to 206: R0_w=2 R1=pkt(id=1,off=14,r=46,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3_w=pkt(id=1,off=54,r=0xfffffffffffffffe,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R4=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R5=0xfb0000e0 R6=0xfb0000e0 R10=fp0 fp-8=mmmm????
+206: R0_w=2 R1=pkt(id=1,off=14,r=46,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3_w=pkt(id=1,off=54,r=0xfffffffffffffffe,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R4=scalar(smin=0,smax=umax=0xffffffff,var_off=(0x0; 0xffffffff)) R5=0xfb0000e0 R6=0xfb0000e0 R10=fp0 fp-8=mmmm????
+206: (95) exit
+
+from 160 to 205: safe
+
+from 159 to 206: R0=1 R1=pkt(id=1,off=14,r=46,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3=scalar(id=2,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R4=0xfb0000e0 R5=0xfb0000e0 R6=0xfb0000e0 R10=fp0 fp-8=mmmm????
+206: R0=1 R1=pkt(id=1,off=14,r=46,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3=scalar(id=2,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R4=0xfb0000e0 R5=0xfb0000e0 R6=0xfb0000e0 R10=fp0 fp-8=mmmm????
+206: (95) exit
+
+from 154 to 160: R0=2 R1=pkt(id=1,off=14,r=46,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3=scalar(id=2,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R5_w=1 R6=0xfb0000e0 R10=fp0 fp-8=mmmm????
+160: R0=2 R1=pkt(id=1,off=14,r=46,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3=scalar(id=2,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R4_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R5_w=1 R6=0xfb0000e0 R10=fp0 fp-8=mmmm????
+; if (i < ngrec) {
+160: (55) if r3 != 0x400 goto pc+44   ; R3=1024
+161: (b7) r0 = 2                      ; R0_w=2
+; if ((void *)rec + sizeof(*rec) > data_end)
+162: (bf) r3 = r1                     ; R1=pkt(id=1,off=14,r=46,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R3_w=pkt(id=1,off=14,r=46,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+163: (07) r3 += 40                    ; R3=pkt(id=1,off=54,r=46,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+; if ((void *)rec + sizeof(*rec) > data_end)
+164: (2d) if r3 > r2 goto pc+41       ; R2=pkt_end() R3=pkt(id=1,off=54,r=54,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+165: (b7) r2 = 0                      ; R2_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 166 first_idx 164 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+167: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+167: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+168: (07) r3 += 1                     ; R3_w=1
+169: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 170 first_idx 164 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+171: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+171: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+172: (07) r3 += 1                     ; R3_w=1
+173: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+174: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 174 first_idx 164 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 173: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 172: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 171: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+175: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+175: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+176: (07) r3 += 1                     ; R3_w=1
+177: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+178: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 178 first_idx 164 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 177: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 176: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 175: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 174: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 173: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 172: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 171: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+179: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+179: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+180: (07) r3 += 1                     ; R3_w=1
+181: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+182: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 182 first_idx 164 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 181: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 180: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 179: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 178: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 177: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 176: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 175: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 174: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 173: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 172: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 171: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+183: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+183: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+184: (07) r3 += 1                     ; R3_w=1
+185: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+186: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 186 first_idx 164 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 185: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 184: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 183: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 182: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 181: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 180: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 179: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 178: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 177: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 176: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 175: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 174: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 173: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 172: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 171: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+187: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+187: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+188: (07) r3 += 1                     ; R3_w=1
+189: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+190: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 190 first_idx 164 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 189: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 188: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 187: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 186: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 185: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 184: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 183: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 182: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 181: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 180: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 179: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 178: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 177: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 176: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 175: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 174: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 173: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 172: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 171: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+191: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+191: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+192: (07) r3 += 1                     ; R3_w=1
+193: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+194: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 194 first_idx 164 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 193: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 192: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 191: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 190: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 189: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 188: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 187: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 186: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 185: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 184: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 183: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 182: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 181: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 180: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 179: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 178: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 177: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 176: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 175: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 174: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 173: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 172: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 171: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+195: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+195: (61) r2 = *(u32 *)(r10 -4)       ; R2_w=0 R10=fp0 fp-8=0000????
+196: (07) r2 += 1                     ; R2_w=1
+197: (63) *(u32 *)(r10 -4) = r2       ; R2_w=1 R10=fp0 fp-8=mmmm????
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+198: (71) r2 = *(u8 *)(r1 +32)
+199: safe
+
+from 164 to 206: R0=2 R1=pkt(id=1,off=14,r=46,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3=pkt(id=1,off=54,r=0xfffffffffffffffe,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R4=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R5=1 R6=0xfb0000e0 R10=fp0 fp-8=mmmm????
+206: R0=2 R1=pkt(id=1,off=14,r=46,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3=pkt(id=1,off=54,r=0xfffffffffffffffe,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R4=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R5=1 R6=0xfb0000e0 R10=fp0 fp-8=mmmm????
+; }
+206: (95) exit
+
+from 160 to 205: safe
+
+from 119 to 206: R0=2 R1=pkt(id=1,off=14,r=38,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3=scalar(id=2,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R4=pkt(id=1,off=46,r=0xfffffffffffffffe,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R5=0xfb0000e0 R6=0xfb0000e0 R10=fp0 fp-8=mmmm????
+206: R0=2 R1=pkt(id=1,off=14,r=38,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3=scalar(id=2,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R4=pkt(id=1,off=46,r=0xfffffffffffffffe,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R5=0xfb0000e0 R6=0xfb0000e0 R10=fp0 fp-8=mmmm????
+206: (95) exit
+
+from 115 to 205: safe
+
+from 114 to 206: safe
+
+from 109 to 115: R0=2 R1=pkt(id=1,off=14,r=38,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3=scalar(id=2,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R4=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R5=1 R6=0xfb0000e0 R10=fp0 fp-8=mmmm????
+115: R0=2 R1=pkt(id=1,off=14,r=38,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3=scalar(id=2,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R4=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R5=1 R6=0xfb0000e0 R10=fp0 fp-8=mmmm????
+; if (i < ngrec) {
+115: (15) if r3 == 0x200 goto pc+89   ; R3=scalar(id=2,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff))
+; if ((void *)rec + sizeof(*rec) > data_end)
+116: (bf) r4 = r1                     ; R1=pkt(id=1,off=14,r=38,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R4_w=pkt(id=1,off=14,r=38,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+117: (07) r4 += 32                    ; R4_w=pkt(id=1,off=46,r=38,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+118: (b7) r0 = 2
+119: safe
+
+from 115 to 205: safe
+
+from 74 to 206: safe
+
+from 70 to 160: R0=1 R1=pkt(id=1,off=14,r=30,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3=scalar(id=2,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R4=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R5=2 R6=0xfb0000e0 R10=fp0 fp-8=mmmm????
+160: R0=1 R1=pkt(id=1,off=14,r=30,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3=scalar(id=2,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R4=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R5=2 R6=0xfb0000e0 R10=fp0 fp-8=mmmm????
+; if (i < ngrec) {
+160: (55) if r3 != 0x400 goto pc+44   ; R3=1024
+161: (b7) r0 = 2                      ; R0_w=2
+; if ((void *)rec + sizeof(*rec) > data_end)
+162: (bf) r3 = r1                     ; R1=pkt(id=1,off=14,r=30,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R3_w=pkt(id=1,off=14,r=30,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+163: (07) r3 += 40                    ; R3_w=pkt(id=1,off=54,r=30,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+; if ((void *)rec + sizeof(*rec) > data_end)
+164: (2d) if r3 > r2 goto pc+41       ; R2=pkt_end() R3_w=pkt(id=1,off=54,r=54,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+165: (b7) r2 = 0                      ; R2_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 166 first_idx 160 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+167: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+167: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+168: (07) r3 += 1                     ; R3_w=1
+169: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 170 first_idx 160 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+171: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+171: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+172: (07) r3 += 1                     ; R3_w=1
+173: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+174: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 174 first_idx 160 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 173: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 172: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 171: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+175: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+175: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+176: (07) r3 += 1                     ; R3_w=1
+177: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+178: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 178 first_idx 160 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 177: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 176: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 175: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 174: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 173: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 172: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 171: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+179: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+179: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+180: (07) r3 += 1                     ; R3_w=1
+181: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+182: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 182 first_idx 160 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 181: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 180: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 179: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 178: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 177: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 176: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 175: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 174: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 173: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 172: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 171: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+183: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+183: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+184: (07) r3 += 1                     ; R3_w=1
+185: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+186: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 186 first_idx 160 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 185: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 184: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 183: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 182: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 181: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 180: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 179: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 178: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 177: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 176: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 175: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 174: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 173: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 172: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 171: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+187: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+187: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+188: (07) r3 += 1                     ; R3_w=1
+189: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+190: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 190 first_idx 160 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 189: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 188: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 187: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 186: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 185: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 184: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 183: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 182: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 181: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 180: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 179: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 178: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 177: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 176: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 175: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 174: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 173: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 172: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 171: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+191: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+191: (61) r3 = *(u32 *)(r10 -4)       ; R3_w=0 R10=fp0 fp-8=0000????
+192: (07) r3 += 1                     ; R3_w=1
+193: (63) *(u32 *)(r10 -4) = r3       ; R3_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+194: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: last_idx 194 first_idx 160 subseq_idx -1 
+mark_precise: frame0: regs=r2 stack= before 193: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 192: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 191: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 190: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 189: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 188: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 187: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 186: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 185: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 184: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 183: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 182: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 181: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 180: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 179: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 178: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 177: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 176: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 175: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 174: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 173: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 172: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 171: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 170: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 169: (63) *(u32 *)(r10 -4) = r3
+mark_precise: frame0: regs=r2 stack= before 168: (07) r3 += 1
+mark_precise: frame0: regs=r2 stack= before 167: (61) r3 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r2 stack= before 166: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r2 stack= before 165: (b7) r2 = 0
+195: R2_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+195: (61) r2 = *(u32 *)(r10 -4)       ; R2_w=0 R10=fp0 fp-8=0000????
+196: (07) r2 += 1                     ; R2_w=1
+197: (63) *(u32 *)(r10 -4) = r2       ; R2_w=1 R10=fp0 fp-8=mmmm????
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+198: (71) r2 = *(u8 *)(r1 +32)
+199: safe
+
+from 164 to 206: safe
+
+from 160 to 205: safe
+
+from 68 to 206: safe
+
+from 63 to 69: R0=1 R1=pkt(id=1,off=14,r=30,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3=scalar(id=2,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R4=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=1 R10=fp0 fp-8=mmmm????
+69: R0=1 R1=pkt(id=1,off=14,r=30,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3=scalar(id=2,smin=umin=smin32=umin32=1,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R4=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R5=scalar(smin=smin32=0,smax=umax=smax32=umax32=255,var_off=(0x0; 0xff)) R6=1 R10=fp0 fp-8=mmmm????
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+69: (b7) r5 = 2                       ; R5_w=2
+; if (i < ngrec) {
+70: (2d) if r5 > r4 goto pc+89        ; R4=scalar(smin=umin=smin32=umin32=2,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R5_w=2
+; if ((void *)rec + sizeof(*rec) > data_end)
+71: (bf) r4 = r1                      ; R1=pkt(id=1,off=14,r=30,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R4_w=pkt(id=1,off=14,r=30,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+72: (07) r4 += 24                     ; R4_w=pkt(id=1,off=38,r=30,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+73: (b7) r0 = 2                       ; R0_w=2
+; if ((void *)rec + sizeof(*rec) > data_end)
+74: (2d) if r4 > r2 goto pc+131       ; R2=pkt_end() R4_w=pkt(id=1,off=38,r=38,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+75: (b7) r4 = 0                       ; R4_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 76 first_idx 69 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+77: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+77: (61) r5 = *(u32 *)(r10 -4)        ; R5_w=0 R10=fp0 fp-8=0000????
+78: (07) r5 += 1                      ; R5_w=1
+79: (63) *(u32 *)(r10 -4) = r5        ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 80 first_idx 69 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+81: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+81: (61) r5 = *(u32 *)(r10 -4)        ; R5_w=0 R10=fp0 fp-8=0000????
+82: (07) r5 += 1                      ; R5_w=1
+83: (63) *(u32 *)(r10 -4) = r5        ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+84: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 84 first_idx 69 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 83: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 82: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 81: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+85: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+85: (61) r5 = *(u32 *)(r10 -4)        ; R5_w=0 R10=fp0 fp-8=0000????
+86: (07) r5 += 1                      ; R5_w=1
+87: (63) *(u32 *)(r10 -4) = r5        ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+88: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 88 first_idx 69 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 87: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 86: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 85: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 84: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 83: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 82: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 81: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+89: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+89: (61) r5 = *(u32 *)(r10 -4)        ; R5_w=0 R10=fp0 fp-8=0000????
+90: (07) r5 += 1                      ; R5_w=1
+91: (63) *(u32 *)(r10 -4) = r5        ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+92: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 92 first_idx 69 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 91: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 90: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 89: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 88: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 87: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 86: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 85: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 84: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 83: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 82: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 81: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+93: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+93: (61) r5 = *(u32 *)(r10 -4)        ; R5_w=0 R10=fp0 fp-8=0000????
+94: (07) r5 += 1                      ; R5_w=1
+95: (63) *(u32 *)(r10 -4) = r5        ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+96: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 96 first_idx 69 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 95: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 94: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 93: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 92: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 91: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 90: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 89: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 88: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 87: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 86: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 85: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 84: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 83: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 82: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 81: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+97: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+97: (61) r5 = *(u32 *)(r10 -4)        ; R5_w=0 R10=fp0 fp-8=0000????
+98: (07) r5 += 1                      ; R5_w=1
+99: (63) *(u32 *)(r10 -4) = r5        ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+100: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 100 first_idx 69 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 99: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 98: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 97: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 96: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 95: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 94: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 93: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 92: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 91: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 90: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 89: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 88: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 87: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 86: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 85: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 84: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 83: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 82: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 81: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+101: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+101: (61) r5 = *(u32 *)(r10 -4)       ; R5_w=0 R10=fp0 fp-8=0000????
+102: (07) r5 += 1                     ; R5_w=1
+103: (63) *(u32 *)(r10 -4) = r5       ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+104: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 104 first_idx 69 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 103: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 102: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 101: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 100: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 99: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 98: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 97: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 96: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 95: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 94: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 93: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 92: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 91: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 90: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 89: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 88: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 87: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 86: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 85: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 84: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 83: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 82: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 81: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+105: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+105: (61) r4 = *(u32 *)(r10 -4)       ; R4_w=0 R10=fp0 fp-8=0000????
+106: (07) r4 += 1                     ; R4_w=1
+107: (63) *(u32 *)(r10 -4) = r4       ; R4_w=1 R10=fp0 fp-8=mmmm????
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+108: (71) r4 = *(u8 *)(r1 +16)
+109: safe
+
+from 74 to 206: safe
+
+from 70 to 160: safe
+
+from 28 to 206: safe
+
+from 25 to 69: R0=2 R1=pkt(id=1,off=14,r=22,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3=0 R4=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R5=pkt(id=1,off=22,r=22,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R10=fp0
+69: R0=2 R1=pkt(id=1,off=14,r=22,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3=0 R4=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R5=pkt(id=1,off=22,r=22,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R10=fp0
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+69: (b7) r5 = 2                       ; R5_w=2
+; if (i < ngrec) {
+70: (2d) if r5 > r4 goto pc+89        ; R4=scalar(smin=umin=smin32=umin32=2,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R5_w=2
+; if ((void *)rec + sizeof(*rec) > data_end)
+71: (bf) r4 = r1                      ; R1=pkt(id=1,off=14,r=22,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R4_w=pkt(id=1,off=14,r=22,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+72: (07) r4 += 24                     ; R4_w=pkt(id=1,off=38,r=22,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+73: (b7) r0 = 2                       ; R0_w=2
+; if ((void *)rec + sizeof(*rec) > data_end)
+74: (2d) if r4 > r2 goto pc+131       ; R2=pkt_end() R4_w=pkt(id=1,off=38,r=38,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c))
+75: (b7) r4 = 0                       ; R4_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 76 first_idx 69 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+77: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+77: (61) r5 = *(u32 *)(r10 -4)        ; R5_w=0 R10=fp0 fp-8=0000????
+78: (07) r5 += 1                      ; R5_w=1
+79: (63) *(u32 *)(r10 -4) = r5        ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 80 first_idx 69 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+81: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+81: (61) r5 = *(u32 *)(r10 -4)        ; R5_w=0 R10=fp0 fp-8=0000????
+82: (07) r5 += 1                      ; R5_w=1
+83: (63) *(u32 *)(r10 -4) = r5        ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+84: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 84 first_idx 69 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 83: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 82: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 81: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+85: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+85: (61) r5 = *(u32 *)(r10 -4)        ; R5_w=0 R10=fp0 fp-8=0000????
+86: (07) r5 += 1                      ; R5_w=1
+87: (63) *(u32 *)(r10 -4) = r5        ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+88: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 88 first_idx 69 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 87: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 86: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 85: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 84: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 83: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 82: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 81: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+89: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+89: (61) r5 = *(u32 *)(r10 -4)        ; R5_w=0 R10=fp0 fp-8=0000????
+90: (07) r5 += 1                      ; R5_w=1
+91: (63) *(u32 *)(r10 -4) = r5        ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+92: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 92 first_idx 69 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 91: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 90: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 89: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 88: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 87: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 86: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 85: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 84: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 83: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 82: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 81: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+93: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+93: (61) r5 = *(u32 *)(r10 -4)        ; R5_w=0 R10=fp0 fp-8=0000????
+94: (07) r5 += 1                      ; R5_w=1
+95: (63) *(u32 *)(r10 -4) = r5        ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+96: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 96 first_idx 69 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 95: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 94: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 93: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 92: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 91: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 90: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 89: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 88: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 87: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 86: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 85: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 84: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 83: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 82: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 81: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+97: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+97: (61) r5 = *(u32 *)(r10 -4)        ; R5_w=0 R10=fp0 fp-8=0000????
+98: (07) r5 += 1                      ; R5_w=1
+99: (63) *(u32 *)(r10 -4) = r5        ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+100: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 100 first_idx 69 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 99: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 98: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 97: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 96: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 95: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 94: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 93: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 92: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 91: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 90: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 89: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 88: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 87: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 86: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 85: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 84: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 83: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 82: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 81: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+101: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+101: (61) r5 = *(u32 *)(r10 -4)       ; R5_w=0 R10=fp0 fp-8=0000????
+102: (07) r5 += 1                     ; R5_w=1
+103: (63) *(u32 *)(r10 -4) = r5       ; R5_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+104: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: last_idx 104 first_idx 69 subseq_idx -1 
+mark_precise: frame0: regs=r4 stack= before 103: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 102: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 101: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 100: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 99: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 98: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 97: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 96: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 95: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 94: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 93: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 92: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 91: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 90: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 89: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 88: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 87: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 86: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 85: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 84: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 83: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 82: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 81: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 80: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 79: (63) *(u32 *)(r10 -4) = r5
+mark_precise: frame0: regs=r4 stack= before 78: (07) r5 += 1
+mark_precise: frame0: regs=r4 stack= before 77: (61) r5 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r4 stack= before 76: (63) *(u32 *)(r10 -4) = r4
+mark_precise: frame0: regs=r4 stack= before 75: (b7) r4 = 0
+105: R4_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+105: (61) r4 = *(u32 *)(r10 -4)       ; R4_w=0 R10=fp0 fp-8=0000????
+106: (07) r4 += 1                     ; R4_w=1
+107: (63) *(u32 *)(r10 -4) = r4       ; R4_w=1 R10=fp0 fp-8=mmmm????
+; if (rec->grec_type == IGMPV3_CHANGE_TO_EXCLUDE &&
+108: (71) r4 = *(u8 *)(r1 +16)
+109: safe
+
+from 74 to 206: safe
+
+from 70 to 160: R0=2 R1=pkt(id=1,off=14,r=22,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3=0 R4=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R5=2 R10=fp0
+160: R0=2 R1=pkt(id=1,off=14,r=22,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3=0 R4=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R5=2 R10=fp0
+; if (i < ngrec) {
+160: (55) if r3 != 0x400 goto pc+44
+mark_precise: frame0: last_idx 160 first_idx 160 subseq_idx -1 
+mark_precise: frame0: parent state regs=r3 stack=:  R0=2 R1=pkt(id=1,off=14,r=22,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2=pkt_end() R3_r=P0 R4=scalar(smin=smin32=0,smax=umax=smax32=umax32=1,var_off=(0x0; 0x1)) R5_w=2 R10=fp0
+mark_precise: frame0: last_idx 70 first_idx 69 subseq_idx 160 
+mark_precise: frame0: regs=r3 stack= before 70: (2d) if r5 > r4 goto pc+89
+mark_precise: frame0: regs=r3 stack= before 69: (b7) r5 = 2
+mark_precise: frame0: parent state regs=r3 stack=:  R0=2 R1_r=pkt(id=1,off=14,r=22,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R2_r=pkt_end() R3_rw=P0 R4_rw=scalar(smin=smin32=0,smax=umax=smax32=umax32=4,var_off=(0x0; 0x7)) R5=pkt(id=1,off=22,r=22,smin=umin=smin32=umin32=20,smax=umax=smax32=umax32=60,var_off=(0x0; 0x3c)) R10=fp0
+mark_precise: frame0: last_idx 25 first_idx 20 subseq_idx 69 
+mark_precise: frame0: regs=r3 stack= before 25: (15) if r3 == 0x0 goto pc+43
+mark_precise: frame0: regs=r3 stack= before 24: (25) if r4 > 0x4 goto pc+181
+mark_precise: frame0: regs=r3 stack= before 23: (dc) r4 = be16 r4
+mark_precise: frame0: regs=r3 stack= before 22: (bf) r4 = r3
+mark_precise: frame0: regs=r3 stack= before 21: (69) r3 = *(u16 *)(r1 +6)
+160: R3=0
+205: safe
+
+from 24 to 206: safe
+
+from 20 to 206: safe
+
+from 16 to 206: safe
+
+from 11 to 206: safe
+
+from 9 to 206: safe
+
+from 7 to 206: safe
+
+from 5 to 206: safe
+verification time 2547 usec
+stack depth 8
+processed 399 insns (limit 1000000) max_states_per_insn 1 total_states 15 peak_states 15 mark_read 4
+-- END PROG LOAD LOG --

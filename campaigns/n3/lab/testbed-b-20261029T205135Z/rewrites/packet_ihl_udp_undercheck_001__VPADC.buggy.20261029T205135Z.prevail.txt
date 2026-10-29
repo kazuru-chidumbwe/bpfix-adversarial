@@ -1,0 +1,9 @@
+PREVAIL exit=1
+FAIL: xdp/packet_ihl_udp_undercheck
+
+; /home/test/bpfix-b/repo/campaigns/n3/packet_ihl_udp_undercheck_001/VPADC.buggy.bpf.c:71
+;     tag = *(__u8 *)(udp + 8);
+
+26: Upper bound must be at most packet_size (valid_access(r1.offset+8, width=1) for read)
+
+Hint: run with --failure-slice for a causal trace, or -v for full invariants.

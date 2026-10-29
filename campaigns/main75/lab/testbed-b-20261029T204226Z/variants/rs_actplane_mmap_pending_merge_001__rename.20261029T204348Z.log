@@ -1,0 +1,8 @@
+COMPILE_FAIL
+/home/test/bpfix-b/repo/campaigns/v2/upstream/rs_actplane_mmap_pending_merge_001/rename.bpf.c:104:10: error: no member named 'start' in 'struct rs_mmap_key'
+  104 |     out->start = ptr;
+      |     ~~~  ^
+/home/test/bpfix-b/repo/campaigns/v2/upstream/rs_actplane_mmap_pending_merge_001/rename.bpf.c:171:11: error: no member named 'start' in 'struct rs_mmap_ref'
+  171 |     mref->start = ptr;
+      |     ~~~~  ^
+2 errors generated.

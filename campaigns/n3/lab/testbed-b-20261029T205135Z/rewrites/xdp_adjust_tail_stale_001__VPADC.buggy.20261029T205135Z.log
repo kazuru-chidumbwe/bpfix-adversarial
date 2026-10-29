@@ -1,0 +1,257 @@
+libbpf: loading object from /tmp/bpfix-cap-wtbxxrtk/xdp_adjust_tail_stale_001__VPADC.buggy.o
+libbpf: elf: section(3) xdp, size 528, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'xdp_adjust_tail_stale' at insn offset 0 (0 bytes), code size 66 insns (528 bytes)
+libbpf: elf: section(4) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-wtbxxrtk/xdp_adjust_tail_stale_001__VPADC.buggy.o is GPL
+libbpf: elf: section(14) .BTF, size 1748, link 0, flags 0, type=1
+libbpf: elf: section(16) .BTF.ext, size 716, link 0, flags 0, type=1
+libbpf: elf: section(24) .symtab, size 336, link 1, flags 0, type=2
+libbpf: looking for externs among 14 symbols...
+libbpf: collected 0 externs total
+libbpf: loading kernel BTF '/sys/kernel/btf/vmlinux': 0
+libbpf: sec 'xdp': found 6 CO-RE relocations
+libbpf: CO-RE relocating [2] struct xdp_md: found target candidate [7123] struct xdp_md in [vmlinux]
+libbpf: prog 'xdp_adjust_tail_stale': relo #0: <byte_off> [2] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'xdp_adjust_tail_stale': relo #0: matching candidate #0 <byte_off> [7123] struct xdp_md.data_end (0:1 @ offset 4)
+libbpf: prog 'xdp_adjust_tail_stale': relo #0: patched insn #1 (LDX/ST/STX) off 4 -> 4
+libbpf: prog 'xdp_adjust_tail_stale': relo #1: <byte_off> [2] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'xdp_adjust_tail_stale': relo #1: matching candidate #0 <byte_off> [7123] struct xdp_md.data (0:0 @ offset 0)
+libbpf: prog 'xdp_adjust_tail_stale': relo #1: patched insn #2 (LDX/ST/STX) off 0 -> 0
+libbpf: CO-RE relocating [8] struct ethhdr: found target candidate [9597] struct ethhdr in [vmlinux]
+libbpf: prog 'xdp_adjust_tail_stale': relo #2: <byte_off> [8] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'xdp_adjust_tail_stale': relo #2: matching candidate #0 <byte_off> [9597] struct ethhdr.h_proto (0:2 @ offset 12)
+libbpf: prog 'xdp_adjust_tail_stale': relo #2: patched insn #6 (LDX/ST/STX) off 12 -> 12
+libbpf: CO-RE relocating [15] struct iphdr: found target candidate [9864] struct iphdr in [vmlinux]
+libbpf: prog 'xdp_adjust_tail_stale': relo #3: <byte_off> [15] struct iphdr.protocol (0:7 @ offset 9)
+libbpf: prog 'xdp_adjust_tail_stale': relo #3: matching candidate #0 <byte_off> [9864] struct iphdr.protocol (0:7 @ offset 9)
+libbpf: prog 'xdp_adjust_tail_stale': relo #3: patched insn #49 (LDX/ST/STX) off 9 -> 9
+libbpf: prog 'xdp_adjust_tail_stale': relo #4: <byte_off> [15] struct iphdr.ihl (0:0 @ offset 0)
+libbpf: prog 'xdp_adjust_tail_stale': relo #4: matching candidate #0 <byte_off> [9864] struct iphdr.ihl (0:0 @ offset 0)
+libbpf: prog 'xdp_adjust_tail_stale': relo #4: patched insn #51 (LDX/ST/STX) off 0 -> 0
+libbpf: CO-RE relocating [22] struct udphdr: found target candidate [9885] struct udphdr in [vmlinux]
+libbpf: prog 'xdp_adjust_tail_stale': relo #5: <byte_off> [22] struct udphdr.dest (0:1 @ offset 2)
+libbpf: prog 'xdp_adjust_tail_stale': relo #5: matching candidate #0 <byte_off> [9885] struct udphdr.dest (0:1 @ offset 2)
+libbpf: prog 'xdp_adjust_tail_stale': relo #5: patched insn #61 (LDX/ST/STX) off 2 -> 2
+libbpf: prog 'xdp_adjust_tail_stale': BPF program load failed: Permission denied
+libbpf: prog 'xdp_adjust_tail_stale': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int xdp_adjust_tail_stale(struct xdp_md *ctx)
+0: (b7) r0 = 2                        ; R0_w=2
+; void *data_end = (void *)(long)ctx->data_end;
+1: (61) r7 = *(u32 *)(r1 +4)          ; R1=ctx() R7_w=pkt_end()
+; void *data = (void *)(long)ctx->data;
+2: (61) r8 = *(u32 *)(r1 +0)          ; R1=ctx() R8_w=pkt(r=0)
+; if ((void *)(eth + 1) > data_end)
+3: (bf) r6 = r8                       ; R6_w=pkt(r=0) R8_w=pkt(r=0)
+4: (07) r6 += 14                      ; R6_w=pkt(off=14,r=0)
+; if ((void *)(eth + 1) > data_end)
+5: (2d) if r6 > r7 goto pc+59         ; R6_w=pkt(off=14,r=14) R7_w=pkt_end()
+; if (bpf_ntohs(eth->h_proto) != ETH_P_IP)
+6: (69) r2 = *(u16 *)(r8 +12)         ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffff,var_off=(0x0; 0xffff)) R8_w=pkt(r=14)
+; if (bpf_ntohs(eth->h_proto) != ETH_P_IP)
+7: (55) if r2 != 0x8 goto pc+57       ; R2_w=8
+; if (bpf_xdp_adjust_tail(ctx, -4))
+8: (18) r2 = 0xfffffffc               ; R2_w=0xfffffffc
+10: (85) call bpf_xdp_adjust_tail#65          ; R0=scalar()
+11: (bf) r1 = r0                      ; R0=scalar(id=1) R1_w=scalar(id=1)
+12: (b7) r0 = 2                       ; R0_w=2
+; if (bpf_xdp_adjust_tail(ctx, -4))
+13: (55) if r1 != 0x0 goto pc+51      ; R1_w=0
+14: (07) r8 += 34                     ; R8_w=scalar()
+15: (2d) if r8 > r7 goto pc+49        ; R7=scalar() R8_w=scalar()
+16: (b7) r1 = 0                       ; R1_w=0
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+17: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 17 first_idx 11 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 16: (b7) r1 = 0
+18: R1_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+18: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000????
+19: (07) r2 += 1                      ; R2_w=1
+20: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+21: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 21 first_idx 11 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 20: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 19: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 18: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 17: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 16: (b7) r1 = 0
+22: R1_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+22: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000????
+23: (07) r2 += 1                      ; R2_w=1
+24: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+25: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 25 first_idx 11 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 24: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 23: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 22: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 21: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 20: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 19: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 18: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 17: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 16: (b7) r1 = 0
+26: R1_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+26: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000????
+27: (07) r2 += 1                      ; R2_w=1
+28: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+29: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 29 first_idx 11 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 28: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 27: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 26: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 25: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 24: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 23: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 22: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 21: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 20: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 19: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 18: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 17: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 16: (b7) r1 = 0
+30: R1_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+30: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000????
+31: (07) r2 += 1                      ; R2_w=1
+32: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+33: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 33 first_idx 11 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 32: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 31: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 30: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 29: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 28: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 27: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 26: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 25: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 24: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 23: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 22: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 21: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 20: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 19: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 18: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 17: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 16: (b7) r1 = 0
+34: R1_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+34: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000????
+35: (07) r2 += 1                      ; R2_w=1
+36: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+37: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 37 first_idx 11 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 36: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 35: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 34: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 33: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 32: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 31: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 30: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 29: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 28: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 27: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 26: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 25: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 24: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 23: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 22: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 21: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 20: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 19: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 18: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 17: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 16: (b7) r1 = 0
+38: R1_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+38: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000????
+39: (07) r2 += 1                      ; R2_w=1
+40: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+41: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 41 first_idx 11 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 40: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 39: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 38: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 37: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 36: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 35: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 34: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 33: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 32: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 31: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 30: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 29: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 28: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 27: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 26: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 25: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 24: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 23: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 22: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 21: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 20: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 19: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 18: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 17: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 16: (b7) r1 = 0
+42: R1_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+42: (61) r2 = *(u32 *)(r10 -4)        ; R2_w=0 R10=fp0 fp-8=0000????
+43: (07) r2 += 1                      ; R2_w=1
+44: (63) *(u32 *)(r10 -4) = r2        ; R2_w=1 R10=fp0 fp-8=mmmm????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+45: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: last_idx 45 first_idx 11 subseq_idx -1 
+mark_precise: frame0: regs=r1 stack= before 44: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 43: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 42: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 41: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 40: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 39: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 38: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 37: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 36: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 35: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 34: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 33: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 32: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 31: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 30: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 29: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 28: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 27: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 26: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 25: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 24: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 23: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 22: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 21: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 20: (63) *(u32 *)(r10 -4) = r2
+mark_precise: frame0: regs=r1 stack= before 19: (07) r2 += 1
+mark_precise: frame0: regs=r1 stack= before 18: (61) r2 = *(u32 *)(r10 -4)
+mark_precise: frame0: regs=r1 stack= before 17: (63) *(u32 *)(r10 -4) = r1
+mark_precise: frame0: regs=r1 stack= before 16: (b7) r1 = 0
+46: R1_w=0 R10=fp0 fp-8=0000????
+; { volatile __u32 __adv_pad = 0; __adv_pad++; }
+46: (61) r1 = *(u32 *)(r10 -4)        ; R1_w=0 R10=fp0 fp-8=0000????
+47: (07) r1 += 1                      ; R1_w=1
+48: (63) *(u32 *)(r10 -4) = r1        ; R1_w=1 R10=fp0 fp-8=mmmm????
+; if (iph->protocol != IPPROTO_UDP)
+49: (71) r1 = *(u8 *)(r6 +9)
+R6 invalid mem access 'scalar'
+verification time 299 usec
+stack depth 8
+processed 49 insns (limit 1000000) max_states_per_insn 0 total_states 1 peak_states 1 mark_read 1
+-- END PROG LOAD LOG --
+libbpf: prog 'xdp_adjust_tail_stale': failed to load: -13
+libbpf: failed to load object '/tmp/bpfix-cap-wtbxxrtk/xdp_adjust_tail_stale_001__VPADC.buggy.o'
+Error: failed to load object file

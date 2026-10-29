@@ -1,0 +1,65 @@
+libbpf: loading object from /tmp/bpfix-cap-emmxormt/rs_xdp_tools_load_bytes_stack_len_001__pad8.o
+libbpf: elf: section(3) xdp, size 312, link 0, flags 6, type=1
+libbpf: sec 'xdp': found program 'rs_xdp_tools_load_bytes_stack_len' at insn offset 0 (0 bytes), code size 39 insns (312 bytes)
+libbpf: elf: section(4) license, size 4, link 0, flags 3, type=1
+libbpf: license of /tmp/bpfix-cap-emmxormt/rs_xdp_tools_load_bytes_stack_len_001__pad8.o is GPL
+libbpf: elf: section(14) .BTF, size 923, link 0, flags 0, type=1
+libbpf: elf: section(16) .BTF.ext, size 288, link 0, flags 0, type=1
+libbpf: elf: section(24) .symtab, size 336, link 1, flags 0, type=2
+libbpf: looking for externs among 14 symbols...
+libbpf: collected 0 externs total
+libbpf: prog 'rs_xdp_tools_load_bytes_stack_len': BPF program load failed: Invalid argument
+libbpf: prog 'rs_xdp_tools_load_bytes_stack_len': -- BEGIN PROG LOAD LOG --
+func#0 @0
+0: R1=ctx() R10=fp0
+; int rs_xdp_tools_load_bytes_stack_len(struct xdp_md *ctx)
+0: (b7) r2 = 0                        ; R2_w=0
+; volatile __u64 __bpfix_pad = 0;
+1: (7b) *(u64 *)(r10 -24) = r2        ; R2_w=0 R10=fp0 fp-24_w=0
+; __bpfix_pad += 1;
+2: (79) r2 = *(u64 *)(r10 -24)        ; R2_w=0 R10=fp0 fp-24_w=0
+3: (07) r2 += 1                       ; R2_w=1
+4: (7b) *(u64 *)(r10 -24) = r2        ; R2_w=1 R10=fp0 fp-24_w=1
+; __bpfix_pad += 2;
+5: (79) r2 = *(u64 *)(r10 -24)        ; R2_w=1 R10=fp0 fp-24_w=1
+6: (07) r2 += 2                       ; R2_w=3
+7: (7b) *(u64 *)(r10 -24) = r2        ; R2_w=3 R10=fp0 fp-24_w=3
+; __bpfix_pad += 3;
+8: (79) r2 = *(u64 *)(r10 -24)        ; R2_w=3 R10=fp0 fp-24_w=3
+9: (07) r2 += 3                       ; R2_w=6
+10: (7b) *(u64 *)(r10 -24) = r2       ; R2_w=6 R10=fp0 fp-24_w=6
+; __bpfix_pad += 4;
+11: (79) r2 = *(u64 *)(r10 -24)       ; R2_w=6 R10=fp0 fp-24_w=6
+12: (07) r2 += 4                      ; R2_w=10
+13: (7b) *(u64 *)(r10 -24) = r2       ; R2_w=10 R10=fp0 fp-24_w=10
+; __bpfix_pad += 5;
+14: (79) r2 = *(u64 *)(r10 -24)       ; R2_w=10 R10=fp0 fp-24_w=10
+15: (07) r2 += 5                      ; R2_w=15
+16: (7b) *(u64 *)(r10 -24) = r2       ; R2_w=15 R10=fp0 fp-24_w=15
+; __bpfix_pad += 6;
+17: (79) r2 = *(u64 *)(r10 -24)       ; R2_w=15 R10=fp0 fp-24_w=15
+18: (07) r2 += 6                      ; R2_w=21
+19: (7b) *(u64 *)(r10 -24) = r2       ; R2_w=21 R10=fp0 fp-24_w=21
+; __bpfix_pad += 7;
+20: (79) r2 = *(u64 *)(r10 -24)       ; R2_w=21 R10=fp0 fp-24_w=21
+21: (07) r2 += 7                      ; R2_w=28
+22: (7b) *(u64 *)(r10 -24) = r2       ; R2_w=28 R10=fp0 fp-24_w=28
+; __bpfix_pad += 8;
+23: (79) r2 = *(u64 *)(r10 -24)       ; R2_w=28 R10=fp0 fp-24_w=28
+24: (07) r2 += 8                      ; R2_w=36
+25: (7b) *(u64 *)(r10 -24) = r2       ; R2_w=36 R10=fp0 fp-24_w=36
+26: (bf) r3 = r10                     ; R3_w=fp0 R10=fp0
+; 
+27: (07) r3 += -12                    ; R3_w=fp-12
+; err = bpf_xdp_load_bytes(ctx, WIRE_OFFSET, head, WIRE_BYTES);
+28: (b7) r2 = 2                       ; R2_w=2
+29: (b7) r4 = 18                      ; R4_w=18
+30: (85) call bpf_xdp_load_bytes#189
+invalid indirect access to stack R3 off=-12 size=18
+verification time 118 usec
+stack depth 24
+processed 31 insns (limit 1000000) max_states_per_insn 0 total_states 0 peak_states 0 mark_read 0
+-- END PROG LOAD LOG --
+libbpf: prog 'rs_xdp_tools_load_bytes_stack_len': failed to load: -22
+libbpf: failed to load object '/tmp/bpfix-cap-emmxormt/rs_xdp_tools_load_bytes_stack_len_001__pad8.o'
+Error: failed to load object file

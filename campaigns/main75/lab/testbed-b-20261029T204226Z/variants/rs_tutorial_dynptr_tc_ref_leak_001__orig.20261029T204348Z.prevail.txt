@@ -1,0 +1,9 @@
+PREVAIL exit=1
+available programs:
+section=tc function=rs_tutorial_dynptr_tc_ref_leak [reject_load: Unresolved symbols found.]
+
+Unresolved external symbol bpf_dynptr_from_skb in section tc at location 18
+Unresolved external symbol bpf_dynptr_slice in section tc at location 28
+Unresolved external symbol bpf_dynptr_slice in section tc at location 38
+Unresolved external symbol bpf_dynptr_slice in section tc at location 59
+error: No executable sections

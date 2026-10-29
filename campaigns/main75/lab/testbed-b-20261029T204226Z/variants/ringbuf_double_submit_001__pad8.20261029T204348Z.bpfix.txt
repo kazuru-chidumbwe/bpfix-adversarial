@@ -1,0 +1,13 @@
+error[BPFIX-E006]: pointer type proof is missing
+  = class: source_bug
+  = confidence: medium
+  = diagnostic: supported, help: repair_hint, span: exact_pc
+  = next action: provenance
+  --> <verifier-log>:80
+   |
+   |
+   = verifier[80]: R6 invalid mem access 'scalar'
+   = note: nearest BPF instruction pc 50
+   = note: parsed 46 verifier state snapshots
+   = required proof: preserve a verifier-recognized pointer type at the operation that requires a pointer
+help: Keep the final access on a verifier-tracked pointer; rederive it from a checked base after scalar work.

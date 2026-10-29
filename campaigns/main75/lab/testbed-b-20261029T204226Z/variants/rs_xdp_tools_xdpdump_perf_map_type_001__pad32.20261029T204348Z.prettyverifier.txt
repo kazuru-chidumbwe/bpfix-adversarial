@@ -1,0 +1,7 @@
+Prettier Verifier ##
+#######################
+
+error: Map 2 cannot be passed into function 'bpf_perf_event_output' because of type incompatibility
+   44 | bpf_perf_event_output(ctx, &xdpdump_perf_map, flags,
+      | in file /home/test/bpfix-b/repo/campaigns/v2/upstream/rs_xdp_tools_xdpdump_perf_map_type_001/pad32.bpf.c
+
