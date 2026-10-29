@@ -50,5 +50,16 @@ class Consistency(unittest.TestCase):
         self.assertTrue(sw.consistency({11: {"verdict": "maybe"}}, {}))
 
 
+class CommittedCorpus(unittest.TestCase):
+    def test_rank_4259_is_e3_and_the_rest_are_scored(self):
+        p2 = sw.pass2_exclusions()
+        self.assertEqual(p2[4259]["code"], "E3")
+        self.assertEqual(sw.consistency(sw.hand_checks(), p2), [])
+        y = sw.yields(p2)
+        self.assertEqual(y["batch 3"]["outcomes"]["included"], 4)
+        self.assertEqual(y["batch 3"]["outcomes"]["E3"], 1)
+        self.assertEqual(y["pooled"]["outcomes"]["included"], 5)
+
+
 if __name__ == "__main__":
     unittest.main()

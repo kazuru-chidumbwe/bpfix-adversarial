@@ -1,2 +1,6 @@
 rank	decision	code	note
 2043	pass		fixes a verifier rejection of the buffer bounds check (message and diff); the MAX_NUM_MODULES change is a second, complexity-only edit, so not E1 and not N0
+3285	pass		title names verifier safety for the XDP ctx pointer loads and the BPF C diff replaces them with asm accessors, so not N0; not E1 (no guard, relocation, flag, map size or license change); the Rust loader edits make it not E2 only-userspace
+4049	pass		message names the verifier failing to verify the native unwinder on 6.8+ kernels, so not N0; the edit adds a function and a statement, not E1
+4259	exclude	E3	same bug as rank 4049 fixed on the PR #2667 branch that 4049 merges; 4049 ranks earlier
+6257	pass		message names the verifier rejection of the byte store into the 501-byte map value, so not N0; a variable type change is not in E1's list
