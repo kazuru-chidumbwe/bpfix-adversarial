@@ -62,6 +62,17 @@ Five source rewrites, each applied to **both** `buggy.bpf.c` and `fixed.bpf.c` o
 
 **Scoring:** for every reporter, paired McNemar of on-site hit (original pair vs rewritten pair, R0), and the share of pairs whose primary line moved, mapped through the diff from `buggy` to rewritten `buggy`. Positive control: `StaleLine` as in Section 6.
 
+## 8. Second configuration (added 29 Oct 2026, before anything was captured on the second host)
+
+The cite pin is one kernel and one toolchain. To test whether the main75 results depend on them, the same cases are captured and scored on a second configuration that differs in all three: Testbed B, Ubuntu 24.04, kernel `6.8.0-147-generic`, Ubuntu clang 18.1.3, bpftool 7.4.0 with libbpf 1.4 (the pin: Debian 13, `6.12.86+deb13-amd64`, clang 19.1.7, bpftool 7.5.0 with libbpf 1.5).
+
+1. **Same inputs and tools.** The harness commit, case sources, metamorphic variants and rewrites are those of the pin runs. bpfix (`81d97e4a`), Pretty Verifier (`0f8875a1`) and PREVAIL (`3211393d`) are built on Testbed B from the same commits. Capture uses `lab/run_main75_pin.sh` and `lab/run_n3_pin.sh` with `ALLOW_OTHER_KERNEL=1` and `LABEL=testbed-b`, then the Pretty Verifier and PREVAIL replays as on the pin.
+2. **Inclusion on its own.** Sections 2 to 7 apply unchanged on Testbed B: a case is scored there only if its buggy program REJECTS and its fixed program ACCEPTS on Testbed B, and a rewritten pair only if it is valid there. Cases included on one host and not the other are listed with both verdicts.
+3. **Outputs.** The scorers write `results/main75_pin.testbed-b.*` and `results/main75_rewrites.testbed-b.*`; the pin results are not touched.
+4. **Comparison** (`results/cross_config.*`). On the cases included on both hosts: per reporter and rule, hits on each host and the paired exact McNemar test between hosts; per case, whether the verdicts, the verifier's stop line and each reporter's primary line are the same. The claims of Sections 3.2 and 3.4 of the paper are restated with Testbed B's numbers, and each is reported as holding or not; none is dropped or reworded after the comparison is seen.
+5. **Not rerun.** The developer-fixed corpus is not rebuilt on Testbed B: its build driver, loader and decision rule are frozen for the pin (`docs/WILD-CORPUS-PROTOCOL.md`).
+6. **Host faults.** A capture that fails for a reason of the host setup (a missing header or package) is fixed and the whole run is repeated from its first case; the failed run is kept, unscored, and its cause is logged here.
+
 ## Changes after the freeze
 
 - **26 Oct 2026, before any rewrite result was scored. VPADC added.** VPAD's found-once precondition excludes 27 cases, and 23 of them are cases where bpfix's primary is on the repair site, so VPAD covers only 11 of bpfix's 34 R0 hits. VPAD stays as frozen and is reported. VPADC is added next to it: the same padding and placement, with the anchor in `fixed` taken as its diff counterpart (the rule of the other rewrites) and the same previous-line precondition. A first capture of the rewrites, taken before this change, is discarded unscored; all rewrites are captured together in one later run. Every rewrite table reports how many on-site hits each reporter had on the applicable cases before the rewrite.
