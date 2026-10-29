@@ -47,3 +47,35 @@ an uncredited check on the wrong pointer (`RR-wrongptr-*`) or before a
 reassignment (`RR-reassign-*`) is also labelled, and only when the identifier is
 on the `!tmp`/`!val`/`!ptr`/`!value` list.
 
+
+## 5. Modified context pointer reported as "a scalar where a pointer is required"
+
+Input: `fixtures/wild/cases/3285/buggy.log` (landscape `xdp_lan_root`, parent of
+fc3fafd; Debian 13, 6.12.86, clang 19.1.7). Output:
+`fixtures/wild/cases/3285/buggy.bpfix.txt`.
+
+```
+17 | __builtin_memcpy(meta, data_meta, sizeof(*meta));
+   | ------------------------------------------------- verifier state changes from pkt to scalar before the rejected access
+41 | void *data_meta = (void *)(long)ctx->data_meta;
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ rejected here: verifier sees a scalar where a pointer is required
+   = verifier[127]: dereference of modified ctx ptr R2 off=8 disallowed
+```
+
+The log shows R2 as a context pointer at the rejected load:
+
+```
+42: (bf) r2 = r6                      ; R2_w=ctx() R6=ctx()
+43: (0f) r2 += r9
+44: R2_w=ctx(off=8) R9=8
+47: (61) r2 = *(u32 *)(r2 +0)
+dereference of modified ctx ptr R2 off=8 disallowed
+```
+
+R2 is a pointer, a context pointer moved by a register add; the verifier
+requires context loads at a constant offset in the instruction. The label on
+line 17 describes an earlier use of R2 (insn 13, a byte loaded from `pkt_meta`
+during the copy), not the value that reaches the rejected load. The class (E006
+lowering_artifact) and the help text are right, and the project's fix (context
+fields read through asm accessors) matches the help. Unchanged in 0.1.10
+(4b9deca), which changes only version numbers under `crates/`.
