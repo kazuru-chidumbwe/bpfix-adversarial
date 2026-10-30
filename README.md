@@ -1,172 +1,105 @@
 # bpfix-adversarial
 
-Does an eBPF reject log still point at the line where a fault was injected after padding and renaming?
+Where do eBPF verifier diagnostics point, relative to the lines developers change to fix the rejected program, and does that answer survive rewrites that the verifier sees?
 
-When the verifier rejects a program, the stop site in the log is often not where the missing check belongs. This tree builds small eBPF programs with known injection markers (rejecting mutants plus accepting controls), captures verifier logs on a pinned lab host, and scores whether a diagnostic still names that marker. Scoring covers bpfix SourceComment heuristics, thin baselines, and upstream CLI replay.
+When the verifier rejects a program, it stops at the instruction where its safety argument breaks, but the line a developer has to change is often elsewhere. This harness captures each rejection on a pinned laboratory kernel, runs every registered diagnostic tool (a reporter) on the same capture, and scores the source line each one names against the developer's own fix, under three rules for what counts as the repair site. A second oracle, read from the verifier's state, never sees the fix. Verifier-checked rewrites and a control reporter measure whether a reporter's answer is stable.
 
-Target: [bpfix](https://github.com/eunomia-bpf/bpfix) / Zheng et al. ([arXiv:2607.02748](https://arxiv.org/abs/2607.02748)). Not a verifier-soundness, bypass, or CVE study.
+Reporters: upstream [bpfix](https://github.com/eunomia-bpf/bpfix) CLI replay (Zheng et al., [arXiv:2607.02748](https://arxiv.org/abs/2607.02748)), VerifierState, SourceComment (a port of bpfix's source heuristics), and two external tools added as adapters, [Pretty Verifier](https://github.com/netgroup-polito/pretty-verifier) and [PREVAIL](https://github.com/vbpf/prevail). Baselines: a uniformly random executable line and a control that repeats a fixed line number.
 
 [![CI](https://github.com/kazuru-chidumbwe/bpfix-adversarial/actions/workflows/ci.yml/badge.svg)](https://github.com/kazuru-chidumbwe/bpfix-adversarial/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**Frozen tree for published numbers:** [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2). Metadata: [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff), [codemeta.json](codemeta.json). Prefer that tag over floating `master`. Upstream bpfix pin: `81d97e4a528456e0082a77f4fb6edd13fa092b7b`.
+Release: `v1.1.0`. Metadata: [CODE_METADATA.md](CODE_METADATA.md), [CITATION.cff](CITATION.cff), [codemeta.json](codemeta.json). Upstream bpfix pin: `81d97e4a528456e0082a77f4fb6edd13fa092b7b`.
 
-## Offline insets (no lab SSH)
+## Quick start (offline)
+
+The offline workflow rescores every corpus from the committed captures and needs only the Python 3.10+ standard library.
 
 ```bash
 git clone https://github.com/kazuru-chidumbwe/bpfix-adversarial.git
 cd bpfix-adversarial
-git checkout v1.0.2
+git checkout v1.1.0
 python -m venv .venv
 source .venv/bin/activate    # Windows: .venv\Scripts\activate
-pip install -U pip && pip install -e .   # stdlib-only core; optional: pip install -e ".[lab]"
-make smoke                   # version + unittest + rename-demo
-python tools/emit_rename_table.py
-python tools/emit_four_obligation_matrix.py
-python tools/score_sc_vs_honesty.py
-make figures                 # regenerate figures/fig3-fig5 SVGs from results/*.json
-pip install -e ".[dev]"
-python tools/measure_coverage.py   # single-command repro of the coverage figures quoted in the paper
+pip install -U pip && pip install -e .
+make smoke                   # version, unit tests, rename demo
+make natural                 # rescore main75, rewrites, developer-fixed cases, second configuration, state oracle
+python tools/check_results_fresh.py   # rebuild every committed result and fail on any difference
 ```
 
-One-command offline path (Python tooling only; does not emulate the verifier; containers share the host kernel):
+In a container (Python tooling only; it does not emulate the verifier):
 
 ```bash
 docker build -t bpfix-adversarial:offline .
 docker run --rm bpfix-adversarial:offline
 ```
 
-Committed tables: [`results/`](results/). Docs index: [`docs/README.md`](docs/README.md).
+On Windows, tracked paths reach 149 characters below the clone directory; if the clone sits deep enough to pass the 260-character limit, run `git config --global core.longpaths true` before cloning.
 
-## What it does
+## Corpora
 
-| Capability | Role |
+| Corpus | What it is | Where |
+| --- | --- | --- |
+| main75 | The 75 cases of upstream bpfix's main split, buggy and fixed, vendored at the pinned commit; 74 have a fix that changes code and are scored | `fixtures/upstream/`, captures in `campaigns/main75/lab/` |
+| Rewrites | Padding and renaming (`campaigns/v2/upstream/`), and VPAD, VPADC, MACRO, INLINE, SPLIT and REORDER of both programs (`campaigns/n3/`); a pair is scored only if the rewritten buggy program REJECTS and the rewritten fixed one ACCEPTS | as listed |
+| Developer-fixed | Verifier rejections fixed by developers in public eBPF projects, collected under a fixed protocol | `fixtures/wild/` (`docs/WILD-CORPUS-PROTOCOL.md`) |
+| Templates | Hand-written programs for four obligation families with construction-time markers, kept as regression fixtures | `mutants/`, `campaigns/v2/mutants/` |
+
+Each capture directory holds the verifier log of every program and a manifest row with its verdict, processed-instruction count and the SHA-256 of source and log. The rules for main75, the rewrites and the second configuration are in `docs/MAIN75-PIN-PROTOCOL.md`, with each change and its date.
+
+## Results
+
+| Result | File |
 | --- | --- |
-| Mutant generators | Obligation-scoped C under `mutants/` with `ORACLE_LOSS_LINE` / `ORACLE_REJECT_LINE` |
-| Lab capture | clang + `bpftool -d` on a pinned Debian 13 host (`tools/lab_*.py`) |
-| Scoring | SourceComment port + VerifierState + upstream bpfix CLI replay; `top1_line` / `top1_span` / `set_recall_message` |
-| Paper insets | Committed tables under `results/` |
+| main75 on the laboratory pin (Testbed A) | `results/main75_pin.md` |
+| Rewrites of main75 | `results/main75_rewrites.md` |
+| Second configuration (Testbed B) and its comparison with the pin | `results/main75_pin.testbed-b.md`, `results/cross_config.md` |
+| Developer-fixed cases | `results/wild.md` |
+| State oracle | `results/state_oracle.md` (`docs/STATE-ORACLE.md`) |
+| Pretty Verifier line lookup | `results/pv_lookup.md` |
+| Template campaigns | `results/rq1_bpfix_cli.md`, `results/rename_honesty.md`, `results/distance_sweep.md` and the other template results (`make insets`) |
 
-Four template families: NullablePointer, PointerProvenance, ScalarRange, PacketBounds. On the cite pin the PointerProvenance templates are rejected at the pointer XOR itself, inside the injection span, and upstream bpfix labels them E005 (ScalarRange); they are not a stop-site distance test (see `results/rq1_bpfix_cli.md`). The only rejecting NullablePointer row, `NP-idiomatic-nocheck`, has no committed capture-time copy of its source; line-text agreement with the captured log covers it (see `mutants/README.md`).
+Every result is JSON plus Markdown, written by the emitter named in `tools/check_results_fresh.py`. In template-era file and function names, "honesty" means agreement with the injection site (for example `rename_honesty`, `score_honesty`).
 
-## Install
+## Laboratory capture
 
-Requires Python 3.10+.
+Capture needs Linux with eBPF support, Clang and bpftool; the pin is documented in `docs/LAB-PIN.md`.
 
-```bash
-git clone https://github.com/kazuru-chidumbwe/bpfix-adversarial.git
-cd bpfix-adversarial
-git checkout v1.0.2
-python -m venv .venv
-source .venv/bin/activate    # Windows: .venv\Scripts\activate
-pip install -U pip
-pip install -e .
-```
+| Run | Command |
+| --- | --- |
+| main75, buggy and fixed, with bpfix replay | `lab/run_main75_pin.sh` |
+| Rewrites of main75 | `lab/run_n3_pin.sh` |
+| Replay of an adapter on a capture directory | `python tools/replay_reporter.py --reporter <name> --captured <dir>` |
+| Developer-fixed cases: search, build, load, decide | `tools/wild_batch3.py`, `tools/wild_replay.py`, `tools/score_wild.py` (`docs/LAB-RUN-WILD.md`) |
+| Second configuration | `ALLOW_OTHER_KERNEL=1 LABEL=<name> lab/run_main75_pin.sh`, then `python tools/score_main75_pin.py --run <dir> --tag <name>` and `python tools/compare_configs.py --tag <name>` |
 
-Lab SSH helpers need `pip install -e ".[lab]"` (paramiko) and a `lab/.env`; the variables are listed in [`docs/LAB-PIN.md`](docs/LAB-PIN.md).
-To add a reporter: map a log to a primary line, then call `bpfix_adversarial.score.score_honesty` (see `docs/METRICS.md`).
+## Adding a reporter
 
-## Minimal demo
-
-After install, show that bpfix-style null-check name lists break under idiomatic rename
-while helper-anchored recognition stays stable.
-
-```bash
-python -c "import bpfix_adversarial as m; print(m.__version__)"
-# → 1.0.2 on the v1.0.2 pin
-
-python -m bpfix_adversarial rename-demo --breaks-only --limit 2
-```
-
-Example excerpt. `helper_anchored_stable` is true by construction: the helper line is the same fixed `bpf_map_lookup_elem` call in every case, because renaming never touches the helper name.
-
-```json
-{
-  "summary": { "n_cases": 32, "n_honesty_breaks": 32 },
-  "cases": [
-    {
-      "original_line": "if (!tmp)",
-      "renamed_line": "if (!entry)",
-      "honesty_break": true,
-      "helper_anchored_stable": true
-    }
-  ]
-}
-```
-
-Full combinatorial **4x8** matrix of brittle x idiomatic name pairs: all 32 pairs flip
-the SourceComment null-check predicate. This draws the recognition boundary of a
-name-list heuristic; it is **not** scored as `top1_line` and is **not** an empirical
-localization rate over n=32. Helper-anchored `bpf_map_lookup_elem` recognition is
-rename-insensitive by construction. See `results/rename_honesty.md`.
+A reporter is one module and one line in `bpfix_adversarial/reporters.py`: a class that replays the tool on a captured case, records its provenance and parses its stored output into a primary line and labels. Every scorer then includes it in every table, under every repair-site rule and on every rewrite. The Pretty Verifier and PREVAIL adapters are worked examples; `docs/ADDING-A-REPORTER.md` walks through the first.
 
 ## Tests
 
 ```bash
-make smoke          # version + unittest + rename-demo
-# or: python -m unittest discover -s tests -v
+python -m unittest discover -s tests
+python tools/measure_coverage.py     # statement and branch coverage, with and without tools/
 ```
 
-CI runs the same suite on Python 3.10 and 3.12 on Linux, and on Python 3.12 on Windows with `core.autocrlf=true`, so the committed line endings are exercised on both. See `.github/workflows/ci.yml`.
-
-## Reproduce paper insets
-
-Committed paper-facing tables live in [`results/`](results/). Offline emitters
-need no lab for most runs.
-
-```bash
-python tools/emit_rename_table.py            # rename metamorphic matrix
-python tools/emit_distance_sweep.py          # synthetic distance (pads 0–64)
-python tools/emit_tier_table.py              # SC vs VS (fixtures)
-python tools/score_np_pair.py                # NP brittle/idiomatic fixture pair
-python tools/emit_four_obligation_matrix.py  # four-obligation coverage
-python tools/score_sc_vs_honesty.py          # SC/VS on lab-captured logs
-python tools/emit_rq1_lab_distance.py        # lab pad distance (0/8/32)
-python tools/emit_depth21_selection.py       # depth-21 curated join table (unscored)
-# Optional lab / CLI:
-#   python tools/lab_capture_via_env.py
-#   tools/run_rq1_bpfix_cli.sh && python tools/emit_rq1_bpfix_cli.py
-```
-
-| Campaign | Focus | Primary inset |
-| --- | --- | --- |
-| Distance | Injection-site distance under padding | `distance_sweep.*`, `rq1_lab_distance.*`, `rq1_bpfix_cli.*` |
-| Rename | Null-check name-list brittleness | `rename_honesty.*` |
-| Tiers | SourceComment vs VerifierState | `tier_disagreement.*`, `sc_vs_honesty.*` |
+CI runs the tests, the version-sync, line-ending and freshness checks, and `make natural` followed by a check that no committed result changed, on Python 3.10 and 3.12 on Linux and on Python 3.12 on Windows (`.github/workflows/ci.yml`).
 
 ## Layout
 
 ```
-bpfix_adversarial/   heuristic port, generators, logparse, score
-mutants/              NP + PP/SR/PB C templates
-fixtures/logs/        synthetic/ + captured/ (lab bpftool logs)
-fixtures/upstream/    depth-21 sparse bpfix-bench cases (curated target)
-lab/                  Linux capture helpers
-tools/                emit tables, lab capture, generate mutants
-results/              committed paper insets (md/json)
-docs/                 metrics, lab pin, deps, upstream, tags (see docs/README.md)
-schemas/              optional JSON Schema contracts
-tests/                unittest suite
-Makefile              smoke / insets
-CODE_METADATA.md      code-metadata table (C1–C8)
+bpfix_adversarial/   core package: reporters, parsers, repair-site and state oracles, scoring
+tools/               capture, replay, scoring, emitters, developer-fixed pipeline
+lab/                 laboratory run scripts
+fixtures/upstream/   vendored main75 cases
+fixtures/wild/       developer-fixed candidates, decisions and cases
+campaigns/           captures: main75, rewrites (n3), template campaign v2
+mutants/             template programs
+results/             committed results (JSON and Markdown)
+docs/                protocols, metrics, lab pin, adapters, upstream issues
+tests/               unittest suite
 ```
-
-## Campaign v2 (after v1.0.2)
-
-Post-review experiments that reach bpfix's real output live in
-[`campaigns/v2/`](campaigns/v2/README.md). They cover rename pairs on *rejecting*
-programs, padding that survives `-O2`, a retargeted PointerProvenance template,
-and metamorphic variants of upstream's own cases scored against upstream's own
-fixes (`results/upstream_repair_site.*`, offline). Lab run:
-[`docs/LAB-RUN-V2.md`](docs/LAB-RUN-V2.md). Published numbers remain those of `v1.0.2`.
-
-## Scope note
-
-Validated paper evidence is the **template** four-obligation reject-oracles,
-SC/VS injection-site agreement, and the upstream bpfix CLI primary-arrow table
-on the Debian pin. Depth-21 under `fixtures/upstream/` is a **curated validation
-target**, not independently scored results. The scored construct is injection-site
-agreement. It is not a verified semantic proof-loss oracle. See [`docs/METRICS.md`](docs/METRICS.md).
 
 ## License
 
