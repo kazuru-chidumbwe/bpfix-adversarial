@@ -18,8 +18,10 @@
  *
  * Build: cc -O2 -o wildload tools/wildload.c -lbpf -lelf -lz
  * Legacy-maps build (objects with a `maps` section, which libbpf >= 1.0 refuses):
- *   cc -O2 -DWILDLOAD_LEGACY -I<libbpf-0.8.3>/include -o wildload-legacy tools/wildload.c \
- *      <libbpf-0.8.3>/libbpf.a -lelf -lz
+ *   cc -O2 -DWILDLOAD_LEGACY -I<libbpf-0.8.3>/root/usr/include -I<libbpf-0.8.3>/include/uapi \
+ *      -o wildload-legacy tools/wildload.c <libbpf-0.8.3>/build/libbpf.a -lelf -lz
+ * with libbpf v0.8.3 built by `make -C src BUILD_STATIC_ONLY=y OBJDIR=../build DESTDIR=../root install`
+ * (docs/LAB-RUN-WILD.md).
  * It sets relaxed_maps, so iproute2-style definitions longer than bpf_map_def
  * (pinning, inner map ids) open with their first five fields; pins are not used.
  * Usage: sudo ./wildload <object.o> <outdir>
