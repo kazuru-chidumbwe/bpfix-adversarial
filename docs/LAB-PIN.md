@@ -30,7 +30,7 @@ kernel `6.8.0-136-generic`, clang 18.1.3, bpftool v7.4.0; see
 Optional offline CLI replay uses upstream bpfix at immutable commit
 `81d97e4a528456e0082a77f4fb6edd13fa092b7b` (see `docs/UPSTREAM.md`).
 
-## What reviewers must match
+## What a rerun must match
 
 Template-oracle **scores** depend on verifier text from this kernel.
 Matching userspace (clang/bpftool) without matching `uname -r` is **not** the

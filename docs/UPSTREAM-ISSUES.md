@@ -46,9 +46,10 @@ disappears. Cause: `looks_like_null_check` matches the substring `!val`. Related
 an uncredited check on the wrong pointer (`RR-wrongptr-*`) or before a
 reassignment (`RR-reassign-*`) is also labelled, and only when the identifier is
 on the `!tmp`/`!val`/`!ptr`/`!value` list.
+Outputs: `RR-flag-valid.20261026T041232Z.bpfix.txt` and `RR-flag-ok.20261026T041232Z.bpfix.txt` in the
+same directory (Debian 13, 6.12.86, clang 19.1.7).
 
-
-## 5. Modified context pointer reported as "a scalar where a pointer is required"
+## 4. Modified context pointer reported as "a scalar where a pointer is required"
 
 Input: `fixtures/wild/cases/3285/buggy.log` (landscape `xdp_lan_root`, parent of
 fc3fafd; Debian 13, 6.12.86, clang 19.1.7). Output:
@@ -80,7 +81,7 @@ lowering_artifact) and the help text are right, and the project's fix (context
 fields read through asm accessors) matches the help. Unchanged in 0.1.10
 (4b9deca), which changes only version numbers under `crates/`.
 
-## 6. No source location on kernels before 6.9
+## 5. No source location on kernels before 6.9
 
 Input: `campaigns/main75/lab/testbed-b-20261029T204226Z/buggy/` (all 74 rejecting
 upstream main75 programs, captured on Ubuntu 24.04, kernel 6.8.0-147-generic,

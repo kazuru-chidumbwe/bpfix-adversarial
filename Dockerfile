@@ -1,7 +1,7 @@
 # Offline inset replay (Python tooling only)
 #
 # Purpose: one-command regeneration of committed results/ tables from frozen
-# fixtures and logs, which is what a reviewer typically tries first.
+# fixtures and logs, without a laboratory host.
 #
 # NOT in scope: eBPF verifier behavior. Containers share the host kernel;
 # clang/bpftool/lab capture are separate from this image. Do not treat this

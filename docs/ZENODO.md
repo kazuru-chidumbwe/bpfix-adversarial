@@ -1,12 +1,6 @@
-# Zenodo archive companion for cite pin `v1.0.2`
+# Zenodo archives
 
-**C2:** public GitHub tree, **not** Zenodo:
-
-https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2
-
-**Version lock:** code metadata C1 and package version fields are **`v1.0.2` / `1.0.2`**.
-
-**Do not reuse** `10.5281/zenodo.21860453` as “this version.” That DOI is the published **v1.0.1** archive.
+Each release is archived on Zenodo as a version under one concept DOI. The file on each record is `git archive --format=zip` of the release tag; `python tools/check_zenodo_archive.py --zip <file> --tag <tag>` compares a downloaded record with the tag file by file.
 
 | Record | DOI | Tag |
 | --- | --- | --- |
@@ -15,16 +9,6 @@ https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2
 | v1.0.1 | https://doi.org/10.5281/zenodo.21860453 | `v1.0.1` |
 | v1.0.2 | https://doi.org/10.5281/zenodo.22763331 | `v1.0.2` |
 
-The v1.0.2 archive was minted by hand on 15 Sep 2026 (Zenodo's API was unavailable at tag time) as a **new version** under the existing concept, so the concept DOI is unchanged. Its DOI is recorded in C7, `CITATION.cff` and `codemeta.json`. The file on the record is `git archive --format=zip --prefix=bpfix-adversarial-v1.0.2/ v1.0.2` of the cited tag. Do not relabel 21860453.
+The v1.0.2 record holds the same 356 files as the `v1.0.2` tag (`check_zenodo_archive.py`: identical).
 
-## Open check
-
-This note dates the mint to 15 Sep 2026; the `v1.0.2` tag commit
-(`172ca43`) is dated 30 Sep 2026. Download the record's zip and run
-`python tools/check_zenodo_archive.py --zip <file> --tag v1.0.2`. It compares
-the files of the zip and the tag. If they differ, mint a new Zenodo version
-rather than moving the tag.
-
-## Cite
-
-Kazuru, S. (2026). bpfix-adversarial (v1.0.2). GitHub. https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2
+Code metadata C2 points to the GitHub tree of the release; the version DOI is recorded in C7, `CITATION.cff` and `codemeta.json`.

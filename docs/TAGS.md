@@ -1,15 +1,16 @@
 # Tags
 
-`master` may move. For published numbers, check out **`v1.0.2`**.
+`master` may move. For published numbers, check out the release the publication names.
 
 | Tag | Purpose |
 | --- | --- |
-| [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.2) | **Current frozen tree** (minor revision) |
-| [`v1.0.1`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.1) | Prior submit pin |
+| [`v1.1.0`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.1.0) | **Current release**: main75 on the pin, rewrites, developer-fixed corpus, external reporters, second configuration |
+| [`v1.0.2`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.2) | Template campaign release |
+| [`v1.0.1`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.1) | Earlier template release |
 | [`v1.0.0`](https://github.com/kazuru-chidumbwe/bpfix-adversarial/releases/tag/v1.0.0) | First public release label (see note below) |
 
 ```bash
-git checkout v1.0.2
+git checkout v1.1.0
 ```
 
 ## Keeping versions aligned
@@ -21,7 +22,7 @@ git checkout v1.0.2
 
 ## Note on `v1.0.0`
 
-`v1.0.0` is an early release label and is not a reproduction target. Published work cites **`v1.0.2`** (GitHub permanent link / C2).
+`v1.0.0` is an early release label and is not a reproduction target.
 
 ## Lab host
 
