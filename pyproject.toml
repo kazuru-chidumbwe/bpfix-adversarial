@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bpfix-adversarial"
-version = "1.0.2"
-description = "Check whether eBPF reject diagnostics still name the line where a fault was injected after pad and rename stress."
+version = "1.1.0"
+description = "Scores where eBPF verifier diagnostics point relative to the lines developers change to fix the rejected program, and whether that answer survives rewrites the verifier sees."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }

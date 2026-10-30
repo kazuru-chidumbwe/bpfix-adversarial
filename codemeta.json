@@ -1,14 +1,14 @@
 {
   "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
   "@type": "SoftwareSourceCode",
-  "name": "bpfix-adversarial: an evaluation harness for eBPF diagnostic localization under padding and renaming stress",
-  "description": "Check whether eBPF reject diagnostics still name the line where a fault was injected after pad and rename stress.",
-  "version": "1.0.2",
-  "identifier": "https://doi.org/10.5281/zenodo.22763331",
-  "dateModified": "2026-09-30",
+  "name": "bpfix-adversarial: scoring eBPF verifier diagnostics against developers' fixes",
+  "description": "Scores where eBPF verifier diagnostics point relative to the lines developers change to fix the rejected program, and whether that answer survives rewrites the verifier sees.",
+  "version": "1.1.0",
+  "identifier": "https://doi.org/10.5281/zenodo.21859726",
+  "dateModified": "2026-10-30",
   "license": "https://spdx.org/licenses/MIT.html",
   "codeRepository": "https://github.com/kazuru-chidumbwe/bpfix-adversarial",
-  "url": "https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.0.2",
+  "url": "https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.1.0",
   "programmingLanguage": [
     "Python",
     "C"
@@ -42,8 +42,8 @@
     "eBPF",
     "verifier",
     "diagnostic localization",
+    "fault localization",
     "metamorphic testing",
-    "bpfix",
-    "software testing"
+    "bpfix"
   ]
 }

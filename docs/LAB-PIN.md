@@ -70,7 +70,7 @@ Clone and capture (credentials in gitignored `lab/.env`):
 ```bash
 git clone https://github.com/kazuru-chidumbwe/bpfix-adversarial.git
 cd bpfix-adversarial
-git checkout v1.0.2   # cite tag
+git checkout v1.1.0   # release tag
 python3 -m venv .venv && . .venv/bin/activate
 pip install -U pip && pip install -e ".[lab]"
 python tools/lab_capture_via_env.py

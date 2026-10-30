@@ -143,7 +143,8 @@ def final_code(build_row: dict, p2: dict[int, dict]) -> str:
 def hand_checks() -> dict[int, dict]:
     if not HAND.is_file():
         return {}
-    return {int(r["rank"]): r for r in csv.DictReader(HAND.open(encoding="utf-8"), delimiter="\t")}
+    with HAND.open(encoding="utf-8") as fh:
+        return {int(r["rank"]): r for r in csv.DictReader(fh, delimiter="\t")}
 
 
 def read(p: Path) -> str:
