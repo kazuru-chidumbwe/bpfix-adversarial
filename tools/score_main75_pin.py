@@ -257,6 +257,18 @@ def main(argv: list[str] | None = None) -> int:
             per_rule[rule] = {f"{a}_only": ab, f"{b}_only": ba, "p": mcnemar_exact(ab, ba)}
         mcnemar[f"{a}_vs_{b}"] = per_rule
 
+    mcnemar_kind: dict = {}
+    for g in sorted({r["kind"] for r in scored}):
+        rs = [r for r in scored if r["kind"] == g]
+        per_rep = {}
+        for b in REPORTERS:
+            if b == "bpfix":
+                continue
+            ab = sum(1 for r in rs if r["outcomes"]["bpfix"]["R0"]["primary_on_site"] and not r["outcomes"][b]["R0"]["primary_on_site"])
+            ba = sum(1 for r in rs if r["outcomes"][b]["R0"]["primary_on_site"] and not r["outcomes"]["bpfix"]["R0"]["primary_on_site"])
+            per_rep[b] = {"bpfix_only": ab, f"{b}_only": ba, "p": mcnemar_exact(ab, ba)}
+        mcnemar_kind[g] = per_rep
+
     pairs = variant_pairs(rows, var_m)
     pad_insns: dict = {}
     for v in ("pad8", "pad32"):
@@ -277,6 +289,7 @@ def main(argv: list[str] | None = None) -> int:
         "summary": summary,
         "strata": strata,
         "mcnemar_primary_on_site": mcnemar,
+        "mcnemar_bpfix_by_kind_r0": mcnemar_kind,
         "metamorphic": {v: {rep: {k: x for k, x in d.items() if k != "rows"} for rep, d in per.items()}
                         for v, per in pairs.items()},
         "rows": rows,
@@ -335,6 +348,13 @@ def render_md(p: dict) -> str:
         for rule, d in per.items():
             vals = list(d.values())
             L.append(f"| {pair.replace('_vs_', ' vs ')} | {rule} | {vals[0]} | {vals[1]} | "
+                     f"{'n/a' if vals[2] is None else f'{vals[2]:.4f}'} |")
+    L += ["", "## Exact McNemar by case kind, bpfix against each reporter (R0)", "",
+          "| case kind | reporter | only bpfix | only reporter | p |", "| --- | --- | ---: | ---: | ---: |"]
+    for g, per in p["mcnemar_bpfix_by_kind_r0"].items():
+        for rep, d in per.items():
+            vals = list(d.values())
+            L.append(f"| {g} | {rep} | {vals[0]} | {vals[1]} | "
                      f"{'n/a' if vals[2] is None else f'{vals[2]:.4f}'} |")
     L += ["", "## Metamorphic pairs (R0 sites mapped into each variant)", "",
           "| variant | reporter | pairs | orig on site | variant on site | lost | gained | McNemar p | primary moved |",

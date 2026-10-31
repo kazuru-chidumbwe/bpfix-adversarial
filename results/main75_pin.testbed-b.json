@@ -1673,6 +1673,52 @@
    }
   }
  },
+ "mcnemar_bpfix_by_kind_r0": {
+  "canary": {
+   "VerifierState": {
+    "bpfix_only": 0,
+    "VerifierState_only": 0,
+    "p": null
+   },
+   "SourceComment": {
+    "bpfix_only": 0,
+    "SourceComment_only": 5,
+    "p": 0.0625
+   },
+   "PrettyVerifier": {
+    "bpfix_only": 0,
+    "PrettyVerifier_only": 19,
+    "p": 4e-06
+   },
+   "PREVAIL": {
+    "bpfix_only": 0,
+    "PREVAIL_only": 18,
+    "p": 8e-06
+   }
+  },
+  "real-project seed": {
+   "VerifierState": {
+    "bpfix_only": 0,
+    "VerifierState_only": 0,
+    "p": null
+   },
+   "SourceComment": {
+    "bpfix_only": 0,
+    "SourceComment_only": 4,
+    "p": 0.125
+   },
+   "PrettyVerifier": {
+    "bpfix_only": 0,
+    "PrettyVerifier_only": 8,
+    "p": 0.007812
+   },
+   "PREVAIL": {
+    "bpfix_only": 0,
+    "PREVAIL_only": 10,
+    "p": 0.001953
+   }
+  }
+ },
  "metamorphic": {
   "pad8": {
    "bpfix": {

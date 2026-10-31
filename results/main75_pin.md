@@ -90,6 +90,19 @@ bpfix, any label on a repair site (informative): R0 46/69 (0.55–0.77), R1 59/6
 | PrettyVerifier vs PREVAIL | R1 | 4 | 9 | 0.2668 |
 | PrettyVerifier vs PREVAIL | R2 | 3 | 6 | 0.5078 |
 
+## Exact McNemar by case kind, bpfix against each reporter (R0)
+
+| case kind | reporter | only bpfix | only reporter | p |
+| --- | --- | ---: | ---: | ---: |
+| canary | VerifierState | 0 | 0 | n/a |
+| canary | SourceComment | 20 | 2 | 0.0001 |
+| canary | PrettyVerifier | 4 | 0 | 0.1250 |
+| canary | PREVAIL | 5 | 1 | 0.2188 |
+| real-project seed | VerifierState | 0 | 0 | n/a |
+| real-project seed | SourceComment | 10 | 3 | 0.0923 |
+| real-project seed | PrettyVerifier | 3 | 0 | 0.2500 |
+| real-project seed | PREVAIL | 1 | 0 | 1.0000 |
+
 ## Metamorphic pairs (R0 sites mapped into each variant)
 
 | variant | reporter | pairs | orig on site | variant on site | lost | gained | McNemar p | primary moved |
