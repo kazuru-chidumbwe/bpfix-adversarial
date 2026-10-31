@@ -2,11 +2,9 @@
 # SPDX-License-Identifier: MIT
 """Check that a downloaded Zenodo zip holds exactly the files of a git tag.
 
-docs/ZENODO.md states the v1.0.2 record is
-``git archive --format=zip --prefix=bpfix-adversarial-v1.0.2/ v1.0.2``. The note
-also dates the mint to 15 Sep 2026 while the tag's commit is dated 30 Sep 2026,
-so the archive may predate the final tag. Zip bytes differ with timestamps, so
-this compares member names and file contents.
+Zip bytes differ with timestamps and the top-level folder differs between
+``git archive`` and GitHub's source zip, so this compares member paths below the
+top-level folder and file contents.
 
 Usage:
   curl -L -o /tmp/z.zip "https://zenodo.org/records/22763331/files/<file>.zip?download=1"

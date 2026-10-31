@@ -13,11 +13,11 @@ Same table as the manuscript Code metadata section.
 | C4 | Code versioning system used | Git |
 | C5 | Software code languages, tools, and services used | Python 3.10+; Clang with BPF target; bpftool/libbpf; Linux kernel eBPF verifier; Python unittest; laboratory replay of the upstream bpfix CLI (Rust), Pretty Verifier (Python) and PREVAIL (C++) through reporter adapters |
 | C6 | Compilation requirements, operating environments, and dependencies | Offline workflow: Python 3.10+ stdlib only (`pip install -e .`). Optional extras: `.[lab]` (paramiko), `.[dev]` (coverage); see `docs/DEPENDENCIES.md`. Laboratory workflow: Linux with eBPF support, Clang, bpftool, and the pinned Debian 13 environment documented in `docs/LAB-PIN.md`; the developer-fixed pipeline also needs the pin's kernel headers and the loader in `tools/wildload.c` (`docs/LAB-RUN-WILD.md`). External reporters are used at the commits recorded in their adapters' provenance. |
-| C7 | If available, link to developer documentation/manual | https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.1.0#readme · `docs/` · this file · archived version DOI [v1.1.0 DOI] |
+| C7 | If available, link to developer documentation/manual | https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.1.0#readme · `docs/` · this file · Zenodo archive linked from the release page |
 | C8 | Support email for questions | kazuruuni@gmail.com |
 
 Exact host labels, kernel/clang/bpftool version strings, cite stamps, and the upstream bpfix commit hash live in `docs/LAB-PIN.md`, `docs/UPSTREAM.md`, and `docs/DEPENDENCIES.md`, not in this metadata table.
 
 Also see: `CITATION.cff`, `codemeta.json`, [`docs/ZENODO.md`](docs/ZENODO.md).
 
-**Note:** C2 is the GitHub tree for the release tag. The archive DOI of each version and the concept DOI for all versions (`10.5281/zenodo.21859726`) are listed in [`docs/ZENODO.md`](docs/ZENODO.md); no Zenodo DOI goes in C2.
+**Note:** C2 is the GitHub tree for the release tag. Archive DOIs are listed in [`docs/ZENODO.md`](docs/ZENODO.md); no Zenodo DOI goes in C2.

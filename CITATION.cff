@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: If you use this software, please cite it using these metadata.
 title: "bpfix-adversarial: an evaluation harness for eBPF diagnostic localization"
 version: 1.1.0
-date-released: "2026-10-30"
+date-released: "2026-10-31"
 type: software
 authors:
   - family-names: Kazuru
@@ -16,7 +16,7 @@ url: "https://github.com/kazuru-chidumbwe/bpfix-adversarial/tree/v1.1.0"
 identifiers:
   - type: doi
     value: 10.5281/zenodo.21859726
-    description: "All versions (concept DOI)"
+    description: "Releases v1.0.0 to v1.0.2 (concept DOI)"
 abstract: >-
   Captures eBPF verifier rejections on a pinned kernel, replays any registered
   diagnostic tool on each capture, and scores the source line it names against

@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.1.0 (unreleased)
+## v1.1.0 (2026-10-31)
 
 Scores diagnostics against developers' fixes on programs this project did not write, adds external reporters, a second oracle and a second configuration. Every v1.0.2 template result is unchanged.
 
