@@ -244,6 +244,7 @@ def main(argv: list[str] | None = None) -> int:
         strata[key] = {
             g: {rep: tally(rs, lambda r, rep=rep: r["outcomes"][rep]["R0"]["primary_on_site"]) for rep in REPORTERS}
             | {"bpfix_any_label": tally(rs, lambda r: r["outcomes"]["bpfix"]["R0"]["label_on_site"])}
+            | {"random_expected": round(sum(r["chance"]["R0"] for r in rs), 2)}
             for g, rs in sorted(groups.items())
         }
 
@@ -322,11 +323,11 @@ def render_md(p: dict) -> str:
     for key, title in (("kind", "case kind"), ("upstream_obligation", "upstream obligation")):
         others = [r for r in REPORTERS if r != "bpfix"]
         L += [f"## By {title} (R0, all cases)", "",
-              f"| {title} | bpfix primary | bpfix any label | " + " | ".join(others) + " |",
-              "| --- | ---: | ---: | " + " | ".join("---:" for _ in others) + " |"]
+              f"| {title} | bpfix primary | bpfix any label | " + " | ".join(others) + " | uniform random (expected hits) |",
+              "| --- | ---: | ---: | " + " | ".join("---:" for _ in others) + " | ---: |"]
         for g, t in p["strata"][key].items():
             L.append(f"| {g} | {frac(t['bpfix'])} | {frac(t['bpfix_any_label'])} | "
-                     + " | ".join(frac(t[r]) for r in others) + " |")
+                     + " | ".join(frac(t[r]) for r in others) + f" | {t['random_expected']:.2f} |")
         L.append("")
     L += ["## Exact McNemar, primary on a repair site", "", "| pair | rule | only first | only second | p |",
           "| --- | --- | ---: | ---: | ---: |"]

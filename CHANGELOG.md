@@ -14,7 +14,7 @@ Scores diagnostics against developers' fixes on programs this project did not wr
 - Reporter registry (`bpfix_adversarial/reporters.py`) with a generic replay driver (`tools/replay_reporter.py`) and adapters for Pretty Verifier and PREVAIL; `docs/ADDING-A-REPORTER.md`.
 - Repair-site oracle from each case's `buggy` to `fixed` diff under three rules (R0, R1, R2), per file for multi-file fixes (`bpfix_adversarial/repair_site.py`).
 - Verifier-state oracle read from the log alone (`bpfix_adversarial/state_oracle.py`, `docs/STATE-ORACLE.md`).
-- Random-line baseline as an expected hit count; StaleLine control for rewrite tests; Wilson intervals and exact McNemar tests.
+- Random-line baseline as an expected hit count, overall and per case kind and obligation; StaleLine control for rewrite tests; Wilson intervals and exact McNemar tests.
 - bpfix output parser: a location inside the verifier log (`--> <verifier-log>:N`, printed on kernels before 6.9) is no source line.
 
 ### Results and checks

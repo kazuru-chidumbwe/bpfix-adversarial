@@ -878,7 +878,8 @@
       0.0968,
       0.7
      ]
-    }
+    },
+    "random_expected": 0.29
    },
    "DynptrSafety": {
     "bpfix": {
@@ -928,7 +929,8 @@
       0.0945,
       0.9055
      ]
-    }
+    },
+    "random_expected": 0.64
    },
    "EnvironmentCapability": {
     "bpfix": {
@@ -978,7 +980,8 @@
       0.0,
       0.4899
      ]
-    }
+    },
+    "random_expected": 0.26
    },
    "HelperArgument": {
     "bpfix": {
@@ -1028,7 +1031,8 @@
       0.2077,
       0.9385
      ]
-    }
+    },
+    "random_expected": 0.49
    },
    "NullablePointer": {
     "bpfix": {
@@ -1078,7 +1082,8 @@
       0.584,
       0.9193
      ]
-    }
+    },
+    "random_expected": 1.75
    },
    "PacketBounds": {
     "bpfix": {
@@ -1128,7 +1133,8 @@
       0.3538,
       0.8483
      ]
-    }
+    },
+    "random_expected": 0.85
    },
    "PointerProvenance": {
     "bpfix": {
@@ -1178,7 +1184,8 @@
       0.7009,
       1.0
      ]
-    }
+    },
+    "random_expected": 0.83
    },
    "ReferenceLifecycle": {
     "bpfix": {
@@ -1228,7 +1235,8 @@
       0.1176,
       0.7693
      ]
-    }
+    },
+    "random_expected": 0.36
    },
    "ScalarRange": {
     "bpfix": {
@@ -1278,7 +1286,8 @@
       0.4365,
       0.9699
      ]
-    }
+    },
+    "random_expected": 0.68
    },
    "TypeContract": {
     "bpfix": {
@@ -1328,7 +1337,8 @@
       0.3006,
       0.9544
      ]
-    }
+    },
+    "random_expected": 0.53
    },
    "unmapped": {
     "bpfix": {
@@ -1378,7 +1388,8 @@
       0.3006,
       0.9544
      ]
-    }
+    },
+    "random_expected": 0.32
    }
   },
   "kind": {
@@ -1430,7 +1441,8 @@
       0.5717,
       0.8389
      ]
-    }
+    },
+    "random_expected": 5.15
    },
    "real-project seed": {
     "bpfix": {
@@ -1480,7 +1492,8 @@
       0.4504,
       0.761
      ]
-    }
+    },
+    "random_expected": 1.85
    }
   }
  },
