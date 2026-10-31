@@ -17,7 +17,7 @@ from bpfix_adversarial.bpfix_output import parse_bpfix, structure_key
 from bpfix_adversarial.gen_v2 import rename_reject_cases, write_v2_mutants
 from bpfix_adversarial.logparse import parse_verifier_log, verifier_error_block
 from bpfix_adversarial.oracle import oracle_sites
-from bpfix_adversarial.repair_site import diff_hunks, mcnemar_exact, repair_sites, wilson
+from bpfix_adversarial.repair_site import diff_hunks, holm_adjust, mcnemar_exact, repair_sites, wilson
 
 ROOT = Path(__file__).resolve().parents[1]
 V2 = ROOT / "campaigns" / "v2"
@@ -160,6 +160,8 @@ class TestRepairSite(unittest.TestCase):
         self.assertTrue(0.54 < lo < 0.56 and 0.89 < hi < 0.90)
         self.assertIsNone(mcnemar_exact(0, 0))
         self.assertAlmostEqual(mcnemar_exact(0, 6), 0.03125)
+        adj = holm_adjust({"a": 0.01, "b": 0.04, "c": 0.03, "d": None})
+        self.assertEqual([adj[k]["holm"] for k in "abcd"], [0.04, 0.09, 0.09, 1.0])
 
 
 class TestVerifierErrorBlock(unittest.TestCase):

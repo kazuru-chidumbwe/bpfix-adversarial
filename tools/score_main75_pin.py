@@ -31,6 +31,7 @@ from bpfix_adversarial.bpfix_output import parse_bpfix  # noqa: E402
 from bpfix_adversarial.oracle import code_line_mask  # noqa: E402
 from bpfix_adversarial.repair_site import (  # noqa: E402
     diff_hunks,
+    holm_adjust,
     mcnemar_exact,
     min_distance,
     repair_sites,
@@ -257,6 +258,11 @@ def main(argv: list[str] | None = None) -> int:
             per_rule[rule] = {f"{a}_only": ab, f"{b}_only": ba, "p": mcnemar_exact(ab, ba)}
         mcnemar[f"{a}_vs_{b}"] = per_rule
 
+    # Primary family: bpfix against each other reporter that names a source line, R0, all scored cases.
+    # VerifierState is left out because it names the same line as bpfix's arrow by construction.
+    family = [k for k in mcnemar if k.startswith("bpfix_vs_") and k != "bpfix_vs_VerifierState"]
+    holm = holm_adjust({k: mcnemar[k]["R0"]["p"] for k in family})
+
     mcnemar_kind: dict = {}
     for g in sorted({r["kind"] for r in scored}):
         rs = [r for r in scored if r["kind"] == g]
@@ -290,6 +296,7 @@ def main(argv: list[str] | None = None) -> int:
         "strata": strata,
         "mcnemar_primary_on_site": mcnemar,
         "mcnemar_bpfix_by_kind_r0": mcnemar_kind,
+        "primary_family_holm_r0": holm,
         "metamorphic": {v: {rep: {k: x for k, x in d.items() if k != "rows"} for rep, d in per.items()}
                         for v, per in pairs.items()},
         "rows": rows,
@@ -349,6 +356,12 @@ def render_md(p: dict) -> str:
             vals = list(d.values())
             L.append(f"| {pair.replace('_vs_', ' vs ')} | {rule} | {vals[0]} | {vals[1]} | "
                      f"{'n/a' if vals[2] is None else f'{vals[2]:.4f}'} |")
+    L += ["", "## Primary family, Holm-adjusted (R0)", "",
+          "bpfix against each other reporter that names a source line, on all scored cases. "
+          "Every other test in this file is reported without correction.", "",
+          "| pair | p | Holm-adjusted p |", "| --- | ---: | ---: |"]
+    for pair, d in p["primary_family_holm_r0"].items():
+        L.append(f"| {pair.replace('_vs_', ' vs ')} | {d['p']:.4f} | {d['holm']:.4f} |")
     L += ["", "## Exact McNemar by case kind, bpfix against each reporter (R0)", "",
           "| case kind | reporter | only bpfix | only reporter | p |", "| --- | --- | ---: | ---: | ---: |"]
     for g, per in p["mcnemar_bpfix_by_kind_r0"].items():

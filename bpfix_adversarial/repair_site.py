@@ -131,3 +131,14 @@ def mcnemar_exact(b: int, c: int) -> float | None:
     k = min(b, c)
     tail = sum(math.comb(n, i) for i in range(k + 1)) / 2**n
     return round(min(1.0, 2 * tail), 6)
+
+
+def holm_adjust(ps: dict) -> dict:
+    """Holm's step-down adjustment of a family of p-values (None counts as 1)."""
+    order = sorted(ps, key=lambda k: 1.0 if ps[k] is None else ps[k])
+    out, running = {}, 0.0
+    for i, k in enumerate(order):
+        raw = 1.0 if ps[k] is None else ps[k]
+        running = max(running, min(1.0, (len(order) - i) * raw))
+        out[k] = {"p": raw, "holm": round(running, 6)}
+    return {k: out[k] for k in ps}

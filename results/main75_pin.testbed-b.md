@@ -90,6 +90,16 @@ bpfix, any label on a repair site (informative): R0 0/68 (0.00–0.05), R1 0/68 
 | PrettyVerifier vs PREVAIL | R1 | 6 | 5 | 1.0000 |
 | PrettyVerifier vs PREVAIL | R2 | 6 | 4 | 0.7539 |
 
+## Primary family, Holm-adjusted (R0)
+
+bpfix against each other reporter that names a source line, on all scored cases. Every other test in this file is reported without correction.
+
+| pair | p | Holm-adjusted p |
+| --- | ---: | ---: |
+| bpfix vs SourceComment | 0.0039 | 0.0039 |
+| bpfix vs PrettyVerifier | 0.0000 | 0.0000 |
+| bpfix vs PREVAIL | 0.0000 | 0.0000 |
+
 ## Exact McNemar by case kind, bpfix against each reporter (R0)
 
 | case kind | reporter | only bpfix | only reporter | p |
